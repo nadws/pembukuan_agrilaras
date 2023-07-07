@@ -66,7 +66,7 @@ class PembelianBahanBakuController extends Controller
             'listbulan' => $listBulan,
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            
+
             'user' => User::where('posisi_id', 1)->get(),
             'halaman' => 2,
             'create' => SettingHal::btnHal(9, $id_user),
@@ -212,15 +212,10 @@ class PembelianBahanBakuController extends Controller
             ];
             DB::table('bayar_bk')->insert($data_tambahan);
         }
-
-
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
         return redirect()->route('pembelian_bk', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2])->with('sukses', 'Data berhasil ditambahkan');
     }
-
-
-
 
     public function print(Request $r)
     {

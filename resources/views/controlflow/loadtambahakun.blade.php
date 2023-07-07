@@ -40,7 +40,7 @@
             <tbody>
                 @foreach ($akun2 as $c)
                 <tr>
-                    <td>{{$c->nm_akun}}</td>
+                    <td>{{ucwords(strtolower($c->nm_akun))}}</td>
                     <td align="right">Rp. {{$c->jenis == '1' ? number_format($c->kredit,0) :
                         number_format($c->debit,0)}}
                     </td>

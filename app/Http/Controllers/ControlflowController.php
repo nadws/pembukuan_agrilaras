@@ -45,11 +45,11 @@ class ControlflowController extends Controller
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
         $data = [
-            'title' => 'Cash Flow',
+            'title' => 'Dashboard Pembukuan',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2
         ];
-        return view('controlflow.index', $data);
+        return view('controlflow.dashboard', $data);
     }
     public function loadcontrolflow(Request $r)
     {
@@ -61,7 +61,7 @@ class ControlflowController extends Controller
             'title' => 'load',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'pendapatan' => DB::select("SELECT c.nm_akun, b.kredit
+            'pendapatan' => DB::select("SELECT a.id_akun, c.nm_akun, b.kredit
             FROM akuncontrol as a 
             left join (
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
@@ -72,7 +72,7 @@ class ControlflowController extends Controller
             left join akun as c on c.id_akun = a.id_akun
             where a.id_kategori_cashcontrol = '1';"),
 
-            'biaya' => DB::select("SELECT c.nm_akun, b.kredit, b.debit
+            'biaya' => DB::select("SELECT a.id_akun, c.nm_akun, b.kredit, b.debit
             FROM akuncontrol as a 
             left join (
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit

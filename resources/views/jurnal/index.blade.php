@@ -6,6 +6,7 @@
                     ~ {{ tanggal($tgl2) }}</h6>
             </div>
             <div class="col-lg-6">
+                <a href="{{route('controlflow')}}" class="btn btn-primary float-end"><i class="fas fa-home"></i></a>
                 @if (!empty($import))
                 <x-theme.button modal="Y" idModal="import" icon="fa-upload" variant="success" addClass="float-end"
                     teks="Import" />

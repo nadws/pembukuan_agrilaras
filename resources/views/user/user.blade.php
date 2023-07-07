@@ -17,18 +17,18 @@
                 </thead>
                 <tbody>
                     @foreach ($user as $no => $d)
-                        <tr>
-                            <td>{{ $no + 1 }}</td>
-                            <td>{{ ucwords($d->name) }}</td>
-                            <td>{{ ucwords($d->posisi->nm_posisi) }}</td>
-                            <td>
-                                <x-theme.button hapus="Y" href="{{ route('user.delete', ['id_user' => $d->id]) }}" icon="fa-trash"
-                                    addClass="float-end" teks="" variant="danger" />
-                                <x-theme.button modal="Y" idModal="edit-modal" icon="fa-pen"
-                                    addClass="me-1 float-end edit-btn" teks=""
-                                    data="url={{ route('user.edit', $d->id) }}" />
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $no + 1 }}</td>
+                        <td>{{ ucwords($d->name) }}</td>
+                        <td>{{ ucwords($d->posisi->nm_posisi) }}</td>
+                        <td>
+                            <x-theme.button hapus="Y" href="{{ route('user.delete', ['id_user' => $d->id]) }}"
+                                icon="fa-trash" addClass="float-end" teks="" variant="danger" />
+                            <x-theme.button modal="Y" idModal="edit-modal" icon="fa-pen"
+                                addClass="me-1 float-end edit-btn" teks=""
+                                data="url={{ route('user.edit', $d->id) }}" />
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -51,7 +51,7 @@
                             <select name="posisi_id" class="form-control" id="">
                                 <option value="">- Pilih Posisi -</option>
                                 @foreach ($posisi as $p)
-                                    <option value="{{ $p->id_posisi }}">{{ $p->nm_posisi }}</option>
+                                <option value="{{ $p->id_posisi }}">{{ $p->nm_posisi }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -82,8 +82,8 @@
     </x-slot>
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on('click', '.edit-btn', function() {
                     var url = $(this).attr('url')
                     $.ajax({
@@ -96,6 +96,6 @@
 
                 })
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

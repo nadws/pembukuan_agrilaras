@@ -4,11 +4,29 @@
             <h6 class="float-start mt-1">{{ $title }}: {{ tanggal($tgl1) }} ~
                 {{ tanggal($tgl2) }}</h6>
         </div>
-        <x-theme.button modal="T" icon="fa-print"
-            href="/print_cashflow?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}" variant="success" addClass="float-end"
-            teks="Print" />
-        <x-theme.button modal="Y" idModal="daftarakun" icon="fa-book" variant="primary"
-            addClass="float-end view_akun" teks="Daftar Akun" />
+        {{--
+        <x-theme.button modal="T" icon="fa-print" href="/print_cashflow?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}"
+            variant="success" addClass="float-end" teks="Print" /> --}}
+        {{--
+        <x-theme.button modal="Y" idModal="daftarakun" icon="fa-book" variant="primary" addClass="float-end view_akun"
+            teks="Daftar Akun" />
+        <x-theme.button modal="T" icon="fa-plus" href="/jurnal-add" variant="primary" addClass="float-end"
+            teks="Tambah Jurnal" />
+        <x-theme.button modal="T" icon="fa-book" href="/summary_buku_besar" variant="primary" addClass="float-end"
+            teks="Buku besar" /> --}}
+
+        <div class="dropdown float-end">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                Aksi
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/jurnal-add">Jurnal Umum</a></li>
+                <li><a class="dropdown-item" href="/summary_buku_besar">Buku besar</a></li>
+                <li><a class="dropdown-item" href="#">Penyesuaian Stok</a></li>
+                <li><a class="dropdown-item" href="/penutup">Jurnal Penutup</a></li>
+            </ul>
+        </div>
         <x-theme.btn_filter />
     </x-slot>
     <x-slot name="cardBody">
@@ -48,8 +66,8 @@
     </x-slot>
 
     @section('scripts')
-        <script>
-            loadTabel()
+    <script>
+        loadTabel()
 
             function toast(pesan) {
                 Toastify({
@@ -239,9 +257,9 @@
                     });
                 });
             });
-        </script>
-        <script>
-            load_cash_ibu()
+    </script>
+    <script>
+        load_cash_ibu()
 
             function toast(pesan) {
                 Toastify({
@@ -343,6 +361,6 @@
                     }
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

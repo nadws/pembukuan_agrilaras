@@ -18,8 +18,7 @@
                         <h6 for="">Profit & Loss</h6>
                     </div>
                     <div class="col-lg-8">
-                        <x-theme.button modal="T"
-                            href="/profit/print?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}" icon="fa-print"
+                        <x-theme.button modal="T" href="/profit/print?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}" icon="fa-print"
                             addClass="float-end" teks="Print" />
 
                         <button data-bs-toggle="modal" data-bs-target="#daftarakun1" type="button"
@@ -56,8 +55,7 @@
                         <h6 for="">Laporan Neraca</h6>
                     </div>
                     <div class="col-lg-8">
-                        <x-theme.button modal="T" icon="fa-print" href="#"
-                            addClass="float-end" teks="Print" />
+                        <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end" teks="Print" />
                         <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
                             class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">
                             <i class="fas fa-book"></i>
@@ -90,11 +88,11 @@
         </div>
 
 
-        {{--  --}}
+        {{-- --}}
     </x-slot>
     @section('scripts')
-        <script>
-            function loadSisa() {
+    <script>
+        function loadSisa() {
                 $.ajax({
                     type: "GET",
                     url: "{{ route('profit.count_sisa') }}?jenis=profit",
@@ -302,11 +300,11 @@
                     }
                 });
             })
-        </script>
+    </script>
 
-        {{-- script neraca --}}
-        <script>
-            load_neraca()
+    {{-- script neraca --}}
+    <script>
+        load_neraca()
             loadSisaNeraca()
 
             function loadSisaNeraca() {
@@ -447,6 +445,6 @@
                     }
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
