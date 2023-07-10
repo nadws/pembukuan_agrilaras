@@ -120,7 +120,8 @@ class JurnalController extends Controller
         $data =  [
             'title' => 'Jurnal Umum',
             'akun' => Akun::all(),
-            'proyek' => proyek::all()
+            'proyek' => proyek::all(),
+            'satuan' => DB::table('tb_satuan')->get()
 
         ];
         return view('jurnal.load_menu', $data);

@@ -336,6 +336,12 @@ Route::controller(Produk_telurController::class)->group(function () {
     Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
     // History Alpa
     Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
+    Route::get('/load_stok_pakan', 'load_stok_pakan')->name('load_stok_pakan');
+    Route::get('/opname_pakan', 'opname_pakan')->name('opname_pakan');
+    Route::get('/opnme_vitamin', 'opnme_vitamin')->name('opnme_vitamin');
+    Route::post('/save_opname_pakan', 'save_opname_pakan')->name('save_opname_pakan');
+
+    Route::get('/history_stok', 'history_stok')->name('history_stok');
 });
 Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
     Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');

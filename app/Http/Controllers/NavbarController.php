@@ -90,7 +90,12 @@ class NavbarController extends Controller
     public function buku_besar()
     {
         $data = [
-
+            [
+                'judul' => 'Cash Flow',
+                'route' => 'controlflow',
+                'img' => 'money-flow.png',
+                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+            ],
             [
                 'judul' => 'Daftar Akun',
                 'route' => 'akun',
@@ -121,12 +126,7 @@ class NavbarController extends Controller
                 'img' => 'profit.png',
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
-            [
-                'judul' => 'Cash Flow',
-                'route' => 'controlflow',
-                'img' => 'money-flow.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
+
             [
                 'judul' => 'Laporan Neraca',
                 'route' => 'neraca',

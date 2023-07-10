@@ -3,7 +3,7 @@
         color: #000000;
         line-height: 36px;
         /* font-size: 12px; */
-        width: 150px;
+        width: 100px;
 
     }
 </style>
@@ -12,8 +12,8 @@
         <tr>
             <th width="2%">#</th>
             <th width="14%">Akun</th>
-            <th width="14%">Sub Akun</th>
-            <th width="19%">Keterangan</th>
+            <th width="10%">Sub Akun</th>
+            <th width="18%">Keterangan</th>
             <th width="12%" style="text-align: right;">Debit</th>
             <th width="12%" style="text-align: right;">Kredit</th>
             {{-- <th width="12%" style="text-align: right;">Saldo</th> --}}
@@ -45,6 +45,7 @@
 
                 </select>
             </td>
+
             <td style="vertical-align: top;">
                 <input type="text" name="keterangan[]" class="form-control" style="vertical-align: top"
                     placeholder="nama barang, qty, @rp">
@@ -95,6 +96,8 @@
 
                 </select>
             </td>
+
+
             <td style="vertical-align: top;">
                 <input type="text" name="keterangan[]" class="form-control" placeholder="nama barang, qty, @rp">
 

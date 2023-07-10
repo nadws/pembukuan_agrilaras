@@ -172,7 +172,7 @@
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="border-color: #435EBE; ">
                         @foreach ($gudang as $g)
                         <tr>
                             <td>
@@ -221,84 +221,10 @@
             <div class="col-lg-12">
                 <hr style="border: 1px solid #435EBE">
             </div>
-            <div class="col-lg-10">
 
-
-                <div class="row">
-                    <div class="col-lg-7">
-                        <h6>Penjualan martadah</h6> <br>
-                    </div>
-                </div>
-
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th class="dhead" width="5">#</th>
-                            <th class="dhead">Tipe Penjualan</th>
-                            <th class="dhead" style="text-align: right">Total Rp</th>
-                            <th class="dhead" style="text-align: right">Yang Sudah Diterima</th>
-                            <th class="dhead" style="text-align: right">Sisa</th>
-                            <th class="dhead" style="text-align: center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Penjualan Telur</td>
-                            <td align="right">Rp {{number_format($penjualan_cek_mtd->ttl_rp +
-                                $penjualan_blmcek_mtd->ttl_rp,0)}}</td>
-                            <td align="right">Rp {{number_format($penjualan_cek_mtd->ttl_rp,0)}}</td>
-                            <td align="right">Rp {{number_format($penjualan_blmcek_mtd->ttl_rp,0)}}</td>
-                            <td align="center">
-                                <a href="{{route('penjualan_martadah_cek',['lokasi' => 'mtd'])}}"
-                                    class="btn btn-primary btn-sm"><i class="fas fa-history"></i>
-                                    History
-                                    <span class="badge bg-danger">{{empty($penjualan_blmcek_mtd->jumlah) ? '0' :
-                                        $penjualan_blmcek_mtd->jumlah}}</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Penjualan Umum</td>
-                            <td align="right">Rp {{number_format($penjualan_umum_mtd->ttl_rp +
-                                $penjualan_umum_blmcek_mtd->ttl_rp ,0)}}</td>
-                            <td align="right">Rp {{number_format($penjualan_umum_mtd->ttl_rp,0)}}</td>
-                            <td align="right">Rp {{number_format($penjualan_umum_blmcek_mtd->ttl_rp,0)}}</td>
-                            <td align="center">
-                                <a href="{{route('penjualan_umum_cek')}}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-history"></i> History
-                                    <span class="badge bg-danger">{{empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :
-                                        $penjualan_umum_blmcek_mtd->jumlah}}</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>Opname Telur Martadah</td>
-                            <td align="right">Rp {{number_format($opname_cek_mtd->ttl_rp +
-                                $opname_blmcek_mtd->ttl_rp,0)}}</td>
-                            <td align="right">Rp {{number_format($opname_cek_mtd->ttl_rp,0)}}</td>
-                            <td align="right">Rp {{number_format($opname_blmcek_mtd->ttl_rp,0)}}</td>
-                            <td align="center">
-                                <a href="{{route('bukukan_opname_martadah')}}" class="btn btn-primary btn-sm"><i
-                                        class="fas fa-history"></i>
-                                    History
-                                    <span class="badge bg-danger">{{empty($opname_blmcek_mtd->jumlah) ? '0' :
-                                        $opname_blmcek_mtd->jumlah}}</span>
-                                </a>
-                            </td>
-                        </tr>
-
-                    </tbody>
-                </table>
-
-            </div>
-
-
-
-            </div>
+            <div id="load_stok_pakan"></div>
         </section>
+
         <x-theme.modal btnSave='T' title="History Telur Martdah" size="modal-lg-max" idModal="history_mtd">
             <div class="row">
                 <div class="col-lg-12">
@@ -313,9 +239,35 @@
                     <div id="h_alpa"></div>
                 </div>
             </div>
-
         </x-theme.modal>
 
+        <form action="{{route('save_opname_pakan')}}" method="post">
+            @csrf
+            <x-theme.modal title="Opname Pakan" size="modal-lg" idModal="opname_pakan">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="opname_stk_pkn"></div>
+                    </div>
+                </div>
+            </x-theme.modal>
+        </form>
+        <form action="{{route('save_opname_pakan')}}" method="post">
+            @csrf
+            <x-theme.modal title="Opname Vitamin" size="modal-lg" idModal="opname_vitamin">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="opname_stk_vtmn"></div>
+                    </div>
+                </div>
+            </x-theme.modal>
+        </form>
+        <x-theme.modal title="History Stok" btnSave='T' size="modal-lg" idModal="history_stok">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="history_stk"></div>
+                </div>
+            </div>
+        </x-theme.modal>
         <form action="" method="get">
             <x-theme.modal title="View Tanggal" idModal="view">
                 <div class="row">
@@ -379,6 +331,77 @@
                 });
                 
             });
+    </script>
+    <script>
+        $(document).ready(function() {
+            function load_stok_pakan() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('load_stok_pakan') }}",
+                    success: function(r) {
+                        
+                        $("#load_stok_pakan").html(r)
+                        $('[data-bs-toggle="tooltip"]').tooltip();
+                    }
+                });
+            }
+            load_stok_pakan()
+
+            $(document).on('click','.opnme_pakan', function(){
+                $.ajax({
+                    type: "get",
+                    url: "/opname_pakan",
+                    success: function (r) {
+                        $('#opname_stk_pkn').html(r);
+                        $('#opname_pakan').modal('show');
+                    }
+                });
+            });
+            $(document).on('click','.opnme_vitamin', function(){
+                $.ajax({
+                    type: "get",
+                    url: "/opnme_vitamin",
+                    success: function (r) {
+                        $('#opname_stk_vtmn').html(r);
+                        $('#opname_vitamin').modal('show');
+                    }
+                });
+            });
+            $(document).on('keyup','.aktual', function(){
+                var count = $(this).attr('count');
+                var aktual = $('.aktual' + count).val();
+                var stk_program = $('.stk_program' + count).val();
+                
+                var selisih = parseFloat(stk_program) - parseFloat(aktual) ;
+                
+                $('.selisih_pakan'+ count).text(selisih)
+                
+            });
+            $(document).on('click','.history_stok', function(){
+                var id_pakan = $(this).attr('id_pakan');
+                $.ajax({
+                    type: "get",
+                    url: "/history_stok?id_pakan=" + id_pakan,
+                    success: function (r) {
+                        $('#history_stk').html(r);
+                        $('#history_stok').modal('show');
+                    }
+                });
+            });
+            $(document).on('submit', '#search_history_stk', function(e) {
+                    e.preventDefault();
+                    var tgl1 = $('#tgl1').val();
+                    var tgl2 = $('#tgl2').val();
+                    var id_pakan = $('#id_pakan').val();
+                    $.ajax({
+                        type: "get",
+                        url: "/history_stok?tgl1=" + tgl1 + "&tgl2=" + tgl2 + "&id_pakan=" + id_pakan,
+                        success: function(data) {
+                            $('#history_stk').html(data);
+                        }
+                    });
+                });
+        });
     </script>
     @endsection
 </x-theme.app>
