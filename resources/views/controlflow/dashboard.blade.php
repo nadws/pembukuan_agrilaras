@@ -23,8 +23,12 @@
                             <h6 class="float-strat">Cash Flow</h6>
                         </div>
                         <div class="col-lg-6">
-                            <button class="btn btn-sm btn-primary float-end"><i class="fas fa-clipboard-list"></i> List
-                                Akun</button>
+                            <button data-bs-toggle="modal" data-bs-target="#daftarakuncashflow"
+                                class="btn btn-sm btn-primary d_akuncashflow float-end"><i
+                                    class="fas fa-clipboard-list"></i> List
+                                Akun
+                                <span class="badge bg-danger">{{$akun_cashflow->total_akun}}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -43,8 +47,12 @@
                             <h6 class="float-strat">Control Uang Ditarik</h6>
                         </div>
                         <div class="col-lg-6">
-                            <button class="btn btn-sm btn-primary float-end"><i class="fas fa-clipboard-list"></i> List
-                                Akun</button>
+                            <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
+                                class="btn btn-sm btn-primary float-end d_uangditarik"><i
+                                    class="fas fa-clipboard-list"></i> List
+                                Akun
+                                <span class="badge bg-danger">{{$akun_ibu->total_akun}}</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -153,6 +161,13 @@
 
     <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunControl">
         <div id="loadAkunControl"></div>
+    </x-theme.modal>
+
+    <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftarakuncashflow">
+        <div id="loadAkuncashflow"></div>
+    </x-theme.modal>
+    <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftaruangditarik">
+        <div id="loadAkunditarik"></div>
     </x-theme.modal>
 
 
@@ -775,6 +790,7 @@
                 $("#modalTambahAkun").modal('show');
                 loadInputAkunNeraca(id_sub_kategori);
             });
+            
 
             $(document).on('submit', '#formTambahAkun', function(e) {
                 e.preventDefault()
@@ -804,6 +820,36 @@
                         loadInputAkunNeraca(id_sub_kategori);
                         load_neraca()
                         loadSisaNeraca()
+                    }
+                });
+            });
+
+
+            $(document).on('click', '.d_akuncashflow', function() {
+                $.ajax({
+                    type: "get",
+                    url: "/akuncashflow",
+                    success: function (r) {
+                        $("#loadAkuncashflow").html(r)
+                        $("#table3").DataTable({
+                            "lengthChange": true,
+                            "autoWidth": false,
+                            "stateSave": true,
+                        });
+                    }
+                });
+            });
+            $(document).on('click', '.d_uangditarik', function() {
+                $.ajax({
+                    type: "get",
+                    url: "/akunuangditarik",
+                    success: function (r) {
+                        $("#loadAkunditarik").html(r)
+                        $("#table3").DataTable({
+                            "lengthChange": true,
+                            "autoWidth": false,
+                            "stateSave": true,
+                        });
                     }
                 });
             });

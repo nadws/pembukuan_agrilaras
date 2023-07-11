@@ -91,9 +91,9 @@ class NavbarController extends Controller
     {
         $data = [
             [
-                'judul' => 'Cash Flow',
+                'judul' => 'Dashboard',
                 'route' => 'controlflow',
-                'img' => 'money-flow.png',
+                'img' => 'dashboard.png',
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
             [

@@ -47,7 +47,13 @@ class ControlflowController extends Controller
         $data = [
             'title' => 'Dashboard Pembukuan',
             'tgl1' => $tgl1,
-            'tgl2' => $tgl2
+            'tgl2' => $tgl2,
+            'akun_cashflow' => DB::selectOne("SELECT count(a.id_akun) as total_akun
+            FROM akun as a 
+            where a.id_akun not in(SELECT b.id_akun FROM akuncontrol as b);"),
+            'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun
+            FROM akun as a 
+            where a.id_akun not in(SELECT b.id_akun FROM akuncash_ibu as b);")
         ];
         return view('controlflow.dashboard', $data);
     }
@@ -217,5 +223,24 @@ class ControlflowController extends Controller
 
         ];
         return view('controlflow.print', $data);
+    }
+
+    public function akuncashflow(Request $r)
+    {
+        $data = [
+            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun
+            FROM akun as a 
+            left join akuncontrol as b on b.id_akun = a.id_akun;")
+        ];
+        return view('controlflow.akuncashflow', $data);
+    }
+    public function akunuangditarik(Request $r)
+    {
+        $data = [
+            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun
+            FROM akun as a 
+            left join akuncash_ibu as b on b.id_akun = a.id_akun;")
+        ];
+        return view('controlflow.akuncashflow', $data);
     }
 }

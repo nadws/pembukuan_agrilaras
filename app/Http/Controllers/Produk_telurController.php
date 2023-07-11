@@ -33,27 +33,6 @@ class Produk_telurController extends Controller
             'tanggal' => $tanggal,
             'kandang' => DB::table('kandang')->get(),
             'gudang' => DB::table('gudang_telur')->get(),
-
-        ];
-        return view('produk_telur.dashboard', $data);
-    }
-
-    public function load_stok_pakan(Request $r)
-    {
-        $data = [
-            'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
-            FROM stok_produk_perencanaan as a 
-            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-            left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            where b.kategori ='pakan' and a.opname = 'T'
-            group by a.id_pakan;"),
-
-            'vitamin' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
-            FROM stok_produk_perencanaan as a 
-            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-            left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            where b.kategori in('obat_pakan','obat_air') and a.opname = 'T'
-            group by a.id_pakan;"),
             'penjualan_cek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.cek ='Y' and a.lokasi ='mtd';"),
             'penjualan_blmcek_mtd' => DB::selectOne("SELECT sum(a.ttl_rp) as ttl_rp , count(a.no_nota) as jumlah
             FROM 
@@ -80,92 +59,8 @@ class Produk_telurController extends Controller
                 ) as a;"),
 
         ];
-        return view('produk_telur.stok', $data);
+        return view('produk_telur.dashboard', $data);
     }
-
-    public function history_stok(Request $r)
-    {
-        if (empty($r->tgl1)) {
-            $tgl1 = date('Y-m-01');
-            $tgl2 = date('Y-m-t');
-        } else {
-            $tgl1 = $r->tgl1;
-            $tgl2 = $r->tgl2;
-        }
-
-        $data = [
-            'stok' => DB::select("SELECT a.tgl, b.nm_produk, a.pcs, a.pcs_kredit, a.admin, a.h_opname
-            FROM stok_produk_perencanaan as a 
-            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.opname ='T' and a.id_pakan = '$r->id_pakan'
-            GROUP by a.id_stok_telur;"),
-            'tgl1' => $tgl1,
-            'tgl2' => $tgl2,
-            'id_pakan' => $r->id_pakan
-        ];
-        return view('produk_telur.history_stok', $data);
-    }
-
-    public function opname_pakan(Request $r)
-    {
-        $data = [
-            'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
-            FROM stok_produk_perencanaan as a 
-            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-            left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            where b.kategori = 'pakan' and a.opname = 'T'
-            group by a.id_pakan;"),
-        ];
-        return view('opname.opname_pakan', $data);
-    }
-    public function opnme_vitamin(Request $r)
-    {
-        $data = [
-            'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
-            FROM stok_produk_perencanaan as a 
-            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-            left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            where b.kategori in('obat_pakan','obat_air') and a.opname = 'T'
-            group by a.id_pakan;"),
-        ];
-        return view('opname.opname_pakan', $data);
-    }
-
-    public function save_opname_pakan(Request $r)
-    {
-        $no_nota = strtoupper(str()->random(5));
-        for ($x = 0; $x < count($r->id_pakan); $x++) {
-            $id_pakan = $r->id_pakan[$x];
-            $hrga = DB::selectOne("SELECT sum(a.total_rp/a.pcs) as rata_rata
-            FROM stok_produk_perencanaan as a 
-            where a.id_pakan = '$id_pakan' and a.pcs != '0' and a.h_opname ='T'
-            group by a.id_pakan;");
-
-            $selisih = $r->stk_program[$x] - $r->stk_aktual[$x];
-
-            if ($selisih < 0) {
-                $qty_selisih = $selisih * -1;
-            } else {
-                $qty_selisih = $selisih;
-            }
-
-
-            DB::table('stok_produk_perencanaan')->where(['id_pakan' => $r->id_pakan[$x], 'opname' => 'T'])->update(['opname' => 'Y', 'no_nota' => $no_nota]);
-            $data = [
-                'pcs' => $r->stk_aktual[$x],
-                'id_pakan' => $r->id_pakan[$x],
-                'opname' => 'T',
-                'tgl' => $r->tgl,
-                'admin' => Auth::user()->name,
-                'no_nota' => $no_nota,
-                'h_opname' => 'Y',
-                'total_rp' => $qty_selisih * $hrga->rata_rata
-            ];
-            DB::table('stok_produk_perencanaan')->insert($data);
-        }
-        return redirect()->route('produk_telur')->with('sukses', 'Data berhasil di simpan');
-    }
-
     public function CheckMartadah(Request $r)
     {
         if ($r->cek == 'T') {

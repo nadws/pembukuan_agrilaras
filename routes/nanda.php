@@ -29,6 +29,7 @@ use App\Http\Controllers\ProyekController;
 use App\Http\Controllers\Saldo;
 use App\Http\Controllers\SaldoController;
 use App\Http\Controllers\Stock_telurController;
+use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -244,6 +245,9 @@ Route::controller(ControlflowController::class)->group(function () {
     Route::get('/deleteAkunCashflow', 'deleteAkunCashflow')->name('deleteAkunCashflow');
     Route::get('/view_akun', 'view_akun')->name('view_akun');
     Route::get('/print_cashflow', 'print')->name('print_cashflow');
+
+    Route::get('/akuncashflow', 'akuncashflow')->name('akuncashflow');
+    Route::get('/akunuangditarik', 'akunuangditarik')->name('akunuangditarik');
 });
 
 Route::controller(CashflowController::class)->group(function () {
@@ -334,6 +338,9 @@ Route::controller(Produk_telurController::class)->group(function () {
     Route::get('/export_telur', 'export')->name('export_telur');
     Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
     Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
+});
+
+Route::controller(Stok_pakanController::class)->group(function () {
     // History Alpa
     Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
     Route::get('/load_stok_pakan', 'load_stok_pakan')->name('load_stok_pakan');
@@ -342,7 +349,13 @@ Route::controller(Produk_telurController::class)->group(function () {
     Route::post('/save_opname_pakan', 'save_opname_pakan')->name('save_opname_pakan');
 
     Route::get('/history_stok', 'history_stok')->name('history_stok');
+    Route::get('/tambah_pakan', 'tambah_pakan')->name('tambah_pakan');
+    Route::get('/tambah_vitamin', 'tambah_vitamin')->name('tambah_vitamin');
+    Route::post('/save_tambah_pakan', 'save_tambah_pakan')->name('save_tambah_pakan');
+    Route::get('/tambah_baris_stok', 'tambah_baris_stok')->name('tambah_baris_stok');
+    Route::get('/tambah_baris_stok_vitamin', 'tambah_baris_stok_vitamin')->name('tambah_baris_stok_vitamin');
 });
+
 Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
     Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
 });

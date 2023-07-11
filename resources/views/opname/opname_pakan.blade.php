@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-lg-4 mb-2">
         <label for="">Tanggal</label>
-        <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
+        <input type="date" class="form-control tgl_opname" name="tgl" value="{{$tgl}}">
     </div>
 </div>
 <table class="table table-bordered">
