@@ -10,8 +10,8 @@
                 <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Opname"
                     class="btn btn-primary btn-sm float-end opnme_pakan me-2"><i class="fas fa-tasks"></i>
                 </button>
-                <a href="#" onclick="event.preventDefault();" data-bs-toggle="modal" data-bs-target="#tbh_pakan"
-                    class="btn btn-sm btn-primary float-end me-2 tbh_pakan"><i class="fas fa-plus"></i></a>
+                {{-- <a href="#" onclick="event.preventDefault();" data-bs-toggle="modal" data-bs-target="#tbh_pakan"
+                    class="btn btn-sm btn-primary float-end me-2 tbh_pakan"><i class="fas fa-plus"></i></a> --}}
             </div>
         </div>
         <table class="table table-bordered">
@@ -54,8 +54,8 @@
                 <button data-bs-toggle="tooltip" data-bs-placement="top" title="Opname" type="button"
                     class="btn btn-primary btn-sm float-end opnme_vitamin"><i class="fas fa-tasks"></i>
                 </button>
-                <a href="#" onclick="event.preventDefault();" data-bs-toggle="modal" data-bs-target="#tbh_pakan"
-                    class="btn btn-sm btn-primary float-end me-2 tbh_vitamin"><i class="fas fa-plus"></i></a>
+                {{-- <a href="#" onclick="event.preventDefault();" data-bs-toggle="modal" data-bs-target="#tbh_pakan"
+                    class="btn btn-sm btn-primary float-end me-2 tbh_vitamin"><i class="fas fa-plus"></i></a> --}}
             </div>
         </div>
 

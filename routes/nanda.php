@@ -10,6 +10,7 @@ use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\JurnalPenyesuaianController;
+use App\Http\Controllers\Laporan_layerController;
 use App\Http\Controllers\NavbarController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\OpnamemtdController;
@@ -358,6 +359,10 @@ Route::controller(Stok_pakanController::class)->group(function () {
 
 Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
     Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
+});
+Route::controller(Laporan_layerController::class)->group(function () {
+    Route::get('/laporan_layer', 'index')->name('laporan_layer');
+    Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
 });
 Route::controller(Penjualan_umum_cekController::class)->group(function () {
     Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');
