@@ -180,13 +180,15 @@
 
                             <!-- (12777) / (3) / (2296) -->
                             @php
-                            $fcr = empty($k->kg_p_week ) || empty($k->kg_telur_week) ?
+                            $fcr = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ?
                             '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),2);
-                            $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) ?
+
+                            $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->rp_vitamin) ?
                             '0':number_format((($k->kg_p_week/1000+ + ($k->rp_vitamin / 7000)))/($k->kg_telur_week -
                             ($k->pcs_telur_week/180)),2);
 
-                            $fcr_day = number_format(($k->kg_pakan / 1000) / ($k->kg - ($k->pcs/180)) ,1)
+                            $fcr_day = empty($k->kg_pakan) ? '0' : number_format(($k->kg_pakan / 1000) / ($k->kg -
+                            ($k->pcs/180)) ,1)
                             @endphp
                             <td align="center " class="FCR(week) {{$fcr > 2.2 ? 'bg-danger text-white' : ''}} ">
                                 {{$fcr_day}} / {{$fcr}} / {{$fcr_plus}}
