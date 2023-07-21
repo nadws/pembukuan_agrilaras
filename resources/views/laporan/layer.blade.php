@@ -107,7 +107,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                        $kg = 0;
+                        $gr_butir = 0;
+                        @endphp
                         @foreach ($kandang as $k)
+                        @php
+                        $kg += $k->kg - ($k->pcs/180);
+                        $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) /
+                        $k->pcs,0);
+                        @endphp
                         <tr>
                             <td align="center" class="kandang">{{$k->nm_kandang}}</td>
                             <!-- Umur -->
@@ -181,16 +190,17 @@
                             <!-- (12777) / (3) / (2296) -->
                             @php
                             $fcr = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ?
-                            '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),2);
+                            '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),1);
 
-                            $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->rp_vitamin) ?
+                            $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) ?
                             '0':number_format((($k->kg_p_week/1000+ + ($k->rp_vitamin / 7000)))/($k->kg_telur_week -
-                            ($k->pcs_telur_week/180)),2);
+                            ($k->pcs_telur_week/180)),1);
 
                             $fcr_day = empty($k->kg_pakan) ? '0' : number_format(($k->kg_pakan / 1000) / ($k->kg -
                             ($k->pcs/180)) ,1)
                             @endphp
-                            <td align="center " class="FCR(week) {{$fcr > 2.2 ? 'bg-danger text-white' : ''}} ">
+
+                            <td align="center " class="FCR(week) {{$fcr >= 2.2 ? 'bg-danger text-white' : ''}} ">
                                 {{$fcr_day}} / {{$fcr}} / {{$fcr_plus}}
                             </td>
 
@@ -236,11 +246,24 @@
 
                         </tr>
                         @endforeach
-
-
-
-
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th class="dhead" colspan="4">Total</th>
+                            <th class="dhead">{{number_format($kg,2)}}</th>
+                            <th class="dhead">{{$gr_butir}}</th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                            <th class="dhead"></th>
+                        </tr>
+                    </tfoot>
 
                 </table>
             </div>

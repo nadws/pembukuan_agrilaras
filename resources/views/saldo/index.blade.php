@@ -1,6 +1,6 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
     <x-slot name="cardHeader">
-        <h6 class="float-start mt-1">{{ $title }} : {{tanggal($tgl_saldo->tgl)}}</h6>
+        <h6 class="float-start mt-1">{{ $title }} : {{tanggal($tgl_saldo->tgl ?? '2023-01-01')}}</h6>
     </x-slot>
 
     <x-slot name="cardBody">
