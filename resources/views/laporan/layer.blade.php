@@ -93,10 +93,6 @@
                             <th class="dhead">gr <br>(past week)</th> --}}
                             {{-- pakan --}}
 
-
-
-
-
                             {{-- KUML --}}
                             <th class="dhead">pakan(kg)</th>
                             <th class="dhead">telur(kg)</th>
@@ -110,12 +106,14 @@
                         @php
                         $kg = 0;
                         $gr_butir = 0;
+                        $pakan = 0;
                         @endphp
                         @foreach ($kandang as $k)
                         @php
                         $kg += $k->kg - ($k->pcs/180);
                         $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) /
                         $k->pcs,0);
+                        $pakan += number_format($k->kg_pakan / 1000,1);
                         @endphp
                         <tr>
                             <td align="center" class="kandang">{{$k->nm_kandang}}</td>
@@ -192,15 +190,19 @@
                             $fcr = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ?
                             '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),1);
 
+                            $vitamin = empty($k->rp_vitamin) ? '0' : ($k->rp_vitamin/7000);
                             $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) ?
-                            '0':number_format((($k->kg_p_week/1000+ + ($k->rp_vitamin / 7000)))/($k->kg_telur_week -
+                            '0':number_format((($k->kg_p_week/1000 + $vitamin))/($k->kg_telur_week -
                             ($k->pcs_telur_week/180)),1);
 
-                            $fcr_day = empty($k->kg_pakan) ? '0' : number_format(($k->kg_pakan / 1000) / ($k->kg -
+                            $fcr_day = empty($k->kg_pakan) ? '0' :
+                            number_format(($k->kg_pakan / 1000)
+                            / ($k->kg -
                             ($k->pcs/180)) ,1)
                             @endphp
 
                             <td align="center " class="FCR(week) {{$fcr >= 2.2 ? 'bg-danger text-white' : ''}} ">
+                                {{-- {{$k->kg_telur_week}} / {{$k->pcs_telur_week}} / {{$k->kg_p_week}} <br> --}}
                                 {{$fcr_day}} / {{$fcr}} / {{$fcr_plus}}
                             </td>
 
@@ -255,7 +257,7 @@
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
-                            <th class="dhead"></th>
+                            <th class="dhead">{{$pakan}}</th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
