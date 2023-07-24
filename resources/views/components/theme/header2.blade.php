@@ -16,15 +16,25 @@
                     aria-expanded="false">
                     <div class="avatar avatar-md2">
                         @php
+                        if (empty(auth()->user()->posisi->id_posisi)) {
+                        $idPosisi =1 ;
+                        $nama = 'No Name';
+                        $posisi = '-';
+                        } else {
                         $idPosisi = auth()->user()->posisi->id_posisi;
+                        $nama = ucwords(auth()->user()->name);
+                        $posisi = ucwords(auth()->user()->posisi->nm_posisi);
+                        }
+
+
                         $gambar = $idPosisi == 1 ? 'Admin' : 'Pengawas';
                         @endphp
                         <img src='{{ asset("img/$gambar.png") }}' alt="Avatar">
                     </div>
                     <div class="text">
-                        <h6 class="user-dropdown-name">{{ ucwords(auth()->user()->name) }}</h6>
+                        <h6 class="user-dropdown-name">{{$nama}}</h6>
                         <p class="user-dropdown-status text-sm text-muted">
-                            {{ ucwords(auth()->user()->posisi->nm_posisi) }}
+                            {{ $posisi }}
                         </p>
                     </div>
                 </a>
