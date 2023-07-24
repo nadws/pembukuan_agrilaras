@@ -20,7 +20,7 @@ class Laporan_layerController extends Controller
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
-            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week
+            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin
             FROM kandang as a 
 
             -- Populasi --
@@ -129,6 +129,12 @@ class Laporan_layerController extends Controller
                 left JOIN kandang as b on b.id_kandang = a.id_kandang
                 group by FLOOR(DATEDIFF(a.tgl, b.chick_in) / 7), a.id_kandang
             ) as r on r.id_kandang = a.id_kandang and r.mgg_hd_week_past = FLOOR(DATEDIFF('$tgl', a.chick_in) / 7)-1
+            
+            left join (
+                SELECT s.id_kandang , sum(s.ttl_rp) as kum_ttl_rp_vaksin
+                FROM tb_vaksin_perencanaan as s
+                group by s.id_kandang
+            ) as s on s.id_kandang = a.id_kandang
 
 
 

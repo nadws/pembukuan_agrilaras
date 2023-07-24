@@ -242,7 +242,7 @@
                             </td>
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit">{{number_format($k->kuml_rp_vitamin,0)}} </td>
-                            <td align="center" class="vaksin">0</td>
+                            <td align="center" class="vaksin">{{number_format($k->kum_ttl_rp_vaksin,0)}}</td>
                             <!-- kuml -->
                             <!-- listrik -->
 
