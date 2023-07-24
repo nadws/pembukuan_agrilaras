@@ -136,7 +136,9 @@ class Laporan_layerController extends Controller
             -- Data telur --
 
 
-            where a.selesai = 'T'")
+            where a.selesai = 'T'
+            order by a.id_kandang ASC
+            ")
         ];
         return view('laporan.layer', $data);
     }
