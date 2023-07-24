@@ -38,6 +38,9 @@
                         </p>
                     </div>
                 </a>
+                @if (empty(auth()->user()->posisi->id_posisi))
+
+                @else
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="topbarUserDropdown">
                     <li>
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a>
@@ -50,6 +53,8 @@
                             onclick="document.getElementById('myForm').submit();">Logout</a>
                     </li>
                 </ul>
+                @endif
+
             </div>
 
             <!-- Burger button responsive -->
