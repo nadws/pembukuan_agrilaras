@@ -202,13 +202,16 @@
                             pcs_kredit, sum(a.kg_kredit) as kg_kredit
                             FROM stok_telur as a
                             where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and a.check
-                            ='Y' and a.opname = 'T' group by a.id_telur");
+                            ='Y' group by a.id_telur");
                             @endphp
-                            <td>{{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 0) }}
+                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit,
+                                0) }}
                             </td>
-                            <td>{{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2) }}
+                            <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2)
+                                }}
                             </td>
-                            <td>{{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 1) }}
+                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format(($stok->pcs -
+                                $stok->pcs_kredit) / 180, 1) }}
                             </td>
                             @endforeach
                         </tr>
