@@ -191,8 +191,9 @@
                             '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),1);
 
                             $vitamin = empty($k->rp_vitamin) ? '0' : ($k->rp_vitamin/7000);
+                            $vaksin = empty($k->ttl_rp_vaksin) ? '0' : ($k->ttl_rp_vaksin/7000);
                             $fcr_plus = empty($k->kg_p_week ) || empty($k->kg_telur_week) ?
-                            '0':number_format((($k->kg_p_week/1000 + $vitamin))/($k->kg_telur_week -
+                            '0':number_format((($k->kg_p_week/1000 + $vitamin + $vaksin))/($k->kg_telur_week -
                             ($k->pcs_telur_week/180)),1);
 
                             $fcr_day = empty($k->kg_pakan) ? '0' :
@@ -236,9 +237,9 @@
                                 -
                                 ($k->kuml_pcs /180)),2)}}
                                 /
-                                {{empty($k->kg_pakan_kuml) ? '0' : number_format(($k->kg_pakan_kuml /1000)/($k->kuml_kg
-                                -
-                                ($k->kuml_pcs /180)),2)}}
+                                {{empty($k->kg_pakan_kuml) ? '0' : number_format((($k->kg_pakan_kuml /1000) +
+                                ($k->kuml_rp_vitamin /7000) + (($k->kum_ttl_rp_vaksin /7000)))/($k->kuml_kg
+                                -($k->kuml_pcs /180)),2)}}
                             </td>
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit">{{number_format($k->kuml_rp_vitamin,0)}} </td>
