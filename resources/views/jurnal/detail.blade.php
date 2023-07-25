@@ -11,6 +11,9 @@
         <th style="background-color: white; " width="10%">Proyek</th>
         <th style="background-color: white; " width="2%">:</th>
         <th style="background-color: white; ">{{$head_jurnal->nm_proyek}}</th>
+        <th style="background-color: white; " width="10%">Suplier</th>
+        <th style="background-color: white; " width="2%">:</th>
+        <th style="background-color: white; ">{{$head_jurnal->nm_suplier}}</th>
     </tr>
 </table>
 <br>

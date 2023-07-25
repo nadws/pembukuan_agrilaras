@@ -34,6 +34,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'membuat dan menyunting data rekening',
             ],
             [
+                'judul' => 'Data Customer',
+                'route' => 'customer.index',
+                'img' => 'customer.png',
+                'deskripsi' => 'membuat dan menyunting data rekening',
+            ],
+            [
                 'judul' => 'Data Satuan',
                 'route' => 'user.index',
                 'img' => 'measure-cup.png',

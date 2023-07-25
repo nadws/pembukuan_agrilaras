@@ -34,10 +34,10 @@
                     <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
                     @endforeach
                 </select>
-                {{-- <div class="collapse join1">
-                    <label for="" class="mt-2 ">No CFM</label>
+                <div class="">
+                    <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                     <input type="text" class="form-control " name="no_urut[]">
-                </div> --}}
+                </div>
 
             </td>
             <td style="vertical-align: top;">
@@ -86,10 +86,10 @@
                     <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
                     @endforeach
                 </select>
-                {{-- <div class="collapse join2">
-                    <label for="" class="mt-2 ">No CFM</label>
+                <div class="">
+                    <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                     <input type="text" class="form-control " name="no_urut[]">
-                </div> --}}
+                </div>
             </td>
             <td style="vertical-align: top;">
                 <select name="id_post[]" id="" class="select post2">

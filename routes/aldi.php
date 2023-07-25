@@ -4,6 +4,7 @@ use App\Http\Controllers\AksesController;
 use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\BarangDaganganController;
 use App\Http\Controllers\CashflowController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardKandangController;
 use App\Http\Controllers\DataKandangController;
 use App\Http\Controllers\JualController;
@@ -131,6 +132,17 @@ Route::middleware('auth')->group(function () {
             Route::post('/update', 'update')->name('update');
             Route::get('/delete/{id_suplier}', 'delete')->name('delete');
             Route::get('/edit/{id_suplier}', 'edit')->name('edit');
+        });
+
+    Route::controller(CustomerController::class)
+        ->prefix('customer')
+        ->name('customer.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'create')->name('create');
+            Route::post('/update', 'update')->name('update');
+            Route::get('/delete/{id_customer}', 'delete')->name('delete');
+            Route::get('/edit/{id_customer}', 'edit')->name('edit');
         });
 
     Route::controller(JurnalPenyesuaianController::class)

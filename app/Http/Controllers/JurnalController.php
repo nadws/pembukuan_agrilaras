@@ -109,7 +109,8 @@ class JurnalController extends Controller
         $data =  [
             'title' => 'Tambah Jurnal Umum',
             'max' => $nota_t,
-            'proyek' => proyek::where('status', 'berjalan')->get()
+            'proyek' => proyek::where('status', 'berjalan')->get(),
+            'suplier' => DB::table('tb_suplier')->get()
 
         ];
         return view('jurnal.add', $data);
@@ -146,6 +147,7 @@ class JurnalController extends Controller
         $debit = $r->debit;
         $kredit = $r->kredit;
         $id_proyek = $r->id_proyek;
+        $id_suplier = $r->id_suplier;
         $no_urut = $r->no_urut;
         $id_post = $r->id_post;
 
@@ -168,6 +170,7 @@ class JurnalController extends Controller
                 'tgl' => $tgl,
                 'no_nota' => 'JU-' . $nota_t,
                 'id_akun' => $id_akun[$i],
+                'no_dokumen' => $no_urut[$i],
                 'id_buku' => '2',
                 'ket' => $keterangan[$i],
                 'debit' => $debit[$i],
@@ -176,6 +179,7 @@ class JurnalController extends Controller
                 'no_dokumen' => $r->no_dokumen,
                 'tgl_dokumen' => $r->tgl_dokumen,
                 'id_proyek' => $id_proyek,
+                'id_suplier' => $id_suplier,
                 'no_urut' => $akun->inisial . '-' . $urutan,
                 'urutan' => $urutan,
                 'id_post_center' => $id_post[$i]
@@ -290,9 +294,9 @@ class JurnalController extends Controller
             'title' => 'Jurnal Umum',
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
             'no_nota' => $r->no_nota,
-            'head_jurnal' => DB::selectOne("SELECT a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a 
+            'head_jurnal' => DB::selectOne("SELECT c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a 
             left join proyek as b on b.id_proyek = a.id_proyek
-            
+            left join tb_suplier as c on c.id_suplier = a.id_suplier
             where a.no_nota = '$r->no_nota'")
 
         ];
