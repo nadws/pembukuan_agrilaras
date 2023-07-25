@@ -21,7 +21,7 @@ class ExportRecordingController extends Controller
         ( SELECT o.id_kandang, o.tgl,sum(o.pcs_kredit) as kg_p_week
         FROM stok_produk_perencanaan as o
         left join tb_produk_perencanaan as q on q.id_produk = o.id_pakan
-        where q.kategori = 'pakan' and o.id_kandang ='1'
+        where q.kategori = 'pakan' and o.id_kandang ='$id_kandang'
         group by o.tgl , o.id_kandang
         ) as o
         left join kandang as p on p.id_kandang = o.id_kandang
@@ -30,7 +30,7 @@ class ExportRecordingController extends Controller
                 SELECT b.id_kandang ,FLOOR(DATEDIFF(b.tgl, c.chick_in) / 7) AS mgg_pop, sum(b.mati+b.jual) as pop_mati
                 FROM populasi as b
                 left JOIN kandang as c on c.id_kandang = b.id_kandang
-            	where  b.id_kandang = '1'
+            	where  b.id_kandang = '$id_kandang'
                 group by b.id_kandang,FLOOR(DATEDIFF(b.tgl, c.chick_in) / 7)
         ) as b on  b.mgg_pop = FLOOR(DATEDIFF(o.tgl, p.chick_in) / 7)
 
@@ -38,7 +38,7 @@ class ExportRecordingController extends Controller
                 SELECT b.id_kandang ,FLOOR(DATEDIFF(b.tgl, c.chick_in) / 7) AS mgg_telur, sum(b.pcs) as pcs_week,sum(b.kg) as kg_telur_week
                 FROM stok_telur as b
                 left JOIN kandang as c on c.id_kandang = b.id_kandang
-            	where b.id_kandang = '1'
+            	where b.id_kandang = '$id_kandang'
                 group by b.id_kandang,FLOOR(DATEDIFF(b.tgl, c.chick_in) / 7)
         ) as c on  c.mgg_telur = FLOOR(DATEDIFF(o.tgl, p.chick_in) / 7)
 

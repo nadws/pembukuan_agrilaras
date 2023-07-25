@@ -110,10 +110,10 @@
                         @endphp
                         @foreach ($kandang as $k)
                         @php
-                        $kg += $k->kg - ($k->pcs/180);
+                        $kg += empty($k->pcs) ? '0' : $k->kg - ($k->pcs/180);
                         $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) /
                         $k->pcs,0);
-                        $pakan += number_format($k->kg_pakan / 1000,1);
+                        $pakan += empty($k->kg_pakan) ? '0' : $k->kg_pakan / 1000;
                         @endphp
                         <tr>
                             <td align="center" class="kandang">{{$k->nm_kandang}}</td>
@@ -258,7 +258,7 @@
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
-                            <th class="dhead">{{$pakan}}</th>
+                            <th class="dhead">{{number_format($pakan,2)}}</th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
