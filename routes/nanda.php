@@ -32,6 +32,7 @@ use App\Http\Controllers\SaldoController;
 use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
+use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -337,11 +338,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_telur', 'export')->name('export_telur');
         Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
         Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
+        Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
     });
 
     Route::controller(Stok_pakanController::class)->group(function () {
         // History Alpa
-        Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
+
         Route::get('/load_stok_pakan', 'load_stok_pakan')->name('load_stok_pakan');
         Route::get('/opname_pakan', 'opname_pakan')->name('opname_pakan');
         Route::get('/opnme_vitamin', 'opnme_vitamin')->name('opnme_vitamin');
@@ -378,4 +380,7 @@ Route::middleware('auth')->group(function () {
 Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
+});
+Route::controller(ExportRecordingController::class)->group(function () {
+    Route::get('/commercial_layer', 'commercial_layer')->name('commercial_layer');
 });

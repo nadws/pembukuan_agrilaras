@@ -55,7 +55,7 @@
                 $telur = DB::selectOne("SELECT a.pcs, a.kg
                 FROM stok_telur as a
                 where a.tgl = '$i->tgl' and a.id_kandang = '$i->id_kandang' and a.id_telur = '$p->id_produk_telur'
-                and a.nota_transfer = '' ")
+                and a.nota_transfer = '0' ")
                 @endphp
                 <td align="right">{{empty($telur->pcs) ? '0' : number_format($telur->pcs,0)}}</td>
                 <td align="right">{{empty($telur->kg) ? '0' : number_format($telur->kg,2)}}</td>

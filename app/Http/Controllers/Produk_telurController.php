@@ -98,7 +98,7 @@ class Produk_telurController extends Controller
             'invoice' => DB::select("SELECT a.id_kandang, a.tgl, b.nm_kandang
             FROM stok_telur as a 
             left join kandang as b on b.id_kandang = a.id_kandang
-            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_gudang='1' and a.nota_transfer = ''
+            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_gudang='1' and a.nota_transfer = '0'
             group by a.tgl, a.id_kandang"),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2
