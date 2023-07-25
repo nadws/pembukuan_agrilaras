@@ -188,7 +188,7 @@
                             <!-- (12777) / (3) / (2296) -->
                             @php
                             $fcr = empty($k->kg_p_week ) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ?
-                            '0':number_format(($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180)),1);
+                            '0':($k->kg_p_week/1000)/($k->kg_telur_week - ($k->pcs_telur_week/180));
 
                             $vitamin = empty($k->rp_vitamin) ? '0' : ($k->rp_vitamin/7000);
                             $vaksin = empty($k->ttl_rp_vaksin) ? '0' : ($k->ttl_rp_vaksin/7000);
@@ -204,7 +204,7 @@
 
                             <td align="center " class="FCR(week) {{$fcr >= 2.2 ? 'bg-danger text-white' : ''}} ">
                                 {{-- {{$k->kg_telur_week}} / {{$k->pcs_telur_week}} / {{$k->kg_p_week}} <br> --}}
-                                {{$fcr_day}} / {{$fcr}} / {{$fcr_plus}}
+                                {{$fcr_day}} / {{number_format($fcr,2)}} / {{$fcr_plus}}
                             </td>
 
 
