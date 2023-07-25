@@ -20,29 +20,43 @@ class SuplierController extends Controller
 
     public function create(Request $r)
     {
-        $file = $r->file('img');
-        $fileDiterima = ['jpg', 'png', 'jpeg'];
-        $cek = in_array($file->getClientOriginalExtension(), $fileDiterima);
-        if ($cek) {
-            $maxFileSize = 1024 * 1024; // 1MB
-            if ($file instanceof UploadedFile && $file->getSize() > $maxFileSize) {
-                return redirect()->route('suplier.index')->with('error', 'File lebih dari 1MB');
+        if (!empty($r->file('img'))) {
+
+            $file = $r->file('img');
+            $fileDiterima = ['jpg', 'png', 'jpeg'];
+            $cek = in_array($file->getClientOriginalExtension(), $fileDiterima);
+            if ($cek) {
+                $maxFileSize = 1024 * 1024; // 1MB
+                if ($file instanceof UploadedFile && $file->getSize() > $maxFileSize) {
+                    return redirect()->route('suplier.index')->with('error', 'File lebih dari 1MB');
+                }
+                $fileName = "S-$r->kd_produk" . $file->getClientOriginalName();
+                $path = $file->move('upload/suplier', $fileName);
+                Suplier::create([
+                    'nm_suplier' => $r->nm_suplier,
+                    'email' => $r->email,
+                    'alamat' => $r->alamat,
+                    'telepon' => $r->telepon,
+                    'npwp' => $r->npwp,
+                    'dokumen' => $fileName,
+                    'admin' => auth()->user()->name,
+                ]);
+
+                return redirect()->route('suplier.index')->with('sukses', 'Data Berhasil Ditambahkan');
+            } else {
+                return redirect()->route('suplier.index')->with('error', 'File tidak didukung');
             }
-            $fileName = "S-$r->kd_produk" . $file->getClientOriginalName();
-            $path = $file->move('upload/suplier', $fileName);
+        } else {
             Suplier::create([
                 'nm_suplier' => $r->nm_suplier,
                 'email' => $r->email,
                 'alamat' => $r->alamat,
                 'telepon' => $r->telepon,
                 'npwp' => $r->npwp,
-                'dokumen' => $fileName,
                 'admin' => auth()->user()->name,
             ]);
 
             return redirect()->route('suplier.index')->with('sukses', 'Data Berhasil Ditambahkan');
-        } else {
-            return redirect()->route('suplier.index')->with('error', 'File tidak didukung');
         }
     }
 
@@ -108,7 +122,7 @@ class SuplierController extends Controller
         return redirect()->route('suplier.index')->with('sukses', 'Data Berhasil Diedit');
     }
 
-    public function delete($id_suplier)      
+    public function delete($id_suplier)
     {
         Nonaktif::delete('tb_suplier', 'id_suplier', $id_suplier);
         return redirect()->route('suplier.index')->with('sukses', 'Data Berhasil Dihapus');
