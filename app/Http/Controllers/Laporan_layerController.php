@@ -20,7 +20,7 @@ class Laporan_layerController extends Controller
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
-            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin
+            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd
             FROM kandang as a 
 
             -- Populasi --
@@ -169,7 +169,7 @@ class Laporan_layerController extends Controller
         }
         if ($r->rumus == 'kg_today') {
             echo "<b>Kg Today - Yesterday =</b> <em >telur sekarang kg - telur kemarin kg</em> <br><br>";
-            echo "<b>Butir =</b> <em >telur sekarang pcs - telur kemarin pcs</em>";
+            echo "<b>Note =</b> <em >Jika minus maka akan merah</em>";
         }
         if ($r->rumus == 'hh_kg') {
             echo "<b>Hen House Kg =</b> <em >(Jumlah telur hari ini (kg)/Jumlah ayam awal)  x 100%</em>";
@@ -199,10 +199,14 @@ class Laporan_layerController extends Controller
             echo "<b>FCR+ week =</b> <em >(Jumlah pakan yang diberikan selama 1 minggu (kg) + (total rupiah vaksin & vitamin / 7000))/(Jumlah telur selama 1 minggu (kg) - (pcs telur selama 1 minggu / 180))</em>";
         }
         if ($r->rumus == 'd_c') {
-            echo "<b>Note :</b> Jika D + C lebih dari 3 maka kolom berwarna merah";
+            echo "<b>Note :</b> Jika mati lebih dari 3 maka kolom berwarna merah";
         }
         if ($r->rumus == 'mgg') {
             echo "<b>Note :</b> Jika Minggu mencapai 80 minggu atau lebih  maka kolom berwarna merah";
+        }
+        if ($r->rumus == 'butir') {
+            echo "<b>Butir =</b> <em >telur sekarang pcs - telur kemarin pcs</em><br><br>";
+            echo "<b>Note =</b> <em >Jika minus maka akan merah</em>";
         }
     }
 }

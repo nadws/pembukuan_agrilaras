@@ -40,9 +40,9 @@
                     <thead style="border: 1px solid white">
                         <tr>
                             <th class="dhead" rowspan="2">Kdg</th>
-                            <th class="dhead">Umur <br> 80 mgg</th>
+                            <th class="dhead">Umur <br> 90 mgg</th>
                             <th class="dhead" colspan="2">Populasi</th>
-                            <th class="dhead" colspan="5">Data Telur</th>
+                            <th class="dhead" colspan="7">Data Telur</th>
                             <th class="dhead" colspan="2">Pakan</th>
                             {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
                             <th class="dhead" colspan="5">KUML</th>
@@ -64,7 +64,14 @@
                             {{-- Populasi --}}
 
                             {{-- Data Telur --}}
-                            <th class="dhead">kg / butir / today - yesterday<br>
+                            <th class="dhead">kg<br>
+                                <i class="fas text-white fa-question-circle rumus" style="cursor: pointer"></i>
+                            </th>
+                            <th class="dhead">butir<br>
+                                <i class="fas text-white fa-question-circle rumus" rumus="butir"
+                                    style="cursor: pointer"></i>
+                            </th>
+                            <th class="dhead">kg <br> today - yesterday
                                 <i class="fas text-white fa-question-circle rumus" rumus="kg_today"
                                     style="cursor: pointer"></i>
                             </th>
@@ -72,7 +79,7 @@
                                 <i class="fas text-white fa-question-circle rumus" rumus="gr_butir"
                                     style="cursor: pointer"></i>
                             </th>
-                            <th class="dhead">hd / hh (%)<br>
+                            <th class="dhead">hd / p / hh (%)<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
                                     style="cursor: pointer"></i>
                             </th>
@@ -104,9 +111,23 @@
                     </thead>
                     <tbody>
                         @php
+                        $ayam_awal = 0;
+                        $ayam_akhir = 0;
+
                         $kg = 0;
                         $gr_butir = 0;
                         $pakan = 0;
+                        $butir=0;
+                        $kg_today=0;
+
+                        // kuml
+                        $pakan_kuml = 0;
+                        $telur_kuml = 0;
+                        $obat_kuml = 0;
+                        $vaksin_kuml = 0;
+
+                        $mati = 0;
+                        $jual = 0;
                         @endphp
                         @foreach ($kandang as $k)
                         @php
@@ -114,12 +135,26 @@
                         $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) /
                         $k->pcs,0);
                         $pakan += empty($k->kg_pakan) ? '0' : $k->kg_pakan / 1000;
+                        $butir += $k->pcs - $k->pcs_past;
+                        $kg_today += ($k->kg - ($k->pcs/180)) - ($k->kg_past - ($k->pcs_past/180));
+
+                        // kuml
+                        $pakan_kuml += $k->kg_pakan_kuml / 1000;
+                        $telur_kuml += $k->kuml_kg - ($k->kuml_pcs /180);
+                        $obat_kuml += $k->kuml_rp_vitamin;
+                        $vaksin_kuml += $k->kum_ttl_rp_vaksin;
+
+                        $ayam_awal += $k->stok_awal;
+                        $ayam_akhir += $k->stok_awal - $k->pop_kurang;
+
+                        $mati += empty($k->mati) ? '0' : $k->mati;
+                        $jual += empty($k->jual) ? '0' : $k->jual;
                         @endphp
                         <tr>
                             <td align="center" class="kandang">{{$k->nm_kandang}}</td>
                             <!-- Umur -->
-                            <td align="center" class="mgg {{$k->mgg >= '80' ? 'bg-danger text-white' : ''}}">
-                                {{$k->mgg}} ({{number_format(($k->mgg / 80) * 100,0)}}%)
+                            <td align="center" class="mgg {{$k->mgg >= '90' ? 'bg-danger text-white' : ''}}">
+                                {{$k->mgg}} ({{number_format(($k->mgg / 90) * 100,0)}}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
@@ -137,7 +172,7 @@
                             @php
                             $tot_ayam_mati = empty($k->mati) ? '0' : $k->mati;
                             $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
-                            $tot_ayam_semua_hilang = $tot_ayam_mati + $tot_ayam_jual;
+                            $tot_ayam_semua_hilang = $tot_ayam_mati;
                             @endphp
                             <td align="center" class="D/C {{$tot_ayam_semua_hilang > 3 ? 'bg-danger text-white' : ''}}">
                                 {{empty($k->mati) ? '0' : $k->mati}} / {{empty($k->jual) ? '0' : $k->jual}}
@@ -150,12 +185,18 @@
                                 {{number_format($k->pcs,0)}} / ({{number_format($k->pcs - $k->pcs_past,0)}})
                             </td> --}}
                             <!-- mencari ikat  1 ikat = 1kg  -->
-                            <td align="center" class="kg / today - yesterday {{ ($k->kg - ($k->pcs/180))
-                                - ($k->kg_past - ($k->pcs_past/180)) < -2.5 ? 'bg-danger text-white' : '' }} ">
+                            <td align="center" class="kg telur">
 
-                                {{number_format($k->kg - ($k->pcs/180),2)}} / ({{number_format($k->pcs -
-                                $k->pcs_past,0)}}) / ({{number_format(($k->kg - ($k->pcs/180))
-                                - ($k->kg_past - ($k->pcs_past/180)),2)}})
+                                {{number_format($k->kg - ($k->pcs/180),2)}}
+                            </td>
+                            <td align="center"
+                                class="butir {{ $k->pcs - $k->pcs_past  < 0 ? 'bg-danger text-white' : '' }} ">
+                                {{number_format($k->pcs - $k->pcs_past,0)}}
+                            </td>
+                            <td align="center" class="kg / today - yesterday {{ ($k->kg - ($k->pcs/180))
+                                - ($k->kg_past - ($k->pcs_past/180)) <  0 ? 'bg-danger text-white' : '' }} ">
+
+                                {{number_format(($k->kg - ($k->pcs/180)) - ($k->kg_past - ($k->pcs_past/180)),2)}}
                             </td>
                             {{-- <td align="center">{{number_format(($k->kg - ($k->pcs/180)) * 1000,2)}}</td> --}}
 
@@ -166,7 +207,7 @@
                             </td>
                             <td align="center" class="hd perday (%)">
                                 {{-- {{$k->pcs}} --}}
-                                {{number_format(($k->pcs/($k->stok_awal- $k->pop_kurang)) * 100,0)}} /
+                                {{number_format(($k->pcs/($k->stok_awal- $k->pop_kurang)) * 100,0)}} / {{$k->p_hd}} /
                                 {{number_format(($k->pcs/$k->stok_awal) * 100,0)}}
                             </td>
 
@@ -252,19 +293,24 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th class="dhead" colspan="4">Total</th>
+                            <th class="dhead" colspan="2">Total</th>
+                            <th class="dhead">{{number_format($ayam_awal,0)}}/{{number_format($ayam_akhir,0)}}
+                                ({{number_format(($ayam_akhir/$ayam_awal) * 100,0)}} %)</th>
+                            <th class="dhead">{{$mati}} / {{$jual}}</th>
                             <th class="dhead">{{number_format($kg,2)}}</th>
-                            <th class="dhead">{{$gr_butir}}</th>
+                            <th class="dhead">{{number_format($butir,2)}}</th>
+                            <th class="dhead">{{number_format($kg_today,2)}}</th>
+                            <th class="dhead">{{$gr_butir/4}}</th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
                             <th class="dhead">{{number_format($pakan,2)}}</th>
                             <th class="dhead"></th>
+                            <th class="dhead">{{number_format($pakan_kuml,2)}}</th>
+                            <th class="dhead">{{number_format($telur_kuml,2)}}</th>
                             <th class="dhead"></th>
-                            <th class="dhead"></th>
-                            <th class="dhead"></th>
-                            <th class="dhead"></th>
-                            <th class="dhead"></th>
+                            <th class="dhead">{{number_format($obat_kuml,0)}}</th>
+                            <th class="dhead">{{number_format($vaksin_kuml,0)}}</th>
                         </tr>
                     </tfoot>
 
