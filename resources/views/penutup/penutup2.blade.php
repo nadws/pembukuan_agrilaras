@@ -30,6 +30,10 @@
 
                     <a data-bs-toggle="modal" data-bs-target="#history" href="#"
                         class="btn btn-primary btn-sm float-end me-2 history"><i class="fas fa-history"></i> History</a>
+
+                    <a data-bs-toggle="modal" data-bs-target="#akun" href="#"
+                        class="btn btn-primary btn-sm float-end me-2 list_akun"><i class="fas fa-clipboard-list"></i>
+                        Akun</a>
                 </div>
                 {{-- <div class="col-lg-12">
                     <div class="alert alert-danger">
@@ -418,6 +422,14 @@
                 <div id="load-history"></div>
             </x-theme.modal>
         </form>
+
+        <form action="{{ route('penutup.edit_akun')}}" method="post">
+            @csrf
+            <x-theme.modal title="Akun" size="modal-lg" btnSave="" idModal="akun">
+                <div id="load-akun"></div>
+            </x-theme.modal>
+
+        </form>
         {{-- end history --}}
     </x-slot>
     @section('scripts')
@@ -435,6 +447,23 @@
                     url: "{{ route('penutup.history') }}",
                     success: function(r) {
                         $("#load-history").html(r);
+                    }
+                });
+            });
+            $(document).on('click', '.list_akun', function() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('penutup.akun') }}",
+                    success: function(r) {
+                        $("#load-akun").html(r);
+                        $('#tableScroll').DataTable({
+                            "searching": true,
+                            scrollY: '400px',
+                            scrollX: true,
+                            scrollCollapse: true,
+                            "autoWidth": true,
+                            "paging": false,
+                        });
                     }
                 });
             });
@@ -470,8 +499,40 @@
                 });
                 var debit = $(".total_all").text(totalRupiah);      
             });
+            
         });
     </script>
+    <!-- Tambahkan kode JavaScript di bawah ini -->
+    <script>
+        // Variabel untuk menyimpan status radio button pada setiap baris
+    const rowStatus = {};
+  
+    // Fungsi untuk mengatur pilihan radio pada baris yang berbeda
+    function handleRadioClick(clickedRadio) {
+      const row = clickedRadio.closest("tr");
+      const allRadiosInRow = row.querySelectorAll("input[name='iktisar[]']");
+      allRadiosInRow.forEach(radio => {
+        if (radio !== clickedRadio) {
+          radio.checked = false;
+        }
+      });
+  
+      // Simpan status radio button pada baris saat ini
+      rowStatus[row.rowIndex] = clickedRadio.checked;
+    }
+  
+    // Fungsi untuk memulai status radio button pada setiap baris saat halaman dimuat
+    window.onload = function () {
+      const allRadios = document.querySelectorAll("input[name='iktisar[]']");
+      allRadios.forEach(radio => {
+        const row = radio.closest("tr");
+        rowStatus[row.rowIndex] = radio.checked;
+      });
+    }
+    </script>
+
+
+
     @endsection
 
 </x-theme.app>

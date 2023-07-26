@@ -243,4 +243,30 @@ class PenutupController extends Controller
         ];
         return view('penutup.history', $data);
     }
+
+    public function akun(Request $r)
+    {
+        $data = [
+            'akun' => DB::select("SELECT * FROM akun as a where a.id_klasifikasi in('2','4')")
+        ];
+        return view('penutup.akun', $data);
+    }
+
+    public function edit_akun(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+            if (empty($r->masuk[$x])) {
+                $data = [
+                    'iktisar' => 'T'
+                ];
+            } else {
+                $data = [
+                    'iktisar' => $r->masuk[$x]
+                ];
+            }
+
+            DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
+        }
+        return redirect()->route('penutup.index')->with('sukses', 'Berhasil input akun');
+    }
 }

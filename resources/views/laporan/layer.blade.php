@@ -67,7 +67,7 @@
                             <th class="dhead">kg<br>
 
                             </th>
-                            <th class="dhead">butir<br>
+                            <th class="dhead">selisi butir<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                     style="cursor: pointer"></i>
                             </th>
@@ -298,7 +298,7 @@
                                 ({{number_format(($ayam_akhir/$ayam_awal) * 100,0)}} %)</th>
                             <th class="dhead">{{$mati}} / {{$jual}}</th>
                             <th class="dhead">{{number_format($kg,2)}}</th>
-                            <th class="dhead">{{number_format($butir,2)}}</th>
+                            <th class="dhead">{{number_format($butir,0)}}</th>
                             <th class="dhead">{{number_format($kg_today,2)}}</th>
                             <th class="dhead">{{$gr_butir/4}}</th>
                             <th class="dhead"></th>
