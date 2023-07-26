@@ -33,7 +33,9 @@
 
                     <a data-bs-toggle="modal" data-bs-target="#akun" href="#"
                         class="btn btn-primary btn-sm float-end me-2 list_akun"><i class="fas fa-clipboard-list"></i>
-                        Akun</a>
+                        Akun
+                        <span class="badge bg-danger">{{$total->total}}</span>
+                    </a>
                 </div>
                 {{-- <div class="col-lg-12">
                     <div class="alert alert-danger">
@@ -467,6 +469,26 @@
                     }
                 });
             });
+            
+                $(document).on('click', '.iktisar1', function() {
+                    var urutan = $(this).attr('urutan');
+                    if ($(this).is(":checked")) {
+                        $('.hasil_iktisar'+urutan ).val('Y')
+                        $('.iktisarB' + urutan).prop("checked", false);
+                    } else {
+                        $('.hasil_iktisar'+urutan).val('T')
+                    }
+                });
+                $(document).on('click', '.iktisar2', function() {
+                    var urutan = $(this).attr('urutanB');
+                    if ($(this).is(":checked")) {
+                        $('.hasil_iktisar'+urutan ).val('H')
+                        $('.iktisarA' + urutan).prop("checked", false);
+                    } else {
+                        $('.hasil_iktisar'+urutan).val('T')
+                    }
+                });
+            
 
         $(document).ready(function () {
             $(document).on("keyup", ".prive", function () {
@@ -499,37 +521,15 @@
                 });
                 var debit = $(".total_all").text(totalRupiah);      
             });
+
+            
             
         });
     </script>
     <!-- Tambahkan kode JavaScript di bawah ini -->
-    <script>
-        // Variabel untuk menyimpan status radio button pada setiap baris
-    const rowStatus = {};
-  
-    // Fungsi untuk mengatur pilihan radio pada baris yang berbeda
-    function handleRadioClick(clickedRadio) {
-      const row = clickedRadio.closest("tr");
-      const allRadiosInRow = row.querySelectorAll("input[name='iktisar[]']");
-      allRadiosInRow.forEach(radio => {
-        if (radio !== clickedRadio) {
-          radio.checked = false;
-        }
-      });
-  
-      // Simpan status radio button pada baris saat ini
-      rowStatus[row.rowIndex] = clickedRadio.checked;
-    }
-  
-    // Fungsi untuk memulai status radio button pada setiap baris saat halaman dimuat
-    window.onload = function () {
-      const allRadios = document.querySelectorAll("input[name='iktisar[]']");
-      allRadios.forEach(radio => {
-        const row = radio.closest("tr");
-        rowStatus[row.rowIndex] = radio.checked;
-      });
-    }
-    </script>
+    <!-- Tambahkan kode JavaScript di bawah ini -->
+
+
 
 
 

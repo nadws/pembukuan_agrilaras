@@ -47,6 +47,7 @@ class PenutupController extends Controller
             'penutup' => $tgl->penutup,
             'tgl1Tutup' => $tgl1Tutup,
             'tgl2Tutup' => $tgl2Tutup,
+            'total' => DB::selectOne("SELECT count(a.id_akun) as total FROM akun as a where  a.iktisar='T'")
         ];
         return view('penutup.penutup2', $data);
     }
@@ -247,7 +248,7 @@ class PenutupController extends Controller
     public function akun(Request $r)
     {
         $data = [
-            'akun' => DB::select("SELECT * FROM akun as a where a.id_klasifikasi in('2','4')")
+            'akun' => DB::select("SELECT * FROM akun as a ")
         ];
         return view('penutup.akun', $data);
     }
@@ -255,15 +256,11 @@ class PenutupController extends Controller
     public function edit_akun(Request $r)
     {
         for ($x = 0; $x < count($r->id_akun); $x++) {
-            if (empty($r->masuk[$x])) {
-                $data = [
-                    'iktisar' => 'T'
-                ];
-            } else {
-                $data = [
-                    'iktisar' => $r->masuk[$x]
-                ];
-            }
+
+            $data = [
+                'iktisar' => $r->iktisar[$x]
+            ];
+
 
             DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
         }
