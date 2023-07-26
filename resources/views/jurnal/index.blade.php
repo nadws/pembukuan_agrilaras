@@ -38,6 +38,7 @@
                         <th width="5">#</th>
                         <th style="white-space: nowrap;">No Urut Jurnal</th>
                         <th style="white-space: nowrap;">No Urut Akun</th>
+                        <th style="white-space: nowrap;">No Urutan Pengeluaran</th>
                         <th>Tanggal</th>
                         <th>Akun</th>
                         <th>Sub Akun</th>
@@ -53,6 +54,7 @@
                         <td>{{ $no + 1 }}</td>
                         <td>{{ $a->no_nota }}</td>
                         <td>{{ $a->no_urut }}</td>
+                        <td>{{ $a->no_dokumen }}</td>
                         <td class="nowrap">{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
                         <td><a
                                 href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{

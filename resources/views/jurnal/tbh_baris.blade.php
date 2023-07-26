@@ -2,14 +2,13 @@
     <td style="vertical-align: top;">
         {{-- <button type="button" data-bs-toggle="collapse" href=".join{{$count}}" class="btn rounded-pill "
             count="1"><i class="fas fa-angle-down"></i>
-        </button> --}}  
+        </button> --}}
     </td>
     <td style="vertical-align: top;">
-        <select name="id_akun[]" id="" class="select pilih_akun pilih_akun{{ $count }}"
-            count="{{ $count }}" required>
+        <select name="id_akun[]" id="" class="select pilih_akun pilih_akun{{ $count }}" count="{{ $count }}" required>
             <option value="">Pilih</option>
             @foreach ($akun as $a)
-                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
             @endforeach
         </select>
         <div class="">
@@ -30,13 +29,11 @@
     </td>
     <td style="vertical-align: top;">
         <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="{{ $count }}">
-        <input type="hidden" class="form-control debit_biasa debit_biasa{{ $count }}" value="0"
-            name="debit[]">
+        <input type="hidden" class="form-control debit_biasa debit_biasa{{ $count }}" value="0" name="debit[]">
     </td>
     <td style="vertical-align: top;">
         <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="{{ $count }}">
-        <input type="hidden" class="form-control kredit_biasa kredit_biasa{{ $count }}" value="0"
-            name="kredit[]">
+        <input type="hidden" class="form-control kredit_biasa kredit_biasa{{ $count }}" value="0" name="kredit[]">
     </td>
     {{-- <td style="vertical-align: top;">
         <p class="saldo_akun{{$count}} text-end" style="font-size: 12px"></p>

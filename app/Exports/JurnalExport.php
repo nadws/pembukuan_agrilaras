@@ -34,11 +34,20 @@ class JurnalExport  implements FromView, WithEvents
     {
 
         $idp = $this->id_proyek == 0 ? '' : "and a.id_proyek = $this->id_proyek";
-
-        $jurnal =  DB::select("SELECT a.admin, a.no_urut, b.kode_akun,  a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post FROM jurnal as a 
-            left join akun as b on b.id_akun = a.id_akun
-            left join tb_post_center as c on c.id_post_center = a.id_post_center
-            where a.id_buku = '$this->id_buku' and a.tgl between '$this->tgl1' and '$this->tgl2' $idp order by a.no_urut ASC");
+        $jurnal =  DB::select("SELECT a.no_dokumen, a.admin, a.no_urut, b.kode_akun,  a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post , d.nm_akun as nm_akun_vs
+        FROM jurnal as a 
+        left join akun as b on b.id_akun = a.id_akun
+        left join tb_post_center as c on c.id_post_center = a.id_post_center
+        
+        left join (
+        SELECT d.no_nota, e.nm_akun
+            FROM jurnal as d 
+            left join akun as e on e.id_akun = d.id_akun
+            where d.kredit != '0'
+            group by d.no_nota
+        ) as d on d.no_nota = a.no_nota
+        where a.id_buku = '$this->id_buku' and a.tgl between '$this->tgl1' and '$this->tgl2' and a.debit != '0'
+        order by a.no_dokumen ASC;");
 
 
         return view('exports.jurnal', [
@@ -53,11 +62,11 @@ class JurnalExport  implements FromView, WithEvents
         return [
             AfterSheet::class    => function (AfterSheet $event) {
                 $totalrow = $this->totalrow + 1;
-                $cellRange = 'A1:L1';
+                $cellRange = 'A1:M1';
                 // All headers
                 $event->sheet->getDelegate()->getStyle($cellRange)->getFont()->setSize(12);
                 $event->sheet->setAutoFilter($cellRange);
-                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                $event->sheet->getStyle('A1:M1')->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -70,7 +79,7 @@ class JurnalExport  implements FromView, WithEvents
                         'bold' => true
                     ]
                 ]);
-                $event->sheet->getStyle('A2:L' . $totalrow)->applyFromArray([
+                $event->sheet->getStyle('A2:M' . $totalrow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

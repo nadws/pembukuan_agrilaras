@@ -41,7 +41,7 @@
                     <select name="id_proyek" id="select2">
                         <option value="">Pilih</option>
                         @foreach ($proyek as $p)
-                            <option value="{{ $p->id_proyek }}">{{ $p->nm_proyek }}</option>
+                        <option value="{{ $p->id_proyek }}">{{ $p->nm_proyek }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -50,7 +50,7 @@
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -108,8 +108,8 @@
 
 
     @section('scripts')
-        <script>
-            $(".select2suplier").select2()
+    <script>
+        $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
 
@@ -319,9 +319,9 @@
 
                 aksiBtn("form");
             });
-        </script>
-        <script>
-            $(document).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -361,6 +361,6 @@
                     });
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

@@ -63,13 +63,13 @@ class JurnalController extends Controller
         $id_user = auth()->user()->id;
 
         if ($id_proyek == '0') {
-            $jurnal =  DB::select("SELECT a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
+            $jurnal =  DB::select("SELECT a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
             where a.id_buku not in('1','4') and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
         } else {
-            $jurnal =  DB::select("SELECT a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
+            $jurnal =  DB::select("SELECT a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
@@ -166,6 +166,7 @@ class JurnalController extends Controller
 
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
+
             $data = [
                 'tgl' => $tgl,
                 'no_nota' => 'JU-' . $nota_t,
@@ -213,7 +214,7 @@ class JurnalController extends Controller
 
         $idp = $id_proyek == 0 ? '' : "and a.id_proyek = '$id_proyek'";
 
-        $total = DB::selectOne("SELECT count(a.id_jurnal) as jumlah FROM jurnal as a where a.id_buku='$id_buku' and a.tgl between '$tgl1' and '$tgl2' $idp");
+        $total = DB::selectOne("SELECT count(a.id_jurnal) as jumlah FROM jurnal as a where a.id_buku='$id_buku' and a.tgl between '$tgl1' and '$tgl2' and a.debit != '0'");
 
         $totalrow = $total->jumlah;
 
