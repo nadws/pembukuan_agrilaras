@@ -65,7 +65,7 @@
 
                             {{-- Data Telur --}}
                             <th class="dhead">kg<br>
-                                <i class="fas text-white fa-question-circle rumus" style="cursor: pointer"></i>
+
                             </th>
                             <th class="dhead">butir<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="butir"
