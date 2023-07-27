@@ -75,12 +75,12 @@
                 @endphp
                 @foreach ($uang as $u)
                 @php
-                $t_uang += $u->debit;
+                $t_uang += $u->debit - $u->kredit;
                 @endphp
 
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} </td>
-                    <td align="right">{{number_format($u->debit,0)}} </td>
+                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
                 <tr>
