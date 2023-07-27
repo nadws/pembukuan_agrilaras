@@ -80,7 +80,8 @@ class ProfitController extends Controller
             ->where('a.kategori_id', $r->id_kategori)
             ->orderBy('a.urutan', 'ASC')
             ->get();
-        $akun = DB::table('akun')->get();
+        $akun = DB::select("SELECT * FROM akun as a 
+        where a.id_akun not in(SELECT b.id_akun FROM profit_akun as b)");
         $data = [
             'akunProfit' => $akunProfit,
             'akun' => $akun

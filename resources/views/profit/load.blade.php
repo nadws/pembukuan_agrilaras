@@ -6,26 +6,26 @@
 </style>
 <section class="row">
     @php
-        $totalPendapatan = 0;
-        $totalBiaya = 0;
-        $totalLaba = 0;
+    $totalPendapatan = 0;
+    $totalBiaya = 0;
+    $totalLaba = 0;
 
-        function getAkun($id_kategori,$tgl1, $tgl2, $jenis)
-        {
-            $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
+    function getAkun($id_kategori,$tgl1, $tgl2, $jenis)
+    {
+    $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
 
-            return DB::select("SELECT c.nm_akun, b.kredit, b.debit
-            FROM profit_akun as a 
-            left join (
-            SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-                FROM jurnal as b
-                WHERE b.id_buku not in('1','5') and $jenis != 0 and b.penutup = 'T' and b.tgl between '$tgl1' and '$tgl2'
-                group by b.id_akun
-            ) as b on b.id_akun = a.id_akun
-            left join akun as c on c.id_akun = a.id_akun
-            where a.kategori_id = '$id_kategori';");
-        }
-        
+    return DB::select("SELECT c.nm_akun, b.kredit, b.debit
+    FROM profit_akun as a
+    left join (
+    SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
+    FROM jurnal as b
+    WHERE b.id_buku not in('1','5') and $jenis != 0 and b.penutup = 'T' and b.tgl between '$tgl1' and '$tgl2'
+    group by b.id_akun
+    ) as b on b.id_akun = a.id_akun
+    left join akun as c on c.id_akun = a.id_akun
+    where a.kategori_id = '$id_kategori';");
+    }
+
     @endphp
     <table class="table table-bordered">
         <tr>
@@ -34,20 +34,19 @@
             <th colspan="2" class="dhead" style="text-align: right">Rupiah</th>
         </tr>
         @foreach ($subKategori1 as $d)
-            <tr>
-                <th colspan="2"><a href="#" class="klikModal"
-                        id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
-                </th>
-            </tr>
-            @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
-            @php
-                $totalPendapatan += $a->kredit;
-            @endphp
-                <tr>
-                    <td colspan="2"  style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
-                    <td style="text-align: right">Rp. {{ number_format($a->kredit,2) }}</td>
-                </tr>
-            @endforeach
+        <tr>
+            <th colspan="2"><a href="#" class="klikModal" id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
+            </th>
+        </tr>
+        @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
+        @php
+        $totalPendapatan += $a->kredit;
+        @endphp
+        <tr>
+            <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->kredit,2) }}</td>
+        </tr>
+        @endforeach
         @endforeach
 
         <tr>
@@ -65,20 +64,19 @@
             <th colspan="2" class="dhead" style="text-align: right">Rupiah</th>
         </tr>
         @foreach ($subKategori2 as $d)
-            <tr>
-                <th colspan="2"><a href="#" class="klikModal"
-                        id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
-                </th>
-            </tr>
-            @foreach (getAkun($d->id, $tgl1, $tgl2, 2) as $a)
-            @php
-                $totalBiaya += $a->debit;
-            @endphp
-                <tr>
-                    <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
-                    <td style="text-align: right">Rp. {{ number_format($a->debit,2) }}</td>
-                </tr>
-            @endforeach
+        <tr>
+            <th colspan="2"><a href="#" class="klikModal" id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
+            </th>
+        </tr>
+        @foreach (getAkun($d->id, $tgl1, $tgl2, 2) as $a)
+        @php
+        $totalBiaya += $a->debit;
+        @endphp
+        <tr>
+            <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->debit,2) }}</td>
+        </tr>
+        @endforeach
         @endforeach
 
         <tr>
