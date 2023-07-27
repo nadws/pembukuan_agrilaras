@@ -1,7 +1,7 @@
 @props([
 'title' => '',
 ])
-<x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end" teks="" />
+<x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end" teks="View" />
 <form action="" method="get">
     <x-theme.modal title="Filter Tanggal" idModal="view">
         <div class="row">
