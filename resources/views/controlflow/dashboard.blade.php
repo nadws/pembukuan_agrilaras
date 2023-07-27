@@ -159,7 +159,7 @@
 
 
 
-    <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunControl">
+    <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunibu">
         <div id="loadAkunControl"></div>
     </x-theme.modal>
 
