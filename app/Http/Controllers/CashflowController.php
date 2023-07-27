@@ -55,7 +55,7 @@ class CashflowController extends Controller
             left join (
             SELECT b.id_akun , sum(b.debit) as debit , sum(b.kredit) as kredit
             FROM jurnal as b
-            where b.tgl BETWEEN '2020-01-01' and '$tgl_back' and  b.id_buku im('6','1')
+            where b.tgl BETWEEN '2020-01-01' and '$tgl_back' and  b.id_buku in('6','1')
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in(SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '1');"),
 
