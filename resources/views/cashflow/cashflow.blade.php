@@ -75,7 +75,7 @@
                 @endphp
                 @foreach ($uang as $u)
                 @php
-                $t_uang += $u->debit;
+                $t_uang += $u->debit - $u->kredit;
                 @endphp
 
                 <tr>
