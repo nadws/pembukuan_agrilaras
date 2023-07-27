@@ -45,6 +45,8 @@ class CashflowController extends Controller
         $tgl2 =  $r->tgl2;
 
 
+
+
         $tgl2_pref = date('Y-m-15', strtotime($tgl2));
         $tgl_back = date('Y-m-t', strtotime('previous month', strtotime($tgl2_pref)));
 
@@ -99,12 +101,17 @@ class CashflowController extends Controller
             'biaya' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
-            SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
-            FROM jurnal as b
-            where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '2'
-            group by b.id_akun
+             SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit, c.akunvs
+             FROM jurnal as b
+             left join (
+                 SELECT c.no_nota, c.id_akun as akunvs
+                FROM jurnal as c 
+                WHERE c.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
+             ) as c on c.no_nota = b.no_nota
+             where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '2' and c.akunvs is not null
+             group by b.id_akun
             ) as b on b.id_akun = a.id_akun
-            where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '5') "),
+            where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '5'); "),
 
             'uangbiaya' => DB::select("SELECT ak.nm_akun, a.debit , a.kredit
             FROM akun as ak
