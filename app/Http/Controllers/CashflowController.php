@@ -91,6 +91,11 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '4');"),
 
+            'kerugian' => DB::selectOne("SELECT a.tgl, a.kd_gabungan, a.no_nota, sum(a.debit) AS debit, sum(a.kredit) AS kredit
+            FROM tb_jurnal AS a
+            LEFT JOIN tb_akun AS b ON b.id_akun = a.id_akun
+            WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.id_akun = 36"),
+
             'biaya' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (

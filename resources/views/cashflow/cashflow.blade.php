@@ -75,12 +75,12 @@
                 @endphp
                 @foreach ($uang as $u)
                 @php
-                $t_uang += $u->debit - $u->kredit;
+                $t_uang += $u->debit;
                 @endphp
 
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} </td>
-                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
+                    <td align="right">{{number_format($u->debit,0)}} </td>
                 </tr>
                 @endforeach
                 <tr>
@@ -89,7 +89,7 @@
                 </tr>
                 @foreach ($piutang2 as $u)
                 @php
-                $t_piutang += $u->debit - $u->kredit;
+                $t_piutang += $u->debit - $u->kredit ;
                 @endphp
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} ({{date('F Y',strtotime($tgl2))}})</td>
@@ -97,11 +97,16 @@
                 </tr>
                 @endforeach
                 <tr>
+                    <td>Biaya Kerugian Piutang</td>
+                    <td align="right">{{number_format($kerugian->debit,0)}}</td>
+                </tr>
+                <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
                 </tr>
                 <tr>
                     <td class="fw-bold">Grand Total</td>
-                    <td class="fw-bold" align="right">Rp {{number_format($t_uang + $t_piutang,0)}}</td>
+                    <td class="fw-bold" align="right">Rp {{number_format($t_uang + $t_piutang + $kerugian->debit,0)}}
+                    </td>
                 </tr>
             </thead>
         </table>
