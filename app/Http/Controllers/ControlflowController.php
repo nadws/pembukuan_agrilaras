@@ -134,7 +134,7 @@ class ControlflowController extends Controller
 
 
         $data = [
-            'akun' => DB::Select("SELECT * FROM akun as a  "),
+            'akun' => DB::Select("SELECT * FROM akun as a where not in (SELECT b.id_akun FROM akuncontrol as b )  "),
             'akun2' => DB::select("SELECT a.*, b.nm_akun, c.debit, c.kredit, d.jenis
             FROM akuncontrol as a 
             left join akun as b on b.id_akun = a.id_akun
