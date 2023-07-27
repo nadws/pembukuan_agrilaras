@@ -132,7 +132,7 @@
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
         </button>
-        <a href="{{route('jurnal')}}" class="float-end btn btn-outline-primary me-2">Batal</a>
+        <a href="{{route('penjualan_agrilaras')}}" class="float-end btn btn-outline-primary me-2">Batal</a>
         </form>
     </x-slot>
 

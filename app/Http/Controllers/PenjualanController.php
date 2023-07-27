@@ -188,8 +188,8 @@ class PenjualanController extends Controller
             ];
             DB::table('stok_telur')->insert($data);
         }
-        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '517')->first();
-        $akun = DB::table('akun')->where('id_akun', '517')->first();
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '26')->first();
+        $akun = DB::table('akun')->where('id_akun', '26')->first();
 
         $customer = DB::table('customer')->where('id_customer', $r->customer)->first();
 
@@ -197,7 +197,7 @@ class PenjualanController extends Controller
         $data = [
             'tgl' => $r->tgl,
             'no_nota' => 'T' . $nota_t,
-            'id_akun' => '517',
+            'id_akun' => '26',
             'id_buku' => '6',
             'ket' => 'Penjualan Telur ' . $customer->nm_customer . $urutan_cus,
             'debit' => 0,
