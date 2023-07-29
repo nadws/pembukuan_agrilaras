@@ -161,14 +161,14 @@ class Produk_telurController extends Controller
         DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '2']);
 
         for ($x = 0; $x < count($r->no_nota); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '517')->first();
-            $akun = DB::table('akun')->where('id_akun', '517')->first();
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '26')->first();
+            $akun = DB::table('akun')->where('id_akun', '26')->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
             $data = [
                 'tgl' => $r->tgl[$x],
                 'no_nota' => $r->no_nota[$x],
-                'id_akun' => '517',
+                'id_akun' => '26',
                 'id_buku' => '6',
                 'ket' => 'Penjualan telur ' . $r->no_nota[$x],
                 'debit' => '0',

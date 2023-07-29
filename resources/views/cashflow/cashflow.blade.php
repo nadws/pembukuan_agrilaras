@@ -84,6 +84,10 @@
                 </tr>
                 @endforeach
                 <tr>
+                    <th>Total</th>
+                    <th style="text-align: right">{{number_format($t_uang,0)}}</th>
+                </tr>
+                <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control" kategori='4'>Piutang Bulan Ini</a></td>
                 </tr>
@@ -96,6 +100,8 @@
                     <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
+
+
                 <tr>
                     <td>Biaya Kerugian Piutang</td>
                     <td align="right">{{number_format($kerugian->debit,0)}}</td>

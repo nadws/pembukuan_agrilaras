@@ -24,4 +24,22 @@ class Penjualan_martadah_alpaController extends Controller
         ];
         return view('penjualan_martadh.index', $data);
     }
+
+    public function detail_penjualan_mtd(Request $r)
+    {
+        $penjualan_mtd = DB::select("SELECT a.*, b.nm_telur FROM invoice_mtd as a 
+        left join telur_produk as b on b.id_produk_telur = a.id_produk
+        where a.no_nota = '$r->no_nota';");
+
+        $penjualan_mtd_detail = DB::selectOne("SELECT a.*, b.nm_telur FROM invoice_mtd as a 
+        left join telur_produk as b on b.id_produk_telur = a.id_produk
+        where a.no_nota = '$r->no_nota';");
+
+        $data = [
+            'invoice' => $penjualan_mtd,
+            'invoice2' => $penjualan_mtd_detail,
+        ];
+
+        return view('penjualan_martadh.detail', $data);
+    }
 }

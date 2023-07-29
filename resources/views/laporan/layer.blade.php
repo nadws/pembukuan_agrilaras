@@ -40,7 +40,7 @@
                     <thead style="border: 1px solid white">
                         <tr>
                             <th class="dhead" rowspan="2">Kdg</th>
-                            <th class="dhead">Umur <br> 90 mgg</th>
+                            <th class="dhead">Umur <br> 85 mgg</th>
                             <th class="dhead" colspan="2">Populasi</th>
                             <th class="dhead" colspan="7">Data Telur</th>
                             <th class="dhead" colspan="2">Pakan</th>
@@ -153,8 +153,8 @@
                         <tr>
                             <td align="center" class="kandang">{{$k->nm_kandang}}</td>
                             <!-- Umur -->
-                            <td align="center" class="mgg {{$k->mgg >= '90' ? 'bg-danger text-white' : ''}}">
-                                {{$k->mgg}} ({{number_format(($k->mgg / 90) * 100,0)}}%)
+                            <td align="center" class="mgg {{$k->mgg >= '85' ? 'bg-danger text-white' : ''}}">
+                                {{$k->mgg}} ({{number_format(($k->mgg / 85) * 100,0)}}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>

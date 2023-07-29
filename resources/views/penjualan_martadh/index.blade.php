@@ -20,7 +20,7 @@
                     <td><input type="text" id="pencarian" class="form-control float-end"></td>
                 </table>
             </div>
-            <table class="table table-hover" id="nanda">
+            <table class="table table-hover" id="tablealdi" width="100%">
                 <thead>
                     <tr>
                         <th width="5">#</th>
@@ -59,18 +59,6 @@
                                     @if ($i->cek == 'Y')
 
                                     @else
-                                    <li>
-                                        <a class="dropdown-item text-primary edit_akun"
-                                            href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
-                                                class="me-2 fas fa-pen"></i>Edit
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger delete_nota" no_nota="{{$i->no_nota}}"
-                                            href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                class="me-2 fas fa-trash"></i>Delete
-                                        </a>
-                                    </li>
                                     @endif
 
                                     <li><a class="dropdown-item  text-info detail_nota" href="#" href="#"
@@ -126,12 +114,12 @@
     @section('scripts')
     <script>
         $(document).ready(function() {
-            pencarian('pencarian', 'nanda')
+            pencarian('pencarian', 'tablealdi')
             $(document).on("click", ".detail_nota", function() {
                 var no_nota = $(this).attr('no_nota');
                 $.ajax({
                     type: "get",
-                    url: "/detail_invoice_telur?no_nota=" + no_nota,
+                    url: "/detail_penjualan_mtd?no_nota=" + no_nota,
                     success: function(data) {
                         $("#detail_invoice").html(data);
                     }
