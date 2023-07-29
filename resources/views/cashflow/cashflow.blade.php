@@ -107,6 +107,10 @@
                     <td align="right">{{number_format($kerugian->debit,0)}}</td>
                 </tr>
                 <tr>
+                    <th>Total</th>
+                    <th style="text-align: right">{{number_format($t_piutang + $kerugian->debit,0)}}</th>
+                </tr>
+                <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
                 </tr>
                 <tr>
