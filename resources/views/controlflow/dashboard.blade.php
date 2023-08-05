@@ -365,8 +365,6 @@
         });
     </script>
     <script>
-        load_cash_ibu()
-
         function toast(pesan) {
             Toastify({
                 text: pesan,
@@ -380,6 +378,8 @@
             }).showToast();
         }
 
+        load_cash_ibu()
+
         function load_cash_ibu(tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
             $.ajax({
                 type: "GET",
@@ -390,6 +390,7 @@
                 },
                 success: function(r) {
                     $("#loadcashflow_ibu").html(r);
+                    
 
                 }
             });
@@ -845,11 +846,14 @@
                 url: "/akunuangditarik",
                 success: function(r) {
                     $("#loadAkunditarik").html(r)
-                    $("#table3").DataTable({
-                        "lengthChange": true,
-                        "autoWidth": false,
-                        "stateSave": true,
-                    });
+                    $('#tableScroll').DataTable({
+                            "searching": true,
+                            scrollY: '400px',
+                            scrollX: true,
+                            scrollCollapse: true,
+                            "autoWidth": true,
+                            "paging": false,
+                        });
                 }
             });
         });

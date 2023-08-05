@@ -100,8 +100,6 @@
                     <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
-
-
                 <tr>
                     <td>Biaya Kerugian Piutang</td>
                     <td align="right">{{number_format($kerugian->debit,0)}}</td>

@@ -7,13 +7,13 @@
             <div class="col-lg-6">
 
                 @if (!empty($create))
-                    <x-theme.button modal="T" href="{{ route('pembelian_bk.add') }}" icon="fa-plus"
-                        addClass="float-end" teks="Buat Baru" />
+                <x-theme.button modal="T" href="{{ route('pembelian_bk.add') }}" icon="fa-plus" addClass="float-end"
+                    teks="Buat Baru" />
                 @endif
 
                 @if (!empty($export))
-                    <x-theme.button modal="T" href="/export_bk?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}"
-                        icon="fa-file-excel" addClass="float-end float-end btn btn-success me-2" teks="Export" />
+                <x-theme.button modal="T" href="/export_bk?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}" icon="fa-file-excel"
+                    addClass="float-end float-end btn btn-success me-2" teks="Export" />
                 @endif
 
                 <x-theme.btn_filter title="Filter Pembelian Bk" />
@@ -26,9 +26,9 @@
         <form action="{{ route('approve_invoice_bk') }}" method="post">
             @csrf
             @if (!empty($approve))
-                <button class="float-end btn btn-primary btn-sm"><i class="fas fa-check"></i> Approve</button>
-                <br>
-                <br>
+            <button class="float-end btn btn-primary btn-sm"><i class="fas fa-check"></i> Approve</button>
+            <br>
+            <br>
             @endif
             <section class="row">
                 <div class="col-lg-8"></div>
@@ -52,106 +52,104 @@
                             <th class="dhead" style="text-align: center">Status</th>
                             <th class="dhead" style="text-align: center">Grading</th>
                             @if (!empty($approve))
-                                <th class="dhead" style="text-align: center">Approve <br> <input type="checkbox"
-                                        name="" id="checkAll" id="">
-                                </th>
+                            <th class="dhead" style="text-align: center">Approve <br> <input type="checkbox" name=""
+                                    id="checkAll" id="">
+                            </th>
                             @endif
                             <th class="dhead">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($pembelian as $no => $p)
-                            <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ tanggal($p->tgl) }}</td>
-                                <td>{{ $p->no_nota }}</td>
-                                <td>{{ ucwords(strtolower($p->nm_suplier)) }}</td>
-                                <td>{{ ucwords(strtolower($p->suplier_akhir)) }}</td>
-                                <td align="right">Rp. {{ number_format($p->total_harga, 0) }}</td>
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>{{ tanggal($p->tgl) }}</td>
+                            <td>{{ $p->no_nota }}</td>
+                            <td>{{ ucwords(strtolower($p->nm_suplier)) }}</td>
+                            <td>{{ ucwords(strtolower($p->suplier_akhir)) }}</td>
+                            <td align="right">Rp. {{ number_format($p->total_harga, 0) }}</td>
 
-                                <td align="center">
-                                    <span
-                                        class="badge {{ $p->lunas == 'D' ? 'bg-warning' : ($p->total_harga + $p->debit - $p->kredit == 0 ? 'bg-success' : 'bg-danger') }}">
-                                        {{ $p->lunas == 'D' ? 'Draft' : ($p->total_harga + $p->debit - $p->kredit == 0 ? 'Paid' : 'Unpaid') }}
+                            <td align="center">
+                                <span
+                                    class="badge {{ $p->lunas == 'D' ? 'bg-warning' : ($p->total_harga + $p->debit - $p->kredit == 0 ? 'bg-success' : 'bg-danger') }}">
+                                    {{ $p->lunas == 'D' ? 'Draft' : ($p->total_harga + $p->debit - $p->kredit == 0 ?
+                                    'Paid' : 'Unpaid') }}
+                                </span>
+                            </td>
+                            <td align="center">
+                                @if (empty($p->nota_grading))
+                                <i class="fas fa-times text-danger"></i>
+                                @else
+                                <a href="#" class="btn btn-sm btn-success grading_nota" no_nota="{{ $p->no_nota }}"
+                                    data-bs-toggle="modal" data-bs-target="#viewgrading"><i class="fas fa-eye"></i></a>
+                                @endif
+
+                            </td>
+                            @if (!empty($approve))
+                            <td style="text-align: center">
+                                @if ($p->approve == 'Y')
+                                <i class="fas fa-check text-success"></i>
+                                <input type="hidden" name="ceknota[]" id="" value="Y">
+                                @else
+                                <input type="checkbox" name="ceknota[]" class="checkbox-item" id=""
+                                    value="{{ $p->no_nota }}">
+                                @endif
+
+                            </td>
+                            @endif
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v text-primary"></i>
                                     </span>
-                                </td>
-                                <td align="center">
-                                    @if (empty($p->nota_grading))
-                                        <i class="fas fa-times text-danger"></i>
-                                    @else
-                                        <a href="#" class="btn btn-sm btn-success grading_nota"
-                                            no_nota="{{ $p->no_nota }}" data-bs-toggle="modal"
-                                            data-bs-target="#viewgrading"><i class="fas fa-eye"></i></a>
-                                    @endif
+                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        @php
+                                        $emptyKondisi = [$edit, $delete, $print, $grading];
+                                        @endphp
+                                        <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
 
-                                </td>
-                                @if (!empty($approve))
-                                    <td style="text-align: center">
                                         @if ($p->approve == 'Y')
-                                            <i class="fas fa-check text-success"></i>
-                                            <input type="hidden" name="ceknota[]" id="" value="Y">
                                         @else
-                                            <input type="checkbox" name="ceknota[]" class="checkbox-item" id=""
-                                                value="{{ $p->no_nota }}">
+                                        @if (!empty($edit))
+                                        <li>
+                                            <a class="dropdown-item text-primary edit_akun"
+                                                href="{{ route('edit_pembelian_bk', ['nota' => $p->no_nota]) }}">
+                                                <i class="me-2 fas fa-pen"></i> Edit
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @if (!empty($delete))
+                                        <li>
+                                            <a class="dropdown-item  text-danger delete_nota"
+                                                no_nota="{{ $p->no_nota }}" href="#" data-bs-toggle="modal"
+                                                data-bs-target="#delete"><i class="me-2 fas fa-trash"></i>Delete
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @endif
+                                        @if (!empty($print))
+                                        <li>
+                                            <a class="dropdown-item  text-info detail_nota" target="_blank"
+                                                href="{{ route('print_bk', ['no_nota' => $p->no_nota]) }}"><i
+                                                    class="me-2 fas fa-print"></i>Print
+                                            </a>
+                                        </li>
                                         @endif
 
-                                    </td>
-                                @endif
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v text-primary"></i>
-                                        </span>
-                                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                            @php
-                                                $emptyKondisi = [$edit, $delete, $print, $grading];
-                                            @endphp
-                                            <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
+                                        @if (!empty($grading))
+                                        <li>
+                                            <a href="#" class="dropdown-item  text-info grading_notatambah"
+                                                no_nota="{{ $p->no_nota }}" data-bs-toggle="modal"
+                                                data-bs-target="#grading"><i
+                                                    class="me-2 fas fa-balance-scale-right"></i>Grading
+                                            </a>
+                                        </li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            </td>
 
-                                            @if ($p->approve == 'Y')
-                                            @else
-                                                @if (!empty($edit))
-                                                    <li>
-                                                        <a class="dropdown-item text-primary edit_akun"
-                                                            href="{{ route('edit_pembelian_bk', ['nota' => $p->no_nota]) }}">
-                                                            <i class="me-2 fas fa-pen"></i> Edit
-                                                        </a>
-                                                    </li>
-                                                @endif
-                                                @if (!empty($delete))
-                                                    <li>
-                                                        <a class="dropdown-item  text-danger delete_nota"
-                                                            no_nota="{{ $p->no_nota }}" href="#"
-                                                            data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                                class="me-2 fas fa-trash"></i>Delete
-                                                        </a>
-                                                    </li>
-                                                @endif
-                                            @endif
-                                            @if (!empty($print))
-                                                <li>
-                                                    <a class="dropdown-item  text-info detail_nota" target="_blank"
-                                                        href="{{ route('print_bk', ['no_nota' => $p->no_nota]) }}"><i
-                                                            class="me-2 fas fa-print"></i>Print
-                                                    </a>
-                                                </li>
-                                            @endif
-
-                                            @if (!empty($grading))
-                                                <li>
-                                                    <a href="#"
-                                                        class="dropdown-item  text-info grading_notatambah"
-                                                        no_nota="{{ $p->no_nota }}" data-bs-toggle="modal"
-                                                        data-bs-target="#grading"><i
-                                                            class="me-2 fas fa-balance-scale-right"></i>Grading
-                                                    </a>
-                                                </li>
-                                            @endif
-                                        </ul>
-                                    </div>
-                                </td>
-
-                            </tr>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
@@ -173,8 +171,7 @@
         </x-theme.modal>
 
         <form action="{{ route('delete_bk') }}" method="get">
-            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -186,8 +183,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger"
-                                data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger">Hapus</button>
                         </div>
                     </div>
@@ -202,8 +198,8 @@
     </x-slot>
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 pencarian('pencarian', 'tableSearch')
 
                 $(document).on('click', '.delete_nota', function() {
@@ -245,6 +241,6 @@
                 });
 
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

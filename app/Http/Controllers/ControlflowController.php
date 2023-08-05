@@ -53,7 +53,7 @@ class ControlflowController extends Controller
             where a.id_akun not in(SELECT b.id_akun FROM akuncontrol as b);"),
             'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun
             FROM akun as a 
-            where a.id_akun not in(SELECT b.id_akun FROM akuncash_ibu as b);")
+            where a.id_akun not in(SELECT b.id_akun FROM akuncash_ibu as b) and a.cash_uang_ditarik = 'T' ")
         ];
         return view('controlflow.dashboard', $data);
     }
@@ -237,7 +237,7 @@ class ControlflowController extends Controller
     public function akunuangditarik(Request $r)
     {
         $data = [
-            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun
+            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun, a.cash_uang_ditarik
             FROM akun as a 
             left join akuncash_ibu as b on b.id_akun = a.id_akun;")
         ];
