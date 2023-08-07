@@ -24,6 +24,12 @@ class Produk_telurController extends Controller
         $cekTransfer = DB::selectOne("SELECT a.check FROM stok_telur as a
                 WHERE a.tgl = '$tanggal' and a.id_gudang = '2' and a.pcs != '0'
                 group by a.tgl;");
+        $cekPenjualanTelur = DB::selectOne("SELECT a.cek FROM invoice_telur as a
+                WHERE a.tgl = '$tanggal' and a.lokasi = 'mtd'
+                group by a.tgl;");
+        $cekPenjualanUmum = DB::selectOne("SELECT a.cek FROM penjualan_agl as a
+                WHERE a.tgl = '$tanggal'
+                group by a.tgl;");
         $data = [
             'title' => 'Dashboard Telur',
             'produk' => DB::table('telur_produk')->get(),
@@ -31,6 +37,8 @@ class Produk_telurController extends Controller
             'tanggal' => $tanggal,
             'cekStokMasuk' => $cek,
             'cekTransfer' => $cekTransfer,
+            'cekPenjualanTelur' => $cekPenjualanTelur,
+            'cekPenjualanUmum' => $cekPenjualanUmum,
             'kandang' => DB::table('kandang')->get(),
             'gudang' => DB::table('gudang_telur')->get(),
             'penjualan_cek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.cek ='Y' and a.lokasi ='mtd';"),
