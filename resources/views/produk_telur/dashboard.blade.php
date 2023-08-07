@@ -137,7 +137,7 @@
                 @if ($kosong)
                     <li class="step-wizard-item ">
                         <span class="progress-count">1</span>
-                        <span class="progress-label text-warning">Tidak ada stok di tanggal sekarang</span>
+                        <span class="progress-label text-warning">Sudah Tercek Semua</span>
                     </li>
                 @else
                     <li class="step-wizard-item {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
