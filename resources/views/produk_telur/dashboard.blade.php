@@ -131,9 +131,10 @@
         {{-- steper --}}
         <section class="step-wizard">
             <ul class="step-wizard-list">
-
-
-                <li class="step-wizard-item {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
+                @php
+                    $kosong = empty($cekStokMasuk) || empty($cekStokMasuk) || empty($cekTransfer) || empty($cekPenjualanTelur);
+                @endphp
+                <li class="step-wizard-item @if($kosong) current-item @endif {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">1 </span>
                     <span class="progress-label">Stok Masuk Martadah</span>
                 </li>
@@ -142,11 +143,13 @@
                     <span class="progress-count">2</span>
                     <span class="progress-label">Stok Transfer Alpa</span>
                 </li>
-                <li class="step-wizard-item {{ $cekTransfer->check == 'Y' && $cekPenjualanTelur->cek == 'T' ? 'current-item' : '' }}">
+                <li
+                    class="step-wizard-item {{ $cekTransfer->check == 'Y' && $cekPenjualanTelur->cek == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">3</span>
                     <span class="progress-label">Penjualan Telur</span>
                 </li>
-                <li class="step-wizard-item {{$cekPenjualanTelur->cek == 'Y' &&  $cekPenjualanUmum->cek == 'T' ? 'current-item' : ''}}">
+                <li
+                    class="step-wizard-item {{ $cekPenjualanTelur->cek == 'Y' && $cekPenjualanUmum->cek == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">5</span>
                     <span class="progress-label">Penjualan Umum</span>
                 </li>
