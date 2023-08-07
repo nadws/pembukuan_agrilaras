@@ -51,7 +51,7 @@ Route::get('/template2', function () {
 
 
 Route::get('/dashboard', function () {
-    return view('dashboard', ['title' => 'Administrator']);
+    return redirect()->route('produk_telur');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
