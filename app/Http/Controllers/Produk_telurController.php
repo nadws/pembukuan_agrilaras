@@ -12,25 +12,25 @@ class Produk_telurController extends Controller
 {
     public function index(Request $r)
     {
-        if (empty($r->id_gudang)) {
-            $id_gudang = '1';
-        } else {
-            $id_gudang = $r->id_gudang;
-        }
-
-
+        $id_gudang = $r->id_gudang ?? 1;
         $tgl = date('Y-m-d');
-        if (empty($r->tgl)) {
-            $tanggal = date("Y-m-d", strtotime("-1 day", strtotime($tgl)));
-        } else {
-            $tanggal = $r->tgl;
-        }
 
+        $tanggal = $r->tgl ?? date("Y-m-d", strtotime("-1 day", strtotime($tgl)));
+
+        $cek = DB::selectOne("SELECT a.check FROM stok_telur as a
+                WHERE a.tgl = '$tanggal' and a.id_gudang = '1' and
+                a.id_kandang != '0'
+                group by a.tgl;");
+        $cekTransfer = DB::selectOne("SELECT a.check FROM stok_telur as a
+                WHERE a.tgl = '$tanggal' and a.id_gudang = '2' and a.pcs != '0'
+                group by a.tgl;");
         $data = [
             'title' => 'Dashboard Telur',
             'produk' => DB::table('telur_produk')->get(),
             'id_gudang' => $id_gudang,
             'tanggal' => $tanggal,
+            'cekStokMasuk' => $cek,
+            'cekTransfer' => $cekTransfer,
             'kandang' => DB::table('kandang')->get(),
             'gudang' => DB::table('gudang_telur')->get(),
             'penjualan_cek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.cek ='Y' and a.lokasi ='mtd';"),
@@ -165,7 +165,7 @@ class Produk_telurController extends Controller
             $akun = DB::table('akun')->where('id_akun', '26')->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            $data = [
+            $data = [   
                 'tgl' => $r->tgl[$x],
                 'no_nota' => $r->no_nota[$x],
                 'id_akun' => '26',
@@ -178,7 +178,7 @@ class Produk_telurController extends Controller
                 'urutan' => $urutan,
             ];
             DB::table('jurnal')->insert($data);
-
+  
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
             $akun = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
 
