@@ -1,4 +1,4 @@
-<x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
+<x-theme.app title="{{ $title }}" table="Y" sizeCard="12" cont="container-fluid">
     <x-slot name="cardHeader">
         <div class="row">
             <div class="col-lg-6">
@@ -27,7 +27,12 @@
                         <th>Tanggal</th>
                         <th>No Nota</th>
                         <th>Customer</th>
-                        <th style="text-align: right">Total Rp</th>
+                        @foreach ($produk as $p)
+                        <th>pcs</th>
+                        <th>kg</th>
+                        <th>ikat</th>
+                        @endforeach
+                        <th style="text-align: right">Total Rp s</th>
                         <th style="text-align: center">Cek</th>
                         <th>Admin</th>
                         <th>Aksi</th>

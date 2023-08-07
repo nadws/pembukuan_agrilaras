@@ -19,7 +19,8 @@ class Penjualan_martadah_alpaController extends Controller
               where a.lokasi = 'mtd'
             group by a.no_nota
             order by a.urutan DESC
-            ")
+            "),
+            'produk' => DB::table('telur_produk')->get(),
 
         ];
         return view('penjualan_martadh.index', $data);

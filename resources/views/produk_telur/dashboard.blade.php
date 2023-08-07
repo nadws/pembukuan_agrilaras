@@ -10,14 +10,15 @@
             </div>
         </div>
     </x-slot>
-    <style>
-        .dhead {
-            background-color: #435EBE !important;
-            color: white;
-            vertical-align: middle;
-        }
-    </style>
+
     <x-slot name="cardBody">
+        <style>
+            .dhead {
+                background-color: #435EBE !important;
+                color: white;
+                vertical-align: middle;
+            }
+        </style>
         <section class="row">
             <div class="col-lg-6">
                 <h6>Stok masuk martadah {{ tanggal($tanggal) }}</h6>
@@ -202,17 +203,40 @@
                             pcs_kredit, sum(a.kg_kredit) as kg_kredit
                             FROM stok_telur as a
                             where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and a.check
-                            ='Y' group by a.id_telur");
+                            ='Y' and opname = 'T' group by a.id_telur");
+                            $stok2 = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg, sum(a.pcs_kredit) as
+                            pcs_kredit, sum(a.kg_kredit) as kg_kredit
+                            FROM stok_telur as a
+                            where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and opname =
+                            'T' group by a.id_telur");
                             @endphp
-                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit,
-                                0) }}
+                            @if ($g->id_gudang_telur == '1')
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format($stok->pcs
+                                - $stok->pcs_kredit, 0)}} / {{ empty($stok2->pcs) ? '0' : number_format($stok2->pcs
+                                - $stok2->pcs_kredit, 0)}}
                             </td>
-                            <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2)
-                                }}
+                            <td align="right">
+                                {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 0)}} / {{
+                                empty($stok2->kg) ? '0' : number_format($stok2->kg - $stok2->kg_kredit, 0)}}
+                            </td>
+                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format(($stok->pcs -
+                                $stok->pcs_kredit) / 180, 1) }} / {{ empty($stok2->pcs) ? '0' :
+                                number_format(($stok2->pcs -$stok2->pcs_kredit) / 180, 1) }}
+                            </td>
+                            @else
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format($stok->pcs
+                                - $stok->pcs_kredit, 0)}}
+                            </td>
+                            <td align="right">
+                                {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 0)}}
                             </td>
                             <td align="right">{{ empty($stok->pcs) ? '0' : number_format(($stok->pcs -
                                 $stok->pcs_kredit) / 180, 1) }}
                             </td>
+                            @endif
+
                             @endforeach
                         </tr>
                         @endforeach
