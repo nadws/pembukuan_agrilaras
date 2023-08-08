@@ -47,17 +47,11 @@ class Penyetoran_telurController extends Controller
             'title' => 'Penyetoran Telur',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT b.id_jurnal, b.no_nota, b.tgl,  c.nm_akun, b.ket,  b.debit
-            FROM  (
-                SELECT *
-                FROM bayar_telur
-                WHERE no_nota_piutang != ''
-                GROUP BY no_nota_piutang
-            ) AS a
-            left JOIN jurnal as b on b.no_nota = a.no_nota_piutang
-            left join akun as c on c.id_akun = b.id_akun
-            where b.debit != '0' and b.id_akun = '3' and b.setor = 'T'
-            ")
+            'invoice' => DB::select("SELECT a.id_jurnal, a.tgl, a.no_nota, b.nm_akun, a.ket, a.debit
+            FROM jurnal as a 
+            left join akun as b on b.id_akun = a.id_akun
+            where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0'
+            group by a.no_nota")
         ];
         return view('penyetoran.index', $data);
     }

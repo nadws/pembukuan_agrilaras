@@ -58,17 +58,12 @@
                             @endphp
                             @foreach ($id_jurnal as $no => $n)
                             @php
-                            $invoice = DB::selectOne("SELECT b.id_jurnal, b.id_akun, b.no_nota, b.tgl, c.nm_akun, b.ket,
-                            b.debit
-                            FROM (
-                            SELECT *
-                            FROM bayar_telur
-                            WHERE no_nota_piutang != ''
-                            GROUP BY no_nota_piutang
-                            ) AS a
-                            left JOIN jurnal as b on b.no_nota = a.no_nota_piutang
-                            left join akun as c on c.id_akun = b.id_akun
-                            where b.debit != '0' and b.setor = 'T' and b.id_jurnal = '$n'
+                            $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
+                            a.debit
+                            FROM jurnal as a
+                            left join akun as b on b.id_akun = a.id_akun
+                            where a.id_buku = '6' and a.id_jurnal = '$n' and a.setor ='T' and a.debit != '0'
+                            group by a.no_nota
                             ");
                             $total += $invoice->debit
                             @endphp
@@ -136,7 +131,7 @@
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
         </button>
-        <a href="{{ route('piutang_telur') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
+        <a href="{{ route('penyetoran_telur') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
         </form>
     </x-slot>
 
