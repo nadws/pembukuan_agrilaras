@@ -183,7 +183,7 @@
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody style="border-color: #435EBE; font-size: 10px">
+                    <tbody style="border-color: #435EBE; font-size: 10px;">
 
                         @foreach ($kandang as $k)
                         <tr>
@@ -197,8 +197,8 @@
                             a.id_kandang = '$k->id_kandang'
                             ");
                             @endphp
-                            <td>{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
-                            <td>{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
+                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
+                            <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
                             @endforeach
                         </tr>
                         @endforeach
@@ -214,8 +214,8 @@
                             a.id_kandang != '0'
                             ");
                             @endphp
-                            <th>{{ number_format($total_mtd->pcs, 0) }}</th>
-                            <th>{{ number_format($total_mtd->kg, 0) }}</th>
+                            <th class="text-end">{{ number_format($total_mtd->pcs, 0) }}</th>
+                            <th class="text-end">{{ number_format($total_mtd->kg, 1) }}</th>
                             @endforeach
                         </tr>
 
