@@ -134,6 +134,7 @@
                 @php
                 $kosong = empty($cekStokMasuk) || empty($cekStokMasuk) || empty($cekTransfer) ||
                 empty($cekPenjualanTelur);
+                dd($kosong);
                 @endphp
                 {{-- @if ($kosong)
                 <li class="step-wizard-item ">
