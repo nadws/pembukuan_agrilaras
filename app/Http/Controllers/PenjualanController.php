@@ -301,8 +301,8 @@ class PenjualanController extends Controller
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
             'nota' => $r->no_nota,
             'invoice2' => DB::selectOne("SELECT a.urutan, a.urutan_customer, a.tgl, a.id_customer, a.id_produk, a.tipe, a.driver, sum(a.total_rp) as total_rp FROM invoice_telur as a where a.no_nota='$r->no_nota'"),
-            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '517'"),
-            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '517'"),
+            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '26'"),
+            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '26'"),
         ];
         return view('penjualan_agl.edit_invoice', $data);
     }
