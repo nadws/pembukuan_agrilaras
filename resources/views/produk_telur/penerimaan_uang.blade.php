@@ -121,13 +121,13 @@
                             <label for="">Debit</label>
                             <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
                                 value="Rp {{number_format($total,2,',','.')}}">
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                            <input type="hidden" name="debit" class="form-control debit_biasa debit_biasa1"
                                 value="{{$total}}">
                         </div>
                         <div class="col-lg-3 mt-2">
                             <label for="">Kredit</label>
                             <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
-                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
+                            <input type="hidden" name="kredit" class="form-control kredit_biasa kredit_biasa1"
                                 value="0">
                         </div>
                         {{-- <div class="col-lg-1 mt-2">
