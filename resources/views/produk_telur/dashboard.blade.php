@@ -153,8 +153,8 @@
                         class="step-wizard-item {{ $cekTransfer->check == 'Y' && $cekPenjualanTelur->cek == 'T' ? 'current-item' : '' }}">
                         <span class="progress-count">3</span>
                         <span class="progress-label">Penjualan Telur</span>
-                    </li>
-                    <li
+                    </li> --}}
+                    {{-- <li
                         class="step-wizard-item {{ $cekPenjualanTelur->cek == 'Y' && $cekPenjualanUmum->cek == 'T' ? 'current-item' : '' }}">
                         <span class="progress-count">5</span>
                         <span class="progress-label">Penjualan Umum</span>
