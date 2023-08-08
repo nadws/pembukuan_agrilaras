@@ -27,11 +27,6 @@
                         <th>Tanggal</th>
                         <th>No Nota</th>
                         <th>Customer</th>
-                        @foreach ($produk as $p)
-                        <th>pcs</th>
-                        <th>kg</th>
-                        <th>ikat</th>
-                        @endforeach
                         <th style="text-align: right">Total Rp s</th>
                         <th style="text-align: center">Cek</th>
                         <th>Admin</th>
