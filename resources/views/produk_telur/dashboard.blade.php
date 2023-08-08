@@ -144,7 +144,7 @@
                         <span class="progress-count">1 </span>
                         <span class="progress-label">Stok Masuk Martadah</span>
                     </li>
-                    {{-- <li
+                    <li
                         class="step-wizard-item {{ $cekStokMasuk->check == 'Y' && $cekTransfer->check == 'T' ? 'current-item' : '' }}">
                         <span class="progress-count">2</span>
                         <span class="progress-label">Stok Transfer Alpa</span>
@@ -158,7 +158,7 @@
                         class="step-wizard-item {{ $cekPenjualanTelur->cek == 'Y' && $cekPenjualanUmum->cek == 'T' ? 'current-item' : '' }}">
                         <span class="progress-count">5</span>
                         <span class="progress-label">Penjualan Umum</span>
-                    </li> --}}
+                    </li>
                 {{-- @endif --}}
             </ul>
         </section>
