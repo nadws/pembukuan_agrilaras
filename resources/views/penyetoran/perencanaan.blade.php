@@ -64,6 +64,7 @@
                             left join akun as b on b.id_akun = a.id_akun
                             where a.id_buku = '6' and a.id_jurnal = '$n' and a.setor ='T' and a.debit != '0'
                             group by a.no_nota
+                            order by a.id_jurnal ASC
                             ");
                             $total += $invoice->debit
                             @endphp
