@@ -135,12 +135,12 @@
                 $kosong = empty($cekStokMasuk) || empty($cekStokMasuk) || empty($cekTransfer) ||
                 empty($cekPenjualanTelur);
                 @endphp
-                @if ($kosong)
+                {{-- @if ($kosong)
                 <li class="step-wizard-item ">
                     <span class="progress-count">1</span>
                     <span class="progress-label text-warning">Sudah Tercek Semua</span>
                 </li>
-                @else
+                @else --}}
                 <li class="step-wizard-item {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">1 </span>
                     <span class="progress-label">Stok Masuk Martadah</span>
@@ -160,7 +160,7 @@
                     <span class="progress-count">5</span>
                     <span class="progress-label">Penjualan Umum</span>
                 </li>
-                @endif
+                {{-- @endif --}}
             </ul>
         </section>
         {{-- end steper --}}
