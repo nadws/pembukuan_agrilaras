@@ -160,7 +160,6 @@ class Produk_telurController extends Controller
 
     public function save_terima_invoice(Request $r)
     {
-        dd($r->all());
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '6')->first();
 
         if (empty($max)) {
@@ -189,14 +188,14 @@ class Produk_telurController extends Controller
             ];
             DB::table('jurnal')->insert($data);
   
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
-            $akun = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
+            $akun = DB::table('akun')->where('id_akun', $r->id_akun)->first();
 
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
             $data = [
                 'tgl' => $r->tgl[$x],
                 'no_nota' => $r->no_nota[$x],
-                'id_akun' => $r->id_akun[$x],
+                'id_akun' => $r->id_akun,
                 'id_buku' => '6',
                 'ket' => 'Penjualan telur di martadah',
                 'debit' => $r->debit[$x],

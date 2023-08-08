@@ -110,7 +110,7 @@
                         </div>
                         <div class="col-lg-5 mt-2">
                             <label for="">Pilih Akun Setor</label>
-                            <select name="id_akun[]" id="" class="select2_add" required>
+                            <select name="id_akun" id="" class="select2_add" required>
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
                                 <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
