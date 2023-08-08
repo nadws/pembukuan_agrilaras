@@ -51,7 +51,9 @@ class Penyetoran_telurController extends Controller
             FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0'
-            group by a.no_nota")
+            group by a.no_nota
+            order by a.tgl ASC
+            ")
         ];
         return view('penyetoran.index', $data);
     }
