@@ -323,6 +323,12 @@
                                     class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
                                     data-bs-placement="top" title="Penjualan telur"><i class="fas fa-plus"></i>
                                 </a>
+                                <a href="{{ route('penjualan_agrilaras') }}" {{ $g->id_gudang_telur == '2' ? '' :
+                                    'hidden'
+                                    }}
+                                    class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="History Penjualan"><i class="fas fa-list"></i>
+                                </a>
                             </td>
                             @foreach ($produk as $p)
                             @php
