@@ -261,8 +261,10 @@
                         = '2'
                         ");
                         @endphp
-                        <td>{{ empty($stok_transfer->pcs) ? '0' : number_format($stok_transfer->pcs, 0) }}</td>
-                        <td>{{ empty($stok_transfer->kg) ? '0' : number_format($stok_transfer->kg, 0) }}</td>
+                        <td align="right">{{ empty($stok_transfer->pcs) ? '0' : number_format($stok_transfer->pcs, 0) }}
+                        </td>
+                        <td align="right">{{ empty($stok_transfer->kg) ? '0' : number_format($stok_transfer->kg, 1) }}
+                        </td>
                         @endforeach
                     </tbody>
 
