@@ -198,7 +198,7 @@
                             ");
                             @endphp
                             <td>{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
-                            <td>{{ empty($stok->kg) ? '0' : number_format($stok->kg, 0) }}</td>
+                            <td>{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
                             @endforeach
                         </tr>
                         @endforeach
