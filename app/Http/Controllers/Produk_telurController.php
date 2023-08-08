@@ -30,6 +30,7 @@ class Produk_telurController extends Controller
         $cekPenjualanUmum = DB::selectOne("SELECT a.cek FROM penjualan_agl as a
                 WHERE a.tgl = '$tanggal'
                 group by a.tgl;");
+                
         $data = [
             'title' => 'Dashboard Telur',
             'produk' => DB::table('telur_produk')->get(),
