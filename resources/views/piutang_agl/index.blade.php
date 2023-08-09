@@ -15,7 +15,7 @@
             <div class="card-body px-4 py-4-5">
                 <div class="row float-end text-center">
 
-                    <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                    <div class="col-md-12">
                         @php
                         $ttlAllPiutang = 0;
 
