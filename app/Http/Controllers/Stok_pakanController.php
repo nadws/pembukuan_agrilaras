@@ -11,30 +11,18 @@ class Stok_pakanController extends Controller
     public function load_stok_pakan(Request $r)
     {
         $data = [
-            'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan, d.rata_rata
+            'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
             FROM stok_produk_perencanaan as a 
             left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            left join (
-            SELECT a.id_pakan, sum(a.total_rp/a.pcs) as rata_rata
-            FROM stok_produk_perencanaan as a 
-            where a.pcs != '0' and a.h_opname ='T'
-            group by a.id_pakan
-            ) as d on d.id_pakan = a.id_pakan
-            where b.kategori ='pakan' and a.opname = 'T'
+            where b.kategori ='pakan'
             group by a.id_pakan;"),
 
-            'vitamin' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan,d.rata_rata
+            'vitamin' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
             FROM stok_produk_perencanaan as a 
             left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            left join (
-            SELECT a.id_pakan, sum(a.total_rp/a.pcs) as rata_rata
-            FROM stok_produk_perencanaan as a 
-            where a.pcs != '0' and a.h_opname ='T'
-            group by a.id_pakan
-            ) as d on d.id_pakan = a.id_pakan
-            where b.kategori in('obat_pakan','obat_air') and a.opname = 'T'
+            where b.kategori in('obat_pakan','obat_air')
             group by a.id_pakan;"),
         ];
         return view('stok_pakan.stok', $data);
