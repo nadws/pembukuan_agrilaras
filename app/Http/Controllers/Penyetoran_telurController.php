@@ -105,14 +105,14 @@ class Penyetoran_telurController extends Controller
         if (empty($r->id_akun)) {
             # code...
         } else {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '3')->first();
-            $akun = DB::table('akun')->where('id_akun', '3')->first();
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
+            $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
             $data = [
                 'tgl' => $r->tgl,
                 'no_nota' => 'PET-' . $nota_t,
-                'id_akun' => '3',
+                'id_akun' => $r->id_akun1,
                 'id_buku' => '7',
                 'ket' => $r->ket,
                 'debit' => 0,

@@ -336,8 +336,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/HistoryMtd', 'HistoryMtd')->name('HistoryMtd');
         Route::get('/edit_telur_dashboard', 'edit_telur_dashboard')->name('edit_telur_dashboard');
         Route::get('/export_telur', 'export')->name('export_telur');
-        Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
-        Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
     });
 
@@ -359,6 +357,8 @@ Route::middleware('auth')->group(function () {
     Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
         Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
         Route::get('/detail_penjualan_mtd', 'detail_penjualan_mtd')->name('detail_penjualan_mtd');
+        Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
+        Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {
         Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');

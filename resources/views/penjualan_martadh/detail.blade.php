@@ -27,8 +27,17 @@
         <table class="table table-striped table-bordered" style="white-space: nowrap;">
             <thead>
                 <tr>
+                    <th class="dhead" width="10%" rowspan="2">Produk </th>
+                    <th style="text-align: center" class="dhead abu" colspan="3">Penjualan per pcs</th>
+                    <th style="text-align: center" class="dhead putih" colspan="3">Penjualan per ikat</th>
+                    <th style="text-align: center" class="dhead abuGelap" colspan="3">Penjualan per rak</th>
+                    <th rowspan="2" class="dhead" width="10%" style="text-align: center; white-space: nowrap;">Total
+                        Rp
+                    </th>
+                </tr>
+                <tr>
 
-                    <th class="dhead" width="10%">Produk </th>
+                    {{-- <th class="dhead" width="10%">Produk </th> --}}
                     <th class="dhead" width="7%" style="text-align: center">Pcs</th>
                     <th class="dhead" width="7%" style="text-align: center">Kg</th>
                     <th class="dhead" width="10%" style="text-align: center;">Rp Pcs</th>
@@ -39,11 +48,10 @@
 
                     <th class="dhead" width="7%" style="text-align: center;">Pcs</th>
                     <th class="dhead" width="7%" style="text-align: center;">Kg</th>
-                    <th class="dhead" width="7%" style="text-align: center;">Rak</th>
                     <th class="dhead" width="10%" style="text-align: center;">Rp Rak</th>
 
-                    <th class="dhead" width="10%" style="text-align: center; white-space: nowrap;">Total Rp
-                    </th>
+                    {{-- <th class="dhead" width="10%" style="text-align: center; white-space: nowrap;">Total Rp
+                    </th> --}}
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +74,7 @@
                     <!-- Jual Kg -->
                     <td align="right">{{$i->pcs_kg}}</td>
                     <td align="right">{{$i->kg_kg}}</td>
-                    <td align="right">{{$i->rak_kg}}</td>
+                    {{-- <td align="right">{{$i->rak_kg}}</td> --}}
                     <td align="right">Rp. {{number_format($i->rp_kg,0)}}</td>
                     <!-- Jual Kg -->
                     <td align="right">
@@ -74,7 +82,7 @@
                         $rp_pcs = $i->pcs_pcs * $i->rp_pcs;
                         $rp_ikat = ($i->kg_ikat - $i->ikat) * $i->rp_ikat;
                         $rak_kali = round($i->rak_kg * 0.12,1);
-                        $rp_kg = ($i->kg_kg - $rak_kali) * $i->rp_kg;
+                        $rp_kg = $i->kg_kg * $i->rp_kg;
                         $total_rp = $rp_pcs + $rp_ikat + $rp_kg;
 
                         @endphp
@@ -90,7 +98,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="10"></td>
+                    <td colspan="9"></td>
                     <th>Total</th>
                     <th style="text-align: right">Rp. {{number_format($total_semua,0)}}</th>
                 </tr>

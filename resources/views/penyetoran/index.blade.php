@@ -31,7 +31,7 @@
                             @endphp
                             <button type="button" class="btn btn-outline-primary btn-md font-extrabold mb-0"> Semua
                                 Penyetoran
-                                : Rp. {{ number_format($ttlAllPiutang, 2) }}
+                                : Rp. {{ number_format($ttlAllPiutang, 0) }}
                                 <br>
                                 Setoran Diceklis : Rp. <span class="piutangBayar">0</span>
                             </button>

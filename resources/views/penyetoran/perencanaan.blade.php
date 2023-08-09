@@ -66,7 +66,8 @@
                             group by a.no_nota
                             order by a.tgl ASC
                             ");
-                            $total += $invoice->debit
+                            $total += $invoice->debit;
+                            $id_akun = $invoice->id_akun;
                             @endphp
                             <tr>
                                 <td>{{tanggal($invoice->tgl)}}</td>
@@ -100,6 +101,7 @@
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
                     <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
+                    <input type="hidden" class="form-control" name="id_akun1" value="{{$id_akun}}">
                 </div>
                 <div class="col-lg-3">
                     <label for="">Pilih Akun Debit</label>

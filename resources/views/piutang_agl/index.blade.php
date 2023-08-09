@@ -73,7 +73,7 @@
                         </td>
                         <td>{{tanggal($i->tgl)}}</td>
                         <td>{{$i->no_nota}}</td>
-                        <td>{{$i->nm_customer}}{{$i->urutan_customer}}</td>
+                        <td>{{$i->id_customer == 0 ? $i->customer : $i->nm_customer}}{{$i->urutan_customer}}</td>
                         <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
                         <td align="right">Rp {{number_format($i->bayar,0)}}</td>
                         <td align="right">Rp {{number_format($i->paid,0)}}</td>

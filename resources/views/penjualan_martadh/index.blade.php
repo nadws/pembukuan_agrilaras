@@ -1,4 +1,4 @@
-<x-theme.app title="{{ $title }}" table="Y" sizeCard="12" cont="container-fluid">
+<x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
         <div class="row">
             <div class="col-lg-6">
@@ -27,7 +27,7 @@
                         <th>Tanggal</th>
                         <th>No Nota</th>
                         <th>Customer</th>
-                        <th style="text-align: right">Total Rp s</th>
+                        <th style="text-align: right">Total Rp</th>
                         <th style="text-align: center">Cek</th>
                         <th>Admin</th>
                         <th>Aksi</th>
@@ -51,23 +51,9 @@
                         </td>
                         <td>{{$i->admin}}</td>
                         <td>
-                            <div class="btn-group" role="group">
-                                <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v text-primary"></i>
-                                </span>
-                                <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                    @if ($i->cek == 'Y')
-
-                                    @else
-                                    @endif
-
-                                    <li><a class="dropdown-item  text-info detail_nota" href="#" href="#"
-                                            data-bs-toggle="modal" no_nota="{{ $i->no_nota }}"
-                                            data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
-                                    </li>
-
-                                </ul>
-                            </div>
+                            <a class=" btn btn-primary btn-sm detail_nota" href="#" href="#" data-bs-toggle="modal"
+                                no_nota="{{ $i->no_nota }}" data-bs-target="#detail"><i
+                                    class="me-2 fas fa-eye"></i>Detail</a>
                         </td>
                     </tr>
                     @endforeach

@@ -49,7 +49,7 @@ class PiutangtelurController extends Controller
             'title' => 'Piutang Telur',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar
+            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
             FROM invoice_telur as a 
             left join customer as b on b.id_customer = a.id_customer
             left join (
