@@ -401,15 +401,15 @@
                             <td>3</td>
                             <td>Penjualan Ayam</td>
                             <td align="right">Rp
-                                {{ number_format($penjualan_umum_mtd->ttl_rp + $penjualan_umum_blmcek_mtd->ttl_rp, 0) }}
+                                {{ number_format($penjualan_ayam_mtd->ttl_rp + $penjualan_ayam_blmcek_mtd->ttl_rp, 0) }}
                             </td>
-                            <td align="right">Rp {{ number_format($penjualan_umum_mtd->ttl_rp, 0) }}</td>
-                            <td align="right">Rp {{ number_format($penjualan_umum_blmcek_mtd->ttl_rp, 0) }}</td>
+                            <td align="right">Rp {{ number_format($penjualan_ayam_mtd->ttl_rp, 0) }}</td>
+                            <td align="right">Rp {{ number_format($penjualan_ayam_blmcek_mtd->ttl_rp, 0) }}</td>
                             <td align="center">
-                                <a href="{{ route('penjualan_umum_cek') }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('penjualan_ayam.index') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-history"></i> History
-                                    <span class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :
-                                        $penjualan_umum_blmcek_mtd->jumlah }}</span>
+                                    <span class="badge bg-danger">{{ empty($penjualan_ayam_blmcek_mtd->jumlah) ? '0' :
+                                        $penjualan_ayam_blmcek_mtd->jumlah }}</span>
                                 </a>
                             </td>
                         </tr>

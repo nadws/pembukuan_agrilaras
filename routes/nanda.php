@@ -33,6 +33,7 @@ use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
+use App\Http\Controllers\PenjualanAyamController;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -339,6 +340,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_telur', 'export')->name('export_telur');
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
     });
+
+    Route::controller(PenjualanAyamController::class)
+        ->prefix('penjualan_ayam')
+        ->name('penjualan_ayam.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/setor', 'setor')->name('setor');
+            Route::post('/save_setor', 'save_setor')->name('save_setor');
+        });
 
     Route::controller(Stok_pakanController::class)->group(function () {
         // History Alpa
