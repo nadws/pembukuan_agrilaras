@@ -56,10 +56,15 @@
                         <tbody>
                             @php
                             $total = 0;
+                            $nm_customers = [];
                             @endphp
+
                             @foreach ($no_nota as $no => $n)
+
                             @php
+
                             $hutang = DB::selectOne("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer,
+                            a.urutan_customer,
                             sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, a.id_customer, a.customer
                             FROM invoice_telur as a
                             left join customer as b on b.id_customer = a.id_customer
@@ -72,6 +77,7 @@
                             group by a.no_nota
                             order by a.urutan DESC");
                             $total += $hutang->paid
+
                             @endphp
                             <tr>
                                 <td>{{$n}}</td>
@@ -79,7 +85,8 @@
                                     {{tanggal($hutang->tgl)}}
                                     <input type="hidden" name="no_nota[]" value="{{$hutang->no_nota}}">
                                 </td>
-                                <td>{{$hutang->id_customer == 0 ? $hutang->customer : $hutang->nm_customer }}</td>
+                                <td>{{$hutang->id_customer == 0 ? $hutang->customer . $hutang->urutan_customer :
+                                    $hutang->nm_customer.$hutang->urutan_customer }}</td>
                                 <td align="right">Rp {{number_format($hutang->ttl_rp,0)}}</td>
                                 <td align="right">Rp {{number_format($hutang->paid,0)}}</td>
                                 <td>
@@ -95,8 +102,16 @@
                                     </p>
                                 </td>
                             </tr>
+                            @php
+                            $nm_customers[] = $hutang->id_customer == 0
+                            ? $hutang->customer . $hutang->urutan_customer
+                            : $hutang->nm_customer . $hutang->urutan_customer;
+                            @endphp
                             @endforeach
+                            @php
 
+                            $implode_nm_customers = implode(', ', $nm_customers);
+                            @endphp
 
                         </tbody>
 
@@ -111,7 +126,7 @@
 
                     <hr style="border: 1px solid blue">
 
-                    <input type="hidden" name="ket" value="{{ implode(',', $no_nota) }}">
+                    <input type="hidden" name="ket" value="{{ $implode_nm_customers }}">
                     <div class="row">
                         <div class="col-lg-6">
                             <h6>Total</h6>

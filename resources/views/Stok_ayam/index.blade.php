@@ -18,6 +18,7 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
                     class="btn btn-sm btn-primary">Penjualan Ayam</a>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam" class="btn btn-sm btn-primary">History
+                    Stok
                 </a>
             </th>
         </tr>
@@ -25,7 +26,7 @@
     </table>
 </div>
 
-<form action="" method="post">
+<form action="{{route('save_penjualan_ayam')}}" method="post">
     @csrf
     <x-theme.modal title="Penjualan ayam" size="modal-lg-max_custome" idModal="penjualan_ayam">
         <div class="row">
@@ -48,7 +49,7 @@
             <div class="col-lg-4">
                 <label for="">Ekor</label>
                 <input type="number" min="0" max="{{ $stok_ayam->saldo_kandang }}" class="form-control ekor" name="qty"
-                    value="0">
+                    value="0" style="text-align: right">
             </div>
             <div class="col-lg-4">
                 <label for="">Harga Satuan</label>

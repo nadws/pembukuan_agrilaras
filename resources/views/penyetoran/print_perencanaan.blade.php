@@ -78,7 +78,7 @@
                                 @endif
 
                                 @if ($i->id_customer == '0' || empty($i->id_customer))
-                                {{empty($i->customer) ? $i->ket : $i->customer . $i->urutan_customer}}
+                                {{empty($i->customer) ? $i->ket : $i->customer}}
                                 @endif
 
                             </td>
