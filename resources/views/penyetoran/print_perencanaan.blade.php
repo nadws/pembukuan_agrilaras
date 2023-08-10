@@ -54,7 +54,8 @@
                             <th class="dhead">Tanggal</th>
                             <th class="dhead">No Nota</th>
                             <th class="dhead">Pembayaran</th>
-                            <th class="dhead">Keterangan</th>
+                            <th class="dhead">Customers</th>
+                            {{-- <th class="dhead">Keterangan</th> --}}
                             <th class="dhead" style="text-align: right">Total Rp</th>
                         </tr>
                     </thead>
@@ -71,7 +72,9 @@
                             <td>{{tanggal($i->tgl)}}</td>
                             <td>{{$i->no_nota_jurnal}}</td>
                             <td>{{ucwords(strtolower($i->nm_akun))}}</td>
-                            <td>{{$i->ket}}</td>
+                            <td>{{$i->id_customer != '0' ? $i->nm_customer . $i->urutan_customer : ( $i->id_customer !==
+                                null ? $i->ket : $i->customer . $i->urutan_customer)}}</td>
+                            {{-- <td>{{$i->ket}}</td> --}}
                             <td align="right">Rp {{number_format($i->nominal,0)}}</td>
                         </tr>
                         @endforeach

@@ -128,47 +128,7 @@
                 color: #21d4fd;
             }
         </style>
-        {{-- steper --}}
-        <section class="step-wizard">
-            <ul class="step-wizard-list">
-                @php
-                $kosong = empty($cekStokMasuk) || empty($cekStokMasuk) || empty($cekTransfer) ||
-                empty($cekPenjualanTelur);
-                @endphp
-                {{-- @if ($kosong)
-                <li class="step-wizard-item ">
-                    <span class="progress-count">1</span>
-                    <span class="progress-label text-warning">Sudah Tercek Semua</span>
-                </li>
-                @else --}}
-                @if (!empty($cekStokMasuk->check))
-                <li class="step-wizard-item {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
-                    <span class="progress-count">1 </span>
-                    <span class="progress-label">Stok Masuk Martadah</span>
-                </li>
-                <li
-                    class="step-wizard-item {{ $cekStokMasuk->check == 'Y' && $cekTransfer->check == 'T' ? 'current-item' : '' }}">
-                    <span class="progress-count">2</span>
-                    <span class="progress-label">Stok Transfer Alpa</span>
-                </li>
-                @else
 
-                @endif
-
-                {{-- <li
-                    class="step-wizard-item {{ $cekTransfer->check == 'Y' && $cekPenjualanTelur->cek == 'T' ? 'current-item' : '' }}">
-                    <span class="progress-count">3</span>
-                    <span class="progress-label">Penjualan Telur</span>
-                </li> --}}
-                {{-- <li
-                    class="step-wizard-item {{ $cekPenjualanTelur->cek == 'Y' && $cekPenjualanUmum->cek == 'T' ? 'current-item' : '' }}">
-                    <span class="progress-count">5</span>
-                    <span class="progress-label">Penjualan Umum</span>
-                </li> --}}
-                {{-- @endif --}}
-            </ul>
-        </section>
-        {{-- end steper --}}
 
         <section class="row">
             <div class="col-lg-6">

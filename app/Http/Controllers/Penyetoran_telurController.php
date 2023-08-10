@@ -223,11 +223,13 @@ class Penyetoran_telurController extends Controller
     {
         $invoice = DB::table('setoran_telur')->where('nota_setor', $r->no_nota)->first();
         $data = [
-            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal
+            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal, d.id_customer, d.customer, e.nm_customer, d.urutan_customer
             FROM setoran_telur as a
             left join akun as b on b.id_akun = a.id_akun
             left join jurnal as c on c.id_jurnal = a.id_jurnal
-            where a.nota_setor = '$r->no_nota'
+            left join invoice_telur as d on d.no_nota = a.no_nota_jurnal
+            left join customer as e on e.id_customer = d.id_customer
+            where a.nota_setor = '$r->no_nota';
             "),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
