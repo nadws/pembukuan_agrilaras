@@ -57,6 +57,10 @@
             max-width: 1200px;
         }
 
+        .modal-lg-max_custome {
+            max-width: 1000px;
+        }
+
         .select2 {
             width: 100% !important;
 

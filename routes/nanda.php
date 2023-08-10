@@ -33,6 +33,7 @@ use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
+use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -359,6 +360,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/detail_penjualan_mtd', 'detail_penjualan_mtd')->name('detail_penjualan_mtd');
         Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
         Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
+    });
+    Route::controller(Stok_ayam::class)->group(function () {
+        Route::get('/stok_ayam', 'index')->name('stok_ayam');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {
         Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');
