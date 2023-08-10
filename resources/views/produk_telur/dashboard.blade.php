@@ -141,6 +141,7 @@
                     <span class="progress-label text-warning">Sudah Tercek Semua</span>
                 </li>
                 @else --}}
+                @if (!empty($cekStokMasuk->check))
                 <li class="step-wizard-item {{ $cekStokMasuk->check == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">1 </span>
                     <span class="progress-label">Stok Masuk Martadah</span>
@@ -150,6 +151,10 @@
                     <span class="progress-count">2</span>
                     <span class="progress-label">Stok Transfer Alpa</span>
                 </li>
+                @else
+
+                @endif
+
                 {{-- <li
                     class="step-wizard-item {{ $cekTransfer->check == 'Y' && $cekPenjualanTelur->cek == 'T' ? 'current-item' : '' }}">
                     <span class="progress-count">3</span>

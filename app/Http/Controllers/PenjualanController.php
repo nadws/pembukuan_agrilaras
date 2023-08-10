@@ -368,7 +368,8 @@ class PenjualanController extends Controller
                     'admin' => Auth::user()->name,
                     'urutan' => $r->urutan,
                     'urutan_customer' => $urutan_cus,
-                    'driver' => $r->driver
+                    'driver' => $r->driver,
+                    'lokasi' => 'alpa'
                 ];
                 DB::table('invoice_telur')->insert($data);
             } else {
@@ -385,7 +386,8 @@ class PenjualanController extends Controller
                     'admin' => Auth::user()->name,
                     'urutan' => $r->urutan,
                     'urutan_customer' => $urutan_cus,
-                    'driver' => $r->driver
+                    'driver' => $r->driver,
+                    'lokasi' => 'alpa'
                 ];
                 DB::table('invoice_telur')->insert($data);
             }
