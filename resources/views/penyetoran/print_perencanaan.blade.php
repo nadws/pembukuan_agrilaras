@@ -72,8 +72,19 @@
                             <td>{{tanggal($i->tgl)}}</td>
                             <td>{{$i->no_nota_jurnal}}</td>
                             <td>{{ucwords(strtolower($i->nm_akun))}}</td>
-                            <td>{{$i->id_customer != '0' ? $i->nm_customer . $i->urutan_customer : ( $i->id_customer !==
-                                null ? $i->ket : $i->customer . $i->urutan_customer)}}</td>
+                            <td>
+                                @if ($i->id_customer != '0' || !empty($i->id_customer))
+                                {{$i->nm_customer . $i->urutan_customer}}
+                                @endif
+
+                                @if ($i->id_customer == '0' || empty($i->id_customer))
+                                {{empty($i->customer) ? $i->ket : $i->customer . $i->urutan_customer}}
+                                @endif
+
+                            </td>
+                            {{-- <td>{{$i->id_customer != '0' ? $i->nm_customer . $i->urutan_customer : (
+                                $i->id_customer !==
+                                null ? $i->ket : $i->customer . $i->urutan_customer)}}</td> --}}
                             {{-- <td>{{$i->ket}}</td> --}}
                             <td align="right">Rp {{number_format($i->nominal,0)}}</td>
                         </tr>

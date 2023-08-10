@@ -229,7 +229,8 @@ class Penyetoran_telurController extends Controller
             left join jurnal as c on c.id_jurnal = a.id_jurnal
             left join invoice_telur as d on d.no_nota = a.no_nota_jurnal
             left join customer as e on e.id_customer = d.id_customer
-            where a.nota_setor = '$r->no_nota';
+            where a.nota_setor = '$r->no_nota'
+            group by a.no_nota_jurnal;
             "),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
