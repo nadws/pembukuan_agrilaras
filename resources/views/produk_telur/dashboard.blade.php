@@ -399,6 +399,22 @@
                         </tr>
                         <tr>
                             <td>3</td>
+                            <td>Penjualan Ayam</td>
+                            <td align="right">Rp
+                                {{ number_format($penjualan_umum_mtd->ttl_rp + $penjualan_umum_blmcek_mtd->ttl_rp, 0) }}
+                            </td>
+                            <td align="right">Rp {{ number_format($penjualan_umum_mtd->ttl_rp, 0) }}</td>
+                            <td align="right">Rp {{ number_format($penjualan_umum_blmcek_mtd->ttl_rp, 0) }}</td>
+                            <td align="center">
+                                <a href="{{ route('penjualan_umum_cek') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-history"></i> History
+                                    <span class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :
+                                        $penjualan_umum_blmcek_mtd->jumlah }}</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
                             <td>Opname Telur Martadah</td>
                             <td align="right">Rp
                                 {{ number_format($opname_cek_mtd->ttl_rp + $opname_blmcek_mtd->ttl_rp, 0) }}
