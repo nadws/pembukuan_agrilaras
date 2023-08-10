@@ -2,15 +2,15 @@
     <table class="table table-bordered" width="100%">
         <tr>
             <th style="text-align: center" colspan="2">
-                <h6>Stok Ayam <br>{{tanggal(date('Y-m-d'))}}</h6>
+                <h6>Stok Ayam <br>{{ tanggal(date('Y-m-d')) }}</h6>
             </th>
         </tr>
         <tr>
             <th style="text-align: center; height: 60px;">
-                <h6>Stok Martadah <br>{{$stok_ayam->saldo_kandang}}</h6>
+                <h6>Stok Martadah <br>{{ $stok_ayam->saldo_kandang }}</h6>
             </th>
             <th style="text-align: center; height: 60px;">
-                <h6>Stok BJM <br>{{empty($stok_ayam_bjm->saldo_bjm) ? '0' : $stok_ayam_bjm->saldo_bjm}}</h6>
+                <h6>Stok BJM <br>{{ empty($stok_ayam_bjm->saldo_bjm) ? '0' : $stok_ayam_bjm->saldo_bjm }}</h6>
             </th>
         </tr>
         <tr>
@@ -39,7 +39,7 @@
                 <select name="customer" class="select2-pakan" required>
                     <option value="">Pilih Customer</option>
                     @foreach ($customer as $s)
-                    <option value="{{$s->id_customer}}">{{$s->nm_customer}}</option>
+                    <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
                     @endforeach
                 </select>
             </div>
@@ -47,9 +47,9 @@
                 <hr>
             </div>
             <div class="col-lg-4">
-                <label for="">Ekor</label>
+                <label for="">Ekor {{ $stok_ayam->saldo_kandang }}</label>
                 <input type="number" min="0" max="{{ $stok_ayam->saldo_kandang }}" class="form-control ekor" name="qty"
-                    value="0" style="text-align: right">
+                    value="0">
             </div>
             <div class="col-lg-4">
                 <label for="">Harga Satuan</label>
@@ -83,7 +83,7 @@
                         <select name="id_akun[]" id="" class="select2-pakan">
                             <option value="">-Pilih Akun-</option>
                             @foreach ($akun as $a)
-                            <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
+                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                             @endforeach
                         </select>
                     </div>
