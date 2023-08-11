@@ -414,7 +414,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>3</td>
+                            <td>4</td>
                             <td>Opname Telur Martadah</td>
                             <td align="right">Rp
                                 {{ number_format($opname_cek_mtd->ttl_rp + $opname_blmcek_mtd->ttl_rp, 0) }}
