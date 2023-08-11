@@ -16,10 +16,8 @@ class Stok_ayam extends Controller
             'customer' => DB::table('customer')->get(),
             'history_ayam' => DB::table('stok_ayam')->where('jenis', 'ayam')->where('id_gudang', '2')->get(),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
-            'invoice_ayam' => DB::select("SELECT * 
-            FROM invoice_ayam as a left join customer as b on b.id_customer = a.id_customer 
-            where a.lokasi = 'alpa'
-            ")
+
+
         ];
         return view("Stok_ayam.index", $data);
     }
@@ -115,6 +113,39 @@ class Stok_ayam extends Controller
             ];
             DB::table('jurnal')->insert($data);
         }
-        return redirect()->route('produk_telur')->with('Data Berhasil Ditambahkan');
+        return redirect()->route('history_ayam')->with('sukses', 'Data Berhasil Ditambahkan');
+    }
+
+    public function history_ayam(Request $r)
+    {
+        if (empty($r->tgl1)) {
+            $tgl1 = date('Y-m-01');
+            $tgl2 = date('Y-m-t');
+        } else {
+            $tgl1 = $r->tgl1;
+            $tgl2 = $r->tgl2;
+        }
+
+        $data = [
+            'title' => 'History Penjualan ayam',
+            'invoice_ayam' => DB::select("SELECT * 
+            FROM invoice_ayam as a left join customer as b on b.id_customer = a.id_customer 
+            where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'
+            order by a.no_nota DESC
+            "),
+            'customer' => DB::table('customer')->get(),
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
+        ];
+        return view("Stok_ayam.history", $data);
+    }
+
+    public function hapus_ayam(Request $r)
+    {
+        DB::table('invoice_ayam')->where('no_nota', $r->no_nota)->delete();
+        DB::table('jurnal')->where('no_nota', $r->no_nota)->delete();
+        return redirect()->route('history_ayam', ['tgl1' => $r->tgl1, 'tgl2' => $r->tgl2])->with('sukses', 'Data Berhasil Ditambahkan');
     }
 }

@@ -20,8 +20,7 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam" class="btn btn-sm btn-primary">History
                     Stok
                 </a>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#history_penjualan_ayam"
-                    class="btn btn-sm btn-primary">History
+                <a href="{{route('history_ayam')}}" class="btn btn-sm btn-primary">History
                     Penjualan
                 </a>
             </th>
@@ -176,7 +175,7 @@
         </div>
     </div>
 </x-theme.modal>
-<x-theme.modal title="History Penjualan Ayam" size="modal-lg-max" idModal="history_penjualan_ayam" btn-save="T">
+{{-- <x-theme.modal title="History Penjualan Ayam" size="modal-lg-max" idModal="history_penjualan_ayam" btn-save="T">
     <div class="row">
         <div class="col-lg-12">
             <table class="table table-bordered" id="table" width="100%">
@@ -210,4 +209,4 @@
             </table>
         </div>
     </div>
-</x-theme.modal>
+</x-theme.modal> --}}
