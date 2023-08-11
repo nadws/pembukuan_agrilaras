@@ -20,6 +20,10 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam" class="btn btn-sm btn-primary">History
                     Stok
                 </a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#history_penjualan_ayam"
+                    class="btn btn-sm btn-primary">History
+                    Penjualan
+                </a>
             </th>
         </tr>
 
@@ -164,6 +168,41 @@
                         <td align="right">{{ $h->kredit }}</td>
                         <td align="right">{{ $saldo }}</td>
                         <td>{{ $h->kredit == 0 ? 'Ayam Masuk' : ($h->no_nota != '' ? 'Penjualan' : 'Transfer') }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</x-theme.modal>
+<x-theme.modal title="History Penjualan Ayam" size="modal-lg-max" idModal="history_penjualan_ayam" btn-save="T">
+    <div class="row">
+        <div class="col-lg-12">
+            <table class="table table-bordered" id="table" width="100%">
+                <thead>
+                    <th class="dhead">No</th>
+                    <th class="dhead">Tanggal</th>
+                    <th class="dhead">No Nota</th>
+                    <th class="dhead">Customer</th>
+                    <th class="dhead text-end">Qty</th>
+                    <th class="dhead text-end">Harga </th>
+                    <th class="dhead text-end">Total Harga</th>
+                    <th class="dhead">Aksi</th>
+                </thead>
+                <tbody>
+                    @foreach ($invoice_ayam as $no => $i)
+                    <tr>
+                        <td>{{$no+1}}</td>
+                        <td>{{tanggal($i->tgl)}}</td>
+                        <td>{{$i->no_nota}}</td>
+                        <td>{{$i->nm_customer}}{{$i->urutan_customer}}</td>
+                        <td class="text-end">{{$i->qty}}</td>
+                        <td class="text-end">Rp. {{number_format($i->h_satuan,0)}}</td>
+                        <td class="text-end">Rp. {{$i->qty * $i->h_satuan}}</td>
+                        <td>
+                            <a href="" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                            <a href="" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></a>
                         </td>
                     </tr>
                     @endforeach
