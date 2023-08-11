@@ -59,6 +59,14 @@ class Produk_telurController extends Controller
             where a.cek ='T' and a.lokasi ='mtd'
             group by a.urutan
             ) as a;"),
+            'penjualan_ayam_mtd' => DB::selectOne("SELECT sum(a.h_satuan * a.qty) as ttl_rp FROM invoice_ayam as a where a.cek ='Y' and a.lokasi ='mtd';"), 
+            'penjualan_ayam_blmcek_mtd' => DB::selectOne("SELECT sum(a.h_satuan * a.qty) as ttl_rp , COUNT(a.urutan) as jumlah
+            FROM (
+            SELECT a.urutan, sum(a.h_satuan * a.qty) as total_rp, a.h_satuan,a.qty
+                FROM invoice_ayam as a 
+            where a.cek ='T' and a.lokasi ='mtd'
+            group by a.urutan
+            ) as a;"),
             'opname_cek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.cek ='Y' and a.lokasi ='opname';"),
             'opname_blmcek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp , count(a.no_nota) as jumlah
             FROM ( SELECT a.no_nota, sum(a.total_rp) as total_rp
