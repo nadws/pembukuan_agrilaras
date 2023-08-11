@@ -16,7 +16,8 @@ class Stok_ayam extends Controller
             'customer' => DB::table('customer')->get(),
             'history_ayam' => DB::table('stok_ayam')->where('jenis', 'ayam')->where('id_gudang', '2')->get(),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
-            'invoice_ayam' => DB::select("SELECT * FROM invoice_ayam as a left join customer as b on b.id_customer = a.id_customer 
+            'invoice_ayam' => DB::select("SELECT * 
+            FROM invoice_ayam as a left join customer as b on b.id_customer = a.id_customer 
             where a.lokasi = 'alpa'
             ")
         ];

@@ -14,6 +14,11 @@
             padding: 10px;
 
         }
+
+        .translucent-text {
+            color: rgba(0, 0, 0, 0.5);
+            /* Warna teks dengan tingkat transparansi 0.5 */
+        }
     </style>
     <div class="row">
         <div class="col-lg-12">
@@ -185,9 +190,9 @@
                                 {{number_format($k->pcs,0)}} / ({{number_format($k->pcs - $k->pcs_past,0)}})
                             </td> --}}
                             <!-- mencari ikat  1 ikat = 1kg  -->
-                            <td align="center" class="kg telur">
-
-                                {{number_format($k->kg - ($k->pcs/180),2)}}
+                            <td align="right" class="kg telur">
+                                <dt>{{number_format($k->kg - ($k->pcs/180),1)}}</dt>
+                                {{number_format($k->kg,1)}}
                             </td>
                             <td align="center"
                                 class="butir {{ $k->pcs - $k->pcs_past  < 0 ? 'bg-danger text-white' : '' }} ">
@@ -196,7 +201,7 @@
                             <td align="center" class="kg / today - yesterday {{ ($k->kg - ($k->pcs/180))
                                 - ($k->kg_past - ($k->pcs_past/180)) <  0 ? 'bg-danger text-white' : '' }} ">
 
-                                {{number_format(($k->kg - ($k->pcs/180)) - ($k->kg_past - ($k->pcs_past/180)),2)}}
+                                {{number_format(($k->kg - ($k->pcs/180)) - ($k->kg_past - ($k->pcs_past/180)),1)}}
                             </td>
                             {{-- <td align="center">{{number_format(($k->kg - ($k->pcs/180)) * 1000,2)}}</td> --}}
 
