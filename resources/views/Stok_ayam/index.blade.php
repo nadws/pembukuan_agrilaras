@@ -51,8 +51,8 @@
                 <hr>
             </div>
             <div class="col-lg-4">
-                <label for="">Ekor {{ $stok_ayam->saldo_kandang }}</label>
-                <input type="number" min="0" max="{{ $stok_ayam->saldo_kandang }}" class="form-control ekor" name="qty"
+                <label for="">Ekor {{ $stok_ayam_bjm->saldo_bjm }}</label>
+                <input type="number" min="0" max="{{ $stok_ayam_bjm->saldo_bjm }}" class="form-control ekor" name="qty"
                     value="0">
             </div>
             <div class="col-lg-4">
