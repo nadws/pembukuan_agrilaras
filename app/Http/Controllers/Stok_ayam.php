@@ -34,6 +34,14 @@ class Stok_ayam extends Controller
         $customer = DB::table('customer')->where('id_customer', $r->customer)->first();
         $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
+        $max_customer = DB::table('invoice_ayam')->latest('urutan_customer')->where('id_customer', $r->customer)->first();
+
+        if (empty($max_customer)) {
+            $urutan_cus = '1';
+        } else {
+            $urutan_cus = $max_customer->urutan_customer + 1;
+        }
+
         $data = [
             'tgl' => $r->tgl,
             'debit' => 0,
@@ -55,11 +63,12 @@ class Stok_ayam extends Controller
         $data = [
             'tgl' => $r->tgl,
             'no_nota' => 'PA-' . $nota_t,
-            'customer' => $r->customer,
+            'id_customer' => $r->customer,
             'qty' => $r->qty,
             'h_satuan' => $r->h_satuan,
             'admin' =>  auth()->user()->name,
             'urutan' =>  $nota_t,
+            'urutan_customer' => $urutan_cus,
             'lokasi' => 'alpa'
         ];
         DB::table('invoice_ayam')->insert($data);
