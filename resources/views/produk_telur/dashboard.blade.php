@@ -138,49 +138,49 @@
                         <tr>
                             <th class="dhead" rowspan="2" style="text-align: center">Kandang</th>
                             @foreach ($produk as $p)
-                                <th colspan="2" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
+                            <th colspan="2" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             @foreach ($produk as $p)
-                                <th style="text-align: center" class="dhead">Pcs</th>
-                                <th style="text-align: center" class="dhead">Kg</th>
+                            <th style="text-align: center" class="dhead">Pcs</th>
+                            <th style="text-align: center" class="dhead">Kg</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody style="border-color: #435EBE; font-size: 10px;">
 
                         @foreach ($kandang as $k)
-                            <tr>
-                                <td>{{ $k->nm_kandang }}</td>
-                                @foreach ($produk as $p)
-                                    @php
-                                        $stok = DB::selectOne("SELECT a.pcs , a.kg
+                        <tr>
+                            <td>{{ $k->nm_kandang }}</td>
+                            @foreach ($produk as $p)
+                            @php
+                            $stok = DB::selectOne("SELECT a.pcs , a.kg
                             FROM stok_telur as a
                             where a.tgl = '$tanggal' and a.id_telur = '$p->id_produk_telur' and a.id_gudang = '1'
                             and
                             a.id_kandang = '$k->id_kandang'
                             ");
-                                    @endphp
-                                    <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
-                                    <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
-                                @endforeach
-                            </tr>
+                            @endphp
+                            <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
+                            <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
+                            @endforeach
+                        </tr>
                         @endforeach
                     </tbody>
                     <tfoot style="border-color: #435EBE; font-size: 10px">
                         <tr>
                             <th>Total</th>
                             @foreach ($produk as $p)
-                                @php
-                                    $total_mtd = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg
+                            @php
+                            $total_mtd = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg
                             FROM stok_telur as a
                             where a.tgl = '$tanggal' and a.id_telur = '$p->id_produk_telur' and a.id_gudang = '1' and
                             a.id_kandang != '0'
                             ");
-                                @endphp
-                                <th class="text-end">{{ number_format($total_mtd->pcs, 0) }}</th>
-                                <th class="text-end">{{ number_format($total_mtd->kg, 1) }}</th>
+                            @endphp
+                            <th class="text-end">{{ number_format($total_mtd->pcs, 0) }}</th>
+                            <th class="text-end">{{ number_format($total_mtd->kg, 1) }}</th>
                             @endforeach
                         </tr>
 
@@ -190,8 +190,8 @@
 
 
                 @if (!empty($cekStokMasuk->check))
-                    <a href="{{ route('CheckMartadah', ['cek' => $cekStokMasuk->check, 'tgl' => $tanggal]) }}"
-                        class="float-end btn btn-sm  btn-primary">{{ $cekStokMasuk->check == 'T' ? 'Save' : 'Unsave' }}</a>
+                <a href="{{ route('CheckMartadah', ['cek' => $cekStokMasuk->check, 'tgl' => $tanggal]) }}"
+                    class="float-end btn btn-sm  btn-primary">{{ $cekStokMasuk->check == 'T' ? 'Save' : 'Unsave' }}</a>
                 @endif
 
 
@@ -207,42 +207,42 @@
                     <thead style="font-size: 10px">
                         <tr>
                             @foreach ($produk as $p)
-                                <th colspan="2" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
+                            <th colspan="2" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             @foreach ($produk as $p)
-                                <th style="text-align: center" class="dhead">Pcs</th>
-                                <th style="text-align: center" class="dhead">Kg</th>
+                            <th style="text-align: center" class="dhead">Pcs</th>
+                            <th style="text-align: center" class="dhead">Kg</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody style="border-color: #435EBE; font-size: 10px">
                         @foreach ($produk as $p)
-                            @php
-                                $stok_transfer = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg
+                        @php
+                        $stok_transfer = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg
                         FROM stok_telur as a
                         where a.tgl = '$tanggal' and a.pcs != '0' and a.id_telur = '$p->id_produk_telur' and a.id_gudang
                         = '2'
                         ");
-                            @endphp
-                            <td align="right">
-                                {{ empty($stok_transfer->pcs) ? '0' : number_format($stok_transfer->pcs, 0) }}
-                            </td>
-                            <td align="right">
-                                {{ empty($stok_transfer->kg) ? '0' : number_format($stok_transfer->kg, 1) }}
-                            </td>
+                        @endphp
+                        <td align="right">
+                            {{ empty($stok_transfer->pcs) ? '0' : number_format($stok_transfer->pcs, 0) }}
+                        </td>
+                        <td align="right">
+                            {{ empty($stok_transfer->kg) ? '0' : number_format($stok_transfer->kg, 1) }}
+                        </td>
                         @endforeach
                     </tbody>
 
                 </table>
                 @php
-                    
+
                 @endphp
 
                 @if (!empty($cekTransfer))
-                    <a href="{{ route('CheckAlpa', ['cek' => $cekTransfer->check, 'tgl' => $tanggal]) }}"
-                        class="float-end btn btn-sm  btn-primary">{{ $cekTransfer->check == 'T' ? 'Save' : 'Unsave' }}</a>
+                <a href="{{ route('CheckAlpa', ['cek' => $cekTransfer->check, 'tgl' => $tanggal]) }}"
+                    class="float-end btn btn-sm  btn-primary">{{ $cekTransfer->check == 'T' ? 'Save' : 'Unsave' }}</a>
                 @endif
 
                 <button class="float-end btn btn-sm btn-primary me-2 history-tf-alpa"><i class="fas fa-history"></i>
@@ -255,57 +255,55 @@
                         <tr>
                             <th rowspan="2" class="dhead" style="vertical-align: middle">Gudang</th>
                             @foreach ($produk as $p)
-                                <th colspan="3" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
+                            <th colspan="3" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             @foreach ($produk as $p)
-                                <th style="text-align: center" class="dhead">pcs</th>
-                                <th style="text-align: center" class="dhead">kg</th>
-                                <th style="text-align: center" class="dhead">ikat</th>
+                            <th style="text-align: center" class="dhead">pcs</th>
+                            <th style="text-align: center" class="dhead">kg</th>
+                            <th style="text-align: center" class="dhead">ikat</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody style="border-color: #435EBE; ">
                         @foreach ($gudang as $g)
-                            <tr>
-                                <td>
-                                    {{ $g->nm_gudang }}
-                                    <a href="#" onclick="event.preventDefault();"
-                                        class="badge bg-primary float-end ms-2  text-sm {{ $g->id_gudang_telur == '2' ? 'history-tf-alpa' : 'history-mtd' }} "><i
-                                            class="fas fa-history"></i></i>
-                                    </a>
-                                    <a href="{{ route('penyetoran_telur') }}"
-                                        {{ $g->id_gudang_telur == '2' ? '' : 'hidden' }}
-                                        class="badge bg-success text-sm float-end" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" title="penyetoran telur">
-                                        <i class="fas fa-money-bill-wave-alt"></i>
-                                    </a>
-                                    <a href="{{ route('piutang_telur') }}"
-                                        {{ $g->id_gudang_telur == '2' ? '' : 'hidden' }}
-                                        class="badge bg-primary text-sm me-2 float-end" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" title="Piutang telur"><i
-                                            class="far fa-credit-card"></i></i>
-                                    </a>
-                                    <a href="{{ route('tbh_invoice_telur') }}"
-                                        {{ $g->id_gudang_telur == '2' ? '' : 'hidden' }}
-                                        class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" title="Penjualan telur"><i class="fas fa-plus"></i>
-                                    </a>
-                                    <a href="{{ route('penjualan_agrilaras') }}"
-                                        {{ $g->id_gudang_telur == '2' ? '' : 'hidden' }}
-                                        class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" title="Penjualan telur"><i class="fas fa-list"></i>
-                                    </a>
-                                </td>
-                                @foreach ($produk as $p)
-                                    @php
-                                        $stok = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg, sum(a.pcs_kredit) as
+                        <tr>
+                            <td>
+                                {{ $g->nm_gudang }}
+                                <a href="#" onclick="event.preventDefault();"
+                                    class="badge bg-primary float-end ms-2  text-sm {{ $g->id_gudang_telur == '2' ? 'history-tf-alpa' : 'history-mtd' }} "><i
+                                        class="fas fa-history"></i></i>
+                                </a>
+                                <a href="{{ route('penyetoran_telur') }}" {{ $g->id_gudang_telur == '2' ? '' : 'hidden'
+                                    }}
+                                    class="badge bg-success text-sm float-end" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="penyetoran telur">
+                                    <i class="fas fa-money-bill-wave-alt"></i>
+                                </a>
+                                <a href="{{ route('piutang_telur') }}" {{ $g->id_gudang_telur == '2' ? '' : 'hidden' }}
+                                    class="badge bg-primary text-sm me-2 float-end" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Piutang telur"><i class="far fa-credit-card"></i></i>
+                                </a>
+                                <a href="{{ route('tbh_invoice_telur') }}" {{ $g->id_gudang_telur == '2' ? '' : 'hidden'
+                                    }}
+                                    class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Penjualan telur"><i class="fas fa-plus"></i>
+                                </a>
+                                <a href="{{ route('penjualan_agrilaras') }}" {{ $g->id_gudang_telur == '2' ? '' :
+                                    'hidden' }}
+                                    class="badge bg-primary me-2 text-sm float-end" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Penjualan telur"><i class="fas fa-list"></i>
+                                </a>
+                            </td>
+                            @foreach ($produk as $p)
+                            @php
+                            $stok = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg, sum(a.pcs_kredit) as
                             pcs_kredit, sum(a.kg_kredit) as kg_kredit
                             FROM stok_telur as a
                             where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and a.check
                             ='Y' and opname = 'T' group by a.id_telur");
-                                        $stok2 = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg, sum(a.pcs_kredit) as
+                            $stok2 = DB::selectOne("SELECT sum(a.pcs) as pcs , sum(a.kg) as kg, sum(a.pcs_kredit) as
                             pcs_kredit, sum(a.kg_kredit) as kg_kredit
                             FROM stok_telur as a
                             where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and opname =
@@ -378,8 +376,8 @@
                                 <a href="{{ route('penjualan_martadah_cek', ['lokasi' => 'mtd']) }}"
                                     class="btn btn-primary btn-sm"><i class="fas fa-history"></i>
                                     History
-                                    <span
-                                        class="badge bg-danger">{{ empty($penjualan_blmcek_mtd->jumlah) ? '0' : $penjualan_blmcek_mtd->jumlah }}</span>
+                                    <span class="badge bg-danger">{{ empty($penjualan_blmcek_mtd->jumlah) ? '0' :
+                                        $penjualan_blmcek_mtd->jumlah }}</span>
                                 </a>
                             </td>
                         </tr>
@@ -396,8 +394,8 @@
 
                                 <a href="{{ route('penjualan_umum_cek') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-history"></i> History
-                                    <span
-                                        class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' : $penjualan_umum_blmcek_mtd->jumlah }}</span>
+                                    <span class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :
+                                        $penjualan_umum_blmcek_mtd->jumlah }}</span>
                                 </a>
                             </td>
                         </tr>
@@ -412,11 +410,12 @@
                             <td align="center">
                                 <a href="{{ route('penjualan_ayam.index') }}" class="btn btn-primary btn-sm float-end">
                                     <i class="fas fa-history"></i> History
-                                    <span
-                                        class="badge bg-danger">{{ empty($penjualan_ayam_blmcek_mtd->jumlah) ? '0' : $penjualan_ayam_blmcek_mtd->jumlah }}</span>
+                                    <span class="badge bg-danger">{{ empty($penjualan_ayam_blmcek_mtd->jumlah) ? '0' :
+                                        $penjualan_ayam_blmcek_mtd->jumlah }}</span>
                                 </a>
-                                <a href="{{ route('penjualan_ayam.penyetoran') }}" class="badge bg-success text-sm float-end me-2"
-                                    data-bs-toggle="tooltip" data-bs-placement="top" title="penyetoran ayam">
+                                <a href="{{ route('penjualan_ayam.penyetoran') }}"
+                                    class="badge bg-success text-sm float-end me-2" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="penyetoran ayam">
                                     <i class="fas fa-money-bill-wave-alt"></i>
                                 </a>
 
@@ -434,8 +433,8 @@
                                 <a href="{{ route('bukukan_opname_martadah') }}" class="btn btn-primary btn-sm"><i
                                         class="fas fa-history"></i>
                                     History
-                                    <span
-                                        class="badge bg-danger">{{ empty($opname_blmcek_mtd->jumlah) ? '0' : $opname_blmcek_mtd->jumlah }}</span>
+                                    <span class="badge bg-danger">{{ empty($opname_blmcek_mtd->jumlah) ? '0' :
+                                        $opname_blmcek_mtd->jumlah }}</span>
                                 </a>
                             </td>
                         </tr>
@@ -518,8 +517,8 @@
         </form>
     </x-slot>
     @section('js')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
 
                 $('.step').on('click', function() {
                     $(this).addClass('active').prevAll().addClass('active');
@@ -804,7 +803,7 @@
 
                 });
             });
-        </script>
-        <script src="{{ asset('js') }}/stok_opname.js"></script>
+    </script>
+    <script src="{{ asset('js') }}/stok_opname.js"></script>
     @endsection
 </x-theme.app>
