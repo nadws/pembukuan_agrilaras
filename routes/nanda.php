@@ -346,8 +346,11 @@ Route::middleware('auth')->group(function () {
         ->name('penjualan_ayam.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/setor', 'setor')->name('setor');
-            Route::post('/save_setor', 'save_setor')->name('save_setor');
+            Route::get('/cek', 'cek')->name('cek');
+            Route::post('/save_cek', 'save_cek')->name('save_cek');
+            Route::get('/penyetoran', 'penyetoran')->name('penyetoran');
+            Route::get('/perencanaan_setor', 'perencanaan_setor')->name('perencanaan_setor');
+            Route::post('/save_perencanaan', 'save_perencanaan')->name('save_perencanaan');
         });
 
     Route::controller(Stok_pakanController::class)->group(function () {

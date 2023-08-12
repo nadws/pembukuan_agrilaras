@@ -24,7 +24,7 @@
                 color: white;
             }
         </style>
-        <form action="{{ route('penjualan_ayam.save_setor') }}" method="post" class="save_jurnal">
+        <form action="{{ route('penjualan_ayam.save_cek') }}" method="post" class="save_jurnal">
             @csrf
 
             <section class="row">
