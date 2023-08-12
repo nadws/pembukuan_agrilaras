@@ -30,7 +30,7 @@
                     <th class="dhead" width="10%" rowspan="2">Produk </th>
                     <th style="text-align: center" class="dhead abu" colspan="3">Penjualan per pcs</th>
                     <th style="text-align: center" class="dhead putih" colspan="3">Penjualan per ikat</th>
-                    <th style="text-align: center" class="dhead abuGelap" colspan="3">Penjualan per rak</th>
+                    <th style="text-align: center" class="dhead abuGelap" colspan="4">Penjualan per rak</th>
                     <th rowspan="2" class="dhead" width="10%" style="text-align: center; white-space: nowrap;">Total
                         Rp
                     </th>
@@ -38,17 +38,18 @@
                 <tr>
 
                     {{-- <th class="dhead" width="10%">Produk </th> --}}
-                    <th class="dhead" width="7%" style="text-align: center">Pcs</th>
-                    <th class="dhead" width="7%" style="text-align: center">Kg</th>
-                    <th class="dhead" width="10%" style="text-align: center;">Rp Pcs</th>
+                    <th class="dhead abu" width="7%" style="text-align: center">Pcs</th>
+                    <th class="dhead abu" width="7%" style="text-align: center">Kg</th>
+                    <th class="dhead abu" width="10%" style="text-align: center;">Rp Pcs</th>
 
-                    <th class="dhead" width="7%" style="text-align: center;">Ikat</th>
-                    <th class="dhead" width="7%" style="text-align: center;">Kg</th>
-                    <th class="dhead" width="10%" style="text-align: center;">Rp Ikat</th>
+                    <th class="dhead putih" width="7%" style="text-align: center;">Ikat</th>
+                    <th class="dhead putih" width="7%" style="text-align: center;">Kg</th>
+                    <th class="dhead putih" width="10%" style="text-align: center;">Rp Ikat</th>
 
-                    <th class="dhead" width="7%" style="text-align: center;">Pcs</th>
-                    <th class="dhead" width="7%" style="text-align: center;">Kg</th>
-                    <th class="dhead" width="10%" style="text-align: center;">Rp Rak</th>
+                    <th class="abuGelap" width="7%" style="text-align: center;">Pcs</th>
+                    <th class="abuGelap" width="7%" style="text-align: center;">Kg Kotor</th>
+                    <th class="abuGelap" width="7%" style="text-align: center;">Kg Bersih</th>
+                    <th class="abuGelap" width="10%" style="text-align: center;">Rp Rak</th>
 
                     {{-- <th class="dhead" width="10%" style="text-align: center; white-space: nowrap;">Total Rp
                     </th> --}}
@@ -61,7 +62,6 @@
                 @foreach ($invoice as $i)
 
                 <tr>
-
                     <td>{{$i->nm_telur}}</td>
                     <td align="right">{{$i->pcs_pcs}}</td>
                     <td align="right">{{$i->kg_pcs}}</td>
@@ -73,6 +73,7 @@
                     <!-- Jual Ikat -->
                     <!-- Jual Kg -->
                     <td align="right">{{$i->pcs_kg}}</td>
+                    <td align="right">{{$i->kg_kg_kotor}}</td>
                     <td align="right">{{$i->kg_kg}}</td>
                     {{-- <td align="right">{{$i->rak_kg}}</td> --}}
                     <td align="right">Rp. {{number_format($i->rp_kg,0)}}</td>
@@ -98,7 +99,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="9"></td>
+                    <td colspan="10"></td>
                     <th>Total</th>
                     <th style="text-align: right">Rp. {{number_format($total_semua,0)}}</th>
                 </tr>
