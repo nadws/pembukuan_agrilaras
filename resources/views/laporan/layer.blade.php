@@ -120,6 +120,7 @@
                         $ayam_akhir = 0;
 
                         $kg = 0;
+                        $kg_kotor = 0;
                         $gr_butir = 0;
                         $pakan = 0;
                         $butir=0;
@@ -137,6 +138,7 @@
                         @foreach ($kandang as $k)
                         @php
                         $kg += empty($k->pcs) ? '0' : $k->kg - ($k->pcs/180);
+                        $kg_kotor += empty($k->pcs) ? '0' : $k->kg;
                         $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) /
                         $k->pcs,0);
                         $pakan += empty($k->kg_pakan) ? '0' : $k->kg_pakan / 1000;
@@ -302,7 +304,7 @@
                             <th class="dhead">{{number_format($ayam_awal,0)}}/{{number_format($ayam_akhir,0)}}
                                 ({{number_format(($ayam_akhir/$ayam_awal) * 100,0)}} %)</th>
                             <th class="dhead">{{$mati}} / {{$jual}}</th>
-                            <th class="dhead">{{number_format($kg,2)}}</th>
+                            <th class="dhead">{{number_format($kg,2)}} <br> {{number_format($kg_kotor,2)}}</th>
                             <th class="dhead">{{number_format($butir,0)}}</th>
                             <th class="dhead">{{number_format($kg_today,2)}}</th>
                             <th class="dhead">{{$gr_butir/4}}</th>

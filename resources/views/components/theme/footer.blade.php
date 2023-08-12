@@ -76,6 +76,9 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     $('.selectView').select2({
         dropdownParent: $('#view .modal-content')
     });
+    $('.select_ayam').select2({
+        dropdownParent: $('#penjualan_ayam .modal-content')
+    });
 
     $('.costume_muncul').hide();
     $('.bulan_muncul').hide();
