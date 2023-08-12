@@ -54,7 +54,7 @@
             <td>{{$no + 1}}</td>
             <td>{{$a->nm_telur}}</td>
             <td align="right">{{number_format($a->pcs,0)}}</td>
-            <td align="right">{{number_format($a->kg,0)}}</td>
+            <td align="right">{{number_format($a->kg,2)}}</td>
             <td align="right">{{number_format($a->pcs / 180,2)}}</td>
             <td align="right">{{number_format($a->kg_jual,2)}}</td>
             <td align="right">Rp {{number_format($a->rp_satuan,0)}}</td>

@@ -14,28 +14,29 @@
             </th>
         </tr>
         <tr>
-            <th style="text-align: center" colspan="2">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+            <th style="text-align: center; white-space: nowrap;" colspan="2">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
                         Transaksi Ayam
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li>
-                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
-                                href="#">Penjualan Ayam
-                            </a>
-                        </li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
+                                href="#">Penjualan Ayam</a></li>
+                        <li><a class="dropdown-item" href="{{route('piutang_ayam')}}">Piutang Ayam</a></li>
                     </ul>
                 </div>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
-                    class="btn btn-sm btn-primary">Penjualan Ayam</a>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam" class="btn btn-sm btn-primary">History
                     Stok
                 </a>
                 <a href="{{route('history_ayam')}}" class="btn btn-sm btn-primary">History
                     Penjualan
+                </a>
+            </th>
+        </tr>
+        <tr>
+            <th style="text-align: center; white-space: nowrap;" colspan="2">
+                <a href="{{route('history_ayam')}}" class="btn btn-sm btn-primary">Penyetoran Ayam
                 </a>
             </th>
         </tr>
@@ -102,6 +103,7 @@
                             @foreach ($akun as $a)
                             <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                             @endforeach
+                            <option value="66">Piutang Ayam</option>
                         </select>
                     </div>
                     <div class="col-lg-3 mt-2">

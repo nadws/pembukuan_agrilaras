@@ -23,6 +23,7 @@
                     <th class="dhead text-end">Qty</th>
                     <th class="dhead text-end">Harga </th>
                     <th class="dhead text-end">Total Harga</th>
+                    <th class="dhead text-end">Ket</th>
                     <th class="dhead">Aksi</th>
                 </thead>
                 <tbody>
@@ -35,6 +36,7 @@
                         <td class="text-end">{{$i->qty}}</td>
                         <td class="text-end">Rp. {{number_format($i->h_satuan,0)}}</td>
                         <td class="text-end">Rp. {{number_format($i->qty * $i->h_satuan,0)}}</td>
+                        <td>{{$i->total_bayar != '0' ? 'Unpaid' : 'Paid'}}</td>
                         <td>
                             <a href="#" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                             <a class="btn btn-sm btn-danger delete_nota" no_nota="{{ $i->no_nota }}" href="#"
@@ -78,7 +80,7 @@
                         </div>
                         <div class="col-lg-4">
                             <label for="">Customer</label>
-                            <select name="customer" class="select2_add" required>
+                            <select name="customer" class="select_ayam" required>
                                 <option value="">Pilih Customer</option>
                                 @foreach ($customer as $s)
                                 <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
@@ -124,11 +126,12 @@
                                 </div>
                                 <div class="col-lg-5 mt-2">
                                     <label for="">Pilih Akun Pembayaran</label>
-                                    <select name="id_akun[]" id="" class="select2_add">
+                                    <select name="id_akun[]" id="" class="select_ayam">
                                         <option value="">-Pilih Akun-</option>
                                         @foreach ($akun as $a)
                                         <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                                         @endforeach
+                                        <option value="66">Piutang Ayam</option>
                                     </select>
                                 </div>
                                 <div class="col-lg-3 mt-2">

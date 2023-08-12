@@ -375,7 +375,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/stok_ayam', 'index')->name('stok_ayam');
         Route::get('/history_ayam', 'history_ayam')->name('history_ayam');
         Route::get('/hapus_ayam', 'hapus_ayam')->name('hapus_ayam');
+        Route::get('/piutang_ayam', 'piutang_ayam')->name('piutang_ayam');
+        Route::get('/bayar_piutang_ayam', 'bayar_piutang')->name('bayar_piutang_ayam');
         Route::post('/save_penjualan_ayam', 'save_penjualan_ayam')->name('save_penjualan_ayam');
+        Route::post('/save_bayar_piutang_ayam', 'save_bayar_piutang')->name('save_bayar_piutang_ayam');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {
         Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');
