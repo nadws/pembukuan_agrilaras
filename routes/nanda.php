@@ -376,6 +376,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::controller(Stok_ayam::class)->group(function () {
         Route::get('/stok_ayam', 'index')->name('stok_ayam');
+        Route::get('/history_ayam', 'history_ayam')->name('history_ayam');
+        Route::get('/hapus_ayam', 'hapus_ayam')->name('hapus_ayam');
         Route::post('/save_penjualan_ayam', 'save_penjualan_ayam')->name('save_penjualan_ayam');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {

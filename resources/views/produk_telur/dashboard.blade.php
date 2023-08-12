@@ -310,36 +310,37 @@
                             FROM stok_telur as a
                             where a.id_gudang ='$g->id_gudang_telur' and a.id_telur = '$p->id_produk_telur' and opname =
                             'T' group by a.id_telur");
-                                    @endphp
-                                    @if ($g->id_gudang_telur == '1')
-                                        <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 0) }}
-                                            /
-                                            {{ empty($stok2->pcs) ? '0' : number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
-                                        </td>
-                                        <td align="right">
-                                            {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 0) }}
-                                            /
-                                            {{ empty($stok2->kg) ? '0' : number_format($stok2->kg - $stok2->kg_kredit, 0) }}
-                                        </td>
-                                        <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 1) }}
-                                            /
-                                            {{ empty($stok2->pcs) ? '0' : number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 1) }}
-                                        </td>
-                                    @else
-                                        <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 0) }}
-                                        </td>
-                                        <td align="right">
-                                            {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 0) }}
-                                        </td>
-                                        <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 1) }}
-                                        </td>
-                                    @endif
-                                @endforeach
-                            </tr>
+                            @endphp
+                            @if ($g->id_gudang_telur == '1')
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 0) }}
+                                /
+                                {{ empty($stok2->pcs) ? '0' : number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
+                            </td>
+                            <td align="right">
+                                {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2) }}
+                                /
+                                {{ empty($stok2->kg) ? '0' : number_format($stok2->kg - $stok2->kg_kredit, 2) }}
+                            </td>
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 2) }}
+                                /
+                                {{ empty($stok2->pcs) ? '0' : number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 2)
+                                }}
+                            </td>
+                            @else
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 2) }}
+                            </td>
+                            <td align="right">
+                                {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2) }}
+                            </td>
+                            <td align="right">
+                                {{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 1) }}
+                            </td>
+                            @endif
+                            @endforeach
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
