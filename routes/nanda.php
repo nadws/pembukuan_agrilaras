@@ -348,7 +348,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/cek', 'cek')->name('cek');
             Route::post('/save_cek', 'save_cek')->name('save_cek');
-            Route::get('/penyetoran', 'penyetoran')->name('penyetoran');
+            Route::get('/penyetoran', 'penyetoran')->name('penyetoran'); 
+            Route::get('/get_history_perencanaan', 'get_history_perencanaan')->name('get_history_perencanaan'); 
+            Route::get('/print_setoran', 'print_setoran')->name('print_setoran'); 
+            Route::get('/delete_perencanaan', 'delete_perencanaan')->name('delete_perencanaan'); 
             Route::get('/perencanaan_setor', 'perencanaan_setor')->name('perencanaan_setor');
             Route::post('/save_perencanaan', 'save_perencanaan')->name('save_perencanaan');
         });
