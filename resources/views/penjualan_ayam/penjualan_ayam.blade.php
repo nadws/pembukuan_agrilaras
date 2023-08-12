@@ -101,6 +101,7 @@
         </section>
         @section('js')
             <script>
+                pencarian('pencarian', 'tablealdi')
                 edit('detail_nota', 'no_nota', 'penjualan2/detail', 'detail_jurnal')
 
                 $(".btn_bayar").hide();
@@ -164,7 +165,7 @@
                         params.append('no_nota', orderNumber);
                     });
                     var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
-                    window.location.href = "/penjualan_ayam/setor?" + queryString;
+                    window.location.href = "/penjualan_ayam/cek?" + queryString;
 
                 });
             </script>
