@@ -30,17 +30,7 @@
             @csrf
 
             <section class="row">
-                {{-- <div class="col-lg-2 col-6">
-                    <label for="">Tanggal</label>
-                    <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
-                </div>
-                <div class="col-lg-2 col-6">
-                    <label for="">No Nota</label>
-                    <input type="text" class="form-control nota_bk" name="no_nota" value="PA-{{$nota}}" readonly>
-                </div>
-                <div class="col-lg-12">
-                    <hr style="border: 1px solid black">
-                </div> --}}
+
                 <div class="col-lg-12">
                     <table class="table table-striped table-bordered">
                         <thead>
@@ -54,11 +44,11 @@
                         </thead>
                         <tbody>
                             @php
-                            $total = 0;
+                                $total = 0;
                             @endphp
                             @foreach ($id_jurnal as $no => $n)
-                            @php
-                            $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
+                                @php
+                                    $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
                             a.debit
                             FROM jurnal as a
                             left join akun as b on b.id_akun = a.id_akun
@@ -66,28 +56,27 @@
                             group by a.no_nota
                             order by a.tgl ASC
                             ");
-                            $total += $invoice->debit;
-                            $id_akun = $invoice->id_akun;
-                            @endphp
-                            <tr>
-                                <td>{{tanggal($invoice->tgl)}}</td>
-                                <td>{{$invoice->no_nota}}</td>
-                                <td>{{$invoice->nm_akun}}</td>
-                                <td>{{$invoice->ket}}</td>
-                                <td align="right">{{number_format($invoice->debit,0)}}</td>
-                            </tr>
-                            <input type="hidden" name="id_jurnal[]" value="{{$invoice->id_jurnal}}">
-                            <input type="hidden" name="no_nota_jurnal[]" value="{{$invoice->no_nota}}">
-                            <input type="hidden" name="nominal[]" value="{{$invoice->debit}}">
-                            <input type="hidden" name="id_akun_pem[]" value="{{$invoice->id_akun}}">
-
+                                    $total += $invoice->debit;
+                                    $id_akun = $invoice->id_akun;
+                                @endphp
+                                <tr>
+                                    <td>{{ tanggal($invoice->tgl) }}</td>
+                                    <td>{{ $invoice->no_nota }}</td>
+                                    <td>{{ $invoice->nm_akun }}</td>
+                                    <td>{{ $invoice->ket }}</td>
+                                    <td align="right">{{ number_format($invoice->debit, 0) }}</td>
+                                </tr>
+                                <input type="hidden" name="id_jurnal[]" value="{{ $invoice->id_jurnal }}">
+                                <input type="hidden" name="no_nota_jurnal[]" value="{{ $invoice->no_nota }}">
+                                <input type="hidden" name="nominal[]" value="{{ $invoice->debit }}">
+                                <input type="hidden" name="id_akun_pem[]" value="{{ $invoice->id_akun }}">
                             @endforeach
 
 
                         </tbody>
                         <tfoot>
                             <th colspan="4">Total</th>
-                            <th style="text-align: right">Rp {{number_format($total,0)}}</th>
+                            <th style="text-align: right">Rp {{ number_format($total, 0) }}</th>
                         </tfoot>
 
 
@@ -100,31 +89,31 @@
             <div class="row">
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
-                    <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
-                    <input type="hidden" class="form-control" name="id_akun1" value="{{$id_akun}}">
+                    <input type="date" class="form-control" name="tgl" value="{{ date('Y-m-d') }}">
+                    <input type="hidden" class="form-control" name="id_akun1" value="{{ $id_akun }}">
                 </div>
                 <div class="col-lg-3">
                     <label for="">Pilih Akun Debit</label>
                     <Select class="select2_add" name="id_akun" required>
-                        <option value="">-Pilih Akun-</option> 
+                        <option value="">-Pilih Akun-</option>
                         @foreach ($akun as $a)
-                        <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
+                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                         @endforeach
                     </Select>
                 </div>
                 <div class="col-lg-3">
                     <label for="">Keterangan</label>
-                    <input type="text" class="form-control" name="ket" value="PA-{{$nota}}">
-                    <input type="hidden" name="no_nota" value="PA-{{$nota}}">
+                    <input type="text" class="form-control" name="ket" value="PA-{{ $nota }}">
+                    <input type="hidden" name="no_nota" value="PA-{{ $nota }}">
                 </div>
                 <div class="col-lg-3">
                     <label for="">Total Setor</label>
                     <input type="text" class="form-control " style="text-align: right"
-                        value="Rp {{number_format($total,0,',','.')}}" readonly>
+                        value="Rp {{ number_format($total, 0, ',', '.') }}" readonly>
 
-                    <input type="hidden" value="{{$total}}" name="total_setor">
+                    <input type="hidden" value="{{ $total }}" name="total_setor">
                     <input type="hidden" value="3" name="id_akun_kredit">
-                    <input type="hidden" value="PA-{{$nota}}" name="no_nota">
+                    <input type="hidden" value="PA-{{ $nota }}" name="no_nota">
                 </div>
             </div>
     </x-slot>
@@ -141,17 +130,16 @@
 
 
     @section('scripts')
-    <script>
-        $(document).ready(function () {
-            $("form").on("keypress", function (e) {
-                if (e.which === 13) {
-                    e.preventDefault();
-                    return false;
-                }
+        <script>
+            $(document).ready(function() {
+                $("form").on("keypress", function(e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+                aksiBtn("form");
             });
-            aksiBtn("form");
-        });
-    </script>
-
+        </script>
     @endsection
 </x-theme.app>

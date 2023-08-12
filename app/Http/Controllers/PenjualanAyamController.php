@@ -52,7 +52,7 @@ class PenjualanAyamController extends Controller
         return view('penjualan_ayam.penjualan_ayam', $data);
     }
 
-    public function setor(Request $r)
+    public function cek(Request $r)
     {
         $data = [
             'title' => 'Penerimaan Uang Penjualan Ayam',
@@ -62,9 +62,9 @@ class PenjualanAyamController extends Controller
         return view('penjualan_ayam.setor', $data);
     }
 
-    public function save_setor(Request $r)
+    public function save_cek(Request $r)
     {
-        $id_akun_penualan_ayam = 521;
+        $id_akun_penualan_ayam = 37;
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '6')->first();
 
         if (empty($max)) {
@@ -135,7 +135,7 @@ class PenjualanAyamController extends Controller
                 FROM jurnal as c
                 where c.kredit != '0' and c.id_buku ='6'
             ) as c on c.no_nota = a.no_nota
-            where a.id_buku = '6' and a.id_akun IN('3','4','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(521,522)
+            where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(37,66)
             group by a.no_nota
             order by a.tgl , a.no_nota ASC
             ")
@@ -163,8 +163,8 @@ class PenjualanAyamController extends Controller
     }
 
     public function save_perencanaan(Request $r)
-    {
-        $max = DB::table('setoran_telur')->latest('urutan')->first();
+    {   
+        $max = DB::table('setoran_ayam')->latest('urutan')->first();
 
         if (empty($max->urutan)) {
             $nota_t = '1000';
@@ -173,7 +173,7 @@ class PenjualanAyamController extends Controller
         }
         for ($x = 0; $x < count($r->id_jurnal); $x++) {
             $data = [
-                'nota_setor' => 'PET-' . $nota_t,
+                'nota_setor' => 'PEYAM-' . $nota_t,
                 'tgl' => $r->tgl,
                 'id_jurnal' => $r->id_jurnal[$x],
                 'no_nota_jurnal' => $r->no_nota_jurnal[$x],
@@ -181,12 +181,12 @@ class PenjualanAyamController extends Controller
                 'urutan' => $nota_t,
                 'id_akun' => $r->id_akun_pem[$x]
             ];
-            DB::table('setoran_telur')->insert($data);
+            DB::table('setoran_ayam')->insert($data);
 
-            DB::table('jurnal')->where('id_jurnal', $r->id_jurnal[$x])->update(['setor' => 'Y', 'nota_setor' => 'PET-' . $nota_t]);
+            DB::table('jurnal')->where('id_jurnal', $r->id_jurnal[$x])->update(['setor' => 'Y', 'nota_setor' => 'PEYAM-' . $nota_t]);
         }
 
-        DB::table('setoran_telur')->where('nota_setor', 'PET-' . $nota_t)->update(['selesai' => 'Y']);
+        DB::table('setoran_ayam')->where('nota_setor', 'PEYAM-' . $nota_t)->update(['selesai' => 'Y']);
         if (empty($r->id_akun)) {
             # code...
         } else {
@@ -196,7 +196,7 @@ class PenjualanAyamController extends Controller
 
             $data = [
                 'tgl' => $r->tgl,
-                'no_nota' => 'PET-' . $nota_t,
+                'no_nota' => 'PEYAM-' . $nota_t,
                 'id_akun' => $r->id_akun1,
                 'id_buku' => '7',
                 'ket' => $r->ket,
@@ -214,7 +214,7 @@ class PenjualanAyamController extends Controller
 
             $data = [
                 'tgl' => $r->tgl,
-                'no_nota' => 'PET-' . $nota_t,
+                'no_nota' => 'PEYAM-' . $nota_t,
                 'id_akun' => $r->id_akun,
                 'id_buku' => '7',
                 'ket' => $r->ket,
@@ -228,4 +228,60 @@ class PenjualanAyamController extends Controller
         }
         return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
     }
+
+    public function get_history_perencanaan(Request $r)
+    {
+        $tgl1 = $r->tgl1 ?? date('Y-m-01');
+        $tgl2 = $r->tgl2 ?? date('Y-m-t');
+
+        $data =  [
+            'invoice' => DB::select("SELECT a.tgl, a.nota_setor , b.nm_akun, sum(a.nominal) as nominal , a.selesai
+            FROM setoran_ayam as a
+            left join akun as b on b.id_akun = a.id_akun
+            where a.tgl between '$tgl1' and '$tgl2'
+            group by a.nota_setor
+            "),
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+        ];
+        return view('penjualan_ayam.history_perencanaan', $data);
+    }
+
+    public function print_setoran(Request $r)
+    {
+        $invoice = DB::table('setoran_ayam')->where('nota_setor', $r->no_nota)->first();
+        $data = [
+            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal, d.id_customer, d.customer, e.nm_customer, d.urutan_customer
+            FROM setoran_ayam as a
+            left join akun as b on b.id_akun = a.id_akun
+            left join jurnal as c on c.id_jurnal = a.id_jurnal
+            left join invoice_ayam as d on d.no_nota = a.no_nota_jurnal
+            left join customer as e on e.id_customer = d.id_customer
+            where a.nota_setor = '$r->no_nota'
+            group by a.no_nota_jurnal;
+            "),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'no_nota' => $r->no_nota,
+            'invo' => $invoice,
+            'title' => 'Print Setoran'
+        ];
+        return view('penjualan_ayam.print_perencanaan', $data);
+    }
+
+    public function delete_perencanaan(Request $r)
+    {
+        $invoice = DB::table('setoran_ayam')->where('nota_setor', $r->no_nota)->get();
+        foreach ($invoice as $i) {
+            $data = [
+                'setor' => 'T',
+                'nota_setor' => ''
+            ];
+            DB::table('jurnal')->where('id_jurnal', $i->id_jurnal)->update($data);
+        }
+        DB::table('jurnal')->where('no_nota', $r->no_nota)->delete();
+        DB::table('setoran_ayam')->where('nota_setor', $r->no_nota)->delete();
+
+        return redirect()->route('penjualan_ayam.penyetoran')->with('sukses', 'Data berhasil dihapus');
+    }
+
 }
