@@ -36,7 +36,7 @@
         </tr>
         <tr>
             <th style="text-align: center; white-space: nowrap;" colspan="2">
-                <a href="{{route('history_ayam')}}" class="btn btn-sm btn-primary">Penyetoran Ayam
+                <a href="{{route('penjualan_ayam.penyetoran')}}" class="btn btn-sm btn-primary">Penyetoran Ayam
                 </a>
             </th>
         </tr>

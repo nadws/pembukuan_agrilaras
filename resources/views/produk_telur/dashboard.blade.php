@@ -408,16 +408,12 @@
                             <td align="right">Rp {{ number_format($penjualan_ayam_mtd->ttl_rp, 0) }}</td>
                             <td align="right">Rp {{ number_format($penjualan_ayam_blmcek_mtd->ttl_rp, 0) }}</td>
                             <td align="center">
-                                <a href="{{ route('penjualan_ayam.index') }}" class="btn btn-primary btn-sm float-end">
+                                <a href="{{ route('penjualan_ayam.index') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-history"></i> History
                                     <span class="badge bg-danger">{{ empty($penjualan_ayam_blmcek_mtd->jumlah) ? '0' :
                                         $penjualan_ayam_blmcek_mtd->jumlah }}</span>
                                 </a>
-                                <a href="{{ route('penjualan_ayam.penyetoran') }}"
-                                    class="badge bg-success text-sm float-end me-2" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" title="penyetoran ayam">
-                                    <i class="fas fa-money-bill-wave-alt"></i>
-                                </a>
+                            
 
                             </td>
                         </tr>
