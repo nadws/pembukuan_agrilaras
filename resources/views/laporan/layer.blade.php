@@ -72,7 +72,7 @@
                             <th class="dhead">kg<br>
 
                             </th>
-                            <th class="dhead">selisi butir<br>
+                            <th class="dhead">selisih butir<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                     style="cursor: pointer"></i>
                             </th>
