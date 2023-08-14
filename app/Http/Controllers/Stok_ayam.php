@@ -258,7 +258,7 @@ class Stok_ayam extends Controller
         $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
         $data = [
             'tgl' => $r->tgl,
-            'no_nota' => 'PT' . $nota_t,
+            'no_nota' => 'PIA' . $nota_t,
             'id_akun' => '66',
             'id_buku' => '6',
             'ket' => 'Pelunasan piutang ayam ' . $r->ket,
@@ -276,7 +276,7 @@ class Stok_ayam extends Controller
             $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
             $data = [
                 'tgl' => $r->tgl,
-                'no_nota' => 'PT' . $nota_t,
+                'no_nota' => 'PIA' . $nota_t,
                 'id_akun' => $r->id_akun[$x],
                 'id_buku' => '6',
                 'ket' => 'Pelunasan piutang ayam ' . $r->ket,

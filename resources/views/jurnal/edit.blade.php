@@ -84,6 +84,11 @@
                                             {{ $a->nm_akun }}</option>
                                         @endforeach
                                     </select>
+                                    <div class="">
+                                        <label for="" class="mt-2 ">Urutan Pengeluaran</label>
+                                        <input type="text" class="form-control " name="no_dokumen[]"
+                                            value="{{$j->no_dokumen}}">
+                                    </div>
                                     {{-- <div class="collapse join{{ $no + 1 }}">
                                         <label for="" class="mt-2 ">No CFM</label>
                                         <input type="text" class="form-control " name="no_urut[]"
