@@ -162,10 +162,14 @@ class CashflowController extends Controller
             'urutan' => $r->urutan
         ];
         DB::table('akuncash_ibu')->insert($data);
+        DB::table('akun')->where('id_akun', $r->id_akun)->update(['cash_uang_ditarik' => 'Y']);
     }
 
     public function delete_akun_ibu(Request $r)
     {
+        $id_akun =  DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu)->first();
+
+        DB::table('akun')->where('id_akun', $id_akun->id_akun)->update(['cash_uang_ditarik' => 'T']);
         DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu)->delete();
     }
 
@@ -177,5 +181,17 @@ class CashflowController extends Controller
             ];
             DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu[$x])->update($data);
         }
+    }
+
+    public function seleksi_akun_control_ditarik(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+
+            $data = [
+                'cash_uang_ditarik' => $r->cash_uang_ditarik[$x]
+            ];
+            DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
     }
 }
