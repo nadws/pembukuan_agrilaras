@@ -29,7 +29,7 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-12">
-                <h5 class=" fw-bold mb-4" style="color: #787878">INVOICE SETORAN TELUR</h5>
+                <h5 class=" fw-bold mb-4" style="color: #787878">INVOICE SETORAN AYAM</h5>
                 <table class="table1">
                     <thead style="background-color: #E9ECEF;">
                         <tr>
