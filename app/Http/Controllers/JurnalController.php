@@ -177,7 +177,7 @@ class JurnalController extends Controller
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
                 'admin' => Auth::user()->name,
-                'no_dokumen' => $r->no_dokumen,
+                // 'no_dokumen' => $r->no_dokumen,
                 'tgl_dokumen' => $r->tgl_dokumen,
                 'id_proyek' => $id_proyek,
                 'id_suplier' => $id_suplier,
@@ -249,6 +249,7 @@ class JurnalController extends Controller
         $nota_t = $r->no_nota;
         $id_post = $r->id_post;
         $id_jurnal = $r->id_jurnal;
+        $no_dokumen = $r->no_dokumen;
 
         Jurnal::where('no_nota', $nota_t)->delete();
 
@@ -275,7 +276,7 @@ class JurnalController extends Controller
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
                 'admin' => Auth::user()->name,
-                'no_dokumen' => $r->no_dokumen,
+                'no_dokumen' => empty($no_dokumen[$i]) ? ' ' : $no_dokumen[$i],
                 'tgl_dokumen' => $r->tgl_dokumen,
                 'id_proyek' => $id_proyek,
                 'no_urut' => $no_urutan,
