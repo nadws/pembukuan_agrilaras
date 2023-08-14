@@ -25,7 +25,7 @@
                 <td>{{ tanggal($i->tgl) }}</td>
                 <td>{{ $i->no_nota }}</td>
                 <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
-                <td align="right">Rp {{ $i->ttl_rp }}</td>
+                <td align="right">{{ $i->ttl_rp }}</td>
                 <td>{{ $i->tipe }}</td>
                 <td>{{ ucwords($i->admin) }}</td>
                 <td>{{ ucwords($i->driver) }}</td>
