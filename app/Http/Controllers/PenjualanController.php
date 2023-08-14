@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PenjualanTelurAglExport;
 use App\Models\Jurnal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
 
 class PenjualanController extends Controller
@@ -67,6 +69,65 @@ class PenjualanController extends Controller
 
         ];
         return view('penjualan_agl.index', $data);
+    }
+
+    public function export_penjualan_telur($tgl1, $tgl2)
+    {
+        $tbl = DB::select("SELECT 
+        a.no_nota, 
+        a.tgl, 
+        a.tipe, 
+        a.admin, 
+        b.nm_customer, 
+        sum(a.total_rp) as ttl_rp, 
+        a.status, 
+        c.debit_bayar, 
+        c.kredit_bayar, 
+        a.urutan_customer, 
+        a.driver, 
+        d.*,
+        a.lokasi 
+      FROM 
+        invoice_telur as a 
+        left join customer as b on b.id_customer = a.id_customer 
+        left join (
+          SELECT 
+            c.no_nota, 
+            sum(c.debit) as debit_bayar, 
+            sum(c.kredit) as kredit_bayar 
+          FROM 
+            bayar_telur as c 
+          group by 
+            c.no_nota
+        ) as c on c.no_nota = a.no_nota 
+        LEFT JOIN (
+          SELECT 
+            no_nota,
+            sum(pcs) as pcs, 
+            sum(kg) as kg, 
+            sum(kg_jual) as kg_jual, 
+            sum(total_rp) as ttl_rp 
+          FROM 
+            invoice_telur 
+          WHERE 
+            tgl BETWEEN '$tgl1' 
+            AND '$tgl2' 
+          GROUP BY 
+            no_nota
+        ) as d ON d.no_nota = a.no_nota 
+      where 
+        a.tgl between '$tgl1' 
+        and '$tgl2' 
+        and a.lokasi = 'alpa' 
+      group by 
+        a.no_nota 
+      order by 
+        a.urutan DESC;
+      ");
+
+        $totalrow = count($tbl) + 1;
+
+        return Excel::download(new PenjualanTelurAglExport($tbl, $totalrow), 'Export Penjualan Telur Agrilaras.xlsx');
     }
 
     public function tbh_invoice_telur(Request $r)

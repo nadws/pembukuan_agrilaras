@@ -7,6 +7,8 @@
             <div class="col-lg-6">
                 <x-theme.button modal="T" href="{{ route('tbh_invoice_telur') }}" icon="fa-plus" addClass="float-end"
                     teks="Buat Invoice" />
+                <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}" icon="fa-print" addClass="float-end"
+                    teks="Export" />
                 <x-theme.btn_filter />
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
             </div>
