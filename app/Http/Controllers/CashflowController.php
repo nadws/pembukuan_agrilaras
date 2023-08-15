@@ -130,7 +130,10 @@ class CashflowController extends Controller
                 and a.tgl between '$tgl1' and '$tgl2'  and a.id_buku = '2'
                  group by a.id_akun
             ) as a on a.id_akun = ak.id_akun
-            WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6');"),
+            left join akuncash_ibu as acb on acb.id_akun = ak.id_akun and acb.kategori = '6'
+            WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
+            order by acb.urutan ASC
+            "),
 
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2
@@ -147,6 +150,7 @@ class CashflowController extends Controller
             FROM akuncash_ibu as a 
             left join akun as b on b.id_akun = a.id_akun
             where a.kategori = '$r->kategori'
+            order by a.urutan ASC
             "),
             'kategori' => $r->kategori
 
@@ -162,10 +166,14 @@ class CashflowController extends Controller
             'urutan' => $r->urutan
         ];
         DB::table('akuncash_ibu')->insert($data);
+        DB::table('akun')->where('id_akun', $r->id_akun)->update(['cash_uang_ditarik' => 'Y']);
     }
 
     public function delete_akun_ibu(Request $r)
     {
+        $id_akun =  DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu)->first();
+
+        DB::table('akun')->where('id_akun', $id_akun->id_akun)->update(['cash_uang_ditarik' => 'T']);
         DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu)->delete();
     }
 
@@ -177,5 +185,17 @@ class CashflowController extends Controller
             ];
             DB::table('akuncash_ibu')->where('id_akuncashibu', $r->id_akuncashibu[$x])->update($data);
         }
+    }
+
+    public function seleksi_akun_control_ditarik(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+
+            $data = [
+                'cash_uang_ditarik' => $r->cash_uang_ditarik[$x]
+            ];
+            DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
     }
 }

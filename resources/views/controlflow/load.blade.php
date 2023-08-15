@@ -23,13 +23,13 @@
             @endphp
             @foreach ($pendapatan as $p)
             @php
-            $total_p += $p->kredit;
+            $total_p += $p->debit - $p->kredit;
             @endphp
             <tr>
                 <td style="padding-left: 20px"><a
                         href="{{ route('summary_buku_besar.detail', ['id_akun' => $p->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ucwords(strtolower($p->nm_akun))}}</a>
                 </td>
-                <td align="right">Rp {{number_format($p->kredit,0)}}</td>
+                <td align="right">Rp {{number_format($p->debit - $p->kredit,0)}}</td>
             </tr>
             @endforeach
 

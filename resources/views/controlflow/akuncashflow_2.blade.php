@@ -1,5 +1,5 @@
 <button type="submit" class="btn btn-primary float-end">Save</button> <br><br><br>
-<table class="table table-bordered " id="tableScroll" width="100%">
+<table class="table table-bordered tableScroll" id="" width="100%">
     <thead>
         <tr>
             <th>No</th>
@@ -16,15 +16,15 @@
             <td align="center">
                 <input type="hidden" name="id_akun[]" value="{{$a->akun_id}}">
                 <input type="checkbox" class="iktisar iktisar{{$no+1}}" urutan="{{$no+1}}" isi="H" value="H" id=""
-                    {{$a->cash_uang_ditarik == 'H' || $a->cash_uang_ditarik == 'Y' || !empty($a->id_akun)? 'checked' :
+                    {{$a->cash_flow == 'H' || $a->cash_flow == 'Y' || !empty($a->id_akun)? 'checked' :
                 ''}}
-                {{$a->cash_uang_ditarik == 'Y' || !empty($a->id_akun) ? 'disabled' : ''}}>
+                {{$a->cash_flow == 'Y' || !empty($a->id_akun) ? 'disabled' : ''}}>
 
-                {{-- <input type="text" class="hasil_iktisar{{$no+1}}" name="cash_uang_ditarik[]"
-                    value="{{$a->cash_uang_ditarik}}"> --}}
+                {{-- <input type="text" class="hasil_iktisar{{$no+1}}" name="cash_flow[]" value="{{$a->cash_flow}}">
+                --}}
 
-                <input type="hidden" class="hasil_iktisar{{$no+1}}" name="cash_uang_ditarik[]"
-                    value="{{empty($a->id_akun) ? ($a->cash_uang_ditarik == 'H' ? 'H' : 'T' ) : 'Y'}}">
+                <input type="hidden" class="hasil_iktisar{{$no+1}}" name="cash_flow[]"
+                    value="{{empty($a->id_akun) ? ($a->cash_flow == 'H' ? 'H' : 'T' ) : 'Y'}}">
             </td>
             <td><span class="badge {{ empty($a->id_akun) ? 'bg-danger' : 'bg-success' }}">
                     {{empty($a->id_akun) ? 'Tidak Masuk' : 'Masuk' }}

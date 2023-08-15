@@ -135,7 +135,7 @@
             <tbody>
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
-                    <th class="dhead2" style="white-space: nowrap">Rp {{number_format($total_b,0)}}</th>
+                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_b,0)}}</th>
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
@@ -163,7 +163,7 @@
             <tbody>
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
-                    <th class="dhead2" style="white-space: nowrap">Rp {{number_format($total_bi,0)}}</th>
+                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_bi,0)}}</th>
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"

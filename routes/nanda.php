@@ -250,6 +250,9 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/akuncashflow', 'akuncashflow')->name('akuncashflow');
         Route::get('/akunuangditarik', 'akunuangditarik')->name('akunuangditarik');
+        Route::get('/total_cash_flow', 'total_cash_flow')->name('total_cash_flow');
+        Route::get('/total_cash_ibu', 'total_cash_ibu')->name('total_cash_ibu');
+        Route::post('/seleksi_cash_flow_ditarik', 'seleksi_cash_flow_ditarik')->name('seleksi_cash_flow_ditarik');
     });
 
     Route::controller(CashflowController::class)->group(function () {
@@ -259,6 +262,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete_akun_ibu', 'delete_akun_ibu')->name('delete_akun_ibu');
         Route::get('/delete_akun_ibu', 'delete_akun_ibu')->name('delete_akun_ibu');
         Route::get('/edit_akun_ibu', 'edit_akun_ibu')->name('edit_akun_ibu');
+        Route::post('/seleksi_akun_control_ditarik', 'seleksi_akun_control_ditarik')->name('seleksi_akun_control_ditarik');
     });
     Route::controller(NeracaController::class)->group(function () {
         Route::get('/neraca', 'index')->name('neraca');
@@ -349,10 +353,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/cek', 'cek')->name('cek');
             Route::post('/save_cek', 'save_cek')->name('save_cek');
-            Route::get('/penyetoran', 'penyetoran')->name('penyetoran'); 
-            Route::get('/get_history_perencanaan', 'get_history_perencanaan')->name('get_history_perencanaan'); 
-            Route::get('/print_setoran', 'print_setoran')->name('print_setoran'); 
-            Route::get('/delete_perencanaan', 'delete_perencanaan')->name('delete_perencanaan'); 
+            Route::get('/penyetoran', 'penyetoran')->name('penyetoran');
+            Route::get('/get_history_perencanaan', 'get_history_perencanaan')->name('get_history_perencanaan');
+            Route::get('/print_setoran', 'print_setoran')->name('print_setoran');
+            Route::get('/delete_perencanaan', 'delete_perencanaan')->name('delete_perencanaan');
             Route::get('/perencanaan_setor', 'perencanaan_setor')->name('perencanaan_setor');
             Route::post('/save_perencanaan', 'save_perencanaan')->name('save_perencanaan');
         });

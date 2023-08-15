@@ -27,7 +27,7 @@
                                 class="btn btn-sm btn-primary d_akuncashflow float-end"><i
                                     class="fas fa-clipboard-list"></i> List
                                 Akun
-                                <span class="badge bg-danger">{{$akun_cashflow->total_akun}}</span>
+                                <span class="badge bg-danger ttl_akun_cashflow"></span>
                             </button>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                                 class="btn btn-sm btn-primary float-end d_uangditarik"><i
                                     class="fas fa-clipboard-list"></i> List
                                 Akun
-                                <span class="badge bg-danger">{{$akun_ibu->total_akun}}</span>
+                                <span class="badge bg-danger ttl_akun_ibu"></span>
                             </button>
                         </div>
                     </div>
@@ -163,18 +163,23 @@
         <div id="loadAkunControl"></div>
     </x-theme.modal>
 
-    <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftarakuncashflow">
-        <div id="loadAkuncashflow"></div>
-    </x-theme.modal>
-    <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftaruangditarik">
-        <div id="loadAkunditarik"></div>
-    </x-theme.modal>
+    <form action="{{route('seleksi_cash_flow_ditarik')}}" method="post">
+        @csrf
+        <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftarakuncashflow">
+            <div id="loadAkuncashflow"></div>
+        </x-theme.modal>
+    </form>
+
+    <form action="{{route('seleksi_akun_control_ditarik')}}" method="post">
+        @csrf
+        <x-theme.modal title="Daftar Akun Cashflow" size="modal-lg" btnSave='T' idModal="daftaruangditarik">
+            <div id="loadAkunditarik"></div>
+        </x-theme.modal>
+    </form>
 
 
     @section('scripts')
     <script>
-        loadTabel()
-
         function toast(pesan) {
             Toastify({
                 text: pesan,
@@ -188,21 +193,8 @@
             }).showToast();
         }
 
-        function loadTabel(tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
-            $.ajax({
-                type: "GET",
-                url: "{{ route('loadcontrolflow') }}",
-                data: {
-                    tgl1: tgl1,
-                    tgl2: tgl2,
-                },
-                success: function(r) {
-                    $("#loadcontrolflow").html(r);
-
-                }
-            });
-        }
-
+        
+       
         function loadInputAkun(jenis) {
             $.ajax({
                 type: "GET",
@@ -219,6 +211,7 @@
                 }
             });
         }
+        
 
         function loadInputsub(id_kategori, tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
             $.ajax({
@@ -243,6 +236,7 @@
         $(document).on('click', '.input_pendapatan', function() {
             $("#modalPendapatan").modal('show')
             var jenis = $(this).attr('jenis');
+            
             loadInputAkun(jenis)
         });
 
@@ -277,21 +271,8 @@
             });
         });
 
-
-        $(document).on('click', '.delete_akun', function() {
-            var id_akuncontrol = $(this).attr('id_akuncontrol');
-            var id_kategori = $(this).attr('id_kategori');
-            $.ajax({
-                type: "GET",
-                url: "{{ route('deleteSubAkunCashflow') }}?id_akuncontrol=" + id_akuncontrol,
-                success: function(response) {
-                    toast('Akun berhasil di hapus')
-                    loadInputsub(id_kategori);
-                    loadTabel()
-                    // $("#modalSubKategori").modal('hide')
-                }
-            });
-        });
+// Nanda
+        
         $(document).on('click', '.delete_kategori_akun', function() {
             var id_kategori = $(this).attr('id_kategori_cashcontrol');
             var jenis = $(this).attr('jenis');
@@ -321,6 +302,32 @@
             });
         });
         $(document).ready(function() {
+            loadTabel();
+            function loadTabel(tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('loadcontrolflow') }}",
+                    data: {
+                        tgl1: tgl1,
+                        tgl2: tgl2,
+                    },
+                    success: function(r) {
+                        $("#loadcontrolflow").html(r);
+
+                    }
+                });
+             }
+
+             akun_cash_flow();
+            function akun_cash_flow(jenis) {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('total_cash_flow') }}",
+                    success: function(r) {
+                        $(".ttl_akun_cashflow").text(r);
+                    }
+                });
+            }
             function loadInputsub(id_kategori_akun, tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
                 $.ajax({
                     type: "GET",
@@ -343,9 +350,27 @@
             }
             $(document).on('click', '.tmbhakun', function() {
                 var id_kategori_akun = $(this).attr('id_kategori_akun');
+            
                 // var jenis = $(this).attr('jenis');
                 $("#modalAkunPendapatan").modal('show');
                 loadInputsub(id_kategori_akun);
+            });
+            $(document).on('click', '.delete_akun', function() {
+            var id_akuncontrol = $(this).attr('id_akuncontrol');
+            var id_kategori_akun = $(this).attr('id_kategori');
+            
+            $.ajax({
+                type: "GET",
+                url: "{{ route('deleteSubAkunCashflow') }}?id_akuncontrol=" + id_akuncontrol,
+                success: function(response) {
+                    toast('Akun berhasil di hapus')
+                   loadInputsub(id_kategori_akun);
+                    
+                    loadTabel()
+                    akun_cash_flow();
+                    // $("#modalSubKategori").modal('hide')
+                }
+            });
             });
             $(document).on('submit', '#formTambahSubAkun', function(e) {
                 e.preventDefault()
@@ -357,7 +382,8 @@
                     success: function(response) {
                         toast('Berhasil tambah Akun')
                         loadInputsub(id_kategori_akun);
-                        loadTabel()
+                        loadTabel();
+                        akun_cash_flow();
                         // $("#modalSubKategori").modal('hide')
                     }
                 });
@@ -395,6 +421,16 @@
                 }
             });
         }
+            akun_cash_ibu();
+            function akun_cash_ibu() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('total_cash_ibu') }}",
+                    success: function(r) {
+                        $(".ttl_akun_ibu").text(r);
+                    }
+                });
+            }
 
         function loadInputControl(kategori, tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
             $.ajax({
@@ -433,7 +469,8 @@
                 success: function(response) {
                     toast('Berhasil tambah Akun')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                     // $("#modalSubKategori").modal('hide')
                 }
             });
@@ -448,7 +485,8 @@
                 success: function(response) {
                     toast('Akun berhasil di hapus')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                 }
             });
         });
@@ -463,10 +501,19 @@
                 success: function(response) {
                     toast('Berhasil tambah Akun')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                     // $("#modalSubKategori").modal('hide')
                 }
             });
+        });
+        $(document).on('click', '.iktisar', function() {
+            var urutan = $(this).attr('urutan');
+            if ($(this).is(":checked")) {
+                $('.hasil_iktisar'+urutan ).val('H')
+            } else {
+                $('.hasil_iktisar'+urutan).val('T')
+            }          
         });
     </script>
     <script>
@@ -832,11 +879,14 @@
                 url: "/akuncashflow",
                 success: function(r) {
                     $("#loadAkuncashflow").html(r)
-                    $("#table3").DataTable({
-                        "lengthChange": true,
-                        "autoWidth": false,
-                        "stateSave": true,
-                    });
+                    $('.tableScroll').DataTable({
+                            "searching": true,
+                            scrollY: '400px',
+                            scrollX: true,
+                            scrollCollapse: true,
+                            "autoWidth": true,
+                            "paging": false,
+                        });
                 }
             });
         });

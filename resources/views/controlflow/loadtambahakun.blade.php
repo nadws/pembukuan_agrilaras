@@ -33,7 +33,7 @@
             <thead>
                 <tr>
                     <th class="dhead">Akun</th>
-                    <th class="dhead" style="text-align: right">Rupiah</th>
+                    {{-- <th class="dhead" style="text-align: right">Rupiah</th> --}}
                     <th class="dhead">Aksi</th>
                 </tr>
             </thead>
@@ -41,9 +41,9 @@
                 @foreach ($akun2 as $c)
                 <tr>
                     <td>{{ucwords(strtolower($c->nm_akun))}}</td>
-                    <td align="right">Rp. {{$c->jenis == '1' ? number_format($c->kredit,0) :
+                    {{-- <td align="right">Rp. {{$c->jenis == '1' ? number_format($c->kredit,0) :
                         number_format($c->debit,0)}}
-                    </td>
+                    </td> --}}
                     <td align="center"><a href="#" onclick="event.preventDefault();"
                             class="btn btn-sm btn-danger delete_akun" id_kategori="{{$c->id_kategori_cashcontrol}}"
                             id_akuncontrol="{{$c->id_akuncontrol}}"><i class="fas fa-trash-alt"></i></a>

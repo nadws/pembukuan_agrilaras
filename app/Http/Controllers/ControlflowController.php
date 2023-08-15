@@ -48,14 +48,34 @@ class ControlflowController extends Controller
             'title' => 'Dashboard Pembukuan',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'akun_cashflow' => DB::selectOne("SELECT count(a.id_akun) as total_akun
-            FROM akun as a 
-            where a.id_akun not in(SELECT b.id_akun FROM akuncontrol as b);"),
-            'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun
-            FROM akun as a 
-            where a.id_akun not in(SELECT b.id_akun FROM akuncash_ibu as b) and a.cash_uang_ditarik = 'T' ")
+            'akun_cashflow' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_flow='T'"),
+            'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'")
         ];
         return view('controlflow.dashboard', $data);
+    }
+
+    public function total_cash_flow()
+    {
+        $ttl_cash_flow = DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_flow='T'");
+
+        echo $ttl_cash_flow->total_akun;
+    }
+    public function total_cash_ibu()
+    {
+        $ttl_cash_flow = DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'");
+
+        echo $ttl_cash_flow->total_akun;
+    }
+    public function seleksi_cash_flow_ditarik(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+
+            $data = [
+                'cash_flow' => $r->cash_flow[$x]
+            ];
+            DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
     }
     public function loadcontrolflow(Request $r)
     {
@@ -67,12 +87,12 @@ class ControlflowController extends Controller
             'title' => 'load',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'pendapatan' => DB::select("SELECT a.id_akun, c.nm_akun, b.kredit
+            'pendapatan' => DB::select("SELECT a.id_akun, c.nm_akun, b.debit, b.kredit
             FROM akuncontrol as a 
             left join (
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku not in('1','5') and b.kredit != 0 and b.penutup = 'T' and b.tgl between '$tgl1' and '$tgl2'
+                WHERE b.id_buku = '6' and b.tgl between '$tgl1' and '$tgl2'
                 group by b.id_akun
             ) as b on b.id_akun = a.id_akun
             left join akun as c on c.id_akun = a.id_akun
@@ -83,7 +103,7 @@ class ControlflowController extends Controller
             left join (
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku not in('1','5') and b.debit != 0 and b.penutup = 'T' and b.tgl between '$tgl1' and '$tgl2'
+                WHERE b.id_buku ='2' and b.tgl between '$tgl1' and '$tgl2'
                 group by b.id_akun
             ) as b on b.id_akun = a.id_akun
             left join akun as c on c.id_akun = a.id_akun
@@ -129,10 +149,6 @@ class ControlflowController extends Controller
     {
         $tgl1 =  $r->tgl1;
         $tgl2 =  $r->tgl2;
-
-
-
-
         $data = [
             'akun' => DB::Select("SELECT * FROM akun as a where a.id_akun not in(SELECT b.id_akun FROM akuncontrol as b); "),
             'akun2' => DB::select("SELECT a.*, b.nm_akun, c.debit, c.kredit, d.jenis
@@ -158,9 +174,13 @@ class ControlflowController extends Controller
             'id_akun' => $r->id_akun
         ];
         DB::table('akuncontrol')->insert($data);
+
+        DB::table('akun')->where('id_akun', $r->id_akun)->update(['cash_flow' => 'Y']);
     }
     public function deleteSubAkunCashflow(Request $r)
     {
+        $id_akun =  DB::table('akuncontrol')->where('id_akuncontrol', $r->id_akuncontrol)->first();
+        DB::table('akun')->where('id_akun', $id_akun->id_akun)->update(['cash_flow' => 'T']);
         DB::table('akuncontrol')->where('id_akuncontrol', $r->id_akuncontrol)->delete();
     }
     public function deleteAkunCashflow(Request $r)
@@ -228,16 +248,16 @@ class ControlflowController extends Controller
     public function akuncashflow(Request $r)
     {
         $data = [
-            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun
+            'akun' => DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.cash_flow
             FROM akun as a 
             left join akuncontrol as b on b.id_akun = a.id_akun;")
         ];
-        return view('controlflow.akuncashflow', $data);
+        return view('controlflow.akuncashflow_2', $data);
     }
     public function akunuangditarik(Request $r)
     {
         $data = [
-            'akun' => DB::select("SELECT a.kode_akun , a.nm_akun, b.id_akun, a.cash_uang_ditarik
+            'akun' => DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.cash_uang_ditarik
             FROM akun as a 
             left join akuncash_ibu as b on b.id_akun = a.id_akun;")
         ];
