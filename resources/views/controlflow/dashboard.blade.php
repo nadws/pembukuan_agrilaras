@@ -27,7 +27,7 @@
                                 class="btn btn-sm btn-primary d_akuncashflow float-end"><i
                                     class="fas fa-clipboard-list"></i> List
                                 Akun
-                                <span class="badge bg-danger">{{$akun_cashflow->total_akun}}</span>
+                                <span class="badge bg-danger ttl_akun_cashflow"></span>
                             </button>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                                 class="btn btn-sm btn-primary float-end d_uangditarik"><i
                                     class="fas fa-clipboard-list"></i> List
                                 Akun
-                                <span class="badge bg-danger">{{$akun_ibu->total_akun}}</span>
+                                <span class="badge bg-danger ttl_akun_ibu"></span>
                             </button>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
         }
 
         
-
+       
         function loadInputAkun(jenis) {
             $.ajax({
                 type: "GET",
@@ -317,6 +317,17 @@
                     }
                 });
              }
+
+             akun_cash_flow();
+            function akun_cash_flow(jenis) {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('total_cash_flow') }}",
+                    success: function(r) {
+                        $(".ttl_akun_cashflow").text(r);
+                    }
+                });
+            }
             function loadInputsub(id_kategori_akun, tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
                 $.ajax({
                     type: "GET",
@@ -356,6 +367,7 @@
                    loadInputsub(id_kategori_akun);
                     
                     loadTabel()
+                    akun_cash_flow();
                     // $("#modalSubKategori").modal('hide')
                 }
             });
@@ -370,7 +382,8 @@
                     success: function(response) {
                         toast('Berhasil tambah Akun')
                         loadInputsub(id_kategori_akun);
-                        loadTabel()
+                        loadTabel();
+                        akun_cash_flow();
                         // $("#modalSubKategori").modal('hide')
                     }
                 });
@@ -408,6 +421,16 @@
                 }
             });
         }
+            akun_cash_ibu();
+            function akun_cash_ibu() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('total_cash_ibu') }}",
+                    success: function(r) {
+                        $(".ttl_akun_ibu").text(r);
+                    }
+                });
+            }
 
         function loadInputControl(kategori, tgl1 = "{{ $tgl1 }}", tgl2 = "{{ $tgl2 }}") {
             $.ajax({
@@ -446,7 +469,8 @@
                 success: function(response) {
                     toast('Berhasil tambah Akun')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                     // $("#modalSubKategori").modal('hide')
                 }
             });
@@ -461,7 +485,8 @@
                 success: function(response) {
                     toast('Akun berhasil di hapus')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                 }
             });
         });
@@ -476,7 +501,8 @@
                 success: function(response) {
                     toast('Berhasil tambah Akun')
                     loadInputControl(kategori);
-                    load_cash_ibu()
+                    load_cash_ibu();
+                    akun_cash_ibu();
                     // $("#modalSubKategori").modal('hide')
                 }
             });

@@ -53,6 +53,19 @@ class ControlflowController extends Controller
         ];
         return view('controlflow.dashboard', $data);
     }
+
+    public function total_cash_flow()
+    {
+        $ttl_cash_flow = DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_flow='T'");
+
+        echo $ttl_cash_flow->total_akun;
+    }
+    public function total_cash_ibu()
+    {
+        $ttl_cash_flow = DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'");
+
+        echo $ttl_cash_flow->total_akun;
+    }
     public function seleksi_cash_flow_ditarik(Request $r)
     {
         for ($x = 0; $x < count($r->id_akun); $x++) {

@@ -250,6 +250,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/akuncashflow', 'akuncashflow')->name('akuncashflow');
         Route::get('/akunuangditarik', 'akunuangditarik')->name('akunuangditarik');
+        Route::get('/total_cash_flow', 'total_cash_flow')->name('total_cash_flow');
+        Route::get('/total_cash_ibu', 'total_cash_ibu')->name('total_cash_ibu');
         Route::post('/seleksi_cash_flow_ditarik', 'seleksi_cash_flow_ditarik')->name('seleksi_cash_flow_ditarik');
     });
 
