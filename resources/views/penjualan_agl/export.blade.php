@@ -4,6 +4,9 @@
             <th>#</th>
             <th>Tanggal</th>
             <th>No Nota</th>
+            <th>Tgl Bayar</th>
+            <th>Pembayaran</th>
+            <th>No Setor</th>
             <th>Customer</th>
             <th>Total Rp</th>
             <th>Tipe Jual</th>
@@ -24,6 +27,9 @@
                 <td>{{ $no + 1 }}</td>
                 <td>{{ tanggal($i->tgl) }}</td>
                 <td>{{ $i->no_nota }}</td>
+                <td>{{ $i->tgl_bayar }}</td>
+                <td>{{ $i->nm_akun }}</td>
+                <td>{{ $i->nota_setor }}</td>
                 <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
                 <td align="right">{{ $i->ttl_rp }}</td>
                 <td>{{ $i->tipe }}</td>

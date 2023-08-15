@@ -86,7 +86,11 @@ class PenjualanController extends Controller
         a.urutan_customer, 
         a.driver, 
         d.*,
-        a.lokasi 
+        a.lokasi,
+        e.nm_akun,
+        e.debit,
+        e.nota_setor,
+        e.tgl as tgl_bayar
       FROM 
         invoice_telur as a 
         left join customer as b on b.id_customer = a.id_customer 
@@ -115,9 +119,15 @@ class PenjualanController extends Controller
           GROUP BY 
             no_nota
         ) as d ON d.no_nota = a.no_nota 
+      LEFT JOIN (
+          SELECT a.tgl,a.nota_setor,b.nm_akun,a.id_akun,a.no_nota,a.debit,a.kredit,a.ket 
+          FROM `jurnal` as a
+          LEFT JOIN akun as b ON a.id_akun = b.id_akun
+          WHERE a.kredit = 0 GROUP BY a.no_nota
+      ) as e ON a.no_nota = e.no_nota
       where 
         a.tgl between '$tgl1' 
-        and '$tgl2' 
+            AND '$tgl2' 
         and a.lokasi = 'alpa' 
       group by 
         a.no_nota 
