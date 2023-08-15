@@ -90,6 +90,7 @@ class PenjualanController extends Controller
         e.nm_akun,
         e.debit,
         e.nota_setor,
+        e.ket,
         e.tgl as tgl_bayar
       FROM 
         invoice_telur as a 

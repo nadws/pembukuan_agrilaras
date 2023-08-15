@@ -8,6 +8,7 @@
             <th>Pembayaran</th>
             <th>No Setor</th>
             <th>Customer</th>
+            <th>Ket</th>
             <th>Total Rp</th>
             <th>Tipe Jual</th>
             <th>Admin</th>
@@ -31,6 +32,7 @@
                 <td>{{ $i->nm_akun }}</td>
                 <td>{{ $i->nota_setor }}</td>
                 <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
+                <td>{{ $i->ket }}</td>
                 <td align="right">{{ $i->ttl_rp }}</td>
                 <td>{{ $i->tipe }}</td>
                 <td>{{ ucwords($i->admin) }}</td>
