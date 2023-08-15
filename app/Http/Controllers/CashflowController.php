@@ -130,7 +130,10 @@ class CashflowController extends Controller
                 and a.tgl between '$tgl1' and '$tgl2'  and a.id_buku = '2'
                  group by a.id_akun
             ) as a on a.id_akun = ak.id_akun
-            WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6');"),
+            left join akuncash_ibu as acb on acb.id_akun = ak.id_akun and acb.kategori = '6'
+            WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
+            order by acb.urutan ASC
+            "),
 
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2
