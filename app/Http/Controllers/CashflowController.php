@@ -150,6 +150,7 @@ class CashflowController extends Controller
             FROM akuncash_ibu as a 
             left join akun as b on b.id_akun = a.id_akun
             where a.kategori = '$r->kategori'
+            order by a.urutan ASC
             "),
             'kategori' => $r->kategori
 
