@@ -20,13 +20,12 @@
                     <td><input type="text" id="pencarian" class="form-control float-end"></td>
                 </table>
             </div>
-            <table class="table table-hover" id="tablealdi" width="100%">
+            <table class="table table-hover table-striped" id="tablealdi" width="100%">
                 <thead>
                     <tr>
                         <th width="5">#</th>
                         <th>Tanggal</th>
-                        <th>No Nota</th>
-                        <th>Customer</th>
+                        <th width="18%">No Nota & Customer</th>
                         <th style="text-align: right">Total Rp</th>
                         <th style="text-align: center">Cek</th>
                         <th>Admin</th>
@@ -38,8 +37,11 @@
                     <tr>
                         <td>{{$no+1}}</td>
                         <td>{{tanggal($i->tgl)}}</td>
-                        <td>{{$i->no_nota}}</td>
-                        <td>{{$i->customer}}</td>
+                        <td>
+                            {{$i->no_nota}}
+                            <hr>
+                            {{$i->customer}}
+                        </td>
                         <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
                         <td align="center">
                             @if ($i->cek == 'Y')
