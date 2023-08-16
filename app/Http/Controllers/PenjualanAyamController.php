@@ -84,7 +84,7 @@ class PenjualanAyamController extends Controller
                 'no_nota' => 'PAMTD-' . $nota_t,
                 'id_akun' => $id_akun_penualan_ayam,
                 'id_buku' => '6',
-                'ket' => 'Penjualan  ' . $r->no_nota[$x],
+                'ket' => 'Penjualan  ' . $r->no_nota[$x].':'.$r->nm_customer[$x],
                 'debit' => '0',
                 'kredit' => $r->pembayaran[$x],
                 'admin' => auth()->user()->name,
@@ -165,7 +165,6 @@ class PenjualanAyamController extends Controller
     public function save_perencanaan(Request $r)
     {   
         $max = DB::table('setoran_ayam')->latest('urutan')->first();
-
         if (empty($max->urutan)) {
             $nota_t = '1000';
         } else {
@@ -251,12 +250,11 @@ class PenjualanAyamController extends Controller
     {
         $invoice = DB::table('setoran_ayam')->where('nota_setor', $r->no_nota)->first();
         $data = [
-            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal, d.id_customer, d.customer, e.nm_customer, d.urutan_customer
+            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal, d.nm_customer
             FROM setoran_ayam as a
             left join akun as b on b.id_akun = a.id_akun
             left join jurnal as c on c.id_jurnal = a.id_jurnal
-            left join invoice_ayam as d on d.no_nota = a.no_nota_jurnal
-            left join customer as e on e.id_customer = d.id_customer
+            LEFT JOIN (SELECT no_nota,SUBSTRING_INDEX(ket, ':', -1) AS nm_customer,tgl FROM `jurnal` WHERE debit = 0 GROUP BY no_nota) as d ON a.no_nota_jurnal = d.no_nota
             where a.nota_setor = '$r->no_nota'
             group by a.no_nota_jurnal;
             "),

@@ -391,7 +391,7 @@
                             <td align="right">Rp {{ number_format($penjualan_umum_blmcek_mtd->ttl_rp, 0) }}</td>
                             <td align="center">
 
-
+                                <a href="{{ route('penyetoran_penjualan_umum') }}" class="btn btn-primary btn-sm">Penyetoran</a>
                                 <a href="{{ route('penjualan_umum_cek') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-history"></i> History
                                     <span class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :

@@ -6,7 +6,7 @@
                 <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p>
             </div>
             <div class="col-lg-6">
-                <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Setor" />
+                <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Cek" />
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
             </div>
         </div>

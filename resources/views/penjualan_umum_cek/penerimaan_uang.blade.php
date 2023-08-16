@@ -57,7 +57,7 @@
                             @endphp
                             @foreach ($nota as $no => $n)
                             @php
-                            $hutang = DB::selectOne("SELECT *, sum(a.total_rp) as total, count(*) as ttl_produk FROM
+                            $hutang = DB::selectOne("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total, count(*) as ttl_produk FROM
                             `penjualan_agl` as a
                             LEFT JOIN customer as b ON a.id_customer = b.id_customer
                             WHERE a.urutan = '$n'
@@ -70,6 +70,7 @@
                                     {{tanggal($hutang->tgl)}}
                                     <input type="hidden" name="tgl[]" value="{{$hutang->tgl}}">
                                     <input type="hidden" name="urutan[]" value="{{$hutang->urutan}}">
+                                    <input type="hidden" name="nm_customer[]" value="{{$hutang->nm_customer}}">
                                     <input type="hidden" name="no_nota[]" value="{{$hutang->kode}}-{{$hutang->urutan}}">
                                     <input type="hidden" name="pembayaran[]"
                                         class="form-control bayar_biasa bayar_biasa{{$no+1}}" style="text-align: right"

@@ -393,6 +393,12 @@ Route::middleware('auth')->group(function () {
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {
         Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');
+        Route::get('/penyetoran_penjualan_umum', 'penyetoran')->name('penyetoran_penjualan_umum');
+        Route::get('/penjualan_umum_perencanaan_setor', 'perencanaan_setor')->name('penjualan_umum_perencanaan_setor');
+        Route::get('/penjualan_umum_get_history_perencanaan', 'get_history_perencanaan')->name('penjualan_umum_get_history_perencanaan');
+        Route::get('/penjualan_umum_print_setoran', 'print_setoran')->name('penjualan_umum_print_setoran');
+        Route::get('/penjualan_umum_delete_perencanaan', 'delete_perencanaan')->name('penjualan_umum_delete_perencanaan');
+        Route::post('/penjualan_umum_save_perencanaan', 'save_perencanaan')->name('penjualan_umum_save_perencanaan');
         Route::get('/terima_invoice_umum_cek', 'terima_invoice_umum_cek')->name('terima_invoice_umum_cek');
         Route::post('/save_cek_umum_invoice', 'save_cek_umum_invoice')->name('save_cek_umum_invoice');
     });
