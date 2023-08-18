@@ -42,7 +42,7 @@ class Penjualan_umum_cekController extends Controller
 
     public function index(Request $r)
     {
-        $penjualan = DB::select("SELECT *, sum(a.total_rp) as total, count(*) as ttl_produk  FROM `penjualan_agl` as a
+        $penjualan = DB::select("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total, count(*) as ttl_produk  FROM `penjualan_agl` as a
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.lokasi = 'mtd'
         GROUP BY a.urutan ORDER BY a.cek ASC");

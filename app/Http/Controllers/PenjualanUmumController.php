@@ -344,7 +344,7 @@ class PenjualanUmumController extends Controller
 
     public function detail($no_nota)
     {
-        $penjualan = DB::selectOne("SELECT *, sum(a.total_rp) as total, count(*) as ttl_produk  FROM `penjualan_agl` as a
+        $penjualan = DB::selectOne("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total, count(*) as ttl_produk  FROM `penjualan_agl` as a
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.urutan = '$no_nota' ");
         $data = [
