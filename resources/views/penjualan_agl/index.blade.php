@@ -51,7 +51,7 @@
                             <td>{{ucwords($i->admin)}}</td>
                             <td>{{ucwords($i->driver)}}</td>
                             <td>{{$i->status == 'paid' ? 'Tunai':'Piutang'}}</td>
-                            <td>{{$i->lokasi == 'mtd' ? 'Martadah':'Alpa'}}</td>
+                            <td>{{$i->lokasi == 'mtd' ? 'Martadah':'Alpa'}} </td>
                             <td>
                                 <span
                                     class="badge {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'bg-warning' : 'bg-success' }}">
@@ -64,7 +64,11 @@
                                         <i class="fas fa-ellipsis-v text-primary"></i>
                                     </span>
                                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+
                                         @if ($i->status == 'paid')
+                                        @if ($i->setor == 'Y')
+
+                                        @else
                                         <li>
                                             <a class="dropdown-item text-primary edit_akun"
                                                 href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
@@ -77,8 +81,13 @@
                                                     class="me-2 fas fa-trash"></i>Delete
                                             </a>
                                         </li>
+                                        @endif
+
                                         @else
                                         @if ($i->debit_bayar - $i->kredit_bayar != '0')
+                                        @if ($i->setor == 'Y')
+
+                                        @else
                                         <li>
                                             <a class="dropdown-item text-primary edit_akun"
                                                 href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
@@ -92,6 +101,8 @@
                                                     class="me-2 fas fa-trash"></i>Delete
                                             </a>
                                         </li>
+                                        @endif
+
                                         @else
 
                                         @endif

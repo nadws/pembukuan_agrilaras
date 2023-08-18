@@ -54,17 +54,25 @@ class PenjualanController extends Controller
             'title' => 'Penjualan Agrilaras',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi
+            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor
             FROM invoice_telur as a 
             left join customer as b on b.id_customer = a.id_customer
             left join (
-                SELECT c.no_nota, sum(c.debit) as debit_bayar, sum(c.kredit) as kredit_bayar
+                SELECT c.no_nota, sum(c.debit) as debit_bayar, sum(c.kredit) as kredit_bayar, c.setor
                 FROM bayar_telur as c
                 group by c.no_nota
             ) as c on c.no_nota = a.no_nota
+            
+            left join (
+                SELECT d.no_nota, d.setor
+                FROM bayar_telur as d
+                where d.debit != 0
+                group by d.no_nota
+            ) as d on d.no_nota = a.no_nota
+            
             where a.tgl between '$tgl1' and '$tgl2' and a.lokasi ='alpa'
             group by a.no_nota
-            order by a.urutan DESC
+            order by a.urutan DESC;
             "),
             'total_alpa' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
             'total_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")

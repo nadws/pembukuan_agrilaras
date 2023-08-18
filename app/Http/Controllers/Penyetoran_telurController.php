@@ -105,6 +105,8 @@ class Penyetoran_telurController extends Controller
             DB::table('setoran_telur')->insert($data);
 
             DB::table('jurnal')->where('id_jurnal', $r->id_jurnal[$x])->update(['setor' => 'Y', 'nota_setor' => 'PET-' . $nota_t]);
+            DB::table('bayar_telur')->where('no_nota', $r->no_nota_jurnal[$x])->where('debit', '!=', '0')->update(['setor' => 'Y', 'nota_setor' => 'PET-' . $nota_t]);
+            DB::table('bayar_telur')->where('no_nota_piutang', $r->no_nota_jurnal[$x])->where('debit', '!=', '0')->update(['setor' => 'Y', 'nota_setor' => 'PET-' . $nota_t]);
         }
 
         DB::table('setoran_telur')->where('nota_setor', 'PET-' . $nota_t)->update(['selesai' => 'Y']);
@@ -256,6 +258,7 @@ class Penyetoran_telurController extends Controller
             ];
             DB::table('jurnal')->where('id_jurnal', $i->id_jurnal)->update($data);
         }
+        DB::table('bayar_telur')->where('nota_setor', $r->no_nota)->update(['setor' => 'T']);
         DB::table('jurnal')->where('no_nota', $r->no_nota)->delete();
         DB::table('setoran_telur')->where('nota_setor', $r->no_nota)->delete();
 
