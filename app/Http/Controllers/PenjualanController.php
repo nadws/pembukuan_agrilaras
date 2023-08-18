@@ -83,32 +83,28 @@ class PenjualanController extends Controller
 
     public function export_penjualan_telur($tgl1, $tgl2)
     {
-        $tbl = DB::select("SELECT a.tgl , a.no_nota, b.no_nota_piutang, a.status, c.nm_customer, a.urutan_customer, sum(a.total_rp) as kredit, b.debit, sum(a.pcs) as pcs , sum(a.kg) as kg , sum(a.kg_jual) as kg_jual , a.tipe, a.driver, d.nm_akun, d.nota_setor, f.nm_akun as akun_setor, f.tgl_bayar, a.admin
-        FROM invoice_telur as a 
-        LEFT join (
-        SELECT b.no_nota, b.no_nota_piutang, b.tgl, sum(b.debit) as debit, sum(b.kredit) as kredit
-            FROM bayar_telur as b
-            where b.debit != '0'
-            GROUP by b.no_nota
+        $tbl = DB::select("SELECT a.tgl, a.no_nota, b.nota_setor , sum(a.total_rp) as total_rp, c.nm_akun as akun_setor, d.nm_customer, a.urutan_customer, a.driver, sum(a.pcs) as pcs , sum(a.kg) as kg , sum(a.kg_jual) as kg_jual, a.tipe, a.admin, c.tgl as tgl_setor, e.debit, e.kredit
+        FROM invoice_telur as a
+        left join (
+            SELECT b.no_nota , b.no_nota_piutang, b.nota_setor
+            FROM bayar_telur as b 
+            WHERE b.debit != 0
         ) as b on b.no_nota = a.no_nota
-        left join customer as c on c.id_customer = a.id_customer
-        left join (
-            SELECT d.id_akun, e.nm_akun, d.no_nota, d.nota_setor
-            FROM jurnal as d
-            left join akun as e on e.id_akun = d.id_akun
-            where d.debit != '0'
-        ) AS d ON d.no_nota = CASE WHEN a.status = 'paid' THEN a.no_nota ELSE b.no_nota_piutang END
-        
-        left join (
-        SELECT f.no_nota, f.id_akun, g.nm_akun, f.tgl as tgl_bayar
-            FROM jurnal as f
-            left join akun as g on g.id_akun = f.id_akun
-            where f.debit != 0 
-        ) as f on f.no_nota = d.nota_setor
-        
-        
-        where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.lokasi = 'alpa'
-        group by a.no_nota;");
+        left JOIN (
+        SELECT c.no_nota, d.nm_akun, c.tgl
+            FROM jurnal as c 
+            left join akun as d on d.id_akun = c.id_akun
+            WHERE c.debit != '0' and c.id_buku = '7'
+        ) as c on c.no_nota = b.nota_setor
+        left JOIN customer as d on d.id_customer = a.id_customer
+        LEFT join (
+        SELECT sum(e.debit) as debit , sum(e.kredit) as kredit, e.no_nota
+            FROM bayar_telur as e 
+            group by e.no_nota
+        ) as e on e.no_nota = a.no_nota
+        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' and a.lokasi = 'alpa'
+        group by a.no_nota
+        ORDER BY a.no_nota ASC;");
 
         $totalrow = count($tbl) + 1;
 
