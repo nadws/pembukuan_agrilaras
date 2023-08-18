@@ -46,9 +46,21 @@ class Penjualan_umum_cekController extends Controller
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.lokasi = 'mtd'
         GROUP BY a.urutan ORDER BY a.cek ASC");
+
+        $ttlRp = 0;
+        $ttlRpBelumDiCek = 0;
+        foreach ($penjualan as $v) {
+            $ttlRp += $v->total;
+            if ($v->cek != 'Y') {
+                $ttlRpBelumDiCek += $v->total;
+            }
+        }
+
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
+            'ttlRp' => $ttlRp,
+            'ttlRpBelumDiCek' => $ttlRpBelumDiCek,
         ];
         return view('penjualan_umum_cek.index', $data);
     }
@@ -83,7 +95,7 @@ class Penjualan_umum_cekController extends Controller
                 'no_nota' => 'PMLD-' . $nota_t,
                 'id_akun' => '84',
                 'id_buku' => '6',
-                'ket' => $r->no_nota[$x].':'.$r->nm_customer[$x],
+                'ket' => $r->no_nota[$x] . ':' . $r->nm_customer[$x],
                 'debit' => '0',
                 'kredit' => $r->pembayaran[$x],
                 'admin' => Auth::user()->name,
@@ -162,7 +174,7 @@ class Penjualan_umum_cekController extends Controller
     }
 
     public function save_perencanaan(Request $r)
-    {   
+    {
         $max = DB::table('setoran_umum')->latest('urutan')->first();
 
         if (empty($max->urutan)) {
@@ -222,7 +234,7 @@ class Penjualan_umum_cekController extends Controller
                 'urutan' => $urutan2,
             ];
             DB::table('jurnal')->insert($data);
-        } 
+        }
         return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
     }
 
