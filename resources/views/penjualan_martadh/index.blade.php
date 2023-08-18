@@ -25,8 +25,8 @@
                     <tr>
                         <th width="5">#</th>
                         <th>Tanggal</th>
-                        <th width="18%">No Nota<br>Customer</th>
-                        <th style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
+                        <th width="18%">No Nota<br>Pelanggan</th>
+                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
                         @foreach ($produk as $p)
                             <th class="text-end">{{ ucwords($p->nm_telur) }}</th>
                         @endforeach

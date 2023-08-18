@@ -30,7 +30,7 @@
                         <th>Tanggal</th>
                         <th>Pelanggan</th>
                         <th width="20%" class="text-center">Total Produk</th>
-                        <th class="text-end">Total Rp</th>
+                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
                         <th width="20%" class="text-center">Cek</th>
                         <th class="text-center">Diterima</th>
                         <th>Aksi</th>

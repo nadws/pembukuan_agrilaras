@@ -1,4 +1,4 @@
-<x-theme.app title="{{ $title }}" table="Y" sizeCard="11">
+<x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
     <x-slot name="cardHeader">
         <div class="row">
             <div class="col-lg-6">
@@ -26,24 +26,21 @@
                 <thead>
                     <tr>
                         <th width="5">#</th>
-                        <th>Nota</th>
                         <th>Tanggal</th>
-                        <th>Pelanggan</th>
-                        <th width="20%" class="text-center">Total Produk</th>
-                        <th class="text-end">Total Rp</th>
-                        <th width="20%" class="text-center">Cek</th>
+                        <th>Nota <br>Pelanggan</th>
+                        <th class="text-center">Qty</th>
+                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
+                        <th width="10%" class="text-center">Cek</th>
                         <th class="text-center">Diterima</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($penjualan as $no => $d)
                         <tr>
                             <td>{{ $no + 1 }}</td>
-                            <td>{{ $d->no_nota }}</td>
                             <td>{{ tanggal($d->tgl) }}</td>
-                            <td>{{ $d->nm_customer }}</td>
-                            <td align="center">{{ $d->ttl_produk }}</td>
+                            <td>{{ $d->no_nota }} <br>{{ $d->customer }}</td>
+                            <td align="center">{{ $d->qty }}</td>
                             <td align="right">Rp. {{ number_format($d->total, 2) }}</td>
 
                             <td align="center">
@@ -55,36 +52,7 @@
                                 @endif
                             </td>
                             <td align="center">{{ $d->admin_cek }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v text-primary"></i>
-                                    </span>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                        @if ($d->cek == 'Y')
-                                        @else
-                                            <li>
-                                                <a class="dropdown-item text-primary edit_akun"
-                                                    href="{{ route('edit_invoice_telur', ['no_nota' => $d->urutan]) }}"><i
-                                                        class="me-2 fas fa-pen"></i>Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item text-danger delete_nota"
-                                                    no_nota="{{ $d->urutan }}" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#delete"><i class="me-2 fas fa-trash"></i>Delete
-                                                </a>
-                                            </li>
-                                        @endif
-
-                                        <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                no_nota="{{ $d->urutan }}" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
-                                        </li>
-
-                                    </ul>
-                                </div>
-                            </td>
+                            
                         </tr>
                     @endforeach
 

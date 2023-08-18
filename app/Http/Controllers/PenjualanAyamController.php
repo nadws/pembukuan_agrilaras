@@ -45,9 +45,21 @@ class PenjualanAyamController extends Controller
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.lokasi = 'mtd'
         GROUP BY a.urutan");
+
+        $ttlRp = 0;
+        $ttlRpBelumDiCek = 0;
+        foreach ($penjualan as $v) {
+            $ttlRp += $v->total;
+            if ($v->cek != 'Y') {
+                $ttlRpBelumDiCek += $v->total;
+            }
+        }
+
         $data = [
             'title' => 'Penjualan Ayam',
-            'penjualan' => $penjualan
+            'penjualan' => $penjualan,
+            'ttlRp' => $ttlRp,
+            'ttlRpBelumDiCek' => $ttlRpBelumDiCek,
         ];
         return view('penjualan_ayam.penjualan_ayam', $data);
     }
@@ -84,7 +96,7 @@ class PenjualanAyamController extends Controller
                 'no_nota' => 'PAMTD-' . $nota_t,
                 'id_akun' => $id_akun_penualan_ayam,
                 'id_buku' => '6',
-                'ket' => 'Penjualan  ' . $r->no_nota[$x].':'.$r->nm_customer[$x],
+                'ket' => 'Penjualan  ' . $r->no_nota[$x] . ':' . $r->nm_customer[$x],
                 'debit' => '0',
                 'kredit' => $r->pembayaran[$x],
                 'admin' => auth()->user()->name,
@@ -163,7 +175,7 @@ class PenjualanAyamController extends Controller
     }
 
     public function save_perencanaan(Request $r)
-    {   
+    {
         $max = DB::table('setoran_ayam')->latest('urutan')->first();
         if (empty($max->urutan)) {
             $nota_t = '1000';
@@ -281,5 +293,4 @@ class PenjualanAyamController extends Controller
 
         return redirect()->route('penjualan_ayam.penyetoran')->with('sukses', 'Data berhasil dihapus');
     }
-
 }

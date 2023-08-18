@@ -64,6 +64,9 @@ class PenjualanUmumController extends Controller
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2'
         GROUP BY a.urutan");
+
+        
+
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
