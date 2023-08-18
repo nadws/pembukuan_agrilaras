@@ -65,7 +65,9 @@ class PenjualanController extends Controller
             where a.tgl between '$tgl1' and '$tgl2' and a.lokasi ='alpa'
             group by a.no_nota
             order by a.urutan DESC
-            ")
+            "),
+            'total_alpa' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
+            'total_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")
 
         ];
         return view('penjualan_agl.index', $data);

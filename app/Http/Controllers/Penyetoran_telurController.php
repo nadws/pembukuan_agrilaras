@@ -56,7 +56,7 @@ class Penyetoran_telurController extends Controller
                 where c.kredit != '0' and c.id_buku ='6'
             ) as c on c.no_nota = a.no_nota
             where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(23,26)
-            group by a.no_nota
+            group by a.id_jurnal
             order by a.tgl , a.no_nota ASC
             ")
         ];
@@ -99,7 +99,8 @@ class Penyetoran_telurController extends Controller
                 'no_nota_jurnal' => $r->no_nota_jurnal[$x],
                 'nominal' => $r->nominal[$x],
                 'urutan' => $nota_t,
-                'id_akun' => $r->id_akun_pem[$x]
+                'id_akun' => $r->id_akun_pem[$x],
+                'admin' => Auth::user()->name,
             ];
             DB::table('setoran_telur')->insert($data);
 

@@ -7,8 +7,8 @@
             <div class="col-lg-6">
                 <x-theme.button modal="T" href="{{ route('tbh_invoice_telur') }}" icon="fa-plus" addClass="float-end"
                     teks="Buat Invoice" />
-                <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}" icon="fa-print" addClass="float-end"
-                    teks="Export" />
+                <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}" icon="fa-print"
+                    addClass="float-end" teks="Export" />
                 <x-theme.btn_filter />
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
             </div>
@@ -16,94 +16,101 @@
     </x-slot>
     <x-slot name="cardBody">
         <section class="row">
-            <table class="table table-hover" id="table">
-                <thead>
-                    <tr>
-                        <th width="5">#</th>
-                        <th>Tanggal</th>
-                        <th>No Nota</th>
-                        <th>Customer</th>
-                        <th style="text-align: right">Total Rp</th>
-                        <th>Tipe Jual</th>
-                        <th>Admin</th>
-                        <th>Pengantar</th>
-                        <th>Metode</th>
-                        <th>Lokasi</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($invoice as $no => $i)
-                    <tr>
-                        <td>{{$no+1}}</td>
-                        <td>{{tanggal($i->tgl)}}</td>
-                        <td>{{$i->no_nota}}</td>
-                        <td>{{$i->nm_customer}}{{$i->urutan_customer}}</td>
-                        <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
-                        <td>{{$i->tipe}}</td>
-                        <td>{{ucwords($i->admin)}}</td>
-                        <td>{{ucwords($i->driver)}}</td>
-                        <td>{{$i->status == 'paid' ? 'Tunai':'Piutang'}}</td>
-                        <td>{{$i->lokasi == 'mtd' ? 'Martadah':'Alpa'}}</td>
-                        <td>
-                            <span
-                                class="badge {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'bg-warning' : 'bg-success' }}">
-                                {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'Unpaid' : 'Paid' }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v text-primary"></i>
+            <div class="col-lg-4">
+                <h6>Total Penjualan Alpa : Rp. {{number_format($total_alpa->ttl_rp,0)}}</h6>
+                <h6>Total Penjualan MTD : Rp. {{number_format($total_mtd->ttl_rp,0)}}</h6>
+            </div>
+            <div class="col-lg-12">
+                <br>
+                <table class="table table-hover" id="table">
+                    <thead>
+                        <tr>
+                            <th width="5">#</th>
+                            <th>Tanggal</th>
+                            <th>No Nota</th>
+                            <th>Customer</th>
+                            <th style="text-align: right">Total Rp</th>
+                            <th>Tipe Jual</th>
+                            <th>Admin</th>
+                            <th>Pengantar</th>
+                            <th>Metode</th>
+                            <th>Lokasi</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($invoice as $no => $i)
+                        <tr>
+                            <td>{{$no+1}}</td>
+                            <td>{{tanggal($i->tgl)}}</td>
+                            <td>{{$i->no_nota}}</td>
+                            <td>{{$i->nm_customer}}{{$i->urutan_customer}}</td>
+                            <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
+                            <td>{{$i->tipe}}</td>
+                            <td>{{ucwords($i->admin)}}</td>
+                            <td>{{ucwords($i->driver)}}</td>
+                            <td>{{$i->status == 'paid' ? 'Tunai':'Piutang'}}</td>
+                            <td>{{$i->lokasi == 'mtd' ? 'Martadah':'Alpa'}}</td>
+                            <td>
+                                <span
+                                    class="badge {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'bg-warning' : 'bg-success' }}">
+                                    {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'Unpaid' : 'Paid' }}
                                 </span>
-                                <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                    @if ($i->status == 'paid')
-                                    <li>
-                                        <a class="dropdown-item text-primary edit_akun"
-                                            href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
-                                                class="me-2 fas fa-pen"></i>Edit
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger delete_nota" no_nota="{{$i->no_nota}}"
-                                            href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                class="me-2 fas fa-trash"></i>Delete
-                                        </a>
-                                    </li>
-                                    @else
-                                    @if ($i->debit_bayar - $i->kredit_bayar != '0')
-                                    <li>
-                                        <a class="dropdown-item text-primary edit_akun"
-                                            href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
-                                                class="me-2 fas fa-pen"></i>Edit
-                                        </a>
-                                    </li>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v text-primary"></i>
+                                    </span>
+                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        @if ($i->status == 'paid')
+                                        <li>
+                                            <a class="dropdown-item text-primary edit_akun"
+                                                href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
+                                                    class="me-2 fas fa-pen"></i>Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger delete_nota" no_nota="{{$i->no_nota}}"
+                                                href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                                    class="me-2 fas fa-trash"></i>Delete
+                                            </a>
+                                        </li>
+                                        @else
+                                        @if ($i->debit_bayar - $i->kredit_bayar != '0')
+                                        <li>
+                                            <a class="dropdown-item text-primary edit_akun"
+                                                href="{{route('edit_invoice_telur',['no_nota' => $i->no_nota])}}"><i
+                                                    class="me-2 fas fa-pen"></i>Edit
+                                            </a>
+                                        </li>
 
-                                    <li>
-                                        <a class="dropdown-item text-danger delete_nota" no_nota="{{$i->no_nota}}"
-                                            href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                class="me-2 fas fa-trash"></i>Delete
-                                        </a>
-                                    </li>
-                                    @else
+                                        <li>
+                                            <a class="dropdown-item text-danger delete_nota" no_nota="{{$i->no_nota}}"
+                                                href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                                    class="me-2 fas fa-trash"></i>Delete
+                                            </a>
+                                        </li>
+                                        @else
 
-                                    @endif
+                                        @endif
 
-                                    @endif
+                                        @endif
 
-                                    <li><a class="dropdown-item  text-info detail_nota" href="#" href="#"
-                                            data-bs-toggle="modal" no_nota="{{ $i->no_nota }}"
-                                            data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
-                                    </li>
+                                        <li><a class="dropdown-item  text-info detail_nota" href="#" href="#"
+                                                data-bs-toggle="modal" no_nota="{{ $i->no_nota }}"
+                                                data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
+                                        </li>
 
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         {{-- sub akun --}}
