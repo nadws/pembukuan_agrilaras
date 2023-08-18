@@ -207,9 +207,9 @@
                             </td>
                             {{-- <td align="center">{{number_format(($k->kg - ($k->pcs/180)) * 1000,2)}}</td> --}}
 
-                            <td align="center" class="gr per butir">
+                            <td align="right" class="gr per butir">
                                 {{empty($k->pcs) ? '0' : number_format((($k->kg - ($k->pcs/180)) * 1000) / $k->pcs,0)}}
-                                /{{$k->t_peforma}}
+                                <br>{{$k->t_peforma}}
                             </td>
                             </td>
                             <td align="center" class="hd perday (%)">
@@ -262,10 +262,10 @@
 
                             <!-- pakan -->
                             <td align="center" class="kg">{{number_format($k->kg_pakan / 1000,1)}}</td>
-                            <td align="center"
+                            <td align="right"
                                 class="(gr/ekor) / p(day) {{$k->kg_pakan < 100 ? 'bg-danger text-white' : ''}}">
                                 {{number_format($k->kg_pakan / ($k->stok_awal
-                                - $k->pop_kurang),0)}} /{{$k->feed}}
+                                - $k->pop_kurang),0)}} <br>{{$k->feed}}
                             </td>
                             {{-- <td align="center" class="gr(week)">{{number_format(($k->kg_p_week/1000))}}</td>
 
