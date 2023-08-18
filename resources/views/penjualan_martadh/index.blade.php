@@ -25,11 +25,12 @@
                     <tr>
                         <th width="5">#</th>
                         <th>Tanggal</th>
-                        <th width="18%">No Nota & Customer</th>
-                        <th style="text-align: right">Total Rp</th>
+                        <th width="18%">No Nota<br>Customer</th>
+                        <th style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
+                        @foreach ($produk as $p)
+                            <th class="text-end">{{ ucwords($p->nm_telur) }}</th>
+                        @endforeach
                         <th style="text-align: center">Cek</th>
-                        <th>Admin</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,11 +39,16 @@
                         <td>{{$no+1}}</td>
                         <td>{{tanggal($i->tgl)}}</td>
                         <td>
-                            {{$i->no_nota}}
-                            <hr>
+                            {{$i->no_nota}} <br>
                             {{$i->customer}}
                         </td>
                         <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
+                        @foreach ($produk as $p)
+                        @php
+                            $telurDetail = DB::table('invoice_telur')->where([['id_produk', $p->id_produk_telur], ['no_nota', $i->no_nota]])->first();
+                        @endphp
+                            <td align="right">{{ number_format($telurDetail->pcs ?? 0,0) }} Pcs<br>{{ number_format($telurDetail->kg ?? 0,1) }} Kg</td>
+                        @endforeach
                         <td align="center">
                             @if ($i->cek == 'Y')
                             <i class="fas fa-check text-success"></i>
@@ -51,12 +57,11 @@
                                 class="cek_bayar">
                             @endif
                         </td>
-                        <td>{{$i->admin}}</td>
-                        <td>
+                        {{-- <td>
                             <a class=" btn btn-primary btn-sm detail_nota" href="#" href="#" data-bs-toggle="modal"
                                 no_nota="{{ $i->no_nota }}" data-bs-target="#detail"><i
                                     class="me-2 fas fa-eye"></i>Detail</a>
-                        </td>
+                        </td> --}}
                     </tr>
                     @endforeach
                 </tbody>

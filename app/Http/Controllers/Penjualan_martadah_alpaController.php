@@ -10,15 +10,26 @@ class Penjualan_martadah_alpaController extends Controller
 {
     public function index(Request $r)
     {
+        $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, a.customer, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, a.cek, a.urutan_customer, a.admin
+        FROM invoice_telur as a 
+        left join customer as b on b.id_customer = a.id_customer
+          where a.lokasi = 'mtd'
+        group by a.no_nota
+        order by a.cek ASC 
+        ");
+        $ttlRp = 0;
+        $ttlRpBelumDiCek = 0;
+        foreach ($invoice as $v) {
+            $ttlRp += $v->ttl_rp;
+            if($v->cek != 'Y') {
+                $ttlRpBelumDiCek += $v->ttl_rp;
+            }
+        }
         $data =  [
             'title' => 'Penjualan Agrilaras',
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, a.customer, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, a.cek, a.urutan_customer, a.admin
-            FROM invoice_telur as a 
-            left join customer as b on b.id_customer = a.id_customer
-              where a.lokasi = 'mtd'
-            group by a.no_nota
-            order by a.cek ASC 
-            "),
+            'invoice' => $invoice,
+            'ttlRp' => $ttlRp,
+            'ttlRpBelumDiCek' => $ttlRpBelumDiCek,
             'produk' => DB::table('telur_produk')->get(),
 
         ];
