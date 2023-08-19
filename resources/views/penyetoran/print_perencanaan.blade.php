@@ -86,7 +86,7 @@
                                 $i->id_customer !==
                                 null ? $i->ket : $i->customer . $i->urutan_customer)}}</td> --}}
                             {{-- <td>{{$i->ket}}</td> --}}
-                            <td align="right">Rp {{number_format($i->nominal,0)}}</td>
+                            <td align="right" style="white-space: nowrap">Rp {{number_format($i->nominal,0)}}</td>
                         </tr>
                         @endforeach
                     </tbody>
