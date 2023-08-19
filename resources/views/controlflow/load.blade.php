@@ -15,7 +15,7 @@
             <tr>
                 <td colspan="2" class="fw-bold">
                     <a href="#" onclick="event.preventDefault();" class="tmbhakun" jenis="1"
-                        id_kategori_akun='1'>Pendapatan</a>
+                        id_kategori_akun='1'>Penjualan</a>
                 </td>
             </tr>
             @php
@@ -34,7 +34,7 @@
             @endforeach
 
             <tr>
-                <td class="fw-bold">Total Pendapatan</td>
+                <td class="fw-bold">Total Penjualan</td>
                 <td class="fw-bold" align="right">Rp. {{number_format($total_p,0)}}</td>
             </tr>
             <tr>

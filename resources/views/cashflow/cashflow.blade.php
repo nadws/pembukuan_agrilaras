@@ -34,7 +34,12 @@
                     <td>{{ucwords(strtolower($p->nm_akun))}} ({{date('F Y',strtotime($tgl_back))}}) </td>
                     <td align="right">Rp {{number_format($p->debit - $p->kredit,0)}}</td>
                 </tr>
+
                 @endforeach
+                <tr>
+                    <td class="fw-bold">Total</td>
+                    <td class="fw-bold" align="right">RP. {{number_format($total_pi,0)}}</td>
+                </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control" kategori='2'>Penjualan</a></td>
@@ -48,49 +53,22 @@
                     <td align="right">Rp {{number_format($p->kredit,0)}}</td>
                 </tr>
                 @endforeach
-                <tr>
+                {{-- <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
-                </tr>
+                </tr> --}}
                 <tr>
-                    <td class="fw-bold">Grand Total</td>
-                    <td class="fw-bold" align="right">Rp {{number_format($total_pi + $total_pe,0)}}</td>
+                    <td class="fw-bold">Total</td>
+                    <td class="fw-bold" align="right">Rp {{number_format($total_pe,0)}}</td>
                 </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="col-lg-6">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th class="dhead2">Akun</th>
-                    <th style="text-align: right" class="dhead2">Rupiah</th>
-                </tr>
-                <tr>
-                    <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='3'>Uang Ditarik</a></td>
-                </tr>
-                @php
-                $t_uang = 0;
-                $t_piutang = 0;
-                @endphp
-                @foreach ($uang as $u)
-                @php
-                $t_uang += $u->debit - $u->kredit;
-                @endphp
 
-                <tr>
-                    <td>{{ucwords(strtolower($u->nm_akun))}} </td>
-                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
-                </tr>
-                @endforeach
-                <tr>
-                    <th>Total</th>
-                    <th style="text-align: right">{{number_format($t_uang,0)}}</th>
-                </tr>
+                {{-- dasds --}}
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control" kategori='4'>Piutang Bulan Ini</a></td>
                 </tr>
+                @php
+                $t_piutang = 0;
+                @endphp
                 @foreach ($piutang2 as $u)
                 @php
                 $t_piutang += $u->debit - $u->kredit ;
@@ -113,9 +91,43 @@
                 </tr>
                 <tr>
                     <td class="fw-bold">Grand Total</td>
-                    <td class="fw-bold" align="right">Rp {{number_format($t_uang + $t_piutang + $kerugian->debit,0)}}
+                    <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
+                        $kerugian->debit),0) }}
                     </td>
                 </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="dhead2">Akun</th>
+                    <th style="text-align: right" class="dhead2">Rupiah</th>
+                </tr>
+                <tr>
+                    <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
+                            class="tmbhakun_control" kategori='3'>Uang Ditarik</a></td>
+                </tr>
+                @php
+                $t_uang = 0;
+
+                @endphp
+                @foreach ($uang as $u)
+                @php
+                $t_uang += $u->debit - $u->kredit;
+                @endphp
+
+                <tr>
+                    <td>{{ucwords(strtolower($u->nm_akun))}} </td>
+                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
+                </tr>
+                @endforeach
+                <tr>
+                    <th>Total</th>
+                    <th style="text-align: right">{{number_format($t_uang,0)}}</th>
+                </tr>
+
             </thead>
         </table>
     </div>

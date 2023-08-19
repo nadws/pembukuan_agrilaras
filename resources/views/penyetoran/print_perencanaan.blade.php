@@ -69,9 +69,9 @@
                         @endphp
                         <tr>
                             <td>{{$no+1}}</td>
-                            <td>{{tanggal($i->tgl)}}</td>
-                            <td>{{$i->no_nota_jurnal}}</td>
-                            <td>{{ucwords(strtolower($i->nm_akun))}}</td>
+                            <td style="white-space: nowrap">{{tanggal($i->tgl)}}</td>
+                            <td style="white-space: nowrap">{{$i->no_nota_jurnal}}</td>
+                            <td style="white-space: nowrap">{{ucwords(strtolower($i->nm_akun))}}</td>
                             <td>
                                 @if ($i->id_customer != '0' || !empty($i->id_customer))
                                 {{$i->nm_customer . $i->urutan_customer}}

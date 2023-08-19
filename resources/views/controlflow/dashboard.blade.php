@@ -20,7 +20,7 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="float-strat">Cash Flow</h6>
+                            <h6 class="float-strat">Herry</h6>
                         </div>
                         <div class="col-lg-6">
                             <button data-bs-toggle="modal" data-bs-target="#daftarakuncashflow"
