@@ -141,7 +141,7 @@ class BukuBesarController extends Controller
                         WHERE j.id_akun != '$r->id_akun'
                         GROUP BY j.no_nota
                     ) d ON a.no_nota = d.no_nota AND d.id_akun != a.id_akun
-                    WHERE a.id_akun = '$r->id_akun' and a.tgl between '$this->tgl1' and '$this->tgl2'
+                    WHERE a.id_akun = '$r->id_akun' and a.tgl between '$tgl1' and '$tgl2'
                     order by a.saldo DESC, a.tgl ASC");
 
             $spreadsheet->createSheet();
