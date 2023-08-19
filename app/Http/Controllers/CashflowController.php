@@ -107,6 +107,7 @@ class CashflowController extends Controller
                  SELECT c.no_nota, c.id_akun as akunvs
                 FROM jurnal as c 
                 WHERE c.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
+                group by c.no_nota
              ) as c on c.no_nota = b.no_nota
              where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '2' and c.akunvs is not null
              group by b.id_akun
