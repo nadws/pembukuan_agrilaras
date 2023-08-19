@@ -75,29 +75,30 @@
                 @endphp
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} ({{date('F Y',strtotime($tgl2))}})</td>
-                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
+                    <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
                 <tr>
                     <td>Biaya Kerugian Piutang</td>
-                    <td align="right">{{number_format($kerugian->debit,0)}}</td>
+                    <td align="right">Rp. {{number_format($kerugian->debit,0)}}</td>
                 </tr>
                 <tr>
                     <th>Total</th>
-                    <th style="text-align: right">{{number_format($t_piutang + $kerugian->debit,0)}}</th>
+                    <th style="text-align: right">Rp. {{number_format($t_piutang + $kerugian->debit,0)}}</th>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
-                </tr>
-                <tr>
+                </tr> --}}
+                {{-- <tr>
                     <td class="fw-bold">Grand Total</td>
                     <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
                         $kerugian->debit),0) }}
                     </td>
-                </tr>
+                </tr> --}}
             </tbody>
         </table>
     </div>
+
     <div class="col-lg-6">
         <table class="table table-bordered">
             <thead>
@@ -120,15 +121,33 @@
 
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} </td>
-                    <td align="right">{{number_format($u->debit - $u->kredit,0)}} </td>
+                    <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
-                <tr>
+                {{-- <tr>
                     <th>Total</th>
                     <th style="text-align: right">{{number_format($t_uang,0)}}</th>
-                </tr>
+                </tr> --}}
 
             </thead>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <table class="table table-bordered">
+            <tr>
+                <td class="fw-bold">Grand Total</td>
+                <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
+                    $kerugian->debit),0) }}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <table class="table table-bordered">
+            <tr>
+                <td class="fw-bold">Grand Total</td>
+                <td class="fw-bold" style="text-align: right">{{number_format($t_uang,0)}}</td>
+            </tr>
         </table>
     </div>
     <div class="col-lg-12">
