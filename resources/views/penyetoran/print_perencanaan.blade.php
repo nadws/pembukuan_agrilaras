@@ -92,8 +92,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" style="text-align: center">Total</th>
-                            <th style="text-align: right">Rp {{number_format($total,0)}}</th>
+                            <th colspan="5" style="text-align: center;white-space: nowrap">Total</th>
+                            <th style="text-align: right; white-space: nowrap">Rp {{number_format($total,0)}}</th>
                         </tr>
                     </tfoot>
                 </table>
