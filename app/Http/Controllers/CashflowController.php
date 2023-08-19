@@ -43,10 +43,6 @@ class CashflowController extends Controller
     {
         $tgl1 =  $r->tgl1;
         $tgl2 =  $r->tgl2;
-
-
-
-
         $tgl2_pref = date('Y-m-15', strtotime($tgl2));
         $tgl_back = date('Y-m-t', strtotime('previous month', strtotime($tgl2_pref)));
 

@@ -106,7 +106,7 @@ class BukuBesarController extends Controller
     {
         $tgl1 =  $r->tgl1;
         $tgl2 =  $r->tgl2;
-        dd($tgl1 . ' : ' . $tgl2);
+
         $id_akun =  $r->id_akun;
         $id_klasifikasi =  $r->id_klasifikasi;
 
