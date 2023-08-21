@@ -151,22 +151,6 @@ class JurnalController extends Controller
         $no_urut = $r->no_urut;
         $id_post = $r->id_post;
 
-        $tgl1_cash = date('Y-m-01', strtotime($r->tgl));
-        $tgl2_cash =  date('Y-m-t', strtotime($r->tgl));
-        $tgl2_pref = date('Y-m-15', strtotime($tgl2_cash));
-        $tgl_back = date('Y-m-t', strtotime('previous month', strtotime($tgl2_pref)));
-
-        $piutang = DB::selectOne("SELECT a.nm_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-        FROM akun as a
-        left join (
-        SELECT b.id_akun , sum(b.debit) as debit , sum(b.kredit) as kredit
-        FROM jurnal as b
-        where b.tgl BETWEEN '2020-01-01' and '$tgl_back' and  b.id_buku in('6','1')
-        group by b.id_akun
-        ) as b on b.id_akun = a.id_akun
-        where a.id_akun in(SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '1');");
-
-
 
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
 
@@ -180,7 +164,6 @@ class JurnalController extends Controller
         for ($i = 0; $i < count($id_akun); $i++) {
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun[$i])->first();
             $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
-
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
 

@@ -27,7 +27,6 @@
         <form action="{{ route('save_jurnal') }}" method="post" class="save_jurnal">
             @csrf
             <section class="row">
-
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
                     <input type="date" class="form-control" name="tgl" value="{{ date('Y-m-d') }}">
@@ -188,10 +187,12 @@
 
                 $(document).on("keyup", ".debit_rupiah", function() {
                     var count = $(this).attr("count");
+                    var id_klasifikasi = $('.id_klasifikasi' + count).val();
                     var input = $(this).val();
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
                     input = input.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+                    
 
                     if (input === "") {
                         $(this).val("");
@@ -203,6 +204,12 @@
                         $('.debit_biasa' + count).val(input2)
 
                     }
+                    if (id_klasifikasi === '1') {
+                        $('.peringatan_debit1' + count).attr("hidden", false);
+                    } else {
+                        $('.peringatan_debit1' + count).attr("hidden", true);
+                    }
+
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -225,12 +232,12 @@
                         currency: "IDR",
                     });
                     if (selisih === 0) {
-                        $(".cselisih").css("color", "green");
-                        $(".button-save").removeAttr("hidden");
-                    } else {
-                        $(".cselisih").css("color", "red");
-                        $(".button-save").attr("hidden", true);
-                    }
+                            $(".cselisih").css("color", "green");
+                            $(".button-save").removeAttr("hidden");
+                        } else {
+                            $(".cselisih").css("color", "red");
+                            $(".button-save").attr("hidden", true);
+                        }
                     $(".selisih").text(selisih_total);
 
 
@@ -326,6 +333,7 @@
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
                     var kredit_biasa = $('.kredit_biasa' + count).val();
+                    var debit_biasa = $('.debit_biasa' + count).val();
 
 
                     $.ajax({
@@ -342,7 +350,18 @@
                                 } else {
                                     $('.peringatan' + count).attr("hidden", true);
                                 }
+                                
+                            } else {
+                                $('.peringatan' + count).attr("hidden", true);
+                            }
+                            if (id_klasifikasi == 1) {
+                                if (debit_biasa != '0') {
+                                    $('.peringatan' + count).attr("hidden", false);
+                                } else {
+                                    $('.peringatan' + count).attr("hidden", true);
+                                }
 
+                                
                             } else {
                                 $('.peringatan' + count).attr("hidden", true);
                             }
