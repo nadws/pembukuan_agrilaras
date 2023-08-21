@@ -26,7 +26,9 @@
                         <th width="5">#</th>
                         <th>Tanggal</th>
                         <th width="18%">No Nota<br>Pelanggan</th>
-                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
+                        <th width="19%" style="text-align: right">Total Rp <br> Semua :
+                            ({{ number_format($ttlRp, 0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek, 0) }})
+                        </th>
                         @foreach ($produk as $p)
                             <th class="text-end">{{ ucwords($p->nm_telur) }}</th>
                         @endforeach
@@ -35,34 +37,37 @@
                 </thead>
                 <tbody>
                     @foreach ($invoice as $no => $i)
-                    <tr>
-                        <td>{{$no+1}}</td>
-                        <td>{{tanggal($i->tgl)}}</td>
-                        <td>
-                            {{$i->no_nota}} <br>
-                            {{$i->customer}}
-                        </td>
-                        <td align="right">Rp {{number_format($i->ttl_rp,0)}}</td>
-                        @foreach ($produk as $p)
-                        @php
-                            $telurDetail = DB::table('invoice_telur')->where([['id_produk', $p->id_produk_telur], ['no_nota', $i->no_nota]])->first();
-                        @endphp
-                            <td align="right">{{ number_format($telurDetail->pcs ?? 0,0) }} Pcs<br>{{ number_format($telurDetail->kg ?? 0,1) }} Kg</td>
-                        @endforeach
-                        <td align="center">
-                            @if ($i->cek == 'Y')
-                            <i class="fas fa-check text-success"></i>
-                            @else
-                            <input type="checkbox" name="" no_nota="{{$i->no_nota}}" piutang="{{ $i->ttl_rp }}" id=""
-                                class="cek_bayar">
-                            @endif
-                        </td>
-                        {{-- <td>
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>{{ tanggal($i->tgl) }}</td>
+                            <td>
+                                {{ $i->no_nota }} <br>
+                                {{ $i->customer }}
+                            </td>
+                            <td align="right">Rp {{ number_format($i->ttl_rp, 0) }}</td>
+                            @foreach ($produk as $p)
+                                @php
+                                    $telurDetail = DB::table('invoice_telur')
+                                        ->where([['id_produk', $p->id_produk_telur], ['no_nota', $i->no_nota]])
+                                        ->first();
+                                @endphp
+                                <td align="right">{{ number_format($telurDetail->pcs ?? 0, 0) }}
+                                    Pcs<br>{{ number_format($telurDetail->kg ?? 0, 1) }} Kg</td>
+                            @endforeach
+                            <td align="center">
+                                @if ($i->cek == 'Y')
+                                    <i class="fas fa-check text-success"></i>
+                                @else
+                                    <input type="checkbox" name="" no_nota="{{ $i->no_nota }}"
+                                        piutang="{{ $i->ttl_rp }}" id="" class="cek_bayar">
+                                @endif
+                            </td>
+                            {{-- <td>
                             <a class=" btn btn-primary btn-sm detail_nota" href="#" href="#" data-bs-toggle="modal"
                                 no_nota="{{ $i->no_nota }}" data-bs-target="#detail"><i
                                     class="me-2 fas fa-eye"></i>Detail</a>
                         </td> --}}
-                    </tr>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -84,7 +89,8 @@
         </x-theme.modal>
 
         <form action="{{ route('delete_invoice_telur') }}" method="get">
-            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -105,38 +111,38 @@
         {{-- end sub akun --}}
     </x-slot>
     @section('scripts')
-    <script>
-        $(document).ready(function() {
-            pencarian('pencarian', 'tablealdi')
-            $(document).on("click", ".detail_nota", function() {
-                var no_nota = $(this).attr('no_nota');
-                $.ajax({
-                    type: "get",
-                    url: "/detail_penjualan_mtd?no_nota=" + no_nota,
-                    success: function(data) {
-                        $("#detail_invoice").html(data);
-                    }
-                });
+        <script>
+            $(document).ready(function() {
+                pencarian('pencarian', 'tablealdi')
+                $(document).on("click", ".detail_nota", function() {
+                    var no_nota = $(this).attr('no_nota');
+                    $.ajax({
+                        type: "get",
+                        url: "/detail_penjualan_mtd?no_nota=" + no_nota,
+                        success: function(data) {
+                            $("#detail_invoice").html(data);
+                        }
+                    });
 
-            });
-            $(document).on('click', '.delete_nota', function() {
+                });
+                $(document).on('click', '.delete_nota', function() {
                     var no_nota = $(this).attr('no_nota');
                     $('.no_nota').val(no_nota);
-            });
-
-            $(".btn_bayar").hide();
-            $(".piutang_cek").hide();
-            $(document).on('change', '.cek_bayar', function() {
-                var totalPiutang = 0
-                $('.cek_bayar:checked').each(function() {
-                    var piutang = $(this).attr('piutang');
-                    totalPiutang += parseInt(piutang);
                 });
-                var anyChecked = $('.cek_bayar:checked').length > 0;
-                $('.btn_bayar').toggle(anyChecked);
-                $(".piutang_cek").toggle(anyChecked);
-                $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
-            });
+
+                $(".btn_bayar").hide();
+                $(".piutang_cek").hide();
+                $(document).on('change', '.cek_bayar', function() {
+                    var totalPiutang = 0
+                    $('.cek_bayar:checked').each(function() {
+                        var piutang = $(this).attr('piutang');
+                        totalPiutang += parseInt(piutang);
+                    });
+                    var anyChecked = $('.cek_bayar:checked').length > 0;
+                    $('.btn_bayar').toggle(anyChecked);
+                    $(".piutang_cek").toggle(anyChecked);
+                    $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
+                });
 
                 $('.hide_bayar').hide();
                 $(document).on("click", ".detail_bayar", function() {
@@ -173,22 +179,22 @@
 
                 });
                 $(document).on('click', '.btn_bayar', function() {
-                var dipilih = [];
-                $('.cek_bayar:checked').each(function() {
-                    var no_nota = $(this).attr('no_nota');
-                    dipilih.push(no_nota);
+                    var dipilih = [];
+                    $('.cek_bayar:checked').each(function() {
+                        var no_nota = $(this).attr('no_nota');
+                        dipilih.push(no_nota);
+
+                    });
+                    var params = new URLSearchParams();
+
+                    dipilih.forEach(function(orderNumber) {
+                        params.append('no_nota', orderNumber);
+                    });
+                    var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
+                    window.location.href = "/terima_invoice_mtd?" + queryString;
 
                 });
-                var params = new URLSearchParams();
-
-                dipilih.forEach(function(orderNumber) {
-                    params.append('no_nota', orderNumber);
-                });
-                var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
-                window.location.href = "/terima_invoice_mtd?" + queryString;
-
             });
-        });
-    </script>
+        </script>
     @endsection
 </x-theme.app>
