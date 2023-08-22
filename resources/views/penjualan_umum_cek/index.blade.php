@@ -30,37 +30,39 @@
                         <th>Tanggal</th>
                         <th>Pelanggan</th>
                         <th width="20%" class="text-center">Total Produk</th>
-                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
-                        <th width="20%" class="text-center">Cek</th>
-                        <th class="text-center">Diterima</th>
+                        <th width="19%" style="text-align: right">Total Rp <br> Semua :
+                            ({{ number_format($ttlRp, 0) }}) <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek, 0) }})
+                        </th>
+                        <th class="text-center">Cek</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($penjualan as $no => $d)
-                    <tr>
-                        <td>{{ $no + 1 }}</td>
-                        <td>{{ $d->kode }}-{{$d->urutan}}</td>
-                        <td>{{ tanggal($d->tgl) }}</td>
-                        <td>{{ $d->nm_customer }}</td>
-                        <td align="center">{{ $d->ttl_produk }}</td>
-                        <td align="right">Rp. {{ number_format($d->total, 2) }}</td>
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>{{ $d->kode }}-{{ $d->urutan }}</td>
+                            <td>{{ tanggal($d->tgl) }}</td>
+                            <td>{{ $d->nm_customer }}</td>
+                            <td align="center">{{ $d->ttl_produk }}</td>
+                            <td align="right">Rp. {{ number_format($d->total, 2) }}</td>
 
-                        <td align="center">
-                            @if ($d->cek == 'Y')
-                            <i class="fas fa-check text-success"></i>
-                            @else
-                            <input type="checkbox" name="" no_nota="{{$d->urutan}}" piutang="{{ $d->total }}" id=""
-                                class="cek_bayar">
-                            @endif
-                        </td>
-                        <td align="center">{{ $d->admin_cek }}</td>
-                        <td>
-                            <a class="btn btn-primary btn-sm detail_nota" href="#" no_nota="{{ $d->urutan }}" href="#"
-                                data-bs-toggle="modal" data-bs-target="#detail"><i
-                                    class="me-2 fas fa-search"></i>Detail</a>
-                        </td>
-                    </tr>
+                            <td align="center">
+                                @if ($d->cek == 'Y')
+                                    <i class="fas fa-check text-success"></i>
+                                @else
+                                <a class="btn btn-primary btn-sm" href="{{ route('terima_invoice_umum_cek', ['no_nota[]' => $d->urutan]) }}"
+                                    ><i class="me-2 fas fa-plus"></i>Cek</a>
+                                    {{-- <input type="checkbox" name="" no_nota="{{ $d->urutan }}"
+                                        piutang="{{ $d->total }}" id="" class="cek_bayar"> --}}
+                                @endif
+                            </td>
+                            <td>
+                                <a class="btn btn-primary btn-sm detail_nota" href="#"
+                                    no_nota="{{ $d->urutan }}" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
+                            </td>
+                        </tr>
                     @endforeach
 
                 </tbody>
@@ -75,22 +77,22 @@
             </x-theme.modal>
         </section>
         @section('js')
-        <script>
-            edit('detail_nota', 'no_nota', 'penjualan2/detail', 'detail_jurnal')
-            
-            $(".btn_bayar").hide();
-            $(".piutang_cek").hide();
-            $(document).on('change', '.cek_bayar', function() {
-                var totalPiutang = 0
-                $('.cek_bayar:checked').each(function() {
-                    var piutang = $(this).attr('piutang');
-                    totalPiutang += parseInt(piutang);
+            <script>
+                edit('detail_nota', 'no_nota', 'penjualan2/detail', 'detail_jurnal')
+
+                $(".btn_bayar").hide();
+                $(".piutang_cek").hide();
+                $(document).on('change', '.cek_bayar', function() {
+                    var totalPiutang = 0
+                    $('.cek_bayar:checked').each(function() {
+                        var piutang = $(this).attr('piutang');
+                        totalPiutang += parseInt(piutang);
+                    });
+                    var anyChecked = $('.cek_bayar:checked').length > 0;
+                    $('.btn_bayar').toggle(anyChecked);
+                    $(".piutang_cek").toggle(anyChecked);
+                    $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
                 });
-                var anyChecked = $('.cek_bayar:checked').length > 0;
-                $('.btn_bayar').toggle(anyChecked);
-                $(".piutang_cek").toggle(anyChecked);
-                $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
-            });
 
                 $('.hide_bayar').hide();
                 $(document).on("click", ".detail_bayar", function() {
@@ -127,22 +129,22 @@
 
                 });
                 $(document).on('click', '.btn_bayar', function() {
-                var dipilih = [];
-                $('.cek_bayar:checked').each(function() {
-                    var no_nota = $(this).attr('no_nota');
-                    dipilih.push(no_nota);
+                    var dipilih = [];
+                    $('.cek_bayar:checked').each(function() {
+                        var no_nota = $(this).attr('no_nota');
+                        dipilih.push(no_nota);
+
+                    });
+                    var params = new URLSearchParams();
+
+                    dipilih.forEach(function(orderNumber) {
+                        params.append('no_nota', orderNumber);
+                    });
+                    var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
+                    window.location.href = "/terima_invoice_umum_cek?" + queryString;
 
                 });
-                var params = new URLSearchParams();
-
-                dipilih.forEach(function(orderNumber) {
-                    params.append('no_nota', orderNumber);
-                });
-                var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
-                window.location.href = "/terima_invoice_umum_cek?" + queryString;
-
-            });
-        </script>
+            </script>
         @endsection
     </x-slot>
 </x-theme.app>
