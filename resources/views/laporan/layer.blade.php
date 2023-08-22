@@ -14,6 +14,12 @@
             padding: 10px;
 
         }
+        .persentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 
         .translucent-text {
             color: rgba(0, 0, 0, 0.5);
@@ -168,10 +174,19 @@
                                 <!-- umur -->
 
                                 <!-- populasi -->
-                                <td align="center" class="pop awal">{{ $k->stok_awal }} /
-                                    {{ $k->stok_awal - $k->pop_kurang }}
-                                    ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
-                                    %)
+                                <td align="center" class="pop awal">
+                                    <div class="row float-center">
+                                        <div class="col-lg-6">
+                                            {{ $k->stok_awal }} 
+                                            <br>
+                                            {{ $k->stok_awal - $k->pop_kurang }}
+                                        </div>
+                                        <div class="col-lg-6">
+                                            ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
+                                            %)
+                                        </div>
+                                    </div>
+
                                 </td>
                                 {{-- <td align="center"
                                 class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'bg-danger text-white' : ''}}">

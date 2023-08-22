@@ -415,8 +415,6 @@
                                     <span
                                         class="badge bg-danger">{{ empty($penjualan_ayam_blmcek_mtd->jumlah) ? '0' : $penjualan_ayam_blmcek_mtd->jumlah }}</span>
                                 </a>
-
-
                             </td>
                         </tr>
                         <tr>
