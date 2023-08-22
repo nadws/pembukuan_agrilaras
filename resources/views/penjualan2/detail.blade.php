@@ -42,6 +42,7 @@
         </tr>
     </thead>
     <tbody>
+        
         @foreach ($produk as $no => $a)
         <tr>
             <td>{{ $no + 1 }}</td>
