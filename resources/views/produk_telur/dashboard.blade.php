@@ -329,7 +329,7 @@
                                         </td>
                                     @else
                                         <td align="right">
-                                            {{ number_format($stok->pcs - $stok->pcs_kredit, 1) }}
+                                            {{ number_format($stok->pcs - $stok->pcs_kredit, 0) }}
                                         </td>
                                         <td align="right">
                                             {{ number_format($stok->kg - $stok->kg_kredit, 1) }}
