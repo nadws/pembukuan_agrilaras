@@ -177,7 +177,7 @@
                                 <td align="center" class="pop awal">
                                             {{ $k->stok_awal }} 
                                             <br>
-                                            {{ $k->stok_awal - $k->pop_kurang }} <br>
+                                            {{ $k->stok_awal - $k->pop_kurang }}
                                             ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
                                             %)
                                     </div>
