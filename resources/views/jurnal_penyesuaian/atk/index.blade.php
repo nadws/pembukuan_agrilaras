@@ -44,7 +44,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th class="dhead" width="12%">Bulan</th>
+                                <th class="dhead" width="17%">Bulan</th>
                                 <th class="dhead" width="13%">No Nota</th>
                                 <th class="dhead">Akun Debit</th>
                                 <th class="dhead">Debit</th>
@@ -121,8 +121,10 @@
                             </tr>
                         </thead>
                         <tbody>
+
                             @foreach ($atk as $no => $d)
                                 @php
+                                    
                                     $sisa = $d->debit - $d->kredit;
                                     $rp_satuan = $d->rp_satuan;
                                     $ttl = $rp_satuan * $d->debit;
