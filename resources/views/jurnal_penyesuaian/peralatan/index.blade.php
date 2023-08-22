@@ -40,7 +40,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th class="dhead" width="12%">Bulan</th>
+                                <th class="dhead" width="17%">Bulan</th>
                                 <th class="dhead" width="13%">No Nota</th>
                                 <th class="dhead">Akun Debit</th>
                                 <th class="dhead">Debit</th>
@@ -100,18 +100,19 @@
                 <div class="col-lg-12">
                     <table class="table table-striped">
                         <thead>
-                           
+
                             <tr>
                                 <th class="dhead" width="15%">Tanggal Perolehan</th>
                                 <th class="dhead" width="20%">Nama Peralatan</th>
                                 <th class="dhead" width="20%">Harga Perolehan</th>
                                 <th class="dhead" width="20%">Nilai Buku</th>
-                                <th class="dhead" width="20%">Beban Penyusutan <br> (<span style="font-size: 13.5px" class="text-warning text-sm">Barang rusak/hilang bebankan sesuia nilai buku</span>)</th>
+                                <th class="dhead" width="20%">Beban Penyusutan <br> (<span style="font-size: 13.5px"
+                                        class="text-warning text-sm">Barang rusak/hilang bebankan sesuia nilai
+                                        buku</span>)</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($aktiva as $no => $a)
-                            
                                 @if (round($a->h_perolehan - $a->beban, 0) <= '0')
                                     @php continue; @endphp
                                 @endif

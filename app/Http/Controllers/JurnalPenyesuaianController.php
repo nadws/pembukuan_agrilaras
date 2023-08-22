@@ -51,6 +51,7 @@ class JurnalPenyesuaianController extends Controller
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
         $max_tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM depresiasi_aktiva as a");
         $max_tgl_akt = DB::selectOne("SELECT min(a.tgl) as tgl FROM aktiva as a");
+
         if (empty($max_tgl->tgl)) {
             $tgl = date('Y-m-t', strtotime($max_tgl_akt->tgl));
             $tgl1 = date('Y-m-01', strtotime($tgl));
@@ -130,27 +131,38 @@ class JurnalPenyesuaianController extends Controller
             $nota_t = $max->nomor_nota + 1;
         }
         DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '4']);
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun_debit)->first();
+        $akun = DB::table('akun')->where('id_akun', $r->id_akun_debit)->first();
+
+        $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
         $data_kredit = [
             'tgl' => $r->tgl,
             'no_nota' => 'JPA-' . $nota_t,
-            'id_akun' => 511,
+            'id_akun' => $r->id_akun_debit,
             'id_buku' => '4',
             'ket' => 'Penyesuaian Aktiva',
             'kredit' => $r->debit_kredit,
             'debit' => '0',
             'admin' => Auth::user()->name,
-            'kode_penyesuaian' => 'JPA'
+            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
         ];
         Jurnal::create($data_kredit);
+        $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun_kredit)->first();
+        $akun2 = DB::table('akun')->where('id_akun', $r->id_akun_kredit)->first();
+
+        $urutan = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
         $data_debit = [
             'tgl' => $r->tgl,
             'no_nota' => 'JPA-' . $nota_t,
-            'id_akun' => 510,
+            'id_akun' => $r->id_akun_kredit,
             'id_buku' => '4',
             'ket' => 'Penyesuaian Aktiva',
             'debit' => $r->debit_kredit,
             'kredit' => '0',
             'admin' => Auth::user()->name,
+            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
         ];
         Jurnal::create($data_debit);
 
@@ -164,14 +176,14 @@ class JurnalPenyesuaianController extends Controller
             DB::table('depresiasi_aktiva')->insert($data);
         }
 
-        return redirect()->route('penyesuaian.aktiva')->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('penyesuaian')->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function atk(Request $r, $gudang_id = null)
     {
 
-        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
-        $max_tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a")->tgl;
+        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
+        $max_tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_buku = '4' and a.id_akun = '11'")->tgl;
 
         if (empty($max_tgl)) {
             $tgl = date('Y-m-t', strtotime(date('Y-m-d')));
@@ -181,19 +193,18 @@ class JurnalPenyesuaianController extends Controller
             $tgl = Carbon::parse($tgl1)->addMonth()->toDateString();
         }
 
-
         if (empty($max)) {
             $nota_t = '1000';
         } else {
             $nota_t = $max->nomor_nota + 1;
         }
-
+        $tglHariIni = date('Y-m-d');
         $data =  [
             'title' => 'Jurnal Penyesuaian ATK',
             'nota' => $nota_t,
             'gudang' => Gudang::where('kategori_id', 1)->get(),
-            'akunAtk' => DB::table('akun')->where('id_akun', 516)->first(),
-            'akunBiaya' => DB::table('akun')->where('id_akun', 37)->first(),
+            'akunAtk' => DB::table('akun')->where('id_akun', 30)->first(),
+            'akunBiaya' => DB::table('akun')->where('id_akun', 11)->first(),
             'atk' => DB::select("SELECT 
                         a.id_produk, 
                                 a.kd_produk, 
@@ -220,7 +231,7 @@ class JurnalPenyesuaianController extends Controller
                                 group by 
                                     b.id_produk
                                 ) as f on f.id_produk = a.id_produk 
-                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tgl';
+                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tglHariIni';
             "),
             'tgl' => $tgl
         ];
@@ -242,7 +253,7 @@ class JurnalPenyesuaianController extends Controller
             'tgl' => $r->tgl,
             'no_nota' => $r->no_nota,
             'id_akun' => $r->id_akun_debit,
-            'id_buku' => '2',
+            'id_buku' => '4',
             'ket' => 'Penyesuaian Atk',
             'debit' => $r->debit_kredit,
             'no_urut' => $akun->inisial . '-' . $urutan,
@@ -261,7 +272,7 @@ class JurnalPenyesuaianController extends Controller
             'tgl' => $r->tgl,
             'no_nota' => $r->no_nota,
             'id_akun' => $r->id_akun_kredit,
-            'id_buku' => '2',
+            'id_buku' => '4',
             'ket' => 'Penyesuaian Atk',
             'kredit' => $r->debit_kredit,
             'debit' => 0,
@@ -301,7 +312,7 @@ class JurnalPenyesuaianController extends Controller
 
             Stok::create($data);
         }
-        return redirect()->route('opname.index')->with('sukses', 'Berhasil Penyesuaian Opname');
+        return redirect()->route('penyesuaian')->with('sukses', 'Berhasil Penyesuaian Opname');
     }
 
     public function peralatan()
@@ -325,8 +336,8 @@ class JurnalPenyesuaianController extends Controller
         }
         $data =  [
             'title' => 'Jurnal Penyesuaian',
-            'akunAtk' => DB::table('akun')->where('id_akun', 518)->first(),
-            'akunBiaya' => DB::table('akun')->where('id_akun', 517)->first(),
+            'akunAtk' => DB::table('akun')->where('id_akun', 59)->first(),
+            'akunBiaya' => DB::table('akun')->where('id_akun', 58)->first(),
             'nota' => $nota_t,
             'akun' => DB::table('akun')->get(),
             'aktiva' => DB::select("SELECT a.*, c.beban FROM peralatan as a 

@@ -69,10 +69,11 @@
                                     </span>
                                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                                         @if (!empty($detail))
-                                        <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                no_nota="{{ $a->no_nota }}" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
-                                        </li>
+                                            <li><a class="dropdown-item  text-info detail_nota" href="#"
+                                                    no_nota="{{ $a->no_nota }}" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#detail"><i
+                                                        class="me-2 fas fa-search"></i>Detail</a>
+                                            </li>
                                         @endif
                                     </ul>
                                 </div>

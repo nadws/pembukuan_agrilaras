@@ -52,8 +52,8 @@
                         <th width="5">#</th>
                         <th>Kode</th>
                         <th>Nama</th>
-                        <th>Satuan</th>
                         <th>Qty</th>
+                        <th>Satuan</th>
                         <th>Admin</th>
                         <th class="text-center">Aksi</th>
                     </tr>
@@ -69,10 +69,11 @@
                             <td>{{ $no + 1 }}</td>
                             <td>P-{{ kode($d->kd_produk) }}</td>
                             <td>{{ ucwords($d->nm_produk) }}</td>
+                            <td>{{ $stk }}</td>
                             <td>
                                 {{ ucwords($d->nm_satuan) }}
                             </td>
-                            <td>{{ $stk }}</td>
+
                             <td>{{ $d->admin }}</td>
                             <td align="center">
                                 <div class="btn-group dropstart mb-1">

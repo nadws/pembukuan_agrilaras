@@ -71,12 +71,12 @@ class NavbarController extends Controller
             //     'img' => 'penjualan.png',
             //     'deskripsi' => 'mengelola data barang atk dan peralatan',
             // ],
-            // [
-            //     'judul' => 'Data Peralatan',
-            //     'route' => 'peralatan.index',
-            //     'img' => 'peralatan.png',
-            //     'deskripsi' => 'mengelola data barang peralatan',
-            // ],
+            [
+                'judul' => 'Data Peralatan',
+                'route' => 'peralatan.index',
+                'img' => 'peralatan.png',
+                'deskripsi' => 'mengelola data barang peralatan',
+            ],
             [
                 'judul' => 'Aktiva',
                 'route' => 'aktiva',
