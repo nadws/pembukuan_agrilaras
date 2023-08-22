@@ -128,6 +128,9 @@
                             <input type="hidden" class="total_semua_biasa" name="total_penjualan"
                                 value="{{ $total }}">
                         </div>
+                        @if (empty($))
+                            
+                        @endif
                         <div class="col-lg-5 mt-2">
                             <label for="">Pilih Akun Pembayaran</label>
                             <select name="id_akun[]" id="" class="select2_add" required>

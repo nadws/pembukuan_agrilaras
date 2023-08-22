@@ -173,15 +173,13 @@
                             --}}
                                 <!-- umur -->
 
-                                <!-- populasi -->
+                               <!-- populasi -->
                                 <td align="center" class="pop awal">
                                             {{ $k->stok_awal }} 
                                             <br>
                                             {{ $k->stok_awal - $k->pop_kurang }}
                                             ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
                                             %)
-                                    </div>
-
                                 </td>
                                 {{-- <td align="center"
                                 class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'bg-danger text-white' : ''}}">

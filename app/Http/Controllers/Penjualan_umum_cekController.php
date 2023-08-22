@@ -67,9 +67,17 @@ class Penjualan_umum_cekController extends Controller
 
     public function terima_invoice_umum_cek(Request $r)
     {
+        $no_nota = $r->no_nota[0];
+        $cekAdadiJurnal = DB::selectOne("SELECT *,b.id_akun as id_akun_lawan FROM `jurnal` as a
+        LEFT JOIN (
+            select no_nota, id_akun, debit,kredit FROM jurnal WHERE id_akun != '84' GROUP BY no_nota
+        ) as b ON a.no_nota = b.no_nota
+        WHERE a.ket LIKE '%PUM-$no_nota%';");
+        // dd(empty($cekAdadiJurnal));
         $data = [
             'title' => 'Penerimaan Uang Martadah',
             'nota' => $r->no_nota,
+            'jurnal' => $cekAdadiJurnal,
             'akun' => DB::table('akun')->get(),
         ];
         return view('penjualan_umum_cek.penerimaan_uang', $data);
