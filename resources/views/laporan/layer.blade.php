@@ -278,7 +278,7 @@
                                 </td>
                                 <td align="center" class="fcr k / fcr k+ (7,458)">
 
-                                    {{ empty($k->kg_pakan_kuml)
+                                    {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                         ? '0'
                                         : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 2) }}
                                     /
