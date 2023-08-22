@@ -175,16 +175,11 @@
 
                                 <!-- populasi -->
                                 <td align="center" class="pop awal">
-                                    <div class="row float-center">
-                                        <div class="col-lg-6">
                                             {{ $k->stok_awal }} 
                                             <br>
-                                            {{ $k->stok_awal - $k->pop_kurang }}
-                                        </div>
-                                        <div class="col-lg-6">
+                                            {{ $k->stok_awal - $k->pop_kurang }} <br>
                                             ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
                                             %)
-                                        </div>
                                     </div>
 
                                 </td>
