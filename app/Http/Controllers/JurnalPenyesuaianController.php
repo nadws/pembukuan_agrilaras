@@ -131,27 +131,38 @@ class JurnalPenyesuaianController extends Controller
             $nota_t = $max->nomor_nota + 1;
         }
         DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '4']);
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun_debit)->first();
+        $akun = DB::table('akun')->where('id_akun', $r->id_akun_debit)->first();
+
+        $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
         $data_kredit = [
             'tgl' => $r->tgl,
             'no_nota' => 'JPA-' . $nota_t,
-            'id_akun' => 511,
+            'id_akun' => $r->id_akun_debit,
             'id_buku' => '4',
             'ket' => 'Penyesuaian Aktiva',
             'kredit' => $r->debit_kredit,
             'debit' => '0',
             'admin' => Auth::user()->name,
-            'kode_penyesuaian' => 'JPA'
+            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
         ];
         Jurnal::create($data_kredit);
+        $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun_kredit)->first();
+        $akun2 = DB::table('akun')->where('id_akun', $r->id_akun_kredit)->first();
+
+        $urutan = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
         $data_debit = [
             'tgl' => $r->tgl,
             'no_nota' => 'JPA-' . $nota_t,
-            'id_akun' => 510,
+            'id_akun' => $r->id_akun_kredit,
             'id_buku' => '4',
             'ket' => 'Penyesuaian Aktiva',
             'debit' => $r->debit_kredit,
             'kredit' => '0',
             'admin' => Auth::user()->name,
+            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
         ];
         Jurnal::create($data_debit);
 
@@ -165,7 +176,7 @@ class JurnalPenyesuaianController extends Controller
             DB::table('depresiasi_aktiva')->insert($data);
         }
 
-        return redirect()->route('penyesuaian.aktiva')->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('penyesuaian')->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function atk(Request $r, $gudang_id = null)
