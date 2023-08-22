@@ -59,15 +59,9 @@
                                 @if ($i->cek == 'Y')
                                     <i class="fas fa-check text-success"></i>
                                 @else
-                                    <<<<<<< HEAD {{-- <input type="checkbox" name="" no_nota="{{ $i->no_nota }}"
-                                        piutang="{{ $i->ttl_rp }}" id="" class="cek_bayar"> --}} <a
-                                        href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
+                                    <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
                                         class="btn btn-sm btn-primary"><i class="fas fa-plus"></i>
                                         Setor</a>
-                                        =======
-                                        <input type="checkbox" name="" no_nota="{{ $i->no_nota }}"
-                                            piutang="{{ $i->ttl_rp }}" id="" class="cek_bayar">
-                                        >>>>>>> 914f596be59d01e2ed71b5d73ce18c89d4501c4a
                                 @endif
                             </td>
                             {{-- <td>

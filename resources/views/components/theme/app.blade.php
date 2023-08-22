@@ -38,10 +38,10 @@
                                                 <a class="nav-link {{ $rotName == $rot2 ? 'active' : '' }}"
                                                     aria-current="page" href="{{ route($rot2) }}">Stok Masuk</a>
                                             </li>
-                                            <li class="nav-item">
+                                            {{-- <li class="nav-item">
                                                 <a class="nav-link {{ $rotName == $rot3 ? 'active' : '' }}"
                                                     href="{{ route($rot3) }}">Opname</a>
-                                            </li>
+                                            </li> --}}
                                         </ul>
                                     </div>
                                     @if (Schema::hasTable('route_agl'))

@@ -59,24 +59,24 @@ class NavbarController extends Controller
                 'img' => 'product.png',
                 'deskripsi' => 'mengelola data barang atk',
             ],
-            [
-                'judul' => 'Data Bahan Baku',
-                'route' => 'bahan_baku.index',
-                'img' => 'bahan_baku.png',
-                'deskripsi' => 'mengelola data barang atk dan peralatan',
-            ],
-            [
-                'judul' => 'Data Barang Dagangan',
-                'route' => 'barang_dagangan.index',
-                'img' => 'penjualan.png',
-                'deskripsi' => 'mengelola data barang atk dan peralatan',
-            ],
-            [
-                'judul' => 'Data Peralatan',
-                'route' => 'peralatan.index',
-                'img' => 'peralatan.png',
-                'deskripsi' => 'mengelola data barang peralatan',
-            ],
+            // [
+            //     'judul' => 'Data Bahan Baku',
+            //     'route' => 'bahan_baku.index',
+            //     'img' => 'bahan_baku.png',
+            //     'deskripsi' => 'mengelola data barang atk dan peralatan',
+            // ],
+            // [
+            //     'judul' => 'Data Barang Dagangan',
+            //     'route' => 'barang_dagangan.index',
+            //     'img' => 'penjualan.png',
+            //     'deskripsi' => 'mengelola data barang atk dan peralatan',
+            // ],
+            // [
+            //     'judul' => 'Data Peralatan',
+            //     'route' => 'peralatan.index',
+            //     'img' => 'peralatan.png',
+            //     'deskripsi' => 'mengelola data barang peralatan',
+            // ],
             [
                 'judul' => 'Aktiva',
                 'route' => 'aktiva',
