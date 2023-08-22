@@ -313,19 +313,19 @@
                                     @endphp
                                     @if ($g->id_gudang_telur == '1')
                                         <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format($stok->pcs - $stok->pcs_kredit, 0) }}
+                                            {{ number_format($stok->pcs - $stok->pcs_kredit, 0) }}
                                             /
-                                            {{ empty($stok2->pcs) ? '0' : number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
+                                            {{ number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
                                         </td>
                                         <td align="right">
-                                            {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->kg_kredit, 2) }}
+                                            {{ number_format($stok->kg - $stok->kg_kredit, 2) }}
                                             /
-                                            {{ empty($stok2->kg) ? '0' : number_format($stok2->kg - $stok2->kg_kredit, 2) }}
+                                            {{ number_format($stok2->kg - $stok2->kg_kredit, 2) }}
                                         </td>
                                         <td align="right">
-                                            {{ empty($stok->pcs) ? '0' : number_format(($stok->pcs - $stok->pcs_kredit) / 180, 2) }}
+                                            {{ number_format(($stok->pcs - $stok->pcs_kredit) / 180, 2) }}
                                             /
-                                            {{ empty($stok2->pcs) ? '0' : number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 2) }}
+                                            {{ number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 2) }}
                                         </td>
                                     @else
                                         <td align="right">
