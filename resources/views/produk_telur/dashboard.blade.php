@@ -314,17 +314,17 @@
                                     @if ($g->id_gudang_telur == '1')
                                         <td align="right">
                                             {{ number_format($stok->pcs - $stok->pcs_kredit, 0) }}
-                                            /
+                                            <br>
                                             {{ number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
                                         </td>
                                         <td align="right">
                                             {{ number_format($stok->kg - $stok->kg_kredit, 2) }}
-                                            /
+                                            <br>
                                             {{ number_format($stok2->kg - $stok2->kg_kredit, 2) }}
                                         </td>
                                         <td align="right">
                                             {{ number_format(($stok->pcs - $stok->pcs_kredit) / 180, 2) }}
-                                            /
+                                            <br>
                                             {{ number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 2) }}
                                         </td>
                                     @else
