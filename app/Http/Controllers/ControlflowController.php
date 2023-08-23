@@ -49,7 +49,10 @@ class ControlflowController extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'akun_cashflow' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_flow='T'"),
-            'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'")
+            'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'"),
+            'telur_selisih' => DB::select("SELECT a.nm_telur, sum(b.kg_selisih) as kg_selisih, sum(b.pcs_selisih) as pcs_selisih FROM telur_produk as a
+            LEFT JOIN stok_telur as b ON a.id_produk_telur = b.id_telur
+            WHERE b.jenis = 'Opname' AND b.id_gudang = 1 AND b.tgl BETWEEN '2023-08-12' AND '$tgl2' AND b.admin not in ('nanda', 'import')  GROUP BY b.id_telur;")
         ];
         return view('controlflow.dashboard', $data);
     }

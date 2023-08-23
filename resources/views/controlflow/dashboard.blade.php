@@ -15,6 +15,82 @@
             </div>
             <x-theme.btn_filter />
         </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="float-strat">Telur Selisih</h6>
+                        </div>
+                        <div class="col-lg-6">
+                           
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="dhead">#</th>
+                                <th class="dhead">Nama</th>
+                                <th class="dhead text-end">Pcs Selisih</th>
+                                <th class="dhead text-end">Kg Selisih</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($telur_selisih as $no => $d)
+                            <tr>
+                                <td>{{ $no+1 }}</td>
+                                <td>{{ $d->nm_telur }}</td>
+                                <td align="right">{{ number_format($d->pcs_selisih,0) }}</td>
+                                <td align="right">{{ number_format($d->kg_selisih,1) }}</td>
+                            </tr>
+                            @endforeach
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="float-strat">Pakan Selisih</h6>
+                        </div>
+                        <div class="col-lg-6">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table></table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="float-strat">Vitamin Selisih</h6>
+                        </div>
+                        <div class="col-lg-6">
+                            <button data-bs-toggle="modal" data-bs-target="#daftarakuncashflow"
+                                class="btn btn-sm btn-primary d_akuncashflow float-end"><i
+                                    class="fas fa-clipboard-list"></i> List
+                                Akun
+                                <span class="badge bg-danger ttl_akun_cashflow"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table></table>
+                </div>
+            </div>
+        </div>
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
