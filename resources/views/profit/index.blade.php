@@ -279,7 +279,7 @@
                         loadModal(id_kategori)
                         loadTabel()
                         loadSisa()
-
+                        
                     }
                 });
             })

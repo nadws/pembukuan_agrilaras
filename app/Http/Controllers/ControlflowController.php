@@ -98,6 +98,12 @@ class ControlflowController extends Controller
 
         echo $ttl_cash_flow->total_akun;
     }
+    public function total_cash_profit()
+    {
+        $ttl_cash_flow = DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.profit_loss='T'");
+
+        echo $ttl_cash_flow->total_akun;
+    }
     public function seleksi_cash_flow_ditarik(Request $r)
     {
         for ($x = 0; $x < count($r->id_akun); $x++) {
@@ -295,4 +301,5 @@ class ControlflowController extends Controller
         ];
         return view('controlflow.akuncashflow', $data);
     }
+    
 }

@@ -189,6 +189,8 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(ProfitController::class)->group(function () {
         Route::get('/profit', 'index')->name('profit');
+        Route::get('/akunprofit', 'akunprofit')->name('akunprofit');
+        Route::post('/seleksi_akun_profit', 'seleksi_akun_profit')->name('seleksi_akun_profit');
         Route::get('/profit_print', 'print')->name('profit_print');
     });
 
@@ -252,6 +254,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/akunuangditarik', 'akunuangditarik')->name('akunuangditarik');
         Route::get('/total_cash_flow', 'total_cash_flow')->name('total_cash_flow');
         Route::get('/total_cash_ibu', 'total_cash_ibu')->name('total_cash_ibu');
+        Route::get('/total_cash_profit', 'total_cash_profit')->name('total_cash_profit');
         Route::post('/seleksi_cash_flow_ditarik', 'seleksi_cash_flow_ditarik')->name('seleksi_cash_flow_ditarik');
     });
 

@@ -15,7 +15,7 @@
     $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
 
     return DB::select("SELECT c.nm_akun, b.kredit, b.debit
-    FROM profit_akun as a
+    FROM akunprofit as a
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
@@ -23,7 +23,7 @@
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     left join akun as c on c.id_akun = a.id_akun
-    where a.kategori_id = '$id_kategori';");
+    where a.kategori = '$id_kategori';");
     }
 
     @endphp

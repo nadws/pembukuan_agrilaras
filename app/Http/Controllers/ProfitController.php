@@ -17,13 +17,13 @@ class ProfitController extends Controller
             $this->tgl1 = date('Y-m-d');
             $this->tgl2 = date('Y-m-d');
         } elseif ($r->period == 'weekly') {
-            $this->tgl1 = date('Y-m-d', strtotime("-6 days"));
+            $this->tgl1 = date('Y-m-d', strtotime('-6 days'));
             $this->tgl2 = date('Y-m-d');
         } elseif ($r->period == 'mounthly') {
             $bulan = $r->bulan;
             $tahun = $r->tahun;
-            $tglawal = "$tahun" . "-" . "$bulan" . "-" . "01";
-            $tglakhir = "$tahun" . "-" . "$bulan" . "-" . "01";
+            $tglawal = "$tahun" . '-' . "$bulan" . '-' . '01';
+            $tglakhir = "$tahun" . '-' . "$bulan" . '-' . '01';
 
             $this->tgl1 = date('Y-m-01', strtotime($tglawal));
             $this->tgl2 = date('Y-m-t', strtotime($tglakhir));
@@ -32,8 +32,8 @@ class ProfitController extends Controller
             $this->tgl2 = $r->tgl2;
         } elseif ($r->period == 'years') {
             $tahun = $r->tahunfilter;
-            $tgl_awal = "$tahun" . "-" . "01" . "-" . "01";
-            $tgl_akhir = "$tahun" . "-" . "12" . "-" . "01";
+            $tgl_awal = "$tahun" . '-' . '01' . '-' . '01';
+            $tgl_akhir = "$tahun" . '-' . '12' . '-' . '01';
 
             $this->tgl1 = date('Y-m-01', strtotime($tgl_awal));
             $this->tgl2 = date('Y-m-t', strtotime($tgl_akhir));
@@ -41,7 +41,7 @@ class ProfitController extends Controller
     }
     public function index()
     {
-        $data =  [
+        $data = [
             'title' => 'Profit and Loss',
             'tgl1' => $this->tgl1,
             'tgl2' => $this->tgl2,
@@ -51,8 +51,8 @@ class ProfitController extends Controller
 
     public function load(Request $r)
     {
-        $tgl1 =  $r->tgl1;
-        $tgl2 =  $r->tgl2;
+        $tgl1 = $r->tgl1;
+        $tgl2 = $r->tgl2;
         $akun = DB::table('akun')->get();
 
         $data = [
@@ -68,45 +68,51 @@ class ProfitController extends Controller
                 ->where('jenis', 2)
                 ->orderBy('urutan', 'ASC')
                 ->get(),
-
         ];
         return view('profit.load', $data);
     }
 
     public function modal(Request $r)
     {
-        $akunProfit = DB::table('profit_akun as a')
+        $akunProfit = DB::table('akunprofit as a')
             ->join('akun as b', 'a.id_akun', 'b.id_akun')
-            ->where('a.kategori_id', $r->id_kategori)
+            ->where('a.kategori', $r->id_kategori)
             ->orderBy('a.urutan', 'ASC')
             ->get();
-        $akun = DB::select("SELECT * FROM akun as a 
-        where a.id_akun not in(SELECT b.id_akun FROM profit_akun as b)");
+
+        $akun = DB::select("SELECT * FROM akun as a
+        where a.profit_loss = 'H'");
         $data = [
             'akunProfit' => $akunProfit,
-            'akun' => $akun
+            'akun' => $akun,
         ];
         return view('profit.modal', $data);
     }
 
     public function delete(Request $r)
     {
-        DB::table('profit_akun')->where('id_profit_akun', $r->id_profit)->delete();
+        $getAkun = DB::table('akunprofit')->where('id_akunprofit', $r->id_profit);
+        $id_akun = $getAkun->first()->id_akun;
+        $getAkun->delete();
+    
+        DB::table('akun')->where('id_akun', $id_akun)->update(['profit_loss' => 'T']);
     }
 
     public function add(Request $r)
     {
-        DB::table('profit_akun')->insert([
+        DB::table('akunprofit')->insert([
             'urutan' => $r->urutan,
             'id_akun' => $r->id_akun,
-            'kategori_id' => $r->kategori_id,
+            'kategori' => $r->kategori_id,
         ]);
+
+        DB::table('akun')->where('id_akun', $r->id_akun)->update(['profit_loss' => 'H']);
     }
 
     public function getQueryProfit($id_kategori, $jenis, $tgl1, $tgl2)
     {
         return DB::select("SELECT c.nm_akun, b.kredit, b.debit
-        FROM profit_akun as a 
+        FROM profit_akun as a
         left join (
         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
@@ -119,10 +125,10 @@ class ProfitController extends Controller
 
     public function print(Request $r)
     {
-        $tgl1 =  $r->tgl1;
-        $tgl2 =  $r->tgl2;
+        $tgl1 = $r->tgl1;
+        $tgl2 = $r->tgl2;
 
-        $data =  [
+        $data = [
             'title' => 'Profit and Loss',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
@@ -133,8 +139,7 @@ class ProfitController extends Controller
             'subKategori2' => DB::table('sub_kategori_cashflow')
                 ->where('jenis', 2)
                 ->orderBy('urutan', 'ASC')
-                ->get()
-
+                ->get(),
         ];
         return view('profit.print', $data);
     }
@@ -142,7 +147,10 @@ class ProfitController extends Controller
     public function load_uraian(Request $r)
     {
         $data = [
-            'subKategori' => DB::table('sub_kategori_cashflow')->where('jenis', $r->jenis)->orderBy('urutan', 'ASC')->get()
+            'subKategori' => DB::table('sub_kategori_cashflow')
+                ->where('jenis', $r->jenis)
+                ->orderBy('urutan', 'ASC')
+                ->get(),
         ];
         return view('profit.load_uraian', $data);
     }
@@ -154,21 +162,24 @@ class ProfitController extends Controller
 
     public function delete_subkategori(Request $r)
     {
-        DB::table('sub_kategori_cashflow')->where('id', $r->id)->delete();
+        DB::table('sub_kategori_cashflow')
+            ->where('id', $r->id)
+            ->delete();
     }
 
     public function update(Request $r)
     {
         for ($i = 0; $i < count($r->id_edit); $i++) {
-            DB::table('sub_kategori_cashflow')->where('id', $r->id_edit[$i])->update([
-                'sub_kategori' => $r->nm_kategori[$i],
-                'urutan' => $r->urutan[$i],
-            ]);
+            DB::table('sub_kategori_cashflow')
+                ->where('id', $r->id_edit[$i])
+                ->update([
+                    'sub_kategori' => $r->nm_kategori[$i],
+                    'urutan' => $r->urutan[$i],
+                ]);
         }
     }
     public function count_sisa(Request $r)
     {
-
         $sisa = DB::selectOne("SELECT COUNT(*) as sisa FROM akun as a
         LEFT JOIN profit_akun as b ON a.id_akun= b.id_akun
         WHERE b.id_akun IS null");
@@ -187,5 +198,27 @@ class ProfitController extends Controller
         ];
 
         return view('profit.view_akun', $data);
+    }
+
+    public function akunprofit(Request $r)
+    {
+        $data = [
+            'akun' => DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
+            FROM akun as a
+            left join akunprofit as b on b.id_akun = a.id_akun;"),
+        ];
+        return view('profit.akunprofit', $data);
+    }
+
+    public function seleksi_akun_profit(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+
+            $data = [
+                'profit_loss' => $r->profit_loss[$x]
+            ];
+            DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
     }
 }
