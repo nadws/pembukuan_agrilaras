@@ -15,16 +15,11 @@
 
         }
 
-        .persentage {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .translucent-text {
-            color: rgba(0, 0, 0, 0.5);
-            /* Warna teks dengan tingkat transparansi 0.5 */
+        .table-two th,
+        .table-two td {
+            border: none;
+            font-size: 10px;
+            padding: 2px;
         }
     </style>
     <div class="row">
@@ -173,17 +168,26 @@
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
                             --}}
                                 <!-- umur -->
-                                <style>
-                                    .percentage {
-                                        text-align: center;
-                                        vertical-align: middle;
-                                        /* Menempatkan konten di tengah-tengah secara vertikal */
-                                    }
-                                </style>
+
                                 <!-- populasi -->
                                 <td align="center" class="pop awal">
-                                    {{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }}
-                                    ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%)
+                                    <table border="0" class="table-two">
+                                        <tr>
+                                            <td>{{ $k->stok_awal }}</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td rowspan="2" style="vertical-align:middle; text-align: right">
+                                                ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ $k->stok_awal - $k->pop_kurang }}</td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </table>
+
+
                                 </td>
                                 {{-- <td align="center"
                                 class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'bg-danger text-white' : ''}}">
@@ -234,7 +238,7 @@
                                 </td>
 
 
-                                <td align="right" class="hd week">
+                                <td align="center" class="hd week">
                                     {{-- ({{$k->pcs_telur_week}} {{$k->jlh_hari}}) --}}
                                     {{ empty($k->pcs_telur_week) || empty($k->jlh_hari) || empty($k->pop_kurang)
                                         ? '0'
