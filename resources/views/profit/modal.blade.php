@@ -39,8 +39,8 @@
                 {{ ucwords($a->nm_akun) }}
             </td>
             <td width="15%">
-                <button type="button" class="btn btn-danger btn-sm btnHapus" id_profit="{{ $a->id_profit_akun }}"
-                    id_kategori="{{ $a->kategori_id }}" id="btnSave"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-danger btn-sm btnHapus" id_profit="{{ $a->id_akunprofit }}"
+                    id_kategori="{{ $a->kategori }}" ><i class="fas fa-trash"></i></button>
             </td>
         </tr>
         @endforeach
