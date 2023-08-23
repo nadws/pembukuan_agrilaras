@@ -126,19 +126,19 @@ class NavbarController extends Controller
                 'img' => 'newspaper.png',
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
-            [
-                'judul' => 'Profit & Loss',
-                'route' => 'profit',
-                'img' => 'profit.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
+            // [
+            //     'judul' => 'Profit & Loss',
+            //     'route' => 'profit',
+            //     'img' => 'profit.png',
+            //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+            // ],
 
-            [
-                'judul' => 'Laporan Neraca',
-                'route' => 'neraca',
-                'img' => 'law-book.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
+            // [
+            //     'judul' => 'Laporan Neraca',
+            //     'route' => 'neraca',
+            //     'img' => 'law-book.png',
+            //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+            // ],
 
             [
                 'judul' => 'Jurnal Penutup',
