@@ -517,4 +517,20 @@ class PenjualanController extends Controller
 
         return redirect()->route('penjualan_agrilaras')->with('sukses', 'Data berhasil ditambahkan');
     }
+
+    public function export_faktur(Request $r)
+    {
+        $tgl1 = $r->tgl1;
+        $tgl2 = $r->tgl2;
+        $nota =  DB::select("SELECT a.no_nota, max(a.tgl) as tgl, b.nm_customer, b.npwp, a.customer, sum(a.total_rp) as total_rp , a.tipe, a.lokasi
+        FROM invoice_telur as a 
+        left JOIN customer as b on b.id_customer = a.id_customer
+        WHERE a.tgl between '$tgl1' and '$tgl2' and a.lokasi != 'opname'
+        GROUP by a.no_nota, b.nm_customer, b.npwp, a.customer, a.tipe;");
+
+        $data = [
+            'nota' => $nota
+        ];
+        return view('penjualan_agl.faktur', $data);
+    }
 }

@@ -293,6 +293,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/edit_penjualan_telur', 'edit_penjualan_telur')->name('edit_penjualan_telur');
         Route::get('/delete_invoice_telur', 'delete_invoice_telur')->name('delete_invoice_telur');
         Route::get('/loadpcsinvoiceedit', 'loadpcsinvoiceedit')->name('loadpcsinvoiceedit');
+        Route::get('/export_faktur', 'export_faktur')->name('export_faktur');
     });
 
     Route::controller(Stock_telurController::class)->group(function () {
