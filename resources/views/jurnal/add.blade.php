@@ -26,6 +26,7 @@
     <x-slot name="cardBody">
         <form action="{{ route('save_jurnal') }}" method="post" class="save_jurnal">
             @csrf
+            <input type="hidden" name="id_buku" value="{{ $id_buku }}">
             <section class="row">
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
@@ -40,7 +41,7 @@
                     <select name="id_proyek" id="select2">
                         <option value="">Pilih</option>
                         @foreach ($proyek as $p)
-                        <option value="{{ $p->id_proyek }}">{{ $p->nm_proyek }}</option>
+                            <option value="{{ $p->id_proyek }}">{{ $p->nm_proyek }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -49,7 +50,7 @@
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -107,8 +108,8 @@
 
 
     @section('scripts')
-    <script>
-        $(".select2suplier").select2()
+        <script>
+            $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
 
@@ -192,7 +193,7 @@
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
                     input = input.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-                    
+
 
                     if (input === "") {
                         $(this).val("");
@@ -232,12 +233,12 @@
                         currency: "IDR",
                     });
                     if (selisih === 0) {
-                            $(".cselisih").css("color", "green");
-                            $(".button-save").removeAttr("hidden");
-                        } else {
-                            $(".cselisih").css("color", "red");
-                            $(".button-save").attr("hidden", true);
-                        }
+                        $(".cselisih").css("color", "green");
+                        $(".button-save").removeAttr("hidden");
+                    } else {
+                        $(".cselisih").css("color", "red");
+                        $(".button-save").attr("hidden", true);
+                    }
                     $(".selisih").text(selisih_total);
 
 
@@ -326,9 +327,9 @@
 
                 aksiBtn("form");
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -350,7 +351,7 @@
                                 } else {
                                     $('.peringatan' + count).attr("hidden", true);
                                 }
-                                
+
                             } else {
                                 $('.peringatan' + count).attr("hidden", true);
                             }
@@ -361,7 +362,7 @@
                                     $('.peringatan' + count).attr("hidden", true);
                                 }
 
-                                
+
                             } else {
                                 $('.peringatan' + count).attr("hidden", true);
                             }
@@ -380,6 +381,6 @@
                     });
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

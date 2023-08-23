@@ -55,25 +55,33 @@ class JurnalController extends Controller
 
 
 
-    public function index()
+    public function index(Request $r)
     {
+        // dd($r->id_buku);
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
         $id_proyek = $this->id_proyek;
         $id_user = auth()->user()->id;
+        if (empty($r->id_buku)) {
+            $id_buku = '2';
+        } else {
+            $id_buku = $r->id_buku;
+        }
+
+
 
         if ($id_proyek == '0') {
             $jurnal =  DB::select("SELECT a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku not in('1','4') and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
         } else {
             $jurnal =  DB::select("SELECT a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku not in('1','4') and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
         }
 
         $data =  [
@@ -83,6 +91,7 @@ class JurnalController extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'id_proyek' => $id_proyek,
+            'id_buku' => $id_buku,
             // button
 
             'user' => User::where('posisi_id', 1)->get(),
@@ -97,7 +106,7 @@ class JurnalController extends Controller
         return view('jurnal.index', $data);
     }
 
-    public function add()
+    public function add(Request $r)
     {
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
 
@@ -110,7 +119,8 @@ class JurnalController extends Controller
             'title' => 'Tambah Jurnal Umum',
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
-            'suplier' => DB::table('tb_suplier')->get()
+            'suplier' => DB::table('tb_suplier')->get(),
+            'id_buku' => $r->id_buku
 
         ];
         return view('jurnal.add', $data);
@@ -123,7 +133,6 @@ class JurnalController extends Controller
             'akun' => Akun::all(),
             'proyek' => proyek::all(),
             'satuan' => DB::table('tb_satuan')->get()
-
         ];
         return view('jurnal.load_menu', $data);
     }
@@ -150,6 +159,7 @@ class JurnalController extends Controller
         $id_suplier = $r->id_suplier;
         $no_urut = $r->no_urut;
         $id_post = $r->id_post;
+        $id_buku = $r->id_buku;
 
 
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
@@ -172,7 +182,7 @@ class JurnalController extends Controller
                 'no_nota' => 'JU-' . $nota_t,
                 'id_akun' => $id_akun[$i],
                 'no_dokumen' => $no_urut[$i],
-                'id_buku' => '2',
+                'id_buku' => $id_buku,
                 'ket' => $keterangan[$i],
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
@@ -190,7 +200,7 @@ class JurnalController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
-        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0])->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0, 'id_buku' => $id_buku])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function delete(Request $r)
@@ -202,7 +212,7 @@ class JurnalController extends Controller
         $tgl1 = $r->tgl1;
         $tgl2 = $r->tgl2;
         $id_proyek = $r->id_proyek;
-        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => $id_proyek])->with('sukses', 'Data berhasil dihapus');
+        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => $id_proyek, 'id_buku' => $r->id_buku])->with('sukses', 'Data berhasil dihapus');
     }
 
     public function export(Request $r)

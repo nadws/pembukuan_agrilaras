@@ -1,9 +1,12 @@
 @props([
-'title' => '',
+    'title' => '',
 ])
 <x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end" teks="View" />
 <form action="" method="get">
     <x-theme.modal title="Filter Tanggal" idModal="view">
+
+
+
         <div class="row">
             <div class="col-lg-3">Filter</div>
             <div class="col-lg-1">:</div>
@@ -28,12 +31,11 @@
                 <label for="">Bulan</label>
                 <select name="bulan" id="bulan" class="selectView bulan">
                     @php
-                    $listBulan = DB::table('bulan')->get();
+                        $listBulan = DB::table('bulan')->get();
                     @endphp
-                    @foreach($listBulan as $l)
-                    <option value="{{ $l->bulan }}" {{ (int) date('m')==$l->bulan ? 'selected' : ''
-                        }}>{{
-                        $l->nm_bulan }}</option>
+                    @foreach ($listBulan as $l)
+                        <option value="{{ $l->bulan }}" {{ (int) date('m') == $l->bulan ? 'selected' : '' }}>
+                            {{ $l->nm_bulan }}</option>
                     @endforeach
                 </select>
             </div>

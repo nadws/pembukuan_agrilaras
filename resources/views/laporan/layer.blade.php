@@ -14,12 +14,13 @@
             padding: 10px;
 
         }
+
         .persentage {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
 
         .translucent-text {
             color: rgba(0, 0, 0, 0.5);
@@ -78,14 +79,14 @@
                             <th class="dhead">kg<br>
 
                             </th>
-                            <th class="dhead">selisih butir<br>
+                            <th class="dhead">selisih <br> (butir/kg)<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                     style="cursor: pointer"></i>
                             </th>
-                            <th class="dhead">kg <br> today - yesterday
+                            {{-- <th class="dhead">kg <br> today - yesterday
                                 <i class="fas text-white fa-question-circle rumus" rumus="kg_today"
                                     style="cursor: pointer"></i>
-                            </th>
+                            </th> --}}
                             <th class="dhead">gr / p <br> (butir) <br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="gr_butir"
                                     style="cursor: pointer"></i>
@@ -166,20 +167,23 @@
                                 <td align="center" class="kandang">{{ $k->nm_kandang }}</td>
                                 <!-- Umur -->
                                 <td align="center" class="mgg {{ $k->mgg >= '85' ? 'bg-danger text-white' : '' }}">
-                                    {{ $k->mgg }} ({{ number_format(($k->mgg / 85) * 100, 0) }}%)
+                                    {{ $k->mgg }} <br> ({{ number_format(($k->mgg / 85) * 100, 0) }}%)
                                 </td>
                                 {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
                             --}}
                                 <!-- umur -->
-
-                               <!-- populasi -->
+                                <style>
+                                    .percentage {
+                                        text-align: center;
+                                        vertical-align: middle;
+                                        /* Menempatkan konten di tengah-tengah secara vertikal */
+                                    }
+                                </style>
+                                <!-- populasi -->
                                 <td align="center" class="pop awal">
-                                            {{ $k->stok_awal }} 
-                                            <br>
-                                            {{ $k->stok_awal - $k->pop_kurang }}
-                                            ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}
-                                            %)
+                                    {{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }}
+                                    ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%)
                                 </td>
                                 {{-- <td align="center"
                                 class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'bg-danger text-white' : ''}}">
@@ -191,7 +195,7 @@
                                 @endphp
                                 <td align="center"
                                     class="D/C {{ $tot_ayam_semua_hilang > 3 ? 'bg-danger text-white' : '' }}">
-                                    {{ empty($k->mati) ? '0' : $k->mati }} / {{ empty($k->jual) ? '0' : $k->jual }}
+                                    {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }}
                                 </td>
                                 <!-- populasi -->
 
@@ -205,15 +209,16 @@
                                     <dt>{{ number_format($k->kg - $k->pcs / 180, 1) }}</dt>
                                     {{ number_format($k->kg, 1) }}
                                 </td>
-                                <td align="center"
+                                <td align="right"
                                     class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'bg-danger text-white' : '' }} ">
-                                    {{ number_format($k->pcs - $k->pcs_past, 0) }}
+                                    {{ number_format($k->pcs - $k->pcs_past, 0) }} <br>
+                                    {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
                                 </td>
-                                <td align="center"
+                                {{-- <td align="center"
                                     class="kg / today - yesterday {{ $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180) < 0 ? 'bg-danger text-white' : '' }} ">
 
                                     {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
-                                </td>
+                                </td> --}}
                                 {{-- <td align="center">{{number_format(($k->kg - ($k->pcs/180)) * 1000,2)}}</td> --}}
 
                                 <td align="right" class="gr per butir">
@@ -229,12 +234,12 @@
                                 </td>
 
 
-                                <td align="center" class="hd week">
+                                <td align="right" class="hd week">
                                     {{-- ({{$k->pcs_telur_week}} {{$k->jlh_hari}}) --}}
                                     {{ empty($k->pcs_telur_week) || empty($k->jlh_hari) || empty($k->pop_kurang)
                                         ? '0'
                                         : number_format(($k->pcs_telur_week / $k->jlh_hari / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
-                                    /
+                                    <br>
                                     {{ empty($k->pcs_telur_week_past) || empty($k->jlh_hari_past) || empty($k->pop_kurang_past)
                                         ? '0'
                                         : number_format(($k->pcs_telur_week_past / $k->jlh_hari_past / ($k->stok_awal - $k->pop_kurang_past)) * 100, 0) }}
@@ -315,8 +320,11 @@
                             <th class="dhead">{{ $mati }} / {{ $jual }}</th>
                             <th class="dhead">{{ number_format($kg, 2) }} <br> {{ number_format($kg_kotor, 2) }}
                             </th>
-                            <th class="dhead">{{ number_format($butir, 0) }}</th>
-                            <th class="dhead">{{ number_format($kg_today, 2) }}</th>
+                            <th class="dhead text-end">
+                                {{ number_format($butir, 0) }} <br>
+                                {{ number_format($kg_today, 1) }}
+                            </th>
+                            {{-- <th class="dhead"></th> --}}
                             <th class="dhead">{{ $gr_butir / 4 }}</th>
                             <th class="dhead"></th>
                             <th class="dhead"></th>
