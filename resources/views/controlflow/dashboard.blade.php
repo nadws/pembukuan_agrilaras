@@ -22,9 +22,7 @@
                         <div class="col-lg-6">
                             <h6 class="float-strat">Telur Selisih</h6>
                         </div>
-                        <div class="col-lg-6">
-                           
-                        </div>
+                       
                     </div>
                 </div>
                 <div class="card-body">
@@ -33,8 +31,8 @@
                             <tr>
                                 <th class="dhead">#</th>
                                 <th class="dhead">Nama</th>
-                                <th class="dhead text-end">Pcs Selisih</th>
-                                <th class="dhead text-end">Kg Selisih</th>
+                                <th class="dhead text-end">Pcs <br> Selisih</th>
+                                <th class="dhead text-end">Kg <br> Selisih</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -65,7 +63,51 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table></table>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="dhead">#</th>
+                                <th class="dhead">Nama</th>
+                                <th style="text-align: right" class="dhead">Stok Selisih</th>
+                                <th style="text-align: right" class="dhead">Harga Satuan</th>
+                                <th style="text-align: right" class="dhead">Rupiah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $ttlRp = 0;
+                            @endphp
+                            @foreach ($pakanSelisih as $no => $d)
+                                @php
+                                    $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                    $selisih = $d->stok - $stokProgram;
+                                    if($d->sum_ttl_rp != 0) {
+                                        $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                    } else {
+                                        $hargaSatuan = 0;
+                                    }
+                                    
+                                    $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah;
+                                @endphp
+                                <tr>
+                                    <td>{{ $no + 1 }}</td>
+                                    <td>{{ $d->nm_produk }}</td>
+                                    <td align="right">{{ number_format($d->stok - $stokProgram, 0) }}</td>
+                                    <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                    <td align="right">
+                                        {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="text-center" colspan="4">Total </th>
+                                <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
@@ -76,22 +118,66 @@
                         <div class="col-lg-6">
                             <h6 class="float-strat">Vitamin Selisih</h6>
                         </div>
-                        <div class="col-lg-6">
-                            <button data-bs-toggle="modal" data-bs-target="#daftarakuncashflow"
-                                class="btn btn-sm btn-primary d_akuncashflow float-end"><i
-                                    class="fas fa-clipboard-list"></i> List
-                                Akun
-                                <span class="badge bg-danger ttl_akun_cashflow"></span>
-                            </button>
-                        </div>
+                   
                     </div>
                 </div>
                 <div class="card-body">
-                    <table></table>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="dhead">#</th>
+                                <th class="dhead">Nama</th>
+                                <th style="text-align: right" class="dhead">Stok Selisih</th>
+                                <th style="text-align: right" class="dhead">Harga Satuan</th>
+                                <th style="text-align: right" class="dhead">Rupiah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $ttlRp = 0;
+                            @endphp
+                            @foreach ($vitaminSelisih as $no => $d)
+                                @php
+                                    $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                    $selisih = $d->stok - $stokProgram;
+                                    if($d->sum_ttl_rp != 0) {
+                                        $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                    } else {
+                                        $hargaSatuan = 0;
+                                    }
+                                    $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah;
+                                @endphp
+
+                                @if ($d->stok - $stokProgram == 0 && $hargaSatuan == 0)
+                                    @php
+                                        continue
+                                    @endphp
+                                    @else
+                                    <tr>
+                                        <td>{{ $no + 1 }}</td>
+                                        <td>{{ $d->nm_produk }}</td>
+                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}</td>
+                                        <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                        <td align="right">
+                                            {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="text-center" colspan="4">Total </th>
+                                <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="col-lg-5">
+
+        {{-- <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
                     <div class="row">
@@ -114,29 +200,7 @@
                     <div id="loadcontrolflow"></div>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="float-strat">Control Uang Ditarik</h6>
-                        </div>
-                        <div class="col-lg-6">
-                            <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
-                                class="btn btn-sm btn-primary float-end d_uangditarik"><i
-                                    class="fas fa-clipboard-list"></i> List
-                                Akun
-                                <span class="badge bg-danger ttl_akun_ibu"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="loadcashflow_ibu"></div>
-                </div>
-            </div>
-        </div>
+        </div> --}}
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
@@ -178,6 +242,29 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="float-strat">Control Uang Ditarik</h6>
+                        </div>
+                        <div class="col-lg-6">
+                            <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
+                                class="btn btn-sm btn-primary float-end d_uangditarik"><i
+                                    class="fas fa-clipboard-list"></i> List
+                                Akun
+                                <span class="badge bg-danger ttl_akun_ibu"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="loadcashflow_ibu"></div>
+                </div>
+            </div>
+        </div>
+        
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
