@@ -40,19 +40,48 @@ class ControlflowController extends Controller
             $this->tgl2 = date('Y-m-t', strtotime($tgl_akhir));
         }
     }
+
+    public function getQueryPakanSelisih($jenis, $tgl1, $tgl2)
+    {
+        $pakanSelisih = DB::select("SELECT a.admin,a.tgl,a.id_pakan,b.nm_produk,a.pcs,a.pcs_kredit,a.total_rp,a.biaya_dll,c.stok,d.sum_ttl_rp,d.pcs_sum_ttl_rp FROM `stok_produk_perencanaan` as a 
+        LEFT JOIN tb_produk_perencanaan as b ON a.id_pakan = b.id_produk
+        LEFT JOIN (
+            SELECT a.id_pakan, (sum(a.pcs) - sum(a.pcs_kredit)) as stok
+                    FROM stok_produk_perencanaan as a 
+                    group by a.id_pakan
+        ) as c ON a.id_pakan = c.id_pakan
+        LEFT JOIN (
+            SELECT a.id_pakan,sum(a.total_rp + a.biaya_dll) as sum_ttl_rp, sum(pcs) as pcs_sum_ttl_rp FROM stok_produk_perencanaan as a
+                    WHERE a.h_opname = 'T' AND a.pcs != 0 and  a.admin not in('import','nanda')
+                    GROUP BY a.id_pakan
+        ) as d on a.id_pakan = d.id_pakan
+        WHERE b.kategori IN ($jenis) AND a.tgl BETWEEN '2023-08-15' AND '$tgl2' AND a.h_opname = 'Y' GROUP BY a.id_pakan
+        ORDER BY a.pcs DESC;");
+
+        return $pakanSelisih;
+    }
+
     public function index()
     {
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
+
+        $telurSelisih = DB::select("SELECT a.nm_telur, sum(b.kg_selisih) as kg_selisih, sum(b.pcs_selisih) as pcs_selisih FROM telur_produk as a
+        LEFT JOIN stok_telur as b ON a.id_produk_telur = b.id_telur
+        WHERE b.jenis = 'Opname' AND b.id_gudang = 1 AND b.tgl BETWEEN '2023-08-12' AND '$tgl2' AND b.admin not in ('nanda', 'import')  GROUP BY b.id_telur;");
+        
+        $pakanSelisih = $this->getQueryPakanSelisih("'pakan'", $tgl1, $tgl2);
+        $vitaminSelisih = $this->getQueryPakanSelisih("'obat_pakan', 'obat_air'", $tgl1, $tgl2);
+
         $data = [
             'title' => 'Dashboard Pembukuan',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'akun_cashflow' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_flow='T'"),
             'akun_ibu' => DB::selectOne("SELECT count(a.id_akun) as total_akun FROM akun as a where  a.cash_uang_ditarik='T'"),
-            'telur_selisih' => DB::select("SELECT a.nm_telur, sum(b.kg_selisih) as kg_selisih, sum(b.pcs_selisih) as pcs_selisih FROM telur_produk as a
-            LEFT JOIN stok_telur as b ON a.id_produk_telur = b.id_telur
-            WHERE b.jenis = 'Opname' AND b.id_gudang = 1 AND b.tgl BETWEEN '2023-08-12' AND '$tgl2' AND b.admin not in ('nanda', 'import')  GROUP BY b.id_telur;")
+            'telur_selisih' => $telurSelisih,
+            'pakanSelisih' => $pakanSelisih,
+            'vitaminSelisih' => $vitaminSelisih,
         ];
         return view('controlflow.dashboard', $data);
     }
