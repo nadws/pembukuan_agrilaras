@@ -435,8 +435,8 @@ class PenjualanController extends Controller
             }
         }
 
-        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '517')->first();
-        $akun = DB::table('akun')->where('id_akun', '517')->first();
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '26')->first();
+        $akun = DB::table('akun')->where('id_akun', '26')->first();
 
         $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
@@ -444,7 +444,7 @@ class PenjualanController extends Controller
         $data = [
             'tgl' => $r->tgl,
             'no_nota' => $r->no_nota,
-            'id_akun' => '517',
+            'id_akun' => '26',
             'id_buku' => '6',
             'ket' => 'Penjualan Telur ' . $customer->nm_customer . $urutan_cus,
             'debit' => 0,
