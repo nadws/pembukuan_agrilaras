@@ -186,7 +186,7 @@ class CashflowController extends Controller
     public function seleksi_akun_control_ditarik(Request $r)
     {
         for ($x = 0; $x < count($r->id_akun); $x++) {
-
+ 
             $data = [
                 'cash_uang_ditarik' => $r->cash_uang_ditarik[$x]
             ];
