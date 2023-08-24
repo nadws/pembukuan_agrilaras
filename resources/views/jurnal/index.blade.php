@@ -34,23 +34,32 @@
             <ul class="nav nav-pills float-start">
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '2' ? 'active' : '' }}" aria-current="page"
-                        href="{{ route('jurnal', ['id_buku' => '2']) }}">Biaya</a>
+                        href="{{ route('jurnal', ['id_buku' => '2', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Biaya</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '6' ? 'active' : '' }}"
-                        href="{{ route('jurnal', ['id_buku' => '6']) }}">Penjualan</a>
+                        href="{{ route('jurnal', ['id_buku' => '6', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Penjualan</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '7' ? 'active' : '' }}"
-                        href="{{ route('jurnal', ['id_buku' => '7']) }}">Kas & Bank</a>
+                        href="{{ route('jurnal', ['id_buku' => '7', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Kas
+                        &
+                        Bank</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $id_buku == '11' ? 'active' : '' }}"
+                        href="{{ route('jurnal', ['id_buku' => '11', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
+                        ATK</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '9' ? 'active' : '' }}"
-                        href="{{ route('jurnal', ['id_buku' => '9']) }}">Pembelian Aktiva</a>
+                        href="{{ route('jurnal', ['id_buku' => '9', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
+                        Aktiva</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '10' ? 'active' : '' }}"
-                        href="{{ route('jurnal', ['id_buku' => '10']) }}">Pembelian Peralatan</a>
+                        href="{{ route('jurnal', ['id_buku' => '10', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
+                        Peralatan</a>
                 </li>
             </ul>
         </div>

@@ -72,7 +72,7 @@
             <th class="dhead"><a class="uraian text-white" href="#" data-bs-toggle="modal" jenis="2"
                     data-bs-target="#tambah-uraian">Biaya - Biaya</a> </th>
             <th colspan="2" class="dhead" style="text-align: right">Rupiah
-                </th>
+            </th>
         </tr>
         @foreach ($subKategori2 as $d)
             <tr>

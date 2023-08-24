@@ -121,40 +121,47 @@
                             </tr>
                         </thead>
                         <tbody>
-
+                            @php
+                                $total = 0;
+                            @endphp
                             @foreach ($atk as $no => $d)
                                 @php
                                     
                                     $sisa = $d->debit - $d->kredit;
                                     $rp_satuan = $d->rp_satuan;
                                     $ttl = $rp_satuan * $d->debit;
+                                    $total += $rp_satuan * $d->debit;
                                 @endphp
                                 <input type="hidden" name="id_produk[]" value="{{ $d->id_produk }}">
-                                <input type="hidden" name="sisa[]" value="{{ $sisa }}">
-                                <input type="hidden" name="rp_satuan[]" value="{{ $rp_satuan }}">
+                                <input type="hidden" name="sisa[]" class="sisa{{ $no }}"
+                                    value="{{ $sisa }}">
+                                <input type="hidden" name="rp_satuan[]" class="rp_satuan{{ $no }}"
+                                    value="{{ $rp_satuan }}">
                                 <input type="hidden" name="gudang_id[]" value="{{ $d->gudang_id }}">
                                 <input type="hidden" name="ttl[]" value="{{ $ttl }}"
                                     class="ttl{{ $no }}">
-                                <input type="hidden" name="selisih[]" value="{{ $sisa }}"
-                                    class="selisih{{ $no }}">
+
 
                                 <tr>
-                                    <td>{{ $d->tgl1 }}</td>
+                                    <td>{{ $d->tgl1 }}
+                                        <input type="hidden" name="selisih[]" value="0"
+                                            class="selisih{{ $no }}">
+                                    </td>
                                     <td>{{ ucwords($d->nm_produk) }}</td>
                                     <td align="center">{{ $sisa }}</td>
                                     <td align="right">Rp. {{ number_format($rp_satuan, 0) }}</td>
                                     <td align="right">Rp. {{ number_format($ttl, 0) }}</td>
                                     <td>
-                                        <input type="text" class="form-control stok_aktual" value="0"
-                                            name="fisik[]" row="{{ $no }}">
+                                        <input type="text" class="form-control stok_aktual" name="fisik[]"
+                                            row="{{ $no }}" value="{{ $sisa }}">
                                     </td>
-                                    <td align="center" class="selisihFisik{{ $no }}">{{ $sisa }}
+                                    <td align="center" class="selisihFisik{{ $no }}">0
                                     </td>
                                     <td>
-                                        <input value="Rp. {{ number_format($ttl, 0) }}" style="text-align: right"
-                                            readonly type="text"
+                                        <input value="Rp. 0" style="text-align: right" readonly type="text"
                                             class="form-control ttl_opnameFormat{{ $no }}">
-                                        <input value="{{ $ttl }}" type="hidden" name="ttl_opname[]"
+
+                                        <input value="0" type="hidden" name="ttl_opname[]"
                                             class="form-control ttl_opname{{ $no }} ttl_opname">
                                     </td>
                                 </tr>
@@ -189,13 +196,16 @@
                     row = $(this).attr('row')
                     isi = $(this).val()
                     ttl = $(".ttl" + row).val();
-                    selisih = $(".selisih" + row).val();
-                    ttlOpname = parseFloat(isi * ttl)
-                    ttlOpnameFormat = parseFloat(isi * ttl)
+                    sisa = $(".sisa" + row).val();
+                    rp_satuan = $(".rp_satuan" + row).val();
+                    selisih_tes = parseFloat(sisa) - parseFloat(isi);
+                    selisih = $(".selisih" + row).val(selisih_tes);
+                    ttlOpname = parseFloat(selisih_tes * rp_satuan)
+                    ttlOpnameFormat = parseFloat(selisih_tes * rp_satuan)
 
                     $(".ttl_opnameFormat" + row).val('Rp. ' + ttlOpnameFormat.toLocaleString());
                     $(".ttl_opname" + row).val(ttlOpname);
-                    $(".selisihFisik" + row).text(isi - selisih);
+                    $(".selisihFisik" + row).text(selisih_tes);
 
                     var total = 0;
                     $('.ttl_opname').each(function() {
