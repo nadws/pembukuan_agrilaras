@@ -43,8 +43,9 @@ class ControlflowController extends Controller
 
     public function getQueryPakanSelisih($jenis, $tgl1, $tgl2)
     {
-        $pakanSelisih = DB::select("SELECT a.admin,a.tgl,a.id_pakan,b.nm_produk,a.pcs,a.pcs_kredit,a.total_rp,a.biaya_dll,c.stok,d.sum_ttl_rp,d.pcs_sum_ttl_rp FROM `stok_produk_perencanaan` as a 
+        $pakanSelisih = DB::select("SELECT c.nm_satuan,a.admin,a.tgl,a.id_pakan,b.nm_produk,a.pcs,a.pcs_kredit,a.total_rp,a.biaya_dll,c.stok,d.sum_ttl_rp,d.pcs_sum_ttl_rp FROM `stok_produk_perencanaan` as a 
         LEFT JOIN tb_produk_perencanaan as b ON a.id_pakan = b.id_produk
+        left join tb_satuan as c on c.id_satuan = b.dosis_satuan
         LEFT JOIN (
             SELECT a.id_pakan, (sum(a.pcs) - sum(a.pcs_kredit)) as stok
                     FROM stok_produk_perencanaan as a 
