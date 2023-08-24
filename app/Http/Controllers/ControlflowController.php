@@ -85,6 +85,7 @@ class ControlflowController extends Controller
             'vitaminSelisih' => $vitaminSelisih,
         ];
         return view('controlflow.dashboard', $data);
+
     }
 
     public function total_cash_flow()
