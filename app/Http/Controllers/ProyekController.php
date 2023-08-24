@@ -30,9 +30,9 @@ class ProyekController extends Controller
             'kode_proyek' => $r->kd_proyek,
             'nm_proyek' => $r->nm_proyek,
             'tgl' => $r->tgl,
-            'tgl_estimasi' => $r->tgl_estimasi,
-            'manager_proyek' => $r->manager_proyek,
-            'biaya_estimasi' => $r->biaya_estimasi,
+            // 'tgl_estimasi' => $r->tgl_estimasi,
+            // 'manager_proyek' => $r->manager_proyek,
+            // 'biaya_estimasi' => $r->biaya_estimasi,
         ];
 
         Proyek::create($data);
