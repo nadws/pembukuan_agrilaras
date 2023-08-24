@@ -176,7 +176,7 @@ class JurnalPenyesuaianController extends Controller
             DB::table('depresiasi_aktiva')->insert($data);
         }
 
-        return redirect()->route('penyesuaian')->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function atk(Request $r, $gudang_id = null)
@@ -312,7 +312,7 @@ class JurnalPenyesuaianController extends Controller
 
             Stok::create($data);
         }
-        return redirect()->route('penyesuaian')->with('sukses', 'Berhasil Penyesuaian Opname');
+        return redirect()->route('penyesuaian.index')->with('sukses', 'Berhasil Penyesuaian Opname');
     }
 
     public function peralatan()
@@ -403,6 +403,6 @@ class JurnalPenyesuaianController extends Controller
             DB::table('depresiasi_peralatan')->insert($data);
         }
 
-        return redirect()->route('penyesuaian.peralatan')->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
     }
 }
