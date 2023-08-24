@@ -204,7 +204,7 @@ class JurnalPenyesuaianController extends Controller
             'nota' => $nota_t,
             'gudang' => Gudang::where('kategori_id', 1)->get(),
             'akunAtk' => DB::table('akun')->where('id_akun', 30)->first(),
-            'akunBiaya' => DB::table('akun')->where('id_akun', 11)->first(),
+            'akunBiaya' => DB::table('akun')->where('id_akun', 91)->first(),
             'atk' => DB::select("SELECT 
                         a.id_produk, 
                                 a.kd_produk, 
