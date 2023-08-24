@@ -37,6 +37,11 @@
                         href="{{ route('jurnal', ['id_buku' => '2', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Biaya</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {{ $id_buku == '12' ? 'active' : '' }}" aria-current="page"
+                        href="{{ route('jurnal', ['id_buku' => '12', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Biaya
+                        Proyek Berjalan</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '6' ? 'active' : '' }}"
                         href="{{ route('jurnal', ['id_buku' => '6', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Penjualan</a>
                 </li>

@@ -15,15 +15,15 @@
             $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
         
             return DB::select("SELECT c.nm_akun, b.kredit, b.debit
-    FROM akunprofit as a
-    left join (
-    SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-    FROM jurnal as b
-    WHERE b.id_buku not in('1','5') and $jenis != 0 and b.penutup = 'T' and b.tgl between '$tgl1' and '$tgl2'
-    group by b.id_akun
-    ) as b on b.id_akun = a.id_akun
-    left join akun as c on c.id_akun = a.id_akun
-    where a.kategori = '$id_kategori';");
+            FROM akunprofit as a
+            left join (
+            SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
+            FROM jurnal as b
+            WHERE b.id_buku not in('1','5') and $jenis != 0 and b.penutup = 'Y' and b.tgl between '$tgl1' and '$tgl2'
+            group by b.id_akun
+            ) as b on b.id_akun = a.id_akun
+            left join akun as c on c.id_akun = a.id_akun
+            where a.kategori = '$id_kategori';");
         }
         
         foreach ($subKategori1 as $d) {
