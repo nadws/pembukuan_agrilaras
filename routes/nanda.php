@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_jurnal', 'import_jurnal')->name('import_jurnal');
         Route::get('/saldo_akun', 'saldo_akun')->name('saldo_akun');
         Route::get('/get_post', 'get_post')->name('get_post');
+        Route::get('/get_proyek', 'get_proyek')->name('get_proyek');
     });
 
     Route::controller(AkunController::class)->group(function () {
@@ -178,7 +179,7 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(ProyekController::class)->group(function () {
         Route::get('/proyek', 'index')->name('proyek');
-        Route::post('/proyek', 'add')->name('proyek');
+        Route::post('/proyek_add', 'add')->name('proyek_add');
         Route::get('/proyek_delete', 'delete')->name('proyek_delete');
         Route::get('/proyek_selesai', 'proyek_selesai')->name('proyek_selesai');
         Route::get('/get_proyek_selesai', 'get_proyek_selesai')->name('get_proyek_selesai');

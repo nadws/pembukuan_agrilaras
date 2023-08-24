@@ -36,15 +36,15 @@
                     <label for="">No Urut Jurnal Umum</label>
                     <input type="text" class="form-control" name="no_nota" value="JU-{{ $max }}" readonly>
                 </div>
-                <div class="col-lg-3">
-                    <label for="">Proyek</label>
-                    <select name="id_proyek" id="select2">
-                        <option value="">Pilih</option>
-                        @foreach ($proyek as $p)
-                            <option value="{{ $p->id_proyek }}">{{ $p->nm_proyek }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                @if ($id_buku == '12')
+                    <div class="col-lg-3">
+                        <label for="">Proyek</label>
+                        <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
+
+                        </select>
+                    </div>
+                @endif
+
                 <div class="col-lg-3">
                     <label for="">Suplier</label>
                     <select name="id_suplier" class="select2suplier form-control">
@@ -103,7 +103,55 @@
         </button>
         <a href="{{ route('jurnal') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
         </form>
+
+
+        <x-theme.modal title="Tambah Proyek" idModal="tambah">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label for="">Kode Proyek</label>
+                        <input type="text" class="form-control" name="kd_proyek">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="">Tanggal Proyek</label>
+                        <input type="date" class="form-control " name="tgl">
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="form-group">
+                        <label for="">Nama Proyek</label>
+                        <input type="text" class="form-control" name="nm_proyek">
+                    </div>
+                </div>
+
+                {{-- <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="">Tanggal Estimasi Selesai</label>
+                            <input type="date" class="form-control " name="tgl_estimasi">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="">Manager Proyek</label>
+                            <input type="text" name="manager_proyek" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="">Estimasi Biaya</label>
+                            <input type="text" class="form-control b_estimasi" style="text-align: right">
+                            <input type="hidden" name="biaya_estimasi" class="form-control b_estimasi_biasa"
+                                style="text-align: right">
+                        </div>
+                    </div> --}}
+            </div>
+        </x-theme.modal>
+
     </x-slot>
+
+
 
 
 
@@ -378,6 +426,68 @@
                         success: function(data) {
                             $(".post" + count).html(data);
                         },
+                    });
+                });
+            });
+        </script>
+        <script>
+            $(document).ready(function() {
+                $(document).on("change", ".proyek", function() {
+                    var tambah = $(this).val();
+                    if (tambah == 'tambah_proyek') {
+                        $('#tambah').modal('show');
+
+                    }
+                });
+                load_proyek();
+
+                function load_proyek() {
+                    $.ajax({
+                        method: "GET",
+                        url: "/get_proyek",
+                        dataType: "html",
+                        success: function(hasil) {
+                            $(".proyek_berjalan").html(hasil);
+
+                        },
+                    });
+                }
+
+                $(".button-save-modal").click(function() {
+                    // Ambil nilai dari input
+                    var kd_proyek = $("input[name='kd_proyek']").val();
+                    var tgl = $("input[name='tgl']").val();
+                    var nm_proyek = $("input[name='nm_proyek']").val();
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+                    // Kirim data ke server melalui AJAX
+                    $.ajax({
+                        type: "POST", // atau sesuaikan dengan metode yang Anda gunakan
+                        url: "{{ route('proyek_add') }}", // ganti dengan URL target server
+                        data: {
+                            _token: csrfToken,
+                            kd_proyek: kd_proyek,
+                            tgl: tgl,
+                            nm_proyek: nm_proyek
+                        },
+                        success: function(response) {
+                            alert("Data berhasil disimpan!");
+                            $("#tambah").modal('hide');
+
+                            // Reset nilai input
+                            $("input[name='kd_proyek']").val('');
+                            $("input[name='tgl']").val('');
+                            $("input[name='nm_proyek']").val('');
+
+                            // Kosongkan pesan sukses
+                            $(".success-message").text('');
+
+                            load_proyek();
+                        },
+                        error: function(xhr, status, error) {
+                            // Aksi jika terjadi kesalahan, misalnya menampilkan pesan error
+                            alert("Terjadi kesalahan: " + error);
+                        }
                     });
                 });
             });

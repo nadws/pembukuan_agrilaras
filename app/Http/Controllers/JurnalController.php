@@ -126,6 +126,17 @@ class JurnalController extends Controller
         return view('jurnal.add', $data);
     }
 
+    public function get_proyek()
+    {
+        $proyek =  DB::table('proyek')->get();
+
+        echo '<option value="">Pilih</option>';
+        foreach ($proyek as $p) {
+            echo "<option value='$p->id_proyek'>$p->nm_proyek</option>";
+        }
+        echo '<option value="tambah_proyek">+Proyek</option>';
+    }
+
     public function load_menu()
     {
         $data =  [
