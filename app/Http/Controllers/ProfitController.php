@@ -80,11 +80,10 @@ class ProfitController extends Controller
             ->orderBy('a.urutan', 'ASC')
             ->get();
 
-        $akun = DB::select("SELECT * FROM akun as a
-        where a.profit_loss = 'H'");
+        $akun = DB::Select("SELECT * FROM akun as a where a.id_akun not in (SELECT t.id_akun FROM akunprofit as t where t.kategori = '$r->id_kategori')");
         $data = [
             'akunProfit' => $akunProfit,
-            'akun' => $akun,
+            'akun1' => $akun,
         ];
         return view('profit.modal', $data);
     }
@@ -106,7 +105,7 @@ class ProfitController extends Controller
             'kategori' => $r->kategori_id,
         ]);
 
-        DB::table('akun')->where('id_akun', $r->id_akun)->update(['profit_loss' => 'H']);
+        DB::table('akun')->where('id_akun', $r->id_akun)->update(['profit_loss' => 'Y']);
     }
 
     public function getQueryProfit($id_kategori, $jenis, $tgl1, $tgl2)
