@@ -19,8 +19,8 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="float-strat">Telur Selisih</h6>
+                        <div class="col-lg-12">
+                            <h6 class="float-strat">Telur Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
                         </div>
 
                     </div>
@@ -54,12 +54,10 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="float-strat">Pakan Selisih</h6>
+                        <div class="col-lg-12">
+                            <h6 class="float-strat">Pakan Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
                         </div>
-                        <div class="col-lg-6">
-
-                        </div>
+                   
                     </div>
                 </div>
                 <div class="card-body">
@@ -115,8 +113,8 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="float-strat">Vitamin Selisih</h6>
+                        <div class="col-lg-12">
+                            <h6 class="float-strat">Vitamin Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
                         </div>
 
                     </div>
@@ -205,10 +203,10 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-lg-4">
-                            <h6 for="">Profit & Loss</h6>
-                        </div>
                         <div class="col-lg-8">
+                            <h6 for="">Profit & Loss {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
+                        </div>
+                        <div class="col-lg-4">
                             {{-- <x-theme.button modal="T"
                                 href="/profit/print?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}" icon="fa-print"
                                 addClass="float-end" teks="Print" /> --}}
