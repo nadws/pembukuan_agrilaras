@@ -80,7 +80,8 @@ class Stok extends Model
             b.id_produk
         ) as f on f.id_produk = a.id_produk 
       WHERE a.kategori_id = '$kategori_id'
-        $plusKontrol $plusQuery ");
+        $plusKontrol $plusQuery 
+        order by a.id_produk DESC ");
   }
 
   public static function getCetak($no_nota)

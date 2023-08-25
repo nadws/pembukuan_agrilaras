@@ -158,7 +158,8 @@ class Jurnal_aktivaController extends Controller
             'gudang_id' => '2',
             'satuan_id' => $r->id_satuan,
             'departemen_id' => '1',
-            'tgl' => $r->tgl
+            'tgl' => $r->tgl,
+            'admin' => auth()->user()->name
 
         ];
         $insertedProductId = DB::table('tb_produk')->insertGetId($data);
