@@ -120,10 +120,15 @@ class JurnalController extends Controller
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
-            'id_buku' => $r->id_buku
+            'id_buku' => $r->id_buku,
+            'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9')")
 
         ];
-        return view('jurnal.add', $data);
+        if ($r->id_buku == '9') {
+            return view('jurnal.add_aktiva', $data);
+        } else {
+            return view('jurnal.add', $data);
+        }
     }
 
     public function get_proyek()
@@ -364,6 +369,30 @@ class JurnalController extends Controller
     {
         $id_akun = $r->id_akun;
         $post = DB::table('tb_post_center')->where('id_akun', $id_akun)->get();
+
+        echo "<option value=''>Pilih sub akun</option>";
+        foreach ($post as $k) {
+            echo "<option value='" . $k->id_post_center  . "'>" . $k->nm_post . "</option>";
+        }
+    }
+
+    public function get_total_post(Request $r)
+    {
+        $total =  DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_post_center = $r->id_post");
+        $formattedTotal = number_format($total->debit, 0, ',', '.');
+
+        $data = [
+            'format' => "Rp. $formattedTotal",
+            'biasa' => $total->debit
+        ];
+        return response()->json($data);
+    }
+
+    public function get_post2(Request $r)
+    {
+        $id_akun = $r->id_akun;
+        // $post = DB::table('tb_post_center')->where('id_akun', $id_akun)->get();
+        $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = $id_akun and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
 
         echo "<option value=''>Pilih sub akun</option>";
         foreach ($post as $k) {

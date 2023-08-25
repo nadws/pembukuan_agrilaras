@@ -9,9 +9,9 @@
                     teks="Buat Invoice" />
                 <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}"
                     icon="fa-print" addClass="float-end" teks="Export" />
-                <x-theme.button modal="T" href="{{ route('export_faktur', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
-                    icon="fa-file-excel" addClass="float-end" teks="Export Faktur" />
-                <x-theme.btn_filter />
+                <a href="{{ route('export_faktur', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
+                    class="btn btn-primary float-end me-2"><i class="fas fa-file-excel"></i> Export Faktur</a>
+
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end"
                     teks="" />
             </div>

@@ -89,6 +89,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/saldo_akun', 'saldo_akun')->name('saldo_akun');
         Route::get('/get_post', 'get_post')->name('get_post');
         Route::get('/get_proyek', 'get_proyek')->name('get_proyek');
+        Route::get('/get_post2', 'get_post2')->name('get_post2');
+        Route::get('/get_total_post', 'get_total_post')->name('get_total_post');
     });
 
     Route::controller(AkunController::class)->group(function () {
