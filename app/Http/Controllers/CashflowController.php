@@ -105,7 +105,7 @@ class CashflowController extends Controller
                 WHERE c.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
                 group by c.no_nota
              ) as c on c.no_nota = b.no_nota
-             where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '2' and c.akunvs is not null
+             where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku in ('2','12') and c.akunvs is not null
              group by b.id_akun
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '5'); "),
@@ -123,7 +123,7 @@ class CashflowController extends Controller
                     WHERE j.debit != '0'
                     GROUP BY j.no_nota
                 ) d ON a.no_nota = d.no_nota AND d.id_akun != a.id_akun
-                WHERE  a.tgl between '$tgl1' and '$tgl2'  and a.id_buku = '2'
+                WHERE  a.tgl between '$tgl1' and '$tgl2'  and a.id_buku in ('2','12')
                  group by a.id_akun
             ) as a on a.id_akun = ak.id_akun
             left join akuncash_ibu as acb on acb.id_akun = ak.id_akun and acb.kategori = '6'
@@ -186,7 +186,7 @@ class CashflowController extends Controller
     public function seleksi_akun_control_ditarik(Request $r)
     {
         for ($x = 0; $x < count($r->id_akun); $x++) {
- 
+
             $data = [
                 'cash_uang_ditarik' => $r->cash_uang_ditarik[$x]
             ];
