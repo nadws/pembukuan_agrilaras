@@ -121,12 +121,13 @@ class JurnalController extends Controller
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
             'id_buku' => $r->id_buku,
+            'kategori' => $r->kategori ?? 'aktiva',
             'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9')")
 
         ];
         switch ($r->id_buku) {
             case '10':
-                return view('jurnal.add_peralatan', $data);
+                return view('persediaan_barang.peralatan.add_peralatan', $data);
                 break;
 
             default:

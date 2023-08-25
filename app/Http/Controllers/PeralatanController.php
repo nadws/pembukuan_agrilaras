@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Akun;
+use App\Models\Jurnal;
+use App\Models\proyek;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -181,4 +184,108 @@ class PeralatanController extends Controller
         DB::table('kelompok_peralatan')->where('id_kelompok', $r->id_kelompok)->delete();
         return redirect()->route('peralatan.add')->with('sukses', 'Data berhasil dihapus');
     }
+
+
+    // jurnal peralatan bapa
+    public function load_menu_add_aktiva(Request $r)
+    {
+        $data =  [
+            'title' => 'Jurnal Umum',
+            'akun' => Akun::all(),
+            'proyek' => proyek::all(),
+            'kategori' => $r->kategori,
+            'satuan' => DB::table('tb_satuan')->get()
+        ];
+        return view('persediaan_barang.peralatan.load_menu_aktiva', $data);
+    }
+
+    public function tambah_baris_aktiva(Request $r)
+    {
+        $data =  [
+            'title' => 'Jurnal Umum',
+            'akun' => Akun::all(),
+            'count' => $r->count
+
+        ];
+        return view('persediaan_barang.peralatan.tambah_baris_aktiva', $data);
+    }
+
+    public function save_jurnal(Request $r)
+    {
+        $tgl = $r->tgl;
+        // $no_nota = $r->no_nota;
+        $id_akun = $r->id_akun;
+        $keterangan = $r->keterangan;
+        $debit = $r->debit;
+        $kredit = $r->kredit;
+        $id_proyek = $r->id_proyek;
+        $id_suplier = $r->id_suplier;
+        $no_urut = $r->no_urut;
+        $id_post = $r->id_post;
+        $id_buku = $r->id_buku;
+
+        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
+
+        if (empty($max)) {
+            $nota_t = '1000';
+        } else {
+            $nota_t = $max->nomor_nota + 1;
+        }
+        DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '2']);
+
+        for ($i = 0; $i < count($id_akun); $i++) {
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun[$i])->first();
+            $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
+            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+
+
+            $data = [
+                'tgl' => $tgl,
+                'no_nota' => 'JU-' . $nota_t,
+                'id_akun' => $id_akun[$i],
+                'no_dokumen' => $no_urut[$i],
+                'id_buku' => $id_buku,
+                'ket' => $keterangan[$i],
+                'debit' => $debit[$i],
+                'kredit' => $kredit[$i],
+                'admin' => auth()->user()->name,
+                // 'no_dokumen' => $r->no_dokumen,
+                'tgl_dokumen' => $r->tgl_dokumen,
+                'id_proyek' => $id_proyek,
+                'id_suplier' => $id_suplier,
+                'no_urut' => $akun->inisial . '-' . $urutan,
+                'urutan' => $urutan,
+                'id_post_center' => $id_post[$i] ?? 0
+            ];
+            Jurnal::create($data);
+        }
+
+        $tgl1 = date('Y-m-01', strtotime($r->tgl));
+        $tgl2 = date('Y-m-t', strtotime($r->tgl));
+        return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori, 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
+    }
+
+    public function nota_jurnal($no_nota, $kategori = null,$print = null)
+    {
+        $dataKategori = [
+            'aktiva' => 'kelompok_aktiva',
+            'peralatan' => 'kelompok_peralatan',
+        ];
+        $kelompok = $dataKategori[$kategori];
+        $data =  [
+            'title' => 'Jurnal Peralatan',
+            'jurnal' => Jurnal::where('no_nota', $no_nota)->get(),
+            'no_nota' => $no_nota,
+            'kelompok' => DB::table($kelompok)->get(),
+            'head_jurnal' => DB::selectOne("SELECT a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a 
+            left join proyek as b on b.id_proyek = a.id_proyek
+            
+            where a.no_nota = '$no_nota'")
+
+        ];
+        $view = empty($print) ? 'nota_jurnal' : 'print';
+        return view('persediaan_barang.peralatan.'.$view, $data);
+    }
+
+
 }
