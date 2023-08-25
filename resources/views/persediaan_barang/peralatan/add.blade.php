@@ -60,30 +60,30 @@
                         </thead>
                         <tbody>
                             @foreach ($kelompok as $no => $d)
-                                <tr>
-                                    <td>{{ $no + 1 }}</td>
-                                    <td>{{ $d->nm_kelompok }}</td>
-                                    <td>{{ $d->umur . ' ' . $d->periode }}</td>
-                                    <td>{{ $d->barang_kelompok }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                                <i class="fas fa-ellipsis-v text-primary"></i>
-                                            </span>
-                                            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                                <li><a class="dropdown-item text-primary edit_akun"
-                                                        id_kelompok="{{ $d->id_kelompok }}"><i
-                                                            class="me-2 fas fa-pen"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item text-danger delete_nota" no_nota="{{ $d->id_kelompok }}"
-                                                        href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                            class="me-2 fas fa-trash"></i>Delete
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                </tr>
+                            <tr>
+                                <td>{{ $no + 1 }}</td>
+                                <td>{{ $d->nm_kelompok }}</td>
+                                <td>{{ $d->umur . ' ' . $d->periode }}</td>
+                                <td>{{ $d->barang_kelompok }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v text-primary"></i>
+                                        </span>
+                                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                            <li><a class="dropdown-item text-primary edit_akun"
+                                                    id_kelompok="{{ $d->id_kelompok }}"><i
+                                                        class="me-2 fas fa-pen"></i>Edit</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger delete_nota"
+                                                    no_nota="{{ $d->id_kelompok }}" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#delete"><i class="me-2 fas fa-trash"></i>Delete
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -95,7 +95,7 @@
             @csrf
             <x-theme.modal size="modal-md" title="Data Kelompok Peralatan" idModal="edit">
                 <div id="load_edit"></div>
-                
+
             </x-theme.modal>
         </form>
     </x-slot>
@@ -120,8 +120,8 @@
     </x-slot>
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on('click', '.edit_akun', function(){
                     var id_kelompok = $(this).attr('id_kelompok')
                     $("#edit").modal('show')
@@ -252,6 +252,6 @@
                 });
                 aksiBtn("form");
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

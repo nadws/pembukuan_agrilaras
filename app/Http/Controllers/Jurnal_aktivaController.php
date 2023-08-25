@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jurnal;
+use App\Models\Produk;
 use App\Models\proyek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,16 +20,40 @@ class Jurnal_aktivaController extends Controller
         } else {
             $nota_t = $max->nomor_nota + 1;
         }
-        $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = 43 and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
+        if (empty($r->kategori)) {
+            $kategori =  'aktiva';
+        } else {
+            $kategori =  $r->kategori;
+        }
+
+        if ($kategori == 'aktiva') {
+            $akun_gantung = DB::table('akun')->where('id_akun', 43)->first();
+            $akun_aktiva = DB::table('akun')->where('id_akun', 9)->first();
+            $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
+        } else if ($kategori == 'peralatan') {
+            $akun_gantung = DB::table('akun')->where('id_akun', 61)->first();
+            $akun_aktiva = DB::table('akun')->where('id_akun', 16)->first();
+            $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
+        } else {
+            $akun_gantung = DB::table('akun')->where('id_akun', 60)->first();
+            $akun_aktiva = DB::table('akun')->where('id_akun', 30)->first();
+            $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_produk FROM tb_produk as b)");
+        }
+
+
+
+
+
         $data =  [
-            'title' => 'Tambah Jurnal Umum',
+            'title' => 'Tambah Jurnal Pembalik Aktiva Gantung',
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
             'id_buku' => $r->id_buku,
-            'akun_gantung' => DB::table('akun')->where('id_akun', 43)->first(),
-            'akun_aktiva' => DB::table('akun')->where('id_akun', 9)->first(),
-            'post' => $post
+            'akun_gantung' => $akun_gantung,
+            'akun_aktiva' => $akun_aktiva,
+            'post' => $post,
+            'kategori' => $kategori
 
         ];
 
@@ -89,17 +114,70 @@ class Jurnal_aktivaController extends Controller
         // $tgl2 = date('Y-m-t', strtotime($r->tgl));
         // return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0, 'id_buku' => $id_buku])->with('sukses', 'Data berhasil ditambahkan');
         $nota_cek = 'JU-' . $nota_t;
-        return redirect()->route('Cek_aktiva', ['no_nota' => $nota_cek])->with('sukses', 'Data berhasil ditambahkan');
+
+        return redirect()->route('Cek_aktiva', ['no_nota' => $nota_cek, 'kategori' => $r->kategori])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function Cek_aktiva(Request $r)
     {
+        if ($r->kategori == 'aktiva') {
+            $kelompok = DB::table('kelompok_aktiva')->get();
+        } else if ($r->kategori == 'peralatan') {
+            $kelompok = DB::table('kelompok_peralatan')->get();
+        } else {
+            $kelompok = 0;
+        }
+
         $data =  [
-            'title' => 'Nota Pembalikan Aktiva Gantung',
+            'title' => 'Cek Nota',
             'no_nota' => $r->no_nota,
-            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota'")
+            'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
+            'head_jurnal' => DB::selectOne("SELECT c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit , d.nm_post
+            FROM jurnal as a 
+            left join proyek as b on b.id_proyek = a.id_proyek
+            left join tb_suplier as c on c.id_suplier = a.id_suplier
+            left join tb_post_center as d on d.id_post_center = a.id_post_center
+            where a.no_nota = '$r->no_nota'"),
+            'kelompok' => $kelompok,
+            'kategori' => $r->kategori,
+            'satuan' => DB::table('tb_satuan')->get()
         ];
 
         return view('jurnal_pembalik_aktiva.cek_aktiva', $data);
+    }
+
+    public function save_atk(Request $r)
+    {
+        $no_nota = "INV" . strtoupper(str()->random(4));
+        $kd_produk = Produk::latest('kd_produk')->first();
+        $data = [
+            'nm_produk' => $r->nm_atk,
+            'kd_produk' => $kd_produk,
+            'kontrol_stok' => 'Y',
+            'kategori_id' => '1',
+            'gudang_id' => '2',
+            'satuan_id' => $r->id_satuan,
+            'departemen_id' => '1',
+            'tgl' => $r->tgl
+
+        ];
+        $insertedProductId = DB::table('tb_produk')->insertGetId($data);
+        $data = [
+            'id_produk' => $insertedProductId,
+            'no_nota' => $no_nota,
+            'tgl' => $r->tgl,
+            'jenis' => 'selesai',
+            'status' => 'masuk',
+            'jml_sebelumnya' => '0',
+            'jml_sesudahnya' => $r->stok,
+            'debit' => $r->stok,
+            'kredit' => '0',
+            'rp_satuan' => $r->total_rp,
+            'gudang_id' => '1',
+            'kategori_id' => '1',
+            'admin' => auth()->user()->name
+        ];
+        DB::table('tb_stok_produk')->insert($data);
+        return redirect()->route('produk.index')->with('sukses', 'Data Berhasil Ditambahkan');
     }
 }

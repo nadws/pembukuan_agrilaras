@@ -80,6 +80,10 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         dropdownParent: $('#penjualan_ayam .modal-content')
     });
 
+    $('.select_tambah_aktiva').select2({
+        dropdownParent: $('.tambah .modal-content')
+    });
+
     $('.costume_muncul').hide();
     $('.bulan_muncul').hide();
     $('.tahun_muncul').hide();

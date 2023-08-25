@@ -13,51 +13,48 @@
     <x-slot name="cardFooter">
 
         @php
-            $cek = false;
-            $nonot = request()->get('no_nota');
-            if (!empty($nonot)) {
-                if(strlen($nonot) > 200 || strlen($nonot) < 200){
-                    echo '<script>history.back()</script>';
-                }
-                $no_notas = decrypt($nonot);
-                if (\App\Models\Stok::getStatus($no_notas)->jenis != 'selesai') {
-                    $cek = true;
-                }
+        $cek = false;
+        $nonot = request()->get('no_nota');
+        if (!empty($nonot)) {
+        if(strlen($nonot) > 200 || strlen($nonot) < 200){ echo '<script>history.back()</script>' ; }
+            $no_notas=decrypt($nonot); if (\App\Models\Stok::getStatus($no_notas)->jenis != 'selesai') {
+            $cek = true;
             }
-        @endphp
-        {{-- @if (empty(request()->get('no_nota')) || $cek)
-        @endif --}}
-        <div class="btn-group float-end dropdown me-1 mb-1">
+            }
+            @endphp
+            {{-- @if (empty(request()->get('no_nota')) || $cek)
+            @endif --}}
+            <div class="btn-group float-end dropdown me-1 mb-1">
 
-            <button type="submit" name="simpan" value="simpan" class=" btn btn-primary button-save">
-                Simpan
-            </button>
-            <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
-                <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
-                Loading...
-            </button>
-            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
-                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-reference="parent">
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <div class="dropdown-menu "
-                style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(81px, 40px, 0px);"
-                data-popper-placement="bottom-start">
-                <button class="dropdown-item" type="submit" value="draft" name="simpan">Draft</button>
-                <button class="dropdown-item" type="submit" value="simpan" name="simpan">Simpan</button>
+                <button type="submit" name="simpan" value="simpan" class=" btn btn-primary button-save">
+                    Simpan
+                </button>
+                <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
+                    <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
+                    Loading...
+                </button>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-reference="parent">
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <div class="dropdown-menu "
+                    style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(81px, 40px, 0px);"
+                    data-popper-placement="bottom-start">
+                    <button class="dropdown-item" type="submit" value="draft" name="simpan">Draft</button>
+                    <button class="dropdown-item" type="submit" value="simpan" name="simpan">Simpan</button>
+                </div>
             </div>
-        </div>
 
-        <a href="{{ route('stok_masuk.index') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
-        </form>
+            <a href="{{ route('stok_masuk.index') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
+            </form>
 
 
     </x-slot>
 
 
     @section('scripts')
-        <script>
-            load_menu()
+    <script>
+        load_menu()
 
             function load_menu() {
                 $.ajax({
@@ -92,6 +89,6 @@
                     }
                 });
             })
-        </script>
+    </script>
     @endsection
 </x-theme.app>

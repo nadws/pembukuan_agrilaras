@@ -9,6 +9,23 @@
             <div class="col-lg-6">
                 <a href="{{ route('controlflow') }}" class="btn btn-primary float-end"><i class="fas fa-home"></i></a>
             </div>
+            <div class="col-lg-12">
+                <ul class="nav nav-pills float-start">
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'aktiva' ? 'active' : '' }}" aria-current="page"
+                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'aktiva'])}}">Aktiva</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'peralatan' ? 'active' : '' }}" aria-current="page"
+                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'peralatan'])}}">Peralatan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'atk' ? 'active' : '' }}" aria-current="page"
+                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'atk'])}}">
+                            ATK & Perlengkapan</a>
+                    </li>
+                </ul>
+            </div>
 
         </div>
 
@@ -27,6 +44,7 @@
         <form action="{{ route('save_jurnal_aktiva') }}" method="post" class="save_jurnal">
             @csrf
             <input type="hidden" name="id_buku" value="{{ $id_buku }}">
+            <input type="hidden" name="kategori" value="{{ $kategori }}">
             <section class="row">
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>

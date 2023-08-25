@@ -26,7 +26,7 @@
                 <input type="text" class="form-control nilai_perolehan nilai_perolehan1" count='1'>
                 <input type="hidden" name="h_perolehan[]" class="form-control  nilai_perolehan_biasa1">
             </td>
-  
+
             <td>
                 <p class="umur1 text-center"></p>
             </td>
