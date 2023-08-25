@@ -36,7 +36,7 @@
                             'aktiva' => 9,
                             'atk' => 30,
                         ];
-                        $id_akun = $akunList[request()->get('kategori') ?? 'atk'];
+                        $id_akun = $akunList[request()->get('kategori') ?? 'aktiva'];
                     @endphp
                     @foreach ($akun as $a)
                         <option value="{{ $a->id_akun }}" {{ $id_akun == $a->id_akun ? 'selected' : '' }}>
