@@ -238,9 +238,29 @@ Route::middleware('auth')->group(function () {
             Route::get('/delete_peralatan', 'delete_peralatan')->name('delete_peralatan');
             Route::get('/edit_kelompok', 'edit_kelompok')->name('edit_kelompok');
             Route::get('/load_edit', 'load_edit')->name('load_edit');
+            Route::get('/load_menu_add_aktiva', 'load_menu_add_aktiva')->name('load_menu_add_aktiva');
+            Route::get('/tambah_baris_aktiva', 'tambah_baris_aktiva')->name('tambah_baris_aktiva');
+            Route::get('/nota_jurnal/{no_nota}/{kategori?}/{print?}', 'nota_jurnal')->name('nota_jurnal');
+            Route::post('/save_jurnal', 'save_jurnal')->name('save_jurnal');
             Route::get('/load_aktiva', 'load_aktiva')->name('load_aktiva');
             Route::get('/get_data_kelompok', 'get_data_kelompok')->name('get_data_kelompok');
             Route::post('/save_aktiva', 'save_aktiva')->name('save_aktiva');
+        });
+
+    Route::controller(PenjualanUmumController::class)
+        ->prefix('penjualan2')
+        ->name('penjualan2.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/add', 'add')->name('add');
+            Route::post('/add', 'store')->name('store');
+            Route::get('/tbh_add', 'tbh_add')->name('tbh_add');
+            Route::get('/tbh_pembayaran', 'tbh_pembayaran')->name('tbh_pembayaran');
+            Route::get('/delete', 'delete')->name('delete');
+            Route::get('/edit', 'edit')->name('edit');
+            Route::post('/edit', 'update')->name('update');
+            Route::get('/print', 'print')->name('print');
+            Route::get('/detail/{no_nota}', 'detail')->name('detail');
         });
 
     Route::controller(PenjualanUmumController::class)

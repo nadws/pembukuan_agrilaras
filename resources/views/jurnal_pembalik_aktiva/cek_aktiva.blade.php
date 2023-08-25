@@ -2,7 +2,6 @@
 
     <x-slot name="cardHeader">
         <div class="row justify-content-end">
-
             <div class="col-lg-6">
                 <h6 class="float-start mt-1">{{ $title }} {{$kategori}}</h6>
             </div>
@@ -116,7 +115,7 @@
                                     </select>
                                 </td>
                                 <td><input type="text" name="nm_aktiva[]" class="form-control "
-                                        value="{{$head_jurnal->nm_post}}" readonly></td>
+                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}" readonly></td>
                                 <td><input type="date" name="tgl[]" class="form-control" value="{{$head_jurnal->tgl}}">
                                 </td>
                                 <td>
@@ -165,7 +164,7 @@
                                     </select>
                                 </td>
                                 <td><input type="text" name="nm_aktiva[]" class="form-control "
-                                        value="{{$head_jurnal->nm_post}}"></td>
+                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}"></td>
                                 <td><input type="date" name="tgl[]" class="form-control" value="{{$head_jurnal->tgl}}">
                                 </td>
                                 <td>

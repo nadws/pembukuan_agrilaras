@@ -70,7 +70,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '10' ? 'active' : '' }}"
-                        href="{{ route('jurnal', ['id_buku' => '10', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
+                        href="{{ route('jurnal', ['id_buku' => '10','kategori' => 'peralatan', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
                         Peralatan</a>
                 </li>
             </ul>

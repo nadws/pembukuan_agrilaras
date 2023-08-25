@@ -132,7 +132,7 @@ class Jurnal_aktivaController extends Controller
             'title' => 'Cek Nota',
             'no_nota' => $r->no_nota,
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
-            'head_jurnal' => DB::selectOne("SELECT c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit , d.nm_post
+            'head_jurnal' => DB::selectOne("SELECT a.ket,c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit , d.nm_post
             FROM jurnal as a 
             left join proyek as b on b.id_proyek = a.id_proyek
             left join tb_suplier as c on c.id_suplier = a.id_suplier
@@ -140,6 +140,7 @@ class Jurnal_aktivaController extends Controller
             where a.no_nota = '$r->no_nota'"),
             'kelompok' => $kelompok,
             'kategori' => $r->kategori,
+            'pembelian' => $r->pembelian ?? '',
             'satuan' => DB::table('tb_satuan')->get()
         ];
 
