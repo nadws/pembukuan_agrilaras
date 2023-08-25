@@ -20,8 +20,10 @@
     <x-slot name="cardBody">
         <section class="row">
             <div class="col-lg-4">
-                <h6>Total Penjualan Alpa : Rp. {{ number_format($total_alpa->ttl_rp, 0) }}</h6>
-                <h6>Total Penjualan MTD : Rp. {{ number_format($total_mtd->ttl_rp, 0) }}</h6>
+                <h6 class="text-end">Total Penjualan Alpa : Rp. {{ number_format($total_alpa->ttl_rp, 0) }}</h6>
+                <h6 class="text-end">Total Penjualan MTD : Rp. {{ number_format($total_mtd->ttl_rp, 0) }}</h6>
+                <hr>
+                <h6 class="text-end"><b>Total : Rp. {{ number_format($total_mtd->ttl_rp + $total_alpa->ttl_rp, 0) }}</b></h6>
             </div>
             <div class="col-lg-12">
                 <br>

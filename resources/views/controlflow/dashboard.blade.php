@@ -30,9 +30,9 @@
                         <thead>
                             <tr>
                                 <th class="dhead">#</th>
-                                <th class="dhead">Nama</th>
-                                <th class="dhead text-end">Pcs <br> Selisih</th>
-                                <th class="dhead text-end">Kg <br> Selisih</th>
+                                <th class="dhead" width="40%">Nama</th>
+                                <th class="dhead text-end">Pcs Selisih</th>
+                                <th class="dhead text-end">Kg Selisih</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -44,8 +44,14 @@
                                     <td align="right">{{ number_format($d->kg_selisih, 1) }}</td>
                                 </tr>
                             @endforeach
-
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="text-center" colspan="2">Total</th>
+                                <th class="text-end">2</th>
+                                <th class="text-end">2</th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -57,7 +63,7 @@
                         <div class="col-lg-12">
                             <h6 class="float-strat">Pakan Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
                         </div>
-                   
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -91,12 +97,12 @@
                                 <tr>
                                     <td>{{ $no + 1 }}</td>
                                     <td>{{ $d->nm_produk }}</td>
-                                    <td align="right">{{ number_format($d->stok - $stokProgram, 0) }}</td>
+                                    <td align="right">{{ number_format($d->stok - $stokProgram, 1) }} {{ $d->nm_satuan }}</td>
                                     <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
                                     <td align="right">
                                         {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
                                     </td>
-                                </tr>
+                                </tr>   
                             @endforeach
                         </tbody>
                         <tfoot>
@@ -155,7 +161,7 @@
                                     <tr>
                                         <td>{{ $no + 1 }}</td>
                                         <td>{{ $d->nm_produk }}</td>
-                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}</td>
+                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }} {{ $d->nm_satuan }}</td>
                                         <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
                                         <td align="right">
                                             {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
@@ -212,8 +218,8 @@
                                 addClass="float-end" teks="Print" /> --}}
 
                             <button data-bs-toggle="modal" data-bs-target="#daftarprofit"
-                                class="btn btn-sm btn-primary float-end d_profit"><i
-                                    class="fas fa-clipboard-list"></i> List
+                                class="btn btn-sm btn-primary float-end d_profit"><i class="fas fa-clipboard-list"></i>
+                                List
                                 Akun
                                 <span class="badge bg-danger ttl_akun_profit"></span>
                             </button>
@@ -606,6 +612,7 @@
                     }
                 });
             }
+
             function akun_cash_profit() {
                 $.ajax({
                     type: "GET",
