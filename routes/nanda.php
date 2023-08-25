@@ -33,6 +33,7 @@ use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
+use App\Http\Controllers\Jurnal_aktivaController;
 use App\Http\Controllers\PenjualanAyamController;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\UserController;
@@ -91,6 +92,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/get_proyek', 'get_proyek')->name('get_proyek');
         Route::get('/get_post2', 'get_post2')->name('get_post2');
         Route::get('/get_total_post', 'get_total_post')->name('get_total_post');
+    });
+    Route::controller(Jurnal_aktivaController::class)->group(function () {
+        Route::get('/add_balik_aktiva', 'add_balik_aktiva')->name('add_balik_aktiva');
+        Route::post('/save_jurnal_aktiva', 'save_jurnal')->name('save_jurnal_aktiva');
+        Route::get('/Cek_aktiva', 'Cek_aktiva')->name('Cek_aktiva');
     });
 
     Route::controller(AkunController::class)->group(function () {

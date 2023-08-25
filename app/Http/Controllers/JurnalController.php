@@ -125,9 +125,6 @@ class JurnalController extends Controller
 
         ];
         switch ($r->id_buku) {
-            case '9':
-                return view('jurnal.add_aktiva', $data);
-                break;
             case '10':
                 return view('jurnal.add_peralatan', $data);
                 break;
@@ -138,6 +135,8 @@ class JurnalController extends Controller
                 break;
         }
     }
+
+
 
     public function get_proyek()
     {
