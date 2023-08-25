@@ -207,7 +207,7 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="nm_atk"
-                                        value="{{$head_jurnal->nm_post}}" readonly>
+                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}" readonly>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="stok">

@@ -262,7 +262,7 @@ class PeralatanController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
-        return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori, 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function nota_jurnal($no_nota, $kategori = null,$print = null)
