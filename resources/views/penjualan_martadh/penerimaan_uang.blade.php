@@ -130,52 +130,52 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $total_semua = 0;
-                                        $ttl_pcs = 0;
-                                        $ttl_kg_kotor = 0;
-                                        $ttl_kg_bersih = 0;
+                                    $total_semua = 0;
+                                    $ttl_pcs = 0;
+                                    $ttl_kg_kotor = 0;
+                                    $ttl_kg_bersih = 0;
                                     @endphp
                                     @foreach ($invoice as $i)
-                                        <tr>
+                                    <tr>
 
-                                            <td>{{ $i->nm_telur }}</td>
-                                            <td align="right">{{ $i->pcs_pcs }}</td>
-                                            <td align="right">{{ $i->kg_pcs }}</td>
-                                            <td align="right">Rp. {{ number_format($i->rp_pcs, 0) }}</td>
-                                            <!-- Jual Ikat -->
-                                            <td align="right">{{ $i->ikat }}</td>
-                                            <td align="right">{{ $i->kg_ikat }}</td>
-                                            <td align="right">Rp. {{ number_format($i->rp_ikat, 0) }}</td>
-                                            <!-- Jual Ikat -->
-                                            <!-- Jual Kg -->
-                                            <td align="right">{{ $i->pcs_kg }}</td>
-                                            <td align="right">{{ $i->kg_kg_kotor }}</td>
-                                            <td align="right">{{ $i->kg_kg }}</td>
-                                            {{-- <td align="right">{{$i->rak_kg}}</td> --}}
-                                            <td align="right">Rp. {{ number_format($i->rp_kg, 0) }}</td>
-                                            <!-- Jual Kg -->
-                                            <td align="right">
-                                                @php
-                                                    $rp_pcs = $i->pcs_pcs * $i->rp_pcs;
-                                                    $rp_ikat = ($i->kg_ikat - $i->ikat) * $i->rp_ikat;
-                                                    // $rak_kali = round($i->rak_kg * 0.12,1);
-                                                    $rak_kotor = round(($i->pcs_kg / 15) * 0.12, 1);
-                                                    $kg_rak_kotor = $i->kg_kg + $rak_kotor;
-                                                    $rp_kg = $i->kg_kg * $i->rp_kg;
-                                                    $total_rp = $rp_pcs + $rp_ikat + $rp_kg;
-                                                    
-                                                    $ikat_kg_bersih = $i->kg_ikat - $i->ikat;
-                                                    
-                                                @endphp
-                                                Rp. {{ number_format($total_rp, 0) }}
-                                            </td>
-                                        </tr>
-                                        @php
-                                            $total_semua += $total_rp;
-                                            $ttl_pcs += $i->pcs_pcs + $i->ikat * 180 + $i->pcs_kg;
-                                            $ttl_kg_kotor += $i->kg_pcs + $i->kg_ikat + $i->kg_kg_kotor;
-                                            $ttl_kg_bersih += $ikat_kg_bersih + $i->kg_kg;
-                                        @endphp
+                                        <td>{{ $i->nm_telur }}</td>
+                                        <td align="right">{{ $i->pcs_pcs }}</td>
+                                        <td align="right">{{ $i->kg_pcs }}</td>
+                                        <td align="right">Rp. {{ number_format($i->rp_pcs, 0) }}</td>
+                                        <!-- Jual Ikat -->
+                                        <td align="right">{{ $i->ikat }}</td>
+                                        <td align="right">{{ $i->kg_ikat }}</td>
+                                        <td align="right">Rp. {{ number_format($i->rp_ikat, 0) }}</td>
+                                        <!-- Jual Ikat -->
+                                        <!-- Jual Kg -->
+                                        <td align="right">{{ $i->pcs_kg }}</td>
+                                        <td align="right">{{ $i->kg_kg_kotor }}</td>
+                                        <td align="right">{{ $i->kg_kg }}</td>
+                                        {{-- <td align="right">{{$i->rak_kg}}</td> --}}
+                                        <td align="right">Rp. {{ number_format($i->rp_kg, 0) }}</td>
+                                        <!-- Jual Kg -->
+                                        <td align="right">
+                                            @php
+                                            $rp_pcs = $i->pcs_pcs * $i->rp_pcs;
+                                            $rp_ikat = ($i->kg_ikat - $i->ikat) * $i->rp_ikat;
+                                            // $rak_kali = round($i->rak_kg * 0.12,1);
+                                            $rak_kotor = round(($i->pcs_kg / 15) * 0.12, 1);
+                                            $kg_rak_kotor = $i->kg_kg + $rak_kotor;
+                                            $rp_kg = $i->kg_kg * $i->rp_kg;
+                                            $total_rp = $rp_pcs + $rp_ikat + $rp_kg;
+
+                                            $ikat_kg_bersih = $i->kg_ikat - $i->ikat;
+
+                                            @endphp
+                                            Rp. {{ number_format($total_rp, 0) }}
+                                        </td>
+                                    </tr>
+                                    @php
+                                    $total_semua += $total_rp;
+                                    $ttl_pcs += $i->pcs_pcs + $i->ikat * 180 + $i->pcs_kg;
+                                    $ttl_kg_kotor += $i->kg_pcs + $i->kg_ikat + $i->kg_kg_kotor;
+                                    $ttl_kg_bersih += $ikat_kg_bersih + $i->kg_kg;
+                                    @endphp
                                     @endforeach
 
 
@@ -242,143 +242,138 @@
                                 value="{{ $total_semua }}">
                         </div>
                         @if (empty($jurnal))
-                            <div class="col-lg-5 mt-2">
-                                <label for="">Pilih Akun Setor</label>
-                                <select name="id_akun[]" id="" class="select2_add" required>
+                        <div class="col-lg-5 mt-2">
+                            <label for="">Pilih Akun Setor</label>
+                            <select name="id_akun[]" id="" class="select2_add" required>
+                                <option value="">-Pilih Akun-</option>
+                                @foreach ($akun as $a)
+                                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Debit</label>
+                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
+                                value="Rp {{ number_format($total_semua, 2, ',', '.') }}">
+                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                                value="{{ $total_semua }}">
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Kredit</label>
+                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
+                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
+                                value="0">
+                        </div>
+                        <div class="col-lg-1 mt-2">
+                            <label for="">aksi</label> <br>
+                            <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
+                                <i class="fas fa-plus text-success"></i>
+                            </button>
+                        </div>
+
+                        <div id="load_pembayaran"></div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <hr style="border: 1px solid blue">
+                            </div>
+                            <div class="col-lg-5">
+                                <h6>Total Setor</h6>
+                            </div>
+                            <div class="col-lg-3">
+                                <h6 class="total_debit float-end">Rp {{ number_format($total_semua, 0) }}</h6>
+                            </div>
+                            <div class="col-lg-4">
+                                <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
+                            </div>
+                            <div class="col-lg-5">
+                                <h6 class="cselisih">Selisih</h6>
+                            </div>
+                            <div class="col-lg-3">
+                            </div>
+                            <div class="col-lg-4">
+                                <h6 class="selisih float-end cselisih">Rp 0</h6>
+                            </div>
+                        </div>
+                        @else
+                        @php
+                        $debit = 0;
+                        $kredit = 0;
+                        @endphp
+                        @foreach ($jurnal as $j)
+                        @php
+                        $debit += $j->debit;
+                        $kredit += $j->kredit;
+                        @endphp
+                        <div class="col-lg-5 mt-2">
+                            <label for="">Pilih Akun Setor</label>
+                            <select name="" id="" class="select2_add" required disabled>
+                                <option value="">-Pilih Akun-</option>
+                                @foreach ($akun as $a)
+                                <option value="{{ $a->id_akun }}" {{ $a->id_akun == $j->id_akun ? 'SELECTED' : '' }}>
+                                    {{ $a->nm_akun }}
+                                </option>
+                                @endforeach
+                            </select>
+                            <input type="hidden" name="id_akun[]" value="{{ $j->id_akun }}">
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Debit</label>
+                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
+                                value="Rp {{ number_format($j->debit, 2, ',', '.') }}" readonly>
+                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                                value="{{ $j->debit }}">
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Kredit</label>
+                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right"
+                                value="Rp {{ number_format($j->kredit, 2, ',', '.') }}" readonly>
+                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
+                                value="{{ $j->kredit }}">
+                        </div>
+                        {{-- <div class="col-lg-1 mt-2">
+                            <label for="">aksi</label> <br>
+                            <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
+                                <i class="fas fa-plus text-success"></i>
+                            </button>
+                        </div> --}}
+                        @endforeach
+                        {{-- <div id="load_pembayaran"></div> --}}
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <hr style="border: 1px solid blue">
+                            </div>
+                            <div class="col-lg-5">
+                                <h6>Total Setor</h6>
+                            </div>
+                            <div class="col-lg-3">
+                                <h6 class="total_debit float-end">Rp {{ number_format($debit, 0) }}</h6>
+                            </div>
+                            <div class="col-lg-4">
+                                <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
+                            </div>
+                            <div class="col-lg-5">
+                                <select name="id_akun_sisa" id="" class="select2_add" required>
                                     <option value="">-Pilih Akun-</option>
                                     @foreach ($akun as $a)
-                                        <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                                    <option value="{{ $a->id_akun }}">
+                                        {{ $a->nm_akun }}
+                                    </option>
                                     @endforeach
                                 </select>
+                                <input type="hidden" name="selisih" value="{{ $debit - $total_semua }}">
                             </div>
-                            <div class="col-lg-3 mt-2">
-                                <label for="">Debit</label>
-                                <input type="text" class="form-control debit debit1" count="1"
-                                    style="text-align: right"
-                                    value="Rp {{ number_format($total_semua, 2, ',', '.') }}">
-                                <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
-                                    value="{{ $total_semua }}">
+                            <div class="col-lg-3">
                             </div>
-                            <div class="col-lg-3 mt-2">
-                                <label for="">Kredit</label>
-                                <input type="text" class="form-control kredit kredit1" count="1"
-                                    style="text-align: right">
-                                <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
-                                    value="0">
-                            </div>
-                            <div class="col-lg-1 mt-2">
-                                <label for="">aksi</label> <br>
-                                <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
-                                    <i class="fas fa-plus text-success"></i>
-                                </button>
+                            <div class="col-lg-4">
+                                <h6
+                                    class="selisih float-end cselisih {{ $debit - $total_semua != 0 ? 'text-danger' : 'text-success' }}">
+                                    Rp
+                                    {{ number_format($debit - $total_semua) }}</h6>
                             </div>
 
-                            <div id="load_pembayaran"></div>
-
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <hr style="border: 1px solid blue">
-                                </div>
-                                <div class="col-lg-5">
-                                    <h6>Total Setor</h6>
-                                </div>
-                                <div class="col-lg-3">
-                                    <h6 class="total_debit float-end">Rp {{ number_format($total_semua, 0) }}</h6>
-                                </div>
-                                <div class="col-lg-4">
-                                    <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
-                                </div>
-                                <div class="col-lg-5">
-                                    <h6 class="cselisih">Selisih</h6>
-                                </div>
-                                <div class="col-lg-3">
-                                </div>
-                                <div class="col-lg-4">
-                                    <h6 class="selisih float-end cselisih">Rp 0</h6>
-                                </div>
-                            </div>
-                        @else
-                            @php
-                                $debit = 0;
-                                $kredit = 0;
-                            @endphp
-                            @foreach ($jurnal as $j)
-                                @php
-                                    $debit += $j->debit;
-                                    $kredit += $j->kredit;
-                                @endphp
-                                <div class="col-lg-5 mt-2">
-                                    <label for="">Pilih Akun Setor</label>
-                                    <select name="" id="" class="select2_add" required disabled>
-                                        <option value="">-Pilih Akun-</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}"
-                                                {{ $a->id_akun == $j->id_akun ? 'SELECTED' : '' }}>
-                                                {{ $a->nm_akun }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="id_akun[]" value="{{ $j->id_akun }}">
-                                </div>
-                                <div class="col-lg-3 mt-2">
-                                    <label for="">Debit</label>
-                                    <input type="text" class="form-control debit debit1" count="1"
-                                        style="text-align: right"
-                                        value="Rp {{ number_format($j->debit, 2, ',', '.') }}" readonly>
-                                    <input type="hidden" name="debit[]"
-                                        class="form-control debit_biasa debit_biasa1" value="{{ $j->debit }}">
-                                </div>
-                                <div class="col-lg-3 mt-2">
-                                    <label for="">Kredit</label>
-                                    <input type="text" class="form-control kredit kredit1" count="1"
-                                        style="text-align: right"
-                                        value="Rp {{ number_format($j->kredit, 2, ',', '.') }}" readonly>
-                                    <input type="hidden" name="kredit[]"
-                                        class="form-control kredit_biasa kredit_biasa1" value="{{ $j->kredit }}">
-                                </div>
-                                {{-- <div class="col-lg-1 mt-2">
-                                    <label for="">aksi</label> <br>
-                                    <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
-                                        <i class="fas fa-plus text-success"></i>
-                                    </button>
-                                </div> --}}
-                            @endforeach
-                            {{-- <div id="load_pembayaran"></div> --}}
-
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <hr style="border: 1px solid blue">
-                                </div>
-                                <div class="col-lg-5">
-                                    <h6>Total Setor</h6>
-                                </div>
-                                <div class="col-lg-3">
-                                    <h6 class="total_debit float-end">Rp {{ number_format($debit, 0) }}</h6>
-                                </div>
-                                <div class="col-lg-4">
-                                    <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
-                                </div>
-                                <div class="col-lg-5">
-                                    <select name="id_akun_sisa" id="" class="select2_add" required>
-                                        <option value="">-Pilih Akun-</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}">
-                                                {{ $a->nm_akun }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="selisih" value="{{ $debit - $total_semua }}">
-                                </div>
-                                <div class="col-lg-3">
-                                </div>
-                                <div class="col-lg-4">
-                                    <h6
-                                        class="selisih float-end cselisih {{ $debit - $total_semua != 0 ? 'text-danger' : 'text-success' }}">
-                                        Rp
-                                        {{ number_format($debit - $total_semua) }}</h6>
-                                </div>
-
-                            </div>
+                        </div>
 
                         @endif
 
@@ -400,8 +395,8 @@
 
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on("keyup", ".debit", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
@@ -419,10 +414,13 @@
                         $('.debit_biasa' + count).val(input2)
                     }
 
-                    var total_all = 0;
-                    $(".bayar_biasa").each(function() {
-                        total_all += parseFloat($(this).val());
-                    });
+                    // var total_all = 0;
+                    // $(".bayar_biasa").each(function() {
+                    //     total_all += parseFloat($(this).val());
+                    // });
+
+                    var  total_all = $('.total_semua_biasa').val()
+                   
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -440,20 +438,20 @@
                     $(".kredit_biasa").each(function() {
                         total_kredit += parseFloat($(this).val());
                     });
-                    var total_all_kredit = total_all + total_kredit;
+                    var total_all_kredit = parseFloat(total_all) + parseFloat(total_kredit);
                     var totalKreditall = total_all_kredit.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
                     $(".total_kredit").text(totalKreditall);
 
-                    var selisih = total_all + total_kredit - total_debit;
+                    var selisih = parseFloat(total_all) + parseFloat(total_kredit) - parseFloat(total_debit);
                     var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
 
-                    if (total_kredit + total_all === total_debit) {
+                    if (parseFloat(total_kredit) + parseFloat(total_all) === parseFloat(total_debit)) {
                         $(".cselisih").css("color", "green");
                         $(".button-save").removeAttr("hidden");
                     } else {
@@ -480,10 +478,11 @@
                         $('.kredit_biasa' + count).val(input2)
                     }
 
-                    var total_all = 0;
-                    $(".bayar_biasa").each(function() {
-                        total_all += parseFloat($(this).val());
-                    });
+                    // var total_all = 0;
+                    // $(".bayar_biasa").each(function() {
+                    //     total_all += parseFloat($(this).val());
+                    // });
+                    var  total_all = $('.total_semua_biasa').val()
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -494,19 +493,19 @@
                     $(".kredit_biasa").each(function() {
                         total_kredit += parseFloat($(this).val());
                     });
-                    var total_all_kredit = total_all + total_kredit;
+                    var total_all_kredit = parseFloat(total_all) + parseFloat(total_kredit);
                     var totalKreditall = total_all_kredit.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
                     $(".total_kredit").text(totalKreditall);
 
-                    var selisih = total_all + total_kredit - total_debit;
+                    var selisih = parseFloat(total_all) + parseFloat(total_kredit) - parseFloat(total_debit);
                     var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
-                    if (total_kredit + total_all === total_debit) {
+                    if (parseFloat(total_kredit) + parseFloat(total_all) === parseFloat(total_debit)) {
                         $(".cselisih").css("color", "green");
                         $(".button-save").removeAttr("hidden");
                     } else {
@@ -535,10 +534,11 @@
                     $(".baris_bayar" + delete_row).remove();
 
 
-                    var total_all = 0;
-                    $(".bayar_biasa").each(function() {
-                        total_all += parseFloat($(this).val());
-                    });
+                    // var total_all = 0;
+                    // $(".bayar_biasa").each(function() {
+                    //     total_all += parseFloat($(this).val());
+                    // });
+                    var  total_all = $('.total_semua_biasa').val()
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -549,19 +549,19 @@
                     $(".kredit_biasa").each(function() {
                         total_kredit += parseFloat($(this).val());
                     });
-                    var total_all_kredit = total_all + total_kredit;
+                    var total_all_kredit = parseFloat(total_all) + parseFloat(total_kredit);
                     var totalKreditall = total_all_kredit.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
                     $(".total_kredit").text(totalKreditall);
 
-                    var selisih = total_all + total_kredit - total_debit;
+                    var selisih = parseFloat(total_all) + parseFloat(total_kredit) - parseFloat(total_debit);
                     var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
-                    if (total_kredit + total_all === total_debit) {
+                    if (parseFloat(total_kredit + total_all) === parseFloat(total_debit)) {
                         $(".cselisih").css("color", "green");
                         $(".button-save").removeAttr("hidden");
                     } else {
@@ -594,6 +594,6 @@
 
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
