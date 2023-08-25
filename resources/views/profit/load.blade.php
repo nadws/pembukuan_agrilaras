@@ -14,12 +14,12 @@
         {
             $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
         
-            return DB::select("SELECT c.nm_akun, b.kredit, b.debit
+            return DB::select("SELECT b.id_akun,c.nm_akun, b.kredit, b.debit
             FROM akunprofit as a
             left join (
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
-            WHERE b.id_buku not in('1','5') and $jenis != 0 and b.penutup = 'Y' and b.tgl between '$tgl1' and '$tgl2'
+            WHERE b.id_buku not in('1','5') and $jenis != 0  and b.tgl between '$tgl1' and '$tgl2'
             group by b.id_akun
             ) as b on b.id_akun = a.id_akun
             left join akun as c on c.id_akun = a.id_akun
@@ -54,7 +54,7 @@
             @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
                 <tr>
                     <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
-                    <td style="text-align: right">Rp. {{ number_format($a->kredit, 2) }}</td>
+                    <td style="text-align: right">Rp. {{ number_format($a->kredit, 1) }}</td>
                 </tr>
             @endforeach
         @endforeach
@@ -83,7 +83,7 @@
             @foreach (getAkun($d->id, $tgl1, $tgl2, 2) as $a)
                 <tr>
                     <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
-                    <td style="text-align: right">Rp. {{ number_format($a->debit, 2) }}</td>
+                    <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
                 </tr>
             @endforeach
         @endforeach
@@ -91,7 +91,7 @@
         <tr>
             <td colspan="2" class="fw-bold" style="border-bottom: 1px solid black;">Total Biaya-biaya</td>
             <td class="fw-bold" align="right" style="border-bottom: 1px solid black;">
-                {{ number_format($totalBiaya, 0) }}</td>
+                {{ number_format($totalBiaya, 1) }}</td>
         </tr>
         <tr>
             <td colspan="2" class="fw-bold">TOTAL LABA BERSIH</td>

@@ -124,10 +124,18 @@ class JurnalController extends Controller
             'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9')")
 
         ];
-        if ($r->id_buku == '9') {
-            return view('jurnal.add_aktiva', $data);
-        } else {
-            return view('jurnal.add', $data);
+        switch ($r->id_buku) {
+            case '9':
+                return view('jurnal.add_aktiva', $data);
+                break;
+            case '10':
+                return view('jurnal.add_peralatan', $data);
+                break;
+
+            default:
+                return view('jurnal.add', $data);
+
+                break;
         }
     }
 
