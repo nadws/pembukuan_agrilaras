@@ -15,10 +15,12 @@
                     teks="Import" />
                 @endif
                 @if (!empty($tambah))
-                <x-theme.button modal="T" href="{{ route('jurnal.add', ['id_buku' => $id_buku]) }}" icon="fa-plus"
-                    addClass="float-end" teks="Buat Baru" />
+                <x-theme.button modal="T"
+                    href="{{ $id_buku != '13' ?  route('jurnal.add', ['id_buku' => $id_buku]) : route('add_balik_aktiva', ['id_buku' => $id_buku]) }}"
+                    icon="fa-plus" addClass="float-end" teks="Buat Baru" />
                 @endif
                 <x-theme.akses :halaman="$halaman" route="jurnal" />
+
                 @endif
                 @if (!empty($export))
                 <x-theme.button modal="T"
@@ -39,7 +41,12 @@
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '12' ? 'active' : '' }}" aria-current="page"
                         href="{{ route('jurnal', ['id_buku' => '12', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">
-                        Pengeluaran Proyek Berjalan</a>
+                        Pengeluaran Aktiva Gantung</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $id_buku == '13' ? 'active' : '' }}" aria-current="page"
+                        href="{{ route('jurnal', ['id_buku' => '13', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">
+                        Pembalikan Aktiva Gantung</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '6' ? 'active' : '' }}"

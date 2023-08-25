@@ -24,7 +24,7 @@
     </style>
 
     <x-slot name="cardBody">
-        <form action="{{ route('save_jurnal') }}" method="post" class="save_jurnal">
+        <form action="{{ route('save_jurnal_aktiva') }}" method="post" class="save_jurnal">
             @csrf
             <input type="hidden" name="id_buku" value="{{ $id_buku }}">
             <section class="row">
@@ -36,29 +36,29 @@
                     <label for="">No Urut Jurnal Umum</label>
                     <input type="text" class="form-control" name="no_nota" value="JU-{{ $max }}" readonly>
                 </div>
-                @if ($id_buku == '12')
-                    <div class="col-lg-3">
-                        <label for="">Proyek</label>
-                        <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
-
-                        </select>
-                    </div>
-                @endif
-
+                {{-- @if ($id_buku == '12')
                 <div class="col-lg-3">
+                    <label for="">Proyek</label>
+                    <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
+
+                    </select>
+                </div>
+                @endif --}}
+
+                {{-- <div class="col-lg-3">
                     <label for="">Suplier</label>
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
                 <div class="col-lg-12">
                     <hr style="border: 1px solid black">
                 </div>
                 <div class="col-lg-12">
-                    <table class="table table-striped">
+                    <table class="table ">
                         <thead>
                             <tr>
                                 <th width="2%">#</th>
@@ -74,18 +74,14 @@
                         <tbody>
                             <tr class="baris1">
                                 <td style="vertical-align: top;">
-                                    {{-- <button type="button" data-bs-toggle="collapse" href=".join1" class="btn rounded-pill "
-                                        count="1"><i class="fas fa-angle-down"></i>
+                                    {{-- <button type="button" data-bs-toggle="collapse" href=".join1"
+                                        class="btn rounded-pill " count="1"><i class="fas fa-angle-down"></i>
                                     </button> --}}
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <select name="id_akun[]" id="" class="select2_add pilih_akun pilih_akun1"
-                                        count="1" required>
-                                        <option value="">Pilih</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="hidden" name="id_akun[]" value="{{$akun_gantung->id_akun}}">
+                                    <input type="text" class="form-control" value="{{$akun_gantung->nm_akun}} "
+                                        readonly>
                                     <div class="">
                                         <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                                         <input type="text" class="form-control " name="no_urut[]">
@@ -93,8 +89,11 @@
 
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <select name="id_post[]" id=""
-                                        class="select2_add post_center post_center1 post1" count="1">
+                                    <select name="id_post" id="" class="select2_add post_center post_center1" count="1">
+                                        <option value="">-Pilih Post-</option>
+                                        @foreach ($post as $p)
+                                        <option value="{{$p->id_post_center}}">{{$p->nm_post}}</option>
+                                        @endforeach
 
                                     </select>
                                 </td>
@@ -105,8 +104,8 @@
 
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <input type="text" class="form-control debit_rupiah text-end" value="Rp 0"
-                                        count="1">
+                                    <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="1"
+                                        readonly>
                                     <input type="hidden" class="form-control debit_biasa debit_biasa1" value="0"
                                         name="debit[]">
                                     <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah
@@ -115,7 +114,7 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control kredit_rupiah kredit_rupiah1 text-end"
-                                        value="Rp 0" count="1">
+                                        value="Rp 0" count="1" readonly>
                                     <input type="hidden" class="form-control kredit_biasa kredit_biasa1" value="0"
                                         name="kredit[]">
                                     <input type="hidden" class="form-control id_klasifikasi1" value="0"
@@ -137,27 +136,22 @@
 
                             <tr class="baris2">
                                 <td style="vertical-align: top;">
-                                    {{-- <button type="button" data-bs-toggle="collapse" href=".join2" class="btn rounded-pill "
-                                        count="1"><i class="fas fa-angle-down"></i>
+                                    {{-- <button type="button" data-bs-toggle="collapse" href=".join2"
+                                        class="btn rounded-pill " count="1"><i class="fas fa-angle-down"></i>
                                     </button> --}}
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <select name="id_akun[]" id=""
-                                        class="select2_add pilih_akun pilih_akun2" count="2" required>
-                                        <option value="">Pilih</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="hidden" name="id_akun[]" value="{{$akun_aktiva->id_akun}}">
+                                    <input type="text" class="form-control" value="{{$akun_aktiva->nm_akun}} " readonly>
                                     <div class="">
                                         <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                                         <input type="text" class="form-control " name="no_urut[]">
                                     </div>
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <select name="id_post[]" id="" class="select2_add post2">
+                                    {{-- <select name="id_post[]" id="" class="select2_add post2">
 
-                                    </select>
+                                    </select> --}}
                                 </td>
 
 
@@ -168,9 +162,9 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control debit_rupiah2 debit_rupiah text-end"
-                                        value="Rp 0" count="2">
-                                    <input type="hidden" class="form-control debit_biasa debit_biasa2"
-                                        value="0" name="debit[]">
+                                        value="Rp 0" count="2" readonly>
+                                    <input type="hidden" class="form-control debit_biasa debit_biasa2" value="0"
+                                        name="debit[]">
                                     <p class="peringatan_debit2 mt-2 text-danger" hidden>Data yang dimasukkan salah
                                         harap cek kembali !!
                                     </p>
@@ -178,9 +172,9 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0"
-                                        count="2">
-                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa2"
-                                        value="0" name="kredit[]">
+                                        count="2" readonly>
+                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0"
+                                        name="kredit[]">
                                     <input type="hidden" class="form-control id_klasifikasi2" value="0"
                                         name="id_klasifikasi[]">
                                     <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan
@@ -255,25 +249,25 @@
                 </div>
 
                 {{-- <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Tanggal Estimasi Selesai</label>
-                            <input type="date" class="form-control " name="tgl_estimasi">
-                        </div>
+                    <div class="form-group">
+                        <label for="">Tanggal Estimasi Selesai</label>
+                        <input type="date" class="form-control " name="tgl_estimasi">
                     </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Manager Proyek</label>
-                            <input type="text" name="manager_proyek" class="form-control">
-                        </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="">Manager Proyek</label>
+                        <input type="text" name="manager_proyek" class="form-control">
                     </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Estimasi Biaya</label>
-                            <input type="text" class="form-control b_estimasi" style="text-align: right">
-                            <input type="hidden" name="biaya_estimasi" class="form-control b_estimasi_biasa"
-                                style="text-align: right">
-                        </div>
-                    </div> --}}
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="">Estimasi Biaya</label>
+                        <input type="text" class="form-control b_estimasi" style="text-align: right">
+                        <input type="hidden" name="biaya_estimasi" class="form-control b_estimasi_biasa"
+                            style="text-align: right">
+                    </div>
+                </div> --}}
             </div>
         </x-theme.modal>
 
@@ -284,8 +278,8 @@
 
 
     @section('scripts')
-        <script>
-            $(".select2suplier").select2()
+    <script>
+        $(".select2suplier").select2()
             $(document).ready(function() {
 
 
@@ -431,9 +425,9 @@
 
                 aksiBtn("form");
             });
-        </script>
-        <script>
-            $(document).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -507,9 +501,9 @@
                     });
                 });
             });
-        </script>
-        <script>
-            $(document).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function() {
                 $(document).on("change", ".proyek", function() {
                     var tambah = $(this).val();
                     if (tambah == 'tambah_proyek') {
@@ -569,6 +563,6 @@
                     });
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
