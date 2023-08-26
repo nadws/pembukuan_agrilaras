@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gudang;
 use App\Models\Produk;
+use App\Models\Satuan;
 use App\Models\Stok;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -25,7 +26,6 @@ class StokMasukController extends Controller
         $data = [
             'title' => 'Stok Masuk',
             'produk' => $this->produk,
-            'gudang' => Gudang::where('kategori_id', 1)->get(),
             'stok' => Stok::select('no_nota', 'tgl', 'jenis', DB::raw('SUM(debit) as debit'))
                 ->when($gudang_id, function ($q, $gudang_id) {
                     return $q->where('gudang_id', $gudang_id);
@@ -47,9 +47,13 @@ class StokMasukController extends Controller
 
     public function add(Request $r)
     {
+        $kd_produk = Produk::latest('kd_produk')->first();
 
         $data = [
             'title' => 'Add Stok Produk',
+            'gudang' => Gudang::where('kategori_id', 1)->get(),
+            'satuan' => Satuan::all(),
+            'kd_produk' => empty($kd_produk) ? 1 : $kd_produk->kd_produk + 1,
             'allProduk' => $this->produk,
         ];
         return view('persediaan_barang.stok_masuk.add', $data);

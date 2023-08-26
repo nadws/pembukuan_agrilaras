@@ -15,6 +15,7 @@
                         <option {{ Request::segment(2) == $g->id_gudang ? 'selected' : '' }} value="{{ $g->id_gudang }}">
                             {{ ucwords($g->nm_gudang) }}</option>
                     @endforeach
+                    <option value="tambahGudang">+ Gudang</option>
                 </select>
             </div>
             <div class="col-lg-2">
@@ -116,41 +117,7 @@
             </table>
         </section>
 
-        {{-- gudang create --}}
-        <form action="{{ route('gudang.create') }}" method="post">
-            @csrf
-            <x-theme.modal size="modal-lg" title="Tambah Baru" idModal="tambah2">
-                <div class="row">
-                    <input type="hidden" name="url" value="{{ request()->route()->getName() }}">
-                    <input type="hidden" name="segment" value="{{ request()->segment(2) }}">
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <label for="">Kode Gudang</label>
-                            <input required type="text" name="kd_gudang" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label for="">Kategori Persediaan</label>
-                            <select required name="kategori_id" class="form-control select2-tambah2" id="">
-                                <option value="">- Pilih Kategori -</option>
-                                <option value="1">Atk & Peralatan</option>
-                                <option value="2">Bahan Baku</option>
-                                <option value="3">Barang Dagangan</option>
-                            </select>
 
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Nama Gudang</label>
-                            <input type="text" name="nm_gudang" class="form-control">
-                        </div>
-                    </div>
-                </div>
-            </x-theme.modal>
-        </form>
-        {{-- ------ --}}
 
         {{-- tambah produk --}}
         <form action="{{ route('produk.create') }}" method="post" enctype="multipart/form-data">
@@ -162,8 +129,7 @@
                         <div class="form-group">
                             <label for="">Image <span class="text-warning text-xs">Ukuran harus dibawah
                                     1MB</span></label>
-                            <input type="file" class="form-control" id="image" name="img"
-                                accept="image/*">
+                            <input type="file" class="form-control" id="image" name="img" accept="image/*">
                         </div>
                     </div>
                     <div class="col-lg-12">
@@ -202,6 +168,7 @@
                                 @foreach ($gudang as $d)
                                     <option value="{{ $d->id_gudang }}">{{ $d->nm_gudang }}</option>
                                 @endforeach
+                                <option value="tambahGudang">+ Gudang</option>
                             </select>
                         </div>
                     </div>
@@ -218,7 +185,41 @@
                 <div id="load-edit"></div>
             </x-theme.modal>
         </form>
+        {{-- gudang create --}}
+        <form action="{{ route('gudang.create') }}" method="post">
+            @csrf
+            <x-theme.modal size="modal-lg" title="Tambah Baru" idModal="tambah2">
+                <div class="row">
+                    <input type="hidden" name="url" value="{{ request()->route()->getName() }}">
+                    <input type="hidden" name="segment" value="{{ request()->segment(2) }}">
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            <label for="">Kode Gudang</label>
+                            <input required type="text" name="kd_gudang" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="">Kategori Persediaan</label>
+                            <select required name="kategori_id" class="form-control select2-tambah2" id="">
+                                <option value="">- Pilih Kategori -</option>
+                                <option value="1">Atk & Peralatan</option>
+                                <option value="2">Bahan Baku</option>
+                                <option value="3">Barang Dagangan</option>
+                            </select>
 
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="">Nama Gudang</label>
+                            <input type="text" name="nm_gudang" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </x-theme.modal>
+        </form>
+        {{-- ------ --}}
         <x-theme.btn_alert_delete route="produk.delete" name="id_produk" :tgl1="$tgl1" :tgl2="$tgl2"
             :id_proyek="$id_proyek" />
 
@@ -227,10 +228,23 @@
     @section('js')
         <script>
             $(document).ready(function() {
+                $('.select2').change(function(e) {
+                    e.preventDefault()
+                    var gudang_id = $(this).val()
+                    if (gudang_id == 'tambahGudang') {
+                        $("#tambah2").modal('show')
+                    } else {
+                        document.location.href = `/produk/${gudang_id}`
+                    }
+                })
                 $(".select-gudang").change(function(e) {
                     e.preventDefault();
                     var gudang_id = $(this).val()
-                    document.location.href = `/produk/${gudang_id}`
+                    if (gudang_id == 'tambahGudang') {
+                        $("#tambah2").modal('show')
+                    } else {
+                        document.location.href = `/produk/${gudang_id}`
+                    }
                 });
 
                 // edit
