@@ -6,12 +6,12 @@
             </div>
             <div class="col-lg-6">
                 @if (!empty($export))
-                    <a href="{{ route('export_jurnal', ['tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_buku' => '4']) }}"
-                        class="float-end btn   btn-success me-2"><i class="fas fa-file-excel"></i> Export</a>
+                <a href="{{ route('export_jurnal', ['tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_buku' => '4']) }}"
+                    class="float-end btn   btn-success me-2"><i class="fas fa-file-excel"></i> Export</a>
                 @endif
                 @if (!empty($create))
-                    <x-theme.button modal="T" href="{{ route('penyesuaian.aktiva') }}" icon="fa-plus"
-                        addClass="float-end" teks="Buat Baru" />
+                <x-theme.button modal="T" href="{{ route('penyesuaian.aktiva') }}" icon="fa-plus" addClass="float-end"
+                    teks="Buat Baru" />
                 @endif
                 <x-theme.btn_filter />
                 <x-theme.akses :halaman="$halaman" route="jurnal_aktiva" />
@@ -38,47 +38,46 @@
                 </thead>
                 <tbody>
                     @foreach ($jurnal as $no => $a)
-                        <tr>
-                            <td>{{ $no + 1 }}</td>
-                            <td class="nowrap">{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
-                            <td>{{ $a->no_nota }}</td>
-                            <td>{{ $a->no_urut }}</td>
-                            <td>{{ ucwords(strtolower($a->nm_akun)) }}</td>
-                            <td>{{ ucwords(strtolower($a->nm_post ?? '')) }}</td>
-                            @if (strlen($a->ket) > 60)
-                                <td>
-                                    <span class="teksLimit{{ $a->id_jurnal }}">
-                                        {{ Str::limit($a->ket, 60, '...') }}
-                                        <a href="#" class="readMore" id="{{ $a->id_jurnal }}">read
-                                            more</a>
-                                    </span>
-                                    <span class="teksFull{{ $a->id_jurnal }}" style="display:none">{{ $a->ket }}
-                                        <a href="#" class="less" id="{{ $a->id_jurnal }}">less</a></span>
-                                </td>
-                            @else
-                                <td>
-                                    {{ $a->ket }}
-                                </td>
-                            @endif
-                            <td align="right">{{ number_format($a->debit, 2) }}</td>
-                            <td align="right">{{ number_format($a->kredit, 2) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v text-primary"></i>
-                                    </span>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                        @if (!empty($detail))
-                                            <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                    no_nota="{{ $a->no_nota }}" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#detail"><i
-                                                        class="me-2 fas fa-search"></i>Detail</a>
-                                            </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $no + 1 }}</td>
+                        <td class="nowrap">{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
+                        <td>{{ $a->no_nota }}</td>
+                        <td>{{ $a->no_urut }}</td>
+                        <td>{{ ucwords(strtolower($a->nm_akun)) }}</td>
+                        <td>{{ ucwords(strtolower($a->nm_post ?? '')) }}</td>
+                        @if (strlen($a->ket) > 60)
+                        <td>
+                            <span class="teksLimit{{ $a->id_jurnal }}">
+                                {{ Str::limit($a->ket, 60, '...') }}
+                                <a href="#" class="readMore" id="{{ $a->id_jurnal }}">read
+                                    more</a>
+                            </span>
+                            <span class="teksFull{{ $a->id_jurnal }}" style="display:none">{{ $a->ket }}
+                                <a href="#" class="less" id="{{ $a->id_jurnal }}">less</a></span>
+                        </td>
+                        @else
+                        <td>
+                            {{ $a->ket }}
+                        </td>
+                        @endif
+                        <td align="right">{{ number_format($a->debit, 2) }}</td>
+                        <td align="right">{{ number_format($a->kredit, 2) }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v text-primary"></i>
+                                </span>
+                                <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                    @if (!empty($detail))
+                                    <li><a class="dropdown-item  text-info detail_nota" href="#"
+                                            no_nota="{{ $a->no_nota }}" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
+                                    </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -99,8 +98,7 @@
         </form>
 
         <form action="{{ route('jurnal-delete') }}" method="get">
-            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -135,8 +133,8 @@
 
     </x-slot>
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 function readMore() {
                     $(document).on('click', '.readMore', function(e) {
                         e.preventDefault()
@@ -190,6 +188,6 @@
                 });
 
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
