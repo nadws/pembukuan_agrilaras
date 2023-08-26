@@ -79,9 +79,11 @@
 
     </x-slot>
     <x-slot name="cardFooter">
-        <a href="" class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#tambah">Tambahkan Ke
+        <a href="#" class="btn btn-primary float-end" {{$kategori=='umum' ? 'hidden' : '' }} data-bs-toggle="modal"
+            data-bs-target="#tambah">Tambahkan Ke
             {{$kategori}}</a>
-        <a href="{{ route('jurnal') }}" class="float-end btn btn-outline-primary me-2">Kembali</a>
+        <a href="{{ empty($pembelian) ?  route('jurnal',['id_buku' => '13']) : route('jurnal',['id_buku' => '10'])  }}"
+            class="float-end btn btn-outline-primary me-2">Kembali</a>
 
 
         <form
@@ -115,7 +117,8 @@
                                     </select>
                                 </td>
                                 <td><input type="text" name="nm_aktiva[]" class="form-control "
-                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}" readonly></td>
+                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}"
+                                        readonly></td>
                                 <td><input type="date" name="tgl[]" class="form-control" value="{{$head_jurnal->tgl}}">
                                 </td>
                                 <td>
@@ -207,7 +210,8 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="nm_atk"
-                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}" readonly>
+                                        value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}"
+                                        readonly>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="stok">

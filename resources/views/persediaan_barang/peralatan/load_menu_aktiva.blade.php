@@ -31,16 +31,17 @@
                 <select name="id_akun[]" id="" class="select pilih_akun pilih_akun1" count="1" required>
                     <option value="">Pilih</option>
                     @php
-                        $akunList = [
-                            'peralatan' => 16,
-                            'aktiva' => 9,
-                            'atk' => 30,
-                        ];
-                        $id_akun = $akunList[request()->get('kategori') ?? 'aktiva'];
+                    $akunList = [
+                    'peralatan' => 16,
+                    'aktiva' => 9,
+                    'atk' => 30,
+                    'umum' => 1
+                    ];
+                    $id_akun = $akunList[request()->get('kategori') ?? 'aktiva'];
                     @endphp
                     @foreach ($akun as $a)
-                        <option value="{{ $a->id_akun }}" {{ $id_akun == $a->id_akun ? 'selected' : '' }}>
-                            {{ $a->nm_akun }}</option>
+                    <option value="{{ $a->id_akun }}" {{ $id_akun==$a->id_akun ? 'selected' : '' }}>
+                        {{ $a->nm_akun }}</option>
                     @endforeach
                 </select>
                 <div class="">
@@ -74,11 +75,11 @@
                 </p>
             </td>
 
-            {{-- <td style="vertical-align: top;">
-                <button type="button" class="btn rounded-pill remove_baris" count="1"><i
+            <td style="vertical-align: top;">
+                {{-- <button type="button" class="btn rounded-pill remove_baris" count="1"><i
                         class="fas fa-trash text-danger"></i>
-                </button>
-            </td> --}}
+                </button> --}}
+            </td>
         </tr>
 
 
@@ -92,7 +93,7 @@
                 <select name="id_akun[]" id="" class="select pilih_akun pilih_akun2" count="2" required>
                     <option value="">Pilih</option>
                     @foreach ($akun as $a)
-                        <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                    <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                     @endforeach
                 </select>
                 <div class="">
