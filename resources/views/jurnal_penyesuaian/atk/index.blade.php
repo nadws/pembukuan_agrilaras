@@ -32,8 +32,8 @@
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk' ||request()->route()->getName() == 'penyesuaian.atk_gudang'? 'active': '' }}"
-                                href="{{ route('penyesuaian.atk') }}">Umum</a>
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum' ? 'active': '' }}"
+                                href="{{ route('penyesuaian.umum') }}">Umum</a>
                         </li>
                     </ul>
 

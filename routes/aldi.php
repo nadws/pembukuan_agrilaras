@@ -161,6 +161,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/atk', 'atk')->name('atk');
             Route::get('/atk/{gudang_id}', 'atk')->name('atk_gudang');
             Route::post('/save_atk', 'save_atk')->name('save_atk');
+
+            Route::get('/umum', 'umum')->name('umum');
+            // Route::get('/atk/{gudang_id}', 'atk')->name('atk_gudang');
+            // Route::post('/save_atk', 'save_atk')->name('save_atk');
         });
 
     Route::controller(UserController::class)
