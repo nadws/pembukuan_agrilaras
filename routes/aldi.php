@@ -239,6 +239,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit_kelompok', 'edit_kelompok')->name('edit_kelompok');
             Route::get('/load_edit', 'load_edit')->name('load_edit');
             Route::get('/load_menu_add_aktiva', 'load_menu_add_aktiva')->name('load_menu_add_aktiva');
+            Route::get('/tbh_baris_peralatan', 'tbh_baris_peralatan')->name('tbh_baris_peralatan');
             Route::get('/tambah_baris_aktiva', 'tambah_baris_aktiva')->name('tambah_baris_aktiva');
             Route::get('/nota_jurnal/{no_nota}/{kategori?}/{print?}', 'nota_jurnal')->name('nota_jurnal');
             Route::post('/save_jurnal', 'save_jurnal')->name('save_jurnal');

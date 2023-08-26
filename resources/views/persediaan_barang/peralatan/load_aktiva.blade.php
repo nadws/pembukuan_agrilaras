@@ -80,7 +80,7 @@
     <tfoot>
         <tr>
             <th colspan="9">
-                <button type="button" class="btn btn-block btn-lg tbh_baris_aktiva"
+                <button type="button" class="btn btn-block btn-lg tbh_baris_peralatan"
                     style="background-color: #F4F7F9; color: #8FA8BD; font-size: 14px; padding: 13px;">
                     <i class="fas fa-plus"></i> Tambah Baris Baru
 

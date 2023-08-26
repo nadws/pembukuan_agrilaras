@@ -16,12 +16,10 @@
         <input type="hidden" name="h_perolehan[]" class="form-control  nilai_perolehan_biasa{{ $count }}">
     </td>
     <td>
-        <p class="nilai_persen{{ $count }} text-center"></p>
-        <input type="hidden" class="inputnilai_persen{{ $count }}">
-    </td>
-    <td>
         <p class="umur{{ $count }} text-center"></p>
     </td>
+    <input type="hidden" class="periode{{ $count }}">
+    <input type="hidden" class="umurInput{{ $count }}">
     <td>
         <p class="susut_bulan{{ $count }} text-center"></p>
     </td>

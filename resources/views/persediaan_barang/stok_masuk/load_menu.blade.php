@@ -203,6 +203,7 @@
                                         ({{ strtoupper($d->satuan->nm_satuan) }})
                                     </option>
                                 @endforeach
+                                <option value="tambahProduk">+ Produk</option>
                             </select>
                         </td>
                         <td style="vertical-align: top;" align="center">

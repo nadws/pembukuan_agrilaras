@@ -26,6 +26,7 @@ class StokMasukController extends Controller
         $data = [
             'title' => 'Stok Masuk',
             'produk' => $this->produk,
+            'gudang' => Gudang::where('kategori_id',1)->get(),
             'stok' => Stok::select('no_nota', 'tgl', 'jenis', DB::raw('SUM(debit) as debit'))
                 ->when($gudang_id, function ($q, $gudang_id) {
                     return $q->where('gudang_id', $gudang_id);

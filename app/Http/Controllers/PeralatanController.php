@@ -128,7 +128,6 @@ class PeralatanController extends Controller
         $nm_aktiva = $r->nm_aktiva;
         $tgl = $r->tgl;
         $h_perolehan = $r->h_perolehan;
-
         for ($x = 0; $x < count($id_kelompok); $x++) {
             $kelompok =  DB::table('kelompok_peralatan')->where('id_kelompok', $id_kelompok[$x])->first();
 
@@ -263,6 +262,15 @@ class PeralatanController extends Controller
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
         return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
+    }
+
+    public function tbh_baris_peralatan (Request $r)
+    {
+        $data =  [
+            'kelompok' => DB::table('kelompok_peralatan')->get(),
+            'count' => $r->count
+        ];
+        return view('persediaan_barang.peralatan.tbh_baris', $data);
     }
 
     public function nota_jurnal($no_nota, $kategori = null, $print = null)
