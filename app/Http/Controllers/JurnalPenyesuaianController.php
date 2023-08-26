@@ -405,4 +405,34 @@ class JurnalPenyesuaianController extends Controller
 
         return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
     }
+
+    public function umum(Request $r)
+    {
+        $tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_akun ='45' and a.id_buku = '4'");
+        $tgl_bulan_depan = date('Y-m-15', strtotime('+1 month', strtotime($tgl->tgl)));
+        $tgl_pakan =  date('Y-m-t', strtotime($tgl_bulan_depan));
+
+
+        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
+
+        if (empty($max)) {
+            $nota_t = '1000';
+        } else {
+            $nota_t = $max->nomor_nota + 1;
+        }
+
+        $data =  [
+            'title' => 'Jurnal Penyesuaian',
+            'user' => User::where('posisi_id', 1)->get(),
+            'pakan' => DB::select("SELECT sum(a.pcs) as pcs , sum(a.total_rp) as ttl_rp
+            FROM stok_produk_perencanaan as a
+            where  a.pcs != 0 and a.admin != 'import'"),
+            'tgl_pakan' => $tgl_pakan,
+            'nota' => $nota_t,
+            'akun' => DB::table('akun')->get(),
+
+
+        ];
+        return view('jurnal_penyesuaian.umum.index', $data);
+    }
 }

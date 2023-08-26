@@ -53,45 +53,44 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                            $total = 0;
-                            foreach ($aktiva as $a) {
-                            $total += $a->biaya_depresiasi;
-                            }
-                            @endphp
                             <tr>
                                 <td>
-                                    <input type="text" class="form-control" value="{{ date('F Y', strtotime($tgl)) }}"
+                                    <input type="text" class="form-control"
+                                        value="{{ date('F Y', strtotime($tgl_pakan)) }}" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="no_nota" value="JP-{{ $nota }}"
                                         readonly>
-                                    <input type="hidden" class="form-control" name="tgl"
-                                        value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota" value="JU-{{ $nota }}">
-                                    <input type="hidden" class="form-control" name="urutan" value="{{ $nota }}">
+                                    <input type="hidden" name="id_akun_debit" value="45">
+                                    <select id="" class="select2_add" disabled>
+                                        @foreach ($akun as $a)
+                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == '45' ? 'SELECTED' : '' }}>
+                                            {{ $a->nm_akun }}
+                                        </option>
+                                        @endforeach
+                                    </select>
                                 </td>
                                 <td>
-                                    {{ ucwords(strtolower($akunBiaya->nm_akun)) }}
-                                    <input type="hidden" name="id_akun_debit" readonly value="{{ $akunBiaya->id_akun }}"
-                                        class="form-control">
+                                    <input type="text" class="form-control text-end total" readonly value="Rp. 0">
+                                    <input type="hidden" class="total_biasa" name="debit_kredit" value="0">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control text-end totalFormat total" readonly
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
-                                    <input type="hidden" class="total" name="debit_kredit"
-                                        value="{{ round($total, 2) }}">
+                                    <input type="hidden" name="id_akun_kredit" value="1">
+                                    <select name="" id="" class="select2_add" disabled>
+                                        @foreach ($akun as $a)
+                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == '1' ? 'SELECTED' : '' }}>
+                                            {{ $a->nm_akun }}
+                                        </option>
+                                        @endforeach
+                                    </select>
                                 </td>
                                 <td>
-                                    {{ ucwords(strtolower($akunAtk->nm_akun)) }}
-
-                                    <input type="hidden" name="id_akun_kredit" readonly value="{{ $akunAtk->id_akun }}"
-                                        class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control totalFormat text-end total" readonly
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    <input type="text" class="form-control text-end total" readonly value="Rp. 0">
                                 </td>
                             </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -100,38 +99,30 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <table class="table table-striped">
+                    <table class="table table-striped table-bordered">
                         <thead>
 
                             <tr>
-                                <th class="dhead" width="15%">Tanggal Perolehan</th>
-                                <th class="dhead" width="20%">Nama Peralatan</th>
-                                <th class="dhead" width="20%">Harga Perolehan</th>
-                                <th class="dhead" width="20%">Nilai Buku</th>
-                                <th class="dhead" width="20%">Beban Penyusutan <br> (<span style="font-size: 13.5px"
-                                        class="text-warning text-sm">Barang rusak/hilang bebankan sesuia nilai
-                                        buku</span>)</th>
+                                <th class="dhead" width="15%">Nama Pakan</th>
+                                <th class="dhead text-end" width="10%">Stok Program</th>
+                                <th class="dhead text-end" width="10%">Stok Aktual</th>
+                                <th class="dhead text-end" width="10%">Selisih</th>
+                                <th class="dhead text-end" width="10%">Rp Satuan</th>
+                                <th class="dhead text-end" width="10%">Total Rp</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($aktiva as $no => $a)
-                            @if (round($a->h_perolehan - $a->beban, 0) <= '0' ) @php continue; @endphp @endif <tr>
-                                <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
-                                <td>{{ $a->nm_aktiva }}</td>
-                                <td>{{ number_format($a->h_perolehan, 0) }}</td>
-                                <td>{{ number_format($a->h_perolehan - $a->beban, 0) }} </td>
-                                <td>
-                                    <input type="text" class="form-control beban beban{{ $no + 1 }}"
-                                        count="{{ $no + 1 }}"
-                                        value="Rp {{ number_format($a->biaya_depresiasi, 2, ',', '.') }}">
-
-                                    <input type="hidden" name="b_penyusutan[]"
-                                        class="beban_biasa beban_biasa{{ $no + 1 }}"
-                                        value="{{ round($a->biaya_depresiasi, 2) }}">
-                                    <input type="hidden" name="id_aktiva[]" value="{{ $a->id_aktiva }}">
-                                </td>
-                                </tr>
-                                @endforeach
+                            @foreach ($pakan as $no => $p)
+                            <tr>
+                                <td>{{$p->nm_produk}}</td>
+                                <td align="right">{{ number_format($rp_satuan->pcs,0) }}</td>
+                                <td><input type="text" class="form-control stok_aktual text-end" value="0"
+                                        count="{{$no}}"></td>
+                                <td class="text-end selisih{{$no}}"></td>
+                                <td class="text-end">{{ number_format($rp_satuan->ttl_rp / $rp_satuan->pcs,0) }}</td>
+                                <td class="text-end"></td>
+                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
