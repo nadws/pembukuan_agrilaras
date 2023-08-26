@@ -198,6 +198,7 @@
                             <tr>
                                 <th width="15%">Tanggal</th>
                                 <th width="15%">Nama Atk</th>
+                                <th width="15%">Gudang</th>
                                 <th width="15%">Stok</th>
                                 <th width="14%">Satuan</th>
                                 <th width="14%">Total Rp</th>
@@ -212,6 +213,14 @@
                                     <input type="text" class="form-control" name="nm_atk"
                                         value="{{empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket}}"
                                         readonly>
+                                </td>
+                                <td>
+                                    <select name="id_gudang" class="form-control select2" id="">
+                                        <option value="">- Pilih Gudang -</option>
+                                        @foreach ($gudang as $s)
+                                            <option value="{{ $s->id_gudang }}">{{ $s->nm_gudang }}</option>
+                                        @endforeach
+                                    </select>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="stok">

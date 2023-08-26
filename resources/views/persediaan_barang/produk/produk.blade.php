@@ -6,9 +6,9 @@
             <div class="col-lg-6">
                 <h6 class="float-start mt-1">{{ $title }}
                 </h6>
-
             </div>
-            <div class="col-lg-4">
+
+            <div class="col-lg-3">
                 <select name="example" class="form-control float-end select-gudang" id="select2">
                     <option value="" selected>All Warehouse </option>
                     @foreach ($gudang as $g)
@@ -18,7 +18,7 @@
                     <option value="tambahGudang">+ Gudang</option>
                 </select>
             </div>
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 @if (!empty($create))
                     <div class="btn-group dropstart float-end mb-1">
                         <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown"
@@ -37,6 +37,7 @@
                     </div>
                 @endif
                 <x-theme.akses :halaman="$halaman" route="produk.index" />
+                <x-theme.btn_dashboard title="Jurnal Umum" route="jurnal" />
 
             </div>
         </div>

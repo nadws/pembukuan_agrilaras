@@ -60,30 +60,31 @@
                         </thead>
                         <tbody>
                             @foreach ($kelompok as $no => $d)
-                            <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ $d->nm_kelompok }}</td>
-                                <td>{{ $d->umur . ' ' . $d->periode }}</td>
-                                <td>{{ $d->barang_kelompok }}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v text-primary"></i>
-                                        </span>
-                                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                            <li><a class="dropdown-item text-primary edit_akun"
-                                                    id_kelompok="{{ $d->id_kelompok }}"><i
-                                                        class="me-2 fas fa-pen"></i>Edit</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item text-danger delete_nota"
-                                                    no_nota="{{ $d->id_kelompok }}" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#delete"><i class="me-2 fas fa-trash"></i>Delete
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                            </tr>
+                                <tr>
+                                    <td>{{ $no + 1 }}</td>
+                                    <td>{{ $d->nm_kelompok }}</td>
+                                    <td>{{ $d->umur . ' ' . $d->periode }}</td>
+                                    <td>{{ $d->barang_kelompok }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v text-primary"></i>
+                                            </span>
+                                            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                                <li><a class="dropdown-item text-primary edit_akun"
+                                                        id_kelompok="{{ $d->id_kelompok }}"><i
+                                                            class="me-2 fas fa-pen"></i>Edit</a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger delete_nota"
+                                                        no_nota="{{ $d->id_kelompok }}" href="#"
+                                                        data-bs-toggle="modal" data-bs-target="#delete"><i
+                                                            class="me-2 fas fa-trash"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -120,18 +121,18 @@
     </x-slot>
 
     @section('scripts')
-    <script>
-        $(document).ready(function() {
-                $(document).on('click', '.edit_akun', function(){
+        <script>
+            $(document).ready(function() {
+                $(document).on('click', '.edit_akun', function() {
                     var id_kelompok = $(this).attr('id_kelompok')
                     $("#edit").modal('show')
                     $.ajax({
                         type: "GET",
-                        url: "{{route('peralatan.load_edit')}}",
+                        url: "{{ route('peralatan.load_edit') }}",
                         data: {
-                            id_kelompok:id_kelompok
+                            id_kelompok: id_kelompok
                         },
-                        success: function (r) {
+                        success: function(r) {
                             $("#load_edit").html(r);
                         }
                     });
@@ -179,7 +180,6 @@
                     var count = $(this).attr("count");
                     var id_kelompok = $('.pilih_kelompok' + count).val();
                     var nilai = $('.nilai_perolehan_biasa' + count).val()
-
                     $.ajax({
                         type: "GET",
                         url: "{{ route('peralatan.get_data_kelompok') }}",
@@ -194,9 +194,11 @@
                             $(".periode" + count).val(data['periode']);
                             $(".umurInput" + count).val(data['tahun']);
                             var tarif = $('.inputnilai_persen' + count).val();
-                            var susut_bulan = data['periode'] === 'Bulan' ? (parseFloat(nilai) *
-                                    parseFloat(tarif)) : (parseFloat(nilai) * parseFloat(tarif)) /
-                                12;
+                            var bulan_bagi = data['periode'] === 'Bulan' ? parseFloat(data[
+                                'tahun']) : parseFloat(data['tahun']) * 12;
+
+                            var susut_bulan = parseFloat(nilai) / parseFloat(bulan_bagi);
+
                             var susut_rupiah = susut_bulan.toLocaleString("id-ID", {
                                 style: "currency",
                                 currency: "IDR",
@@ -219,10 +221,6 @@
                     var periode = $('.periode' + count).val()
                     var umur = $('.umurInput' + count).val()
                     var input = $(this).val();
-
-                    console.log(
-
-                    )
 
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
@@ -252,6 +250,6 @@
                 });
                 aksiBtn("form");
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

@@ -16,12 +16,12 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th>Kelompok</th>
-                                            <th>Nama Peralatan</th>
-                                            <th>Tanggal Perolehan</th>
-                                            <th class="text-end">Nilai Perolehan</th>
-                                            <th style="text-align: center">Umur</th>
-                                            <th>Penyusutan Perbulan</th>
+                                            <th class="dhead">Kelompok</th>
+                                            <th class="dhead">Nama Peralatan</th>
+                                            <th class="dhead">Tanggal Perolehan</th>
+                                            <th class="text-end dhead">Nilai Perolehan</th>
+                                            <th class="dhead" style="text-align: center">Umur</th>
+                                            <th class="dhead">Penyusutan Perbulan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
