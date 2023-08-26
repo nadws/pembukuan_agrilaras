@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Gudang;
 use App\Models\Jurnal;
 use App\Models\Produk;
 use App\Models\proyek;
@@ -131,6 +132,7 @@ class Jurnal_aktivaController extends Controller
         $data =  [
             'title' => 'Cek Nota',
             'no_nota' => $r->no_nota,
+            'gudang' => Gudang::where('kategori_id',1)->get(),
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
             'head_jurnal' => DB::selectOne("SELECT a.ket,c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit , d.nm_post
             FROM jurnal as a 
@@ -151,12 +153,13 @@ class Jurnal_aktivaController extends Controller
     {
         $no_nota = "INV" . strtoupper(str()->random(4));
         $kd_produk = Produk::latest('kd_produk')->first();
+        $kd_produk = $kd_produk->kd_produk + 1;
         $data = [
             'nm_produk' => $r->nm_atk,
             'kd_produk' => $kd_produk,
             'kontrol_stok' => 'Y',
             'kategori_id' => '1',
-            'gudang_id' => '2',
+            'gudang_id' => $r->id_gudang,
             'satuan_id' => $r->id_satuan,
             'departemen_id' => '1',
             'tgl' => $r->tgl,
@@ -175,7 +178,7 @@ class Jurnal_aktivaController extends Controller
             'debit' => $r->stok,
             'kredit' => '0',
             'rp_satuan' => $r->total_rp,
-            'gudang_id' => '1',
+            'gudang_id' => $r->id_gudang,
             'kategori_id' => '1',
             'admin' => auth()->user()->name
         ];
