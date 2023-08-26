@@ -17,7 +17,7 @@ class ProdukController extends Controller
     protected
         $id_departemen = 1;
 
-    public function index($gudang_id = null)
+    public function index($gudang_id = 1)
     {
         $kd_produk = Produk::latest('kd_produk')->first();
         $id_user = auth()->user()->id;

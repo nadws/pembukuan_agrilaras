@@ -55,6 +55,7 @@ class Stok extends Model
     return DB::select("SELECT 
         a.id_produk, 
         a.kd_produk, 
+        a.kategori_id, 
         a.gudang_id, 
         a.nm_produk, 
         e.nm_satuan,
