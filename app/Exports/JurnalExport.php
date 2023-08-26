@@ -46,7 +46,7 @@ class JurnalExport  implements FromView, WithEvents
             where d.kredit != '0'
             group by d.no_nota
         ) as d on d.no_nota = a.no_nota
-        where a.id_buku = '$this->id_buku' and a.tgl between '$this->tgl1' and '$this->tgl2' and a.debit != '0'
+        where a.id_buku != '6' and a.tgl between '$this->tgl1' and '$this->tgl2' and a.debit != '0'
         order by a.no_dokumen ASC;");
 
 

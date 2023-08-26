@@ -28,6 +28,10 @@
                             <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk'? 'active': '' }}"
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk'? 'active': '' }}"
+                                href="{{ route('penyesuaian.atk') }}">Umum</a>
+                        </li>
                     </ul>
 
                 </div>
@@ -50,28 +54,26 @@
                         </thead>
                         <tbody>
                             @php
-                                $total = 0;
-                                foreach ($aktiva as $a) {
-                                    $total += $a->biaya_depresiasi;
-                                }
+                            $total = 0;
+                            foreach ($aktiva as $a) {
+                            $total += $a->biaya_depresiasi;
+                            }
                             @endphp
                             <tr>
                                 <td>
-                                    <input type="text" class="form-control"
-                                        value="{{ date('F Y', strtotime($tgl)) }}" readonly>
+                                    <input type="text" class="form-control" value="{{ date('F Y', strtotime($tgl)) }}"
+                                        readonly>
                                     <input type="hidden" class="form-control" name="tgl"
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota"
-                                        value="JU-{{ $nota }}">
-                                    <input type="hidden" class="form-control" name="urutan"
-                                        value="{{ $nota }}">
+                                    <input type="text" class="form-control" name="no_nota" value="JU-{{ $nota }}">
+                                    <input type="hidden" class="form-control" name="urutan" value="{{ $nota }}">
                                 </td>
                                 <td>
                                     {{ ucwords(strtolower($akunBiaya->nm_akun)) }}
-                                    <input type="hidden" name="id_akun_debit" readonly
-                                        value="{{ $akunBiaya->id_akun }}" class="form-control">
+                                    <input type="hidden" name="id_akun_debit" readonly value="{{ $akunBiaya->id_akun }}"
+                                        class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" class="form-control text-end totalFormat total" readonly
@@ -82,8 +84,8 @@
                                 <td>
                                     {{ ucwords(strtolower($akunAtk->nm_akun)) }}
 
-                                    <input type="hidden" name="id_akun_kredit" readonly
-                                        value="{{ $akunAtk->id_akun }}" class="form-control">
+                                    <input type="hidden" name="id_akun_kredit" readonly value="{{ $akunAtk->id_akun }}"
+                                        class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" class="form-control totalFormat text-end total" readonly
@@ -113,26 +115,23 @@
                         </thead>
                         <tbody>
                             @foreach ($aktiva as $no => $a)
-                                @if (round($a->h_perolehan - $a->beban, 0) <= '0')
-                                    @php continue; @endphp
-                                @endif
-                                <tr>
-                                    <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
-                                    <td>{{ $a->nm_aktiva }}</td>
-                                    <td>{{ number_format($a->h_perolehan, 0) }}</td>
-                                    <td>{{ number_format($a->h_perolehan - $a->beban, 0) }} </td>
-                                    <td>
-                                        <input type="text" class="form-control beban beban{{ $no + 1 }}"
-                                            count="{{ $no + 1 }}"
-                                            value="Rp {{ number_format($a->biaya_depresiasi, 2, ',', '.') }}">
+                            @if (round($a->h_perolehan - $a->beban, 0) <= '0' ) @php continue; @endphp @endif <tr>
+                                <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
+                                <td>{{ $a->nm_aktiva }}</td>
+                                <td>{{ number_format($a->h_perolehan, 0) }}</td>
+                                <td>{{ number_format($a->h_perolehan - $a->beban, 0) }} </td>
+                                <td>
+                                    <input type="text" class="form-control beban beban{{ $no + 1 }}"
+                                        count="{{ $no + 1 }}"
+                                        value="Rp {{ number_format($a->biaya_depresiasi, 2, ',', '.') }}">
 
-                                        <input type="hidden" name="b_penyusutan[]"
-                                            class="beban_biasa beban_biasa{{ $no + 1 }}"
-                                            value="{{ round($a->biaya_depresiasi, 2) }}">
-                                        <input type="hidden" name="id_aktiva[]" value="{{ $a->id_aktiva }}">
-                                    </td>
+                                    <input type="hidden" name="b_penyusutan[]"
+                                        class="beban_biasa beban_biasa{{ $no + 1 }}"
+                                        value="{{ round($a->biaya_depresiasi, 2) }}">
+                                    <input type="hidden" name="id_aktiva[]" value="{{ $a->id_aktiva }}">
+                                </td>
                                 </tr>
-                            @endforeach
+                                @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -149,8 +148,8 @@
         </form>
     </x-slot>
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on("keyup", ".beban", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
@@ -185,6 +184,6 @@
                 aksiBtn("form");
 
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
