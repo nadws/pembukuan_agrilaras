@@ -151,7 +151,7 @@ class PeralatanController extends Controller
     public function delete_peralatan(Request $r)
     {
         $cek = DB::table('depresiasi_peralatan')->where('id_aktiva', $r->id_peralatan)->first();
-        if(!$cek) {
+        if (!$cek) {
             DB::table('peralatan')->where('id_aktiva', $r->id_aktiva)->delete();
             $status = 'sukses';
             $pesan = 'Data berhasil di hapus';
@@ -165,7 +165,7 @@ class PeralatanController extends Controller
             'title' => 'asd',
             'd' => DB::table('kelompok_peralatan')->where('id_kelompok', $r->id_kelompok)->first()
         ];
-        return view('persediaan_barang.peralatan.load_edit',$data);
+        return view('persediaan_barang.peralatan.load_edit', $data);
     }
 
     public function edit_kelompok(Request $r)
@@ -265,7 +265,7 @@ class PeralatanController extends Controller
         return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
     }
 
-    public function nota_jurnal($no_nota, $kategori = null,$print = null)
+    public function nota_jurnal($no_nota, $kategori = null, $print = null)
     {
         $dataKategori = [
             'aktiva' => 'kelompok_aktiva',
@@ -284,8 +284,6 @@ class PeralatanController extends Controller
 
         ];
         $view = empty($print) ? 'nota_jurnal' : 'print';
-        return view('persediaan_barang.peralatan.'.$view, $data);
+        return view('persediaan_barang.peralatan.' . $view, $data);
     }
-
-
 }

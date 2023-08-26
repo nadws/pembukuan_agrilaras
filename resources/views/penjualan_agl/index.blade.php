@@ -7,13 +7,13 @@
             <div class="col-lg-6">
                 <x-theme.button modal="T" href="{{ route('tbh_invoice_telur') }}" icon="fa-plus" addClass="float-end"
                     teks="Buat Invoice" />
-                <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}"
-                    icon="fa-print" addClass="float-end" teks="Export" />
+                <x-theme.button modal="T" href="{{ route('export_penjualan_telur', [$tgl1, $tgl2]) }}" icon="fa-print"
+                    addClass="float-end" teks="Export" />
                 <a href="{{ route('export_faktur', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
                     class="btn btn-primary float-end me-2"><i class="fas fa-file-excel"></i> Export Faktur</a>
 
-                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end"
-                    teks="" />
+                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
+                <x-theme.btn_filter title="View" />
             </div>
         </div>
     </x-slot>
@@ -23,7 +23,8 @@
                 <h6 class="text-end">Total Penjualan Alpa : Rp. {{ number_format($total_alpa->ttl_rp, 0) }}</h6>
                 <h6 class="text-end">Total Penjualan MTD : Rp. {{ number_format($total_mtd->ttl_rp, 0) }}</h6>
                 <hr>
-                <h6 class="text-end"><b>Total : Rp. {{ number_format($total_mtd->ttl_rp + $total_alpa->ttl_rp, 0) }}</b></h6>
+                <h6 class="text-end"><b>Total : Rp. {{ number_format($total_mtd->ttl_rp + $total_alpa->ttl_rp, 0) }}</b>
+                </h6>
             </div>
             <div class="col-lg-12">
                 <br>
@@ -46,80 +47,77 @@
                     </thead>
                     <tbody>
                         @foreach ($invoice as $no => $i)
-                            <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ tanggal($i->tgl) }}</td>
-                                <td>{{ $i->no_nota }}</td>
-                                <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
-                                <td align="right">Rp {{ number_format($i->ttl_rp, 0) }}</td>
-                                <td>{{ $i->tipe }}</td>
-                                <td>{{ ucwords($i->admin) }}</td>
-                                <td>{{ ucwords($i->driver) }}</td>
-                                <td>{{ $i->status == 'paid' ? 'Tunai' : 'Piutang' }}</td>
-                                <td>{{ $i->lokasi == 'mtd' ? 'Martadah' : 'Alpa' }} </td>
-                                <td>
-                                    <span
-                                        class="badge {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'bg-warning' : 'bg-success' }}">
-                                        {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'Unpaid' : 'Paid' }}
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>{{ tanggal($i->tgl) }}</td>
+                            <td>{{ $i->no_nota }}</td>
+                            <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
+                            <td align="right">Rp {{ number_format($i->ttl_rp, 0) }}</td>
+                            <td>{{ $i->tipe }}</td>
+                            <td>{{ ucwords($i->admin) }}</td>
+                            <td>{{ ucwords($i->driver) }}</td>
+                            <td>{{ $i->status == 'paid' ? 'Tunai' : 'Piutang' }}</td>
+                            <td>{{ $i->lokasi == 'mtd' ? 'Martadah' : 'Alpa' }} </td>
+                            <td>
+                                <span
+                                    class="badge {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'bg-warning' : 'bg-success' }}">
+                                    {{ $i->debit_bayar - $i->kredit_bayar != '0' ? 'Unpaid' : 'Paid' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v text-primary"></i>
                                     </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v text-primary"></i>
-                                        </span>
-                                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
 
-                                            @if ($i->status == 'paid')
-                                                @if ($i->setor == 'Y')
-                                                @else
-                                                    <li>
-                                                        <a class="dropdown-item text-primary edit_akun"
-                                                            href="{{ route('edit_invoice_telur', ['no_nota' => $i->no_nota]) }}"><i
-                                                                class="me-2 fas fa-pen"></i>Edit
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger delete_nota"
-                                                            no_nota="{{ $i->no_nota }}" href="#"
-                                                            data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                                class="me-2 fas fa-trash"></i>Delete
-                                                        </a>
-                                                    </li>
-                                                @endif
-                                            @else
-                                                @if ($i->debit_bayar - $i->kredit_bayar != '0')
-                                                    @if ($i->setor == 'Y')
-                                                    @else
-                                                        <li>
-                                                            <a class="dropdown-item text-primary edit_akun"
-                                                                href="{{ route('edit_invoice_telur', ['no_nota' => $i->no_nota]) }}"><i
-                                                                    class="me-2 fas fa-pen"></i>Edit
-                                                            </a>
-                                                        </li>
+                                        @if ($i->status == 'paid')
+                                        @if ($i->setor == 'Y')
+                                        @else
+                                        <li>
+                                            <a class="dropdown-item text-primary edit_akun"
+                                                href="{{ route('edit_invoice_telur', ['no_nota' => $i->no_nota]) }}"><i
+                                                    class="me-2 fas fa-pen"></i>Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger delete_nota" no_nota="{{ $i->no_nota }}"
+                                                href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                                    class="me-2 fas fa-trash"></i>Delete
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @else
+                                        @if ($i->debit_bayar - $i->kredit_bayar != '0')
+                                        @if ($i->setor == 'Y')
+                                        @else
+                                        <li>
+                                            <a class="dropdown-item text-primary edit_akun"
+                                                href="{{ route('edit_invoice_telur', ['no_nota' => $i->no_nota]) }}"><i
+                                                    class="me-2 fas fa-pen"></i>Edit
+                                            </a>
+                                        </li>
 
-                                                        <li>
-                                                            <a class="dropdown-item text-danger delete_nota"
-                                                                no_nota="{{ $i->no_nota }}" href="#"
-                                                                data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                                    class="me-2 fas fa-trash"></i>Delete
-                                                            </a>
-                                                        </li>
-                                                    @endif
-                                                @else
-                                                @endif
-                                            @endif
+                                        <li>
+                                            <a class="dropdown-item text-danger delete_nota" no_nota="{{ $i->no_nota }}"
+                                                href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                                    class="me-2 fas fa-trash"></i>Delete
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @else
+                                        @endif
+                                        @endif
 
-                                            <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                    href="#" data-bs-toggle="modal" no_nota="{{ $i->no_nota }}"
-                                                    data-bs-target="#detail"><i
-                                                        class="me-2 fas fa-search"></i>Detail</a>
-                                            </li>
+                                        <li><a class="dropdown-item  text-info detail_nota" href="#" href="#"
+                                                data-bs-toggle="modal" no_nota="{{ $i->no_nota }}"
+                                                data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
+                                        </li>
 
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
@@ -142,8 +140,7 @@
         </x-theme.modal>
 
         <form action="{{ route('delete_invoice_telur') }}" method="get">
-            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -164,8 +161,8 @@
         {{-- end sub akun --}}
     </x-slot>
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on("click", ".detail_nota", function() {
                     var no_nota = $(this).attr('no_nota');
                     $.ajax({
@@ -182,6 +179,6 @@
                     $('.no_nota').val(no_nota);
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

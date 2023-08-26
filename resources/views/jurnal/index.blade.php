@@ -58,7 +58,7 @@
                         &
                         Bank</a>
                 </li>
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '11' ? 'active' : '' }}"
                         href="{{ route('jurnal', ['id_buku' => '11', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
                         ATK</a>
@@ -67,11 +67,11 @@
                     <a class="nav-link {{ $id_buku == '9' ? 'active' : '' }}"
                         href="{{ route('jurnal', ['id_buku' => '9', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
                         Aktiva</a>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '10' ? 'active' : '' }}"
                         href="{{ route('jurnal', ['id_buku' => '10','kategori' => 'peralatan', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
-                        Peralatan</a>
+                        Asset</a>
                 </li>
             </ul>
         </div>
