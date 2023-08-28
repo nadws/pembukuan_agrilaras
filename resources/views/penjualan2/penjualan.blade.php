@@ -1,10 +1,10 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
         <h6 class="float-start">{{ $title }}</h6>
-        @if (!empty($create))
+        {{-- @if (!empty($create)) --}}
         <x-theme.button modal="T" href="{{ route('penjualan2.add') }}" icon="fa-plus" addClass="float-end"
             teks="Buat Baru" />
-        @endif
+        {{-- @endif --}}
         <x-theme.akses :halaman="$halaman" route="penjualan2.index" />
 
         <x-theme.btn_filter />
@@ -42,31 +42,31 @@
                                     @php
                                     $emptyKondisi = [$edit, $delete, $detail];
                                     @endphp
-                                    <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
+                                    {{-- <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" /> --}}
 
-                                    @if (!empty($detail))
+                                    {{-- @if (!empty($detail)) --}}
                                     <li><a class="dropdown-item  text-info detail_nota" href="#"
                                             no_nota="{{ $d->urutan }}" href="#" data-bs-toggle="modal"
                                             data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
                                     </li>
-                                    @endif
+                                    {{-- @endif --}}
 
-                                    @if (!empty($edit))
+                                    {{-- @if (!empty($edit)) --}}
                                     <li>
                                         <a class="dropdown-item text-info edit_akun"
                                             href="{{ route('penjualan2.edit', ['urutan' => $d->urutan]) }}"><i
                                                 class="me-2 fas fa-pen"></i>Edit</a>
                                     </li>
-                                    @endif
+                                    {{-- @endif --}}
 
-                                    @if (!empty($delete))
+                                    {{-- @if (!empty($delete)) --}}
                                     <li>
                                         <a class="dropdown-item text-danger delete_nota" no_nota="{{ $d->urutan }}"
                                             href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
                                                 class="me-2 fas fa-trash"></i>Delete
                                         </a>
                                     </li>
-                                    @endif
+                                    {{-- @endif --}}
                                 </ul>
                             </div>
                         </td>

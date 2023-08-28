@@ -30,9 +30,7 @@
                             <tr>
                                 <th width="5%" class="dhead">Tanggal</th>
                                 <th width="9%" class="dhead">No Nota</th>
-                                <th width="9%" class="dhead">Nota Manual</th>
                                 <th width="10%" class="dhead">Pelanggan</th>
-                                <th width="15%" class="dhead">Supir</th>
                                 <th width="15%" class="dhead">Keterangan</th>
                             </tr>
                         </thead>
@@ -46,9 +44,7 @@
                                     <input readonly value="PAGL-{{ $no_nota }}" type="text" required class="form-control">
                                     <input value="{{ $no_nota }}" type="hidden" required class="form-control" name="no_nota">
                                 </td>
-                                <td>
-                                    <input type="text" required class="form-control" name="nota_manual">
-                                </td>
+                                
                                 <td>
                                     <select required name="id_customer" class="form-control select2" id="">
                                         <option value="">- Pilih Customer -</option>
@@ -58,9 +54,7 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td>
-                                    <input type="text" name="driver" class="form-control">
-                                </td>
+                               
                                 <td>
                                     <input type="text" name="ket" class="form-control">
                                 </td>

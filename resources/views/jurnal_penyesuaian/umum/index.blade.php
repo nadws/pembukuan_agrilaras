@@ -29,12 +29,12 @@
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'pakan' ? 'active' : ''): '' }}"
-                                href="{{ route('penyesuaian.umum',['kategori' => 'pakan']) }}">Pakan</a>
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'pakan'? 'active': ''): '' }}"
+                                href="{{ route('penyesuaian.umum', ['kategori' => 'pakan']) }}">Pakan</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'vitamin' ? 'active' : '') : '' }}"
-                                href="{{ route('penyesuaian.umum',['kategori' => 'vitamin']) }}">Vitamin</a>
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'vitamin'? 'active': ''): '' }}"
+                                href="{{ route('penyesuaian.umum', ['kategori' => 'vitamin']) }}">Vitamin</a>
                         </li>
                     </ul>
 
@@ -44,12 +44,35 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-lg-4 mb-2">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th class="dhead">Bulan</th>
+                                <th class="dhead">No Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control"
+                                        value="{{ date('F Y', strtotime($tgl_pakan)) }}" readonly>
+                                    <input type="hidden" name="tgl" value="{{ $tgl_pakan }}">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="no_nota"
+                                        value="JP-{{ $nota }}" readonly>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
                 <div class="col-lg-12">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th class="dhead" width="17%">Bulan</th>
-                                <th class="dhead" width="13%">No Nota</th>
                                 <th class="dhead">Akun Debit</th>
                                 <th class="dhead">Debit</th>
                                 <th class="dhead">Akun Kredit</th>
@@ -58,23 +81,15 @@
                         </thead>
                         <tbody>
                             <tr>
+                              
                                 <td>
-                                    <input type="text" class="form-control"
-                                        value="{{ date('F Y', strtotime($tgl_pakan)) }}" readonly>
-                                    <input type="hidden" name="tgl" value="{{$tgl_pakan}}">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control" name="no_nota" value="JP-{{ $nota }}"
-                                        readonly>
-                                </td>
-                                <td>
-                                    <input type="hidden" name="id_akun_debit" value="{{$akun_biaya}}">
+                                    <input type="hidden" name="id_akun_debit" value="{{ $akun_biaya }}">
                                     <select id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
-                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == $akun_biaya ? 'SELECTED' :
-                                            '' }}>
-                                            {{ $a->nm_akun }}
-                                        </option>
+                                            <option value="{{ $a->id_akun }}"
+                                                {{ $a->id_akun == $akun_biaya ? 'SELECTED' : '' }}>
+                                                {{ $a->nm_akun }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -83,13 +98,13 @@
                                     <input type="hidden" class="total_biasa" name="debit_kredit" value="0">
                                 </td>
                                 <td>
-                                    <input type="hidden" name="id_akun_kredit" value="{{$akun_kredit}}">
+                                    <input type="hidden" name="id_akun_kredit" value="{{ $akun_kredit }}">
                                     <select name="" id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
-                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == $akun_kredit ? 'SELECTED' :
-                                            '' }}>
-                                            {{ $a->nm_akun }}
-                                        </option>
+                                            <option value="{{ $a->id_akun }}"
+                                                {{ $a->id_akun == $akun_kredit ? 'SELECTED' : '' }}>
+                                                {{ $a->nm_akun }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -106,7 +121,11 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <table class="table table-striped table-bordered">
+                    <table class="float-end">
+                        <td>Pencarian :</td>
+                        <td><input type="text" autofocus id="pencarian" class="form-control mb-2 float-end"></td>
+                    </table>
+                    <table class="table table-striped table-bordered" id="tblSearch">
                         <thead>
 
                             <tr>
@@ -121,34 +140,40 @@
                         </thead>
                         <tbody>
                             @foreach ($pakan as $no => $p)
-                            @if ($p->pcs + $p->pcs_sisa == 0)
-                            @php
-                            continue;
-                            @endphp
-                            @endif
-                            <tr>
-                                <td>{{$p->nm_produk}}</td>
-                                <td align="right">
-                                    {{ number_format($p->pcs + $p->pcs_sisa,0) }}
-                                    <input type="hidden" class="pcs{{$no}}" value="{{$p->pcs + $p->pcs_sisa}}">
-                                    <input type="hidden" value="{{$p->id_produk}}" name="id_pakan[]">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control stok_aktual stok_aktual{{$no}} text-end"
-                                        value="0" count="{{$no}}">
-                                    <input type="hidden" class="stok_aktual_biasa{{$no}}" value="0"
-                                        name="stok_aktual[]">
-                                </td>
-                                <td>{{$p->nm_satuan}}</td>
-                                <td class="text-end selisih{{$no}}"></td>
-                                <td class="text-end">
-                                    Rp. {{ number_format(($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa),0) }}
-                                    <input type="hidden" name="rp_satuan[]" class="rp_satuan{{$no}}"
-                                        value="{{($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa)}}">
-                                    <input type="hidden" class="ttl_rp ttl_rp{{$no}}" name="" id="" value="0">
-                                </td>
-                                <td class="text-end total_rp{{$no}}"></td>
-                            </tr>
+                                @if ($p->pcs + $p->pcs_sisa < 1)
+                                    @php
+                                        continue;
+                                    @endphp
+                                @endif
+                                <tr>
+                                    <td>{{ $p->nm_produk }}</td>
+                                    <td align="right">
+                                        {{ number_format($p->pcs + $p->pcs_sisa, 0) }}
+                                        <input type="hidden" class="pcs{{ $no }}"
+                                            value="{{ $p->pcs + $p->pcs_sisa }}">
+                                        <input type="hidden" value="{{ $p->id_produk }}" name="id_pakan[]">
+                                    </td>
+                                    <td>
+                                        <input type="text" value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}"
+                                            class="form-control stok_aktual stok_aktual{{ $no }} text-end"
+                                            value="0" count="{{ $no }}">
+                                        <input type="hidden" class="stok_aktual_biasa{{ $no }}"
+                                            value="0" value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}"
+                                            name="stok_aktual[]">
+                                    </td>
+                                    <td>{{ $p->nm_satuan }}</td>
+                                    <td class="text-end selisih{{ $no }}"></td>
+                                    <td class="text-end">
+                                        Rp.
+                                        {{ number_format(($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa), 0) }}
+                                        <input type="hidden" name="rp_satuan[]"
+                                            class="rp_satuan{{ $no }}"
+                                            value="{{ ($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa) }}">
+                                        <input type="hidden" class="ttl_rp ttl_rp{{ $no }}"
+                                            name="" id="" value="0">
+                                    </td>
+                                    <td class="text-end total_rp{{ $no }}"></td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -166,12 +191,13 @@
         </form>
     </x-slot>
     @section('scripts')
-    <script>
-        $(document).ready(function() {
+        <script>
+            pencarian('pencarian', 'tblSearch')
+            $(document).ready(function() {
                 $(document).on("keyup", ".stok_aktual", function() {
-                   var count = $(this).attr('count');
+                    var count = $(this).attr('count');
 
-                   var input = $(this).val();
+                    var input = $(this).val();
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
                     input = input.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
@@ -188,19 +214,19 @@
                     }
 
 
-                   var stok_aktual = parseFloat(input2);
-                   var pcs = $(".pcs" + count).val();
-                   var rp_satuan = $(".rp_satuan" + count).val();
+                    var stok_aktual = parseFloat(input2);
+                    var pcs = $(".pcs" + count).val();
+                    var rp_satuan = $(".rp_satuan" + count).val();
 
-                   var selisih = parseFloat(pcs) - parseFloat(stok_aktual);
-                   var total_rp = parseFloat(selisih) * parseFloat(rp_satuan);
-
-                   var selisih_total = selisih.toLocaleString("id-ID", {
+                    var selisih = parseFloat(pcs) - parseFloat(stok_aktual);
+                    var total_rp = parseFloat(selisih) * parseFloat(rp_satuan);
+                    console.log(`${total_rp} : sel = ${selisih} : rpsa = ${rp_satuan}`)
+                    var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
 
-                   var total_rp_total = total_rp.toLocaleString("id-ID", {
+                    var total_rp_total = total_rp.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                     });
@@ -208,12 +234,12 @@
                     // Menghilangkan simbol "Rp" dari string
                     selisih_total = selisih_total.replace("Rp", "");
 
-                   $(".selisih"+count).text(selisih_total);
-                   $(".total_rp"+count).text(total_rp_total);
-                   $(".ttl_rp"+count).val(total_rp);
+                    $(".selisih" + count).text(selisih_total);
+                    $(".total_rp" + count).text(total_rp_total);
+                    $(".ttl_rp" + count).val(total_rp);
 
 
-                   var total_debit = 0;
+                    var total_debit = 0;
                     $(".ttl_rp").each(function() {
                         total_debit += parseFloat($(this).val());
                     });
@@ -225,12 +251,12 @@
 
                     $('.total').val(totalRupiah);
                     $('.total_biasa').val(total_debit);
-                   
+
 
                 });
                 aksiBtn("form");
 
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

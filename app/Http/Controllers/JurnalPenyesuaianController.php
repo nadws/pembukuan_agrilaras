@@ -171,7 +171,7 @@ class JurnalPenyesuaianController extends Controller
                 'id_aktiva' => $r->id_aktiva[$x],
                 'tgl' => $r->tgl,
                 'b_penyusutan' => $r->b_penyusutan[$x],
-                'admin' => 'import'
+                'admin' => auth()->user()->name
             ];
             DB::table('depresiasi_aktiva')->insert($data);
         }
@@ -446,7 +446,17 @@ class JurnalPenyesuaianController extends Controller
             
             where a.kategori ='pakan' ");
 
-            $akun_biaya = '45';
+
+            $pakanaldi =  DB::select("SELECT a.id_pakan,b.id_produk,d.tgl, d.ttl_rp_sisa,b.nm_produk,d.pcs_sisa, sum(a.pcs - a.pcs_kredit) as pcs, sum(a.total_rp) as ttl_rp, c.nm_satuan
+                        FROM stok_produk_perencanaan as a 
+                        left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+                        left join tb_satuan as c on c.id_satuan = b.dosis_satuan
+                        LEFT join stok_jurnal_penyesuaian as d on d.id_pakan = a.id_pakan and d.tgl = '$tgl->tgl'
+                        where b.kategori ='pakan' AND a.penyesuaian = 'T'
+                        group by a.id_pakan");
+
+            
+            $akun_biaya = '92';
             $akun_kredit = '1';
         } else {
             $tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_akun ='54' and a.id_buku = '4'");
@@ -468,23 +478,31 @@ class JurnalPenyesuaianController extends Controller
             
             where a.kategori in('obat_pakan','obat_air') ");
 
-            $akun_biaya = '54';
+            $pakanaldi =  DB::select("SELECT a.id_pakan,b.id_produk,d.tgl, d.ttl_rp_sisa,b.nm_produk,d.pcs_sisa, sum(a.pcs - a.pcs_kredit) as pcs, sum(a.total_rp) as ttl_rp, c.nm_satuan
+            FROM stok_produk_perencanaan as a 
+            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+            left join tb_satuan as c on c.id_satuan = b.dosis_satuan
+            LEFT join stok_jurnal_penyesuaian as d on d.id_pakan = a.id_pakan and d.tgl = '$tgl->tgl'
+            where b.kategori in('obat_pakan','obat_air')
+            group by a.id_pakan");
+
+
+            $akun_biaya = '93';
             $akun_kredit = '32';
         }
 
-
+       
 
         $data =  [
             'title' => 'Jurnal Penyesuaian',
             'user' => User::where('posisi_id', 1)->get(),
-            'pakan' => $pakan,
+            'pakan' => $pakanaldi,
             'tgl_pakan' => $tgl_pakan,
             'nota' => $nota_t,
             'akun' => DB::table('akun')->get(),
             'kategori' => $kategori,
             'akun_biaya' => $akun_biaya,
             'akun_kredit' => $akun_kredit,
-
 
 
         ];

@@ -96,7 +96,7 @@
                     <hr style="border: 1px solid #435EBE">
                 </div>
 
-                <div class="col-lg-4 mb-2">
+                {{-- <div class="col-lg-4 mb-2">
                     <select name="example" class="form-control float-end select-gudang" id="select2">
                         <option value="" selected>All Warehouse</option>
                         @foreach ($gudang as $g)
@@ -105,7 +105,7 @@
                             {{ ucwords($g->nm_gudang) }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
                 <div class="col-lg-12">
                     <table class="table table-striped">
                         <thead>

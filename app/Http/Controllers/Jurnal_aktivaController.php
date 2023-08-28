@@ -35,15 +35,15 @@ class Jurnal_aktivaController extends Controller
             $akun_gantung = DB::table('akun')->where('id_akun', 61)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 16)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
+        } else if ($kategori == 'pullet') {
+            $akun_gantung = DB::table('akun')->where('id_akun', 76)->first();
+            $akun_aktiva = DB::table('akun')->where('id_akun', 75)->first();
+            $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
         } else {
             $akun_gantung = DB::table('akun')->where('id_akun', 60)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 30)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_produk FROM tb_produk as b)");
         }
-
-
-
-
 
         $data =  [
             'title' => 'Tambah Jurnal Pembalik Aktiva Gantung',
@@ -132,7 +132,7 @@ class Jurnal_aktivaController extends Controller
         $data =  [
             'title' => 'Cek Nota',
             'no_nota' => $r->no_nota,
-            'gudang' => Gudang::where('kategori_id',1)->get(),
+            'gudang' => Gudang::where('kategori_id', 1)->get(),
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
             'head_jurnal' => DB::selectOne("SELECT a.ket,c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit , d.nm_post
             FROM jurnal as a 
