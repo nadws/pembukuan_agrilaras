@@ -23,17 +23,20 @@ class StokMasukController extends Controller
     public function index($gudang_id = null)
     {
         $id_user = auth()->user()->id;
+        $getStok = Stok::select('no_nota', 'tgl', 'jenis', DB::raw('SUM(debit) as debit'))
+        ->when($gudang_id, function ($q, $gudang_id) {
+            return $q->where('gudang_id', $gudang_id);
+        })
+        ->where([['status', '!=', 'opname'], ['kategori_id', '1']])
+        ->groupBy('no_nota')
+        ->orderBy('id_stok_produk', 'DESC')
+        ->get();
+
         $data = [
             'title' => 'Stok Masuk',
             'produk' => $this->produk,
-            'stok' => Stok::select('no_nota', 'tgl', 'jenis', DB::raw('SUM(debit) as debit'))
-                ->when($gudang_id, function ($q, $gudang_id) {
-                    return $q->where('gudang_id', $gudang_id);
-                })
-                ->where([['status', '!=', 'opname'], ['kategori_id', '1']])
-                ->groupBy('no_nota')
-                ->orderBy('id_stok_produk', 'DESC')
-                ->get(),
+            'gudang' => Gudang::where('kategori_id',1)->get(),
+            'stok' => $getStok,
 
             'user' => User::where('posisi_id', 1)->get(),
             'halaman' => 7,

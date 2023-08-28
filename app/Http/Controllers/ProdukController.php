@@ -17,7 +17,7 @@ class ProdukController extends Controller
     protected
         $id_departemen = 1;
 
-    public function index($gudang_id = 1)
+    public function index($gudang_id = null)
     {
         $kd_produk = Produk::latest('kd_produk')->first();
         $id_user = auth()->user()->id;
@@ -27,7 +27,7 @@ class ProdukController extends Controller
             'gudang' => Gudang::where('kategori_id',1)->get(),
             'satuan' => Satuan::all(),
             'gudang_id' => $gudang_id,
-            'tgl1' => date('y-m-d'),
+            'tgl1' => date('y-m-d'),    
             'tgl2' => date('y-m-d'),
             'id_proyek' => 1,
             'kd_produk' => empty($kd_produk) ? 1 : $kd_produk->kd_produk + 1,

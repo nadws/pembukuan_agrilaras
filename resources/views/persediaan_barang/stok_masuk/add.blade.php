@@ -1,7 +1,7 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
 
     <x-slot name="cardHeader">
-
+        <h6>Tambah Stok Masuk Atk</h6>
     </x-slot>
 
 

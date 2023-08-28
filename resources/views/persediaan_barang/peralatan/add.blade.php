@@ -159,10 +159,10 @@
                 }
 
                 var count = 3;
-                $(document).on("click", ".tbh_baris_aktiva", function() {
+                $(document).on("click", ".tbh_baris_peralatan", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "/tambah_baris_aktiva?count=" + count,
+                        url: "{{route('peralatan.tbh_baris_peralatan')}}?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#tb_baris_aktiva").append(data);
