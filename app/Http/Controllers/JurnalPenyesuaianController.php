@@ -408,9 +408,13 @@ class JurnalPenyesuaianController extends Controller
 
     public function umum(Request $r)
     {
-        $tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_akun ='45' and a.id_buku = '4'");
-        $tgl_bulan_depan = date('Y-m-15', strtotime('+1 month', strtotime($tgl->tgl)));
-        $tgl_pakan =  date('Y-m-t', strtotime($tgl_bulan_depan));
+
+
+        if (empty($r->kategori)) {
+            $kategori = 'pakan';
+        } else {
+            $kategori = $r->kategori;
+        }
 
 
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
@@ -421,18 +425,127 @@ class JurnalPenyesuaianController extends Controller
             $nota_t = $max->nomor_nota + 1;
         }
 
+        if ($kategori == 'pakan') {
+
+            $tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_akun ='45' and a.id_buku = '4'");
+            $tgl_bulan_depan = date('Y-m-15', strtotime('+1 month', strtotime($tgl->tgl)));
+            $tgl_pakan =  date('Y-m-t', strtotime($tgl_bulan_depan));
+
+            $pakan =  DB::select("SELECT a.id_produk, a.nm_produk, b.pcs, b.ttl_rp, c.pcs_sisa, c.ttl_rp_sisa, d.nm_satuan
+            FROM tb_produk_perencanaan as a 
+            left join (
+                SELECT a.id_pakan, sum(a.pcs) as pcs , sum(a.total_rp) as ttl_rp
+                FROM stok_produk_perencanaan as a
+                where  a.pcs != 0 and a.admin != 'import' and a.penyesuaian = 'T' 
+                and a.tgl between '2023-01-01' and '$tgl_pakan' and a.h_opname = 'T'
+                GROUP by a.id_pakan
+            ) as b on b.id_pakan = a.id_produk
+            left join tb_satuan as d on d.id_satuan = a.dosis_satuan
+            
+            LEFT join stok_jurnal_penyesuaian as c on c.id_pakan = a.id_produk and c.tgl = '$tgl->tgl'
+            
+            where a.kategori ='pakan' ");
+
+            $akun_biaya = '45';
+            $akun_kredit = '1';
+        } else {
+            $tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_akun ='54' and a.id_buku = '4'");
+            $tgl_bulan_depan = date('Y-m-15', strtotime('+1 month', strtotime($tgl->tgl)));
+            $tgl_pakan =  date('Y-m-t', strtotime($tgl_bulan_depan));
+
+            $pakan =  DB::select("SELECT a.id_produk, a.nm_produk, b.pcs, b.ttl_rp, c.pcs_sisa, c.ttl_rp_sisa,d.nm_satuan
+            FROM tb_produk_perencanaan as a 
+            left join (
+                SELECT a.id_pakan, sum(a.pcs) as pcs , sum(a.total_rp) as ttl_rp
+                FROM stok_produk_perencanaan as a
+                where  a.pcs != 0 and a.admin != 'import' and a.penyesuaian = 'T' 
+                and a.tgl between '2023-01-01' and '$tgl_pakan' and a.h_opname = 'T'
+                GROUP by a.id_pakan
+            ) as b on b.id_pakan = a.id_produk
+            
+            LEFT join stok_jurnal_penyesuaian as c on c.id_pakan = a.id_produk and c.tgl = '$tgl->tgl'
+            left join tb_satuan as d on d.id_satuan = a.dosis_satuan
+            
+            where a.kategori in('obat_pakan','obat_air') ");
+
+            $akun_biaya = '54';
+            $akun_kredit = '32';
+        }
+
+
+
         $data =  [
             'title' => 'Jurnal Penyesuaian',
             'user' => User::where('posisi_id', 1)->get(),
-            'pakan' => DB::select("SELECT sum(a.pcs) as pcs , sum(a.total_rp) as ttl_rp
-            FROM stok_produk_perencanaan as a
-            where  a.pcs != 0 and a.admin != 'import'"),
+            'pakan' => $pakan,
             'tgl_pakan' => $tgl_pakan,
             'nota' => $nota_t,
             'akun' => DB::table('akun')->get(),
+            'kategori' => $kategori,
+            'akun_biaya' => $akun_biaya,
+            'akun_kredit' => $akun_kredit,
+
 
 
         ];
         return view('jurnal_penyesuaian.umum.index', $data);
+    }
+
+    public function save_umum(Request $r)
+    {
+        $admin = auth()->user()->name;
+        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
+
+        if (empty($max)) {
+            $nota_t = '1000';
+        } else {
+            $nota_t = $max->nomor_nota + 1;
+        }
+        DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '4']);
+
+        $data_kredit = [
+            'tgl' => $r->tgl,
+            'no_nota' => 'JPP-' . $nota_t,
+            'id_akun' => $r->id_akun_kredit,
+            'id_buku' => '4',
+            'ket' => 'Penyesuaian Pakan',
+            'kredit' => $r->debit_kredit,
+            'debit' => '0',
+            'admin' => $admin,
+            'kode_penyesuaian' => 'JPP'
+        ];
+        Jurnal::create($data_kredit);
+
+        $data_debit = [
+            'tgl' => $r->tgl,
+            'no_nota' => 'JPP-' . $nota_t,
+            'id_akun' => $r->id_akun_debit,
+            'id_buku' => '4',
+            'ket' => 'Penyesuaian Pakan',
+            'debit' => $r->debit_kredit,
+            'kredit' => '0',
+            'admin' => $admin,
+        ];
+        Jurnal::create($data_debit);
+
+
+
+
+        for ($x = 0; $x < count($r->id_pakan); $x++) {
+            DB::table('stok_produk_perencanaan')
+                ->whereBetween('tgl', ['2023-01-01', $r->tgl])
+                ->where('id_pakan', $r->id_pakan[$x])
+                ->update(['penyesuaian' => 'Y']);
+            $data = [
+                'tgl' => $r->tgl,
+                'id_pakan' => $r->id_pakan[$x],
+                'pcs_sisa' => $r->stok_aktual[$x],
+                'admin' => $admin,
+                'ttl_rp_sisa' => $r->rp_satuan[$x] * $r->stok_aktual[$x]
+            ];
+            DB::table('stok_jurnal_penyesuaian')->insert($data);
+        }
+
+        return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
     }
 }
