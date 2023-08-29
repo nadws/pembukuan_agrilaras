@@ -31,9 +31,7 @@
                             <tr>
                                 <th width="5%" class="dhead">Tanggal</th>
                                 <th width="9%" class="dhead">No Nota</th>
-                                <th width="9%" class="dhead">Nota Manual</th>
                                 <th width="10%" class="dhead">Pelanggan</th>
-                                <th width="15%" class="dhead">Supir</th>
                                 <th width="15%" class="dhead">Keterangan</th>
                             </tr>
                         </thead>
@@ -44,15 +42,12 @@
                                         class="form-control" name="tgl">
                                 </td>
                                 <td>
-                                    <input readonly value="PAGL-{{ $getPenjualan->urutan }}" type="text" required
+                                    <input readonly value="PUM-{{ $getPenjualan->urutan }}" type="text" required
                                         class="form-control">
                                     <input value="{{ $getPenjualan->urutan }}" type="hidden" required
                                         class="form-control" name="no_nota">
                                 </td>
-                                <td>
-                                    <input value="{{ $getPenjualan->nota_manual }}" type="text" required
-                                        class="form-control" name="nota_manual">
-                                </td>
+                              
                                 <td>
                                     <select required name="id_customer" class="form-control select2" id="">
                                         <option value="">- Pilih Customer -</option>
@@ -64,10 +59,7 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td>
-                                    <input type="text" value="{{ $getPenjualan->driver }}" name="driver"
-                                        class="form-control">
-                                </td>
+                               
                                 <td>
                                     <input type="text" value="{{ $getPenjualan->ket }}" name="ket" class="form-control">
                                 </td>

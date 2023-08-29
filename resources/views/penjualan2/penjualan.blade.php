@@ -28,7 +28,7 @@
                     @foreach ($penjualan as $no => $d)
                     <tr>
                         <td>{{ $no + 1 }}</td>
-                        <td>{{ $d->nota_manual }}</td>
+                        <td>{{$d->kode}}-{{ $d->urutan }}</td>
                         <td>{{ tanggal($d->tgl) }}</td>
                         <td>{{ $d->nm_customer }}</td>
                         <td align="center">{{ $d->ttl_produk }}</td>
