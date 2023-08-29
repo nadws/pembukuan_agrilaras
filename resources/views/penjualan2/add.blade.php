@@ -41,7 +41,7 @@
                                         name="tgl">
                                 </td>
                                 <td>
-                                    <input readonly value="PAGL-{{ $no_nota }}" type="text" required class="form-control">
+                                    <input readonly value="PUM-{{ $no_nota }}" type="text" required class="form-control">
                                     <input value="{{ $no_nota }}" type="hidden" required class="form-control" name="no_nota">
                                 </td>
                                 

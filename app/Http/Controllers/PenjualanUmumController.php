@@ -209,7 +209,7 @@ class PenjualanUmumController extends Controller
                 ->where('urutan', $r->urutan)
                 ->get(),
             'getPenjualan' => $penjualan,
-            'getPembayaran' => DB::table('jurnal')->where([['no_nota', 'PAGL-' . $r->urutan], ['id_akun', '!=', $this->akunPenjualan]])->get(),
+            'getPembayaran' => DB::table('jurnal')->where([['no_nota', 'PUM-' . $r->urutan], ['id_akun', '!=', $this->akunPenjualan]])->get(),
             'akun' => Akun::all(),
             'no_nota' => $penjualan->urutan
         ];
