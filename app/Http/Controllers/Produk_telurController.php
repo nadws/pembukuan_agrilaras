@@ -59,7 +59,7 @@ class Produk_telurController extends Controller
             where a.cek ='T' and a.lokasi ='mtd'
             group by a.urutan
             ) as a;"),
-            'penjualan_ayam_mtd' => DB::selectOne("SELECT sum(a.h_satuan * a.qty) as ttl_rp FROM invoice_ayam as a where a.cek ='Y' and a.lokasi ='mtd';"), 
+            'penjualan_ayam_mtd' => DB::selectOne("SELECT sum(a.h_satuan * a.qty) as ttl_rp FROM invoice_ayam as a where a.cek ='Y' and a.lokasi ='mtd';"),
             'penjualan_ayam_blmcek_mtd' => DB::selectOne("SELECT sum(a.h_satuan * a.qty) as ttl_rp , COUNT(a.urutan) as jumlah
             FROM (
             SELECT a.urutan, sum(a.h_satuan * a.qty) as total_rp, a.h_satuan,a.qty
@@ -115,7 +115,7 @@ class Produk_telurController extends Controller
             'invoice' => DB::select("SELECT a.id_kandang, a.tgl, b.nm_kandang
             FROM stok_telur as a 
             left join kandang as b on b.id_kandang = a.id_kandang
-            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_gudang='1' and a.nota_transfer = '0'
+            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_gudang='1' and a.nota_transfer in('0',' ')
             group by a.tgl, a.id_kandang"),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2

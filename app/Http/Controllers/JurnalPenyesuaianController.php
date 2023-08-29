@@ -455,7 +455,7 @@ class JurnalPenyesuaianController extends Controller
                         where b.kategori ='pakan' AND a.penyesuaian = 'T'
                         group by a.id_pakan");
 
-            
+
             $akun_biaya = '92';
             $akun_kredit = '1';
         } else {
@@ -491,7 +491,7 @@ class JurnalPenyesuaianController extends Controller
             $akun_kredit = '32';
         }
 
-       
+
 
         $data =  [
             'title' => 'Jurnal Penyesuaian',

@@ -1,5 +1,5 @@
-<x-theme.app title="{{ $title }}" nav="Y" rot1="produk.index" rot2="stok_masuk.index" rot3="opname.index"
-    table="Y" sizeCard="10">
+<x-theme.app title="{{ $title }}" nav="Y" rot1="produk.index" rot2="stok_masuk.index" rot3="opname.index" table="Y"
+    sizeCard="10">
     <x-slot name="cardHeader">
         <div class="row justify-content-end">
             <hr class="mt-3">
@@ -12,29 +12,27 @@
                 <select name="example" class="form-control float-end select-gudang" id="select2">
                     <option value="" selected>All Warehouse </option>
                     @foreach ($gudang as $g)
-                        <option {{ Request::segment(2) == $g->id_gudang ? 'selected' : '' }} value="{{ $g->id_gudang }}">
-                            {{ ucwords($g->nm_gudang) }}</option>
+                    <option {{ Request::segment(2)==$g->id_gudang ? 'selected' : '' }} value="{{ $g->id_gudang }}">
+                        {{ ucwords($g->nm_gudang) }}</option>
                     @endforeach
                     <option value="tambahGudang">+ Gudang</option>
                 </select>
             </div>
             <div class="col-lg-3">
                 @if (!empty($create))
-                    <div class="btn-group dropstart float-end mb-1">
-                        <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="true">
-                            Tambah
-                        </button>
-                        <div class="dropdown-menu"
-                            style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate3d(-104px, 0px, 0px);"
-                            data-popper-placement="left-start">
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                data-bs-target="#tambah">Produk
-                                Baru</a>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                data-bs-target="#tambah2">Gudang</a>
-                        </div>
+                <div class="btn-group dropstart float-end mb-1">
+                    <button type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="true">
+                        Tambah
+                    </button>
+                    <div class="dropdown-menu"
+                        style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate3d(-104px, 0px, 0px);"
+                        data-popper-placement="left-start">
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#tambah">Produk
+                            Baru</a>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#tambah2">Gudang</a>
                     </div>
+                </div>
                 @endif
                 <x-theme.akses :halaman="$halaman" route="produk.index" />
                 <x-theme.btn_dashboard title="Jurnal Umum" route="jurnal" />
@@ -62,56 +60,54 @@
                 </thead>
                 <tbody>
                     @foreach ($produk as $no => $d)
-                        @php
-                            $debit = $d->debit ?? 0;
-                            $kredit = $d->kredit ?? 0;
-                            $stk = $debit - $kredit;
-                        @endphp
-                        <tr>
-                            <td>{{ $no + 1 }}</td>
-                            <td>P-{{ kode($d->kd_produk) }}</td>
-                            <td>{{ ucwords($d->nm_produk) }}</td>
-                            <td>{{ $stk }}</td>
-                            <td>
-                                {{ ucwords($d->nm_satuan) }}
-                            </td>
+                    @php
+                    $debit = $d->debit ?? 0;
+                    $kredit = $d->kredit ?? 0;
+                    $stk = $debit - $kredit;
+                    @endphp
+                    <tr>
+                        <td>{{ $no + 1 }}</td>
+                        <td>P-{{ kode($d->kd_produk) }}</td>
+                        <td>{{ ucwords($d->nm_produk) }}</td>
+                        <td>{{ $stk }}</td>
+                        <td>
+                            {{ ucwords($d->nm_satuan) }}
+                        </td>
 
-                            <td>{{ $d->admin }}</td>
-                            <td align="center">
-                                <div class="btn-group dropstart mb-1">
-                                    <span class="btn btn-lg" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v text-primary"></i>
-                                    </span>
-                                    <div class="dropdown-menu">
-                                        @php
-                                            $emptyKondisi = [$edit, $delete, $detail];
-                                        @endphp
-                                        <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
+                        <td>{{ $d->admin }}</td>
+                        <td align="center">
+                            <div class="btn-group dropstart mb-1">
+                                <span class="btn btn-lg" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v text-primary"></i>
+                                </span>
+                                <div class="dropdown-menu">
+                                    @php
+                                    $emptyKondisi = [$edit, $delete, $detail];
+                                    @endphp
+                                    <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
 
-                                        @if (!empty($edit))
-                                            <a id_produk="{{ $d->id_produk }}" data-bs-toggle="modal"
-                                                data-bs-target="#edit" class="dropdown-item text-primary edit"
-                                                href="#"><i class="me-2 fas fa-pen"></i>
-                                                Edit</a>
-                                        @endif
+                                    @if (!empty($edit))
+                                    <a id_produk="{{ $d->id_produk }}" data-bs-toggle="modal" data-bs-target="#edit"
+                                        class="dropdown-item text-primary edit" href="#"><i class="me-2 fas fa-pen"></i>
+                                        Edit</a>
+                                    @endif
 
-                                        @if (!empty($delete))
-                                            <a class="dropdown-item text-danger delete_nota"
-                                                no_nota="{{ $d->id_produk }}" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#delete"><i class="me-2 fas fa-trash"></i>Delete
-                                            </a>
-                                        @endif
+                                    @if (!empty($delete))
+                                    <a class="dropdown-item text-danger delete_nota" no_nota="{{ $d->id_produk }}"
+                                        href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                            class="me-2 fas fa-trash"></i>Delete
+                                    </a>
+                                    @endif
 
-                                        @if (!empty($detail))
-                                            <a class="dropdown-item text-info" href="#"><i
-                                                    class="me-2 fas fa-search"></i>
-                                                Detail</a>
-                                        @endif
-                                    </div>
+                                    @if (!empty($detail))
+                                    <a class="dropdown-item text-info" href="#"><i class="me-2 fas fa-search"></i>
+                                        Detail</a>
+                                    @endif
                                 </div>
+                            </div>
 
-                            </td>
-                        </tr>
+                        </td>
+                    </tr>
                     @endforeach
 
                 </tbody>
@@ -146,8 +142,7 @@
                         <div class="form-group">
                             <label for="">Kode Produk</label>
                             <input type="hidden" name="kd_produk" value="{{ $kd_produk }}">
-                            <input required value="P-{{ kode($kd_produk) }}" readonly type="text"
-                                class="form-control">
+                            <input required value="P-{{ kode($kd_produk) }}" readonly type="text" class="form-control">
                         </div>
                     </div>
                     <div class="col-lg-6">
@@ -156,7 +151,7 @@
                             <select required name="satuan_id" class="form-control select2" id="">
                                 <option value="">- Pilih Satuan -</option>
                                 @foreach ($satuan as $d)
-                                    <option value="{{ $d->id_satuan }}">{{ $d->nm_satuan }}</option>
+                                <option value="{{ $d->id_satuan }}">{{ $d->nm_satuan }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -167,7 +162,7 @@
                             <select required name="gudang_id" class="form-control select2" id="">
                                 <option value="">- Pilih Gudang -</option>
                                 @foreach ($gudang as $d)
-                                    <option value="{{ $d->id_gudang }}">{{ $d->nm_gudang }}</option>
+                                <option value="{{ $d->id_gudang }}">{{ $d->nm_gudang }}</option>
                                 @endforeach
                                 <option value="tambahGudang">+ Gudang</option>
                             </select>
@@ -227,8 +222,8 @@
     </x-slot>
 
     @section('js')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $('.select2').change(function(e) {
                     e.preventDefault()
                     var gudang_id = $(this).val()
@@ -251,6 +246,6 @@
                 // edit
                 edit('edit', 'id_produk', 'produk/edit', 'load-edit')
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

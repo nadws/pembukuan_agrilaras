@@ -60,8 +60,8 @@
                                     <input type="hidden" name="tgl" value="{{ $tgl_pakan }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota"
-                                        value="JP-{{ $nota }}" readonly>
+                                    <input type="text" class="form-control" name="no_nota" value="JP-{{ $nota }}"
+                                        readonly>
                                 </td>
                             </tr>
                         </tbody>
@@ -81,15 +81,15 @@
                         </thead>
                         <tbody>
                             <tr>
-                              
+
                                 <td>
                                     <input type="hidden" name="id_akun_debit" value="{{ $akun_biaya }}">
                                     <select id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}"
-                                                {{ $a->id_akun == $akun_biaya ? 'SELECTED' : '' }}>
-                                                {{ $a->nm_akun }}
-                                            </option>
+                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == $akun_biaya ? 'SELECTED' :
+                                            '' }}>
+                                            {{ $a->nm_akun }}
+                                        </option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -101,10 +101,10 @@
                                     <input type="hidden" name="id_akun_kredit" value="{{ $akun_kredit }}">
                                     <select name="" id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun }}"
-                                                {{ $a->id_akun == $akun_kredit ? 'SELECTED' : '' }}>
-                                                {{ $a->nm_akun }}
-                                            </option>
+                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == $akun_kredit ? 'SELECTED' :
+                                            '' }}>
+                                            {{ $a->nm_akun }}
+                                        </option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -140,41 +140,32 @@
                         </thead>
                         <tbody>
                             @foreach ($pakan as $no => $p)
-                                @if ($p->pcs + $p->pcs_sisa < 1)
-                                    @php
-                                        continue;
-                                    @endphp
-                                @endif
-                                <tr>
-                                    <td>{{ $p->nm_produk }}</td>
-                                    <td align="right">
-                                        {{ number_format($p->pcs + $p->pcs_sisa, 0) }}
-                                        <input type="hidden" class="pcs{{ $no }}"
-                                            value="{{ $p->pcs + $p->pcs_sisa }}">
-                                        <input type="hidden" value="{{ $p->id_produk }}" name="id_pakan[]">
-                                    </td>
-                                    <td>
-                                        <input type="text" value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}"
-                                            class="form-control stok_aktual stok_aktual{{ $no }} text-end"
-                                            value="0" count="{{ $no }}">
-                                        <input type="hidden" class="stok_aktual_biasa{{ $no }}"
-                                            value="0" value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}"
-                                            name="stok_aktual[]">
-                                    </td>
-                                    <td>{{ $p->nm_satuan }}</td>
-                                    <td class="text-end selisih{{ $no }}"></td>
-                                    <td class="text-end">
-                                        Rp.
-                                        {{ number_format(($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa), 0) }}
-                                        <input type="hidden" name="rp_satuan[]"
-                                            class="rp_satuan{{ $no }}"
-                                            value="{{ ($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa) }}">
-                                        <input type="hidden" class="ttl_rp ttl_rp{{ $no }}"
-                                            name="" id="" value="0">
-                                    </td>
-                                    <td class="text-end total_rp{{ $no }}"></td>
+                            @if ($p->pcs + $p->pcs_sisa < 1) @php continue; @endphp @endif <tr>
+                                <td>{{ $p->nm_produk }}</td>
+                                <td align="right">
+                                    {{ number_format($p->pcs + $p->pcs_sisa, 0) }}
+                                    <input type="hidden" class="pcs{{ $no }}" value="{{ $p->pcs + $p->pcs_sisa }}">
+                                    <input type="text" value="{{ $p->id_produk }}" name="id_pakan[]">
+                                </td>
+                                <td>
+                                    <input type="text" value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}"
+                                        class="form-control stok_aktual stok_aktual{{ $no }} text-end" value="0"
+                                        count="{{ $no }}">
+                                    <input type="hidden" class="stok_aktual_biasa{{ $no }}" value="0"
+                                        value="{{ number_format($p->pcs + $p->pcs_sisa, 0) }}" name="stok_aktual[]">
+                                </td>
+                                <td>{{ $p->nm_satuan }}</td>
+                                <td class="text-end selisih{{ $no }}"></td>
+                                <td class="text-end">
+                                    Rp.
+                                    {{ number_format(($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa), 0) }}
+                                    <input type="hidden" name="rp_satuan[]" class="rp_satuan{{ $no }}"
+                                        value="{{ ($p->ttl_rp + $p->ttl_rp_sisa) / ($p->pcs + $p->pcs_sisa) }}">
+                                    <input type="hidden" class="ttl_rp ttl_rp{{ $no }}" name="" id="" value="0">
+                                </td>
+                                <td class="text-end total_rp{{ $no }}"></td>
                                 </tr>
-                            @endforeach
+                                @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -191,8 +182,8 @@
         </form>
     </x-slot>
     @section('scripts')
-        <script>
-            pencarian('pencarian', 'tblSearch')
+    <script>
+        pencarian('pencarian', 'tblSearch')
             $(document).ready(function() {
                 $(document).on("keyup", ".stok_aktual", function() {
                     var count = $(this).attr('count');
@@ -257,6 +248,6 @@
                 aksiBtn("form");
 
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
