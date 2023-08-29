@@ -30,8 +30,12 @@
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? 'active': '' }}"
-                                href="{{ route('penyesuaian.umum') }}">Umum</a>
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'pakan'? 'active': ''): '' }}"
+                                href="{{ route('penyesuaian.umum', ['kategori' => 'pakan']) }}">Pakan</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'vitamin'? 'active': ''): '' }}"
+                                href="{{ route('penyesuaian.umum', ['kategori' => 'vitamin']) }}">Vitamin</a>
                         </li>
                     </ul>
 
