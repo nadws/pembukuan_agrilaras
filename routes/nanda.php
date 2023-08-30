@@ -389,6 +389,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/save_tambah_pakan', 'save_tambah_pakan')->name('save_tambah_pakan');
         Route::get('/tambah_baris_stok', 'tambah_baris_stok')->name('tambah_baris_stok');
         Route::get('/tambah_baris_stok_vitamin', 'tambah_baris_stok_vitamin')->name('tambah_baris_stok_vitamin');
+
+        Route::get('/history_perencanaan_pakan', 'history_perencanaan_pakan')->name('history_perencanaan_pakan');
+        Route::get('/pembukuan_biaya_pv', 'pembukuan_biaya_pv')->name('pembukuan_biaya_pv');
+        Route::post('/bukukan_pv', 'bukukan_pv')->name('bukukan_pv');
     });
     Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
         Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');

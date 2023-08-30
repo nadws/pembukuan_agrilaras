@@ -2,18 +2,18 @@
     <x-slot name="cardHeader">
         <div class="row">
             <div class="col-lg-6">
-                <h6 class="float-start mt-1">{{ $title }}</h6> <br><br>
-                <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p>
+                <h6 class="float-start mt-1">{{ $title }} {{$kategori}}</h6> <br><br>
+                {{-- <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p> --}}
             </div>
             <div class="col-lg-6">
-                <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Setor" />
+
+                <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Bukukan" />
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
             </div>
         </div>
-
     </x-slot>
-
     <x-slot name="cardBody">
+
         <section class="row">
             <div class="col-lg-8"></div>
             <div class="col-lg-4 mb-2">
@@ -22,56 +22,99 @@
                     <td><input type="text" id="pencarian" class="form-control float-end"></td>
                 </table>
             </div>
-            <table class="table" id="tablealdi">
+            <table class="table table-hover table-striped" id="tablealdi" width="100%">
                 <thead>
                     <tr>
                         <th width="5">#</th>
                         <th>Tanggal</th>
-                        <th>Nota <br>Pelanggan</th>
-                        <th class="text-center">Qty</th>
-                        <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }})
-                            <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
-                        <th width="10%" class="text-center">Cek</th>
-                        <th class="text-center">Diterima</th>
+                        <th>Kandang</th>
+                        <th>Nama Pakan</th>
+                        <th>Pcs</th>
+                        <th>Satuan</th>
+                        <th>Total Rp</th>
+                        <th>Admin</th>
+                        <th style="text-align: center">Cek</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($penjualan as $no => $d)
+                    @foreach ($stok as $no => $s)
                     <tr>
-                        <td>{{ $no + 1 }}</td>
-                        <td>{{ tanggal($d->tgl) }}</td>
-                        <td>{{ $d->no_nota }} <br>{{ $d->customer }}</td>
-                        <td align="center">{{ $d->qty }}</td>
-                        <td align="right">Rp. {{ number_format($d->total, 2) }}</td>
-
+                        <td>{{$no+1}}</td>
+                        <td>{{tanggal($s->tgl)}}</td>
+                        <td>{{$s->nm_kandang}}</td>
+                        <td>{{$s->nm_produk}}</td>
+                        <td>{{number_format($s->pcs_kredit,1)}} </td>
+                        <td>{{$s->nm_satuan}}</td>
+                        <td>{{number_format($s->total_rp,0)}}</td>
+                        <td>{{$s->admin}}</td>
                         <td align="center">
-                            @if ($d->cek == 'Y')
-                            <i class="fas fa-check text-success"></i>
-                            @else
-                            <input type="checkbox" name="" no_nota="{{ $d->urutan }}" piutang="{{ $d->total }}" id=""
-                                class="cek_bayar">
-                            @endif
-                        </td>
-                        <td align="center">{{ $d->admin_cek }}</td>
+                            <input type="checkbox" name="" no_nota="{{ $s->id_stok_telur }}"
+                                piutang="{{ $s->total_rp }}" id="" class="cek_bayar">
 
+                        </td>
                     </tr>
                     @endforeach
-
+                    <input type="text" style="display: none" class="kategori" value="{{$kategori}}">
                 </tbody>
             </table>
+        </section>
 
-            <x-theme.modal btnSave="" title="Detail Jurnal" size="modal-lg" idModal="detail">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div id="detail_jurnal"></div>
+
+        {{-- sub akun --}}
+        <x-theme.modal title="Edit Akun" idModal="sub-akun" size="modal-lg">
+            <div id="load-sub-akun">
+            </div>
+        </x-theme.modal>
+
+        <x-theme.modal title="Detail Invoice" btnSave='T' size="modal-lg-max" idModal="detail">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="detail_invoice"></div>
+                </div>
+            </div>
+
+        </x-theme.modal>
+
+        <form action="{{ route('delete_invoice_telur') }}" method="get">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="row">
+                                <h5 class="text-danger ms-4 mt-4"><i class="fas fa-trash"></i> Hapus Data</h5>
+                                <p class=" ms-4 mt-4">Apa anda yakin ingin menghapus ?</p>
+                                <input type="hidden" class="no_nota" name="no_nota">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Hapus</button>
+                        </div>
                     </div>
                 </div>
-            </x-theme.modal>
-        </section>
-        @section('js')
-        <script>
-            pencarian('pencarian', 'tablealdi')
-                edit('detail_nota', 'no_nota', 'penjualan2/detail', 'detail_jurnal')
+            </div>
+        </form>
+        {{-- end sub akun --}}
+    </x-slot>
+    @section('scripts')
+    <script>
+        $(document).ready(function() {
+                pencarian('pencarian', 'tablealdi')
+                $(document).on("click", ".detail_nota", function() {
+                    var no_nota = $(this).attr('no_nota');
+                    $.ajax({
+                        type: "get",
+                        url: "/detail_penjualan_mtd?no_nota=" + no_nota,
+                        success: function(data) {
+                            $("#detail_invoice").html(data);
+                        }
+                    });
+
+                });
+                $(document).on('click', '.delete_nota', function() {
+                    var no_nota = $(this).attr('no_nota');
+                    $('.no_nota').val(no_nota);
+                });
 
                 $(".btn_bayar").hide();
                 $(".piutang_cek").hide();
@@ -121,6 +164,7 @@
                     $(".hide_bayar" + no_nota).hide();
 
                 });
+                var kategori = $('.kategori').val();
                 $(document).on('click', '.btn_bayar', function() {
                     var dipilih = [];
                     $('.cek_bayar:checked').each(function() {
@@ -128,16 +172,17 @@
                         dipilih.push(no_nota);
 
                     });
+                    
                     var params = new URLSearchParams();
 
                     dipilih.forEach(function(orderNumber) {
                         params.append('no_nota', orderNumber);
                     });
                     var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
-                    window.location.href = "/penjualan_ayam/cek?" + queryString;
+                    window.location.href = "/pembukuan_biaya_pv?kategori=" + kategori + "&"+ queryString;
 
                 });
-        </script>
-        @endsection
-    </x-slot>
+            });
+    </script>
+    @endsection
 </x-theme.app>

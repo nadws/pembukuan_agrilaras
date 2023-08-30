@@ -2,7 +2,7 @@
 
     <x-slot name="cardHeader">
         <div class="row justify-content-end">
-            <h6>Setor Penjualan Ayam</h6>
+            <h6>Setor biaya {{$kategori}}</h6>
         </div>
 
     </x-slot>
@@ -24,9 +24,9 @@
                 color: white;
             }
         </style>
-        <form action="{{ route('penjualan_ayam.save_cek') }}" method="post" class="save_jurnal">
+        <form action="{{ route('bukukan_pv') }}" method="post" class="save_jurnal">
             @csrf
-
+            <input type="hidden" name="kategori" value="{{$kategori}}">
             <section class="row">
                 {{-- <div class="col-lg-2 col-6">
                     <label for="">Tanggal</label>
@@ -43,10 +43,14 @@
                     <table class="table table-striped table-bordered">
                         <thead>
                             <tr>
-                                <th class="dhead">No Nota</th>
+                                <th class="dhead" width="5">#</th>
                                 <th class="dhead">Tanggal</th>
-                                <th class="dhead">Customer</th>
-                                <th class="dhead" style="text-align: right">Total Rp</th>
+                                <th class="dhead">Kandang</th>
+                                <th class="dhead">Nama Pakan</th>
+                                <th class="dhead">Pcs</th>
+                                <th class="dhead">Satuan</th>
+                                <th class="dhead text-end">Total Rp</th>
+                                <th class="dhead">Admin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -55,31 +59,37 @@
                             @endphp
                             @foreach ($nota as $no => $n)
                             @php
-                            $hutang = DB::selectOne("SELECT *, sum(a.h_satuan * a.qty) as total, count(*) as ttl_produk
-                            FROM
-                            `invoice_ayam` as a
-                            LEFT JOIN customer as b ON a.id_customer = b.id_customer
-                            WHERE a.urutan = '$n'
-                            GROUP BY a.urutan;");
-                            $total += $hutang->total
+                            $stok = DB::selectOne("SELECT a.tgl, a.id_stok_telur, b.nm_produk, c.nm_kandang,
+                            a.pcs_kredit,
+                            a.total_rp, d.nm_satuan, a.admin
+                            FROM stok_produk_perencanaan as a
+                            left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+                            left join kandang as c on c.id_kandang = a.id_kandang
+                            left join tb_satuan as d on d.id_satuan = b.dosis_satuan
+                            where a.id_stok_telur = '$n'");
+                            $total += round($stok->total_rp,0)
                             @endphp
                             <tr>
-                                <td>{{$hutang->no_nota}}</td>
+                                <td>{{$no + 1}}</td>
                                 <td>
-                                    {{tanggal($hutang->tgl)}}
-                                    <input type="hidden" name="tgl[]" value="{{$hutang->tgl}}">
-                                    <input type="hidden" name="urutan[]" value="{{$hutang->urutan}}">
-                                    <input type="hidden" name="nm_customer[]" value="{{$hutang->customer}}">
-                                    <input type="hidden" name="no_nota[]" value="{{$hutang->no_nota}}">
+                                    {{tanggal($stok->tgl)}}
+                                    <input type="hidden" name="tgl[]" value="{{$stok->tgl}}">
+                                    <input type="hidden" name="id_stok_telur[]" value="{{$stok->id_stok_telur}}">
+                                    <input type="hidden" name="nm_produk[]" value="{{$stok->nm_produk}}">
+                                    <input type="hidden" name="nm_kandang[]" value="{{$stok->nm_kandang}}">
                                     <input type="hidden" name="pembayaran[]"
                                         class="form-control bayar_biasa bayar_biasa{{$no+1}}" style="text-align: right"
-                                        value="{{$hutang->total}}">
+                                        value="{{round($stok->total_rp,0)}}">
                                 </td>
-                                <td>{{$hutang->customer}}</td>
+                                <td>{{$stok->nm_kandang}}</td>
+                                <td>{{$stok->nm_produk}}</td>
+                                <td>{{number_format($stok->pcs_kredit,1)}}</td>
+                                <td>{{$stok->nm_satuan}}</td>
                                 <td align="right">
-                                    Rp {{number_format($hutang->total,0)}}
+                                    Rp {{number_format($stok->total_rp,0)}}
 
                                 </td>
+                                <td>{{$stok->admin}}</td>
                             </tr>
                             @endforeach
 
@@ -103,7 +113,7 @@
                             <h6>Total</h6>
                         </div>
                         <div class="col-lg-6">
-                            <h6 class="total float-end">Rp {{number_format($total,2,',','.')}}</h6>
+                            <h6 class="total float-end">Rp {{number_format($total,0,',','.')}}</h6>
                             <input type="hidden" class="total_semua_biasa" name="total_penjualan" value="{{$total}}">
                         </div>
                         <div class="col-lg-5 mt-2">
@@ -111,7 +121,8 @@
                             <select name="id_akun[]" id="" class="select2_add" required>
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
-                                <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
+                                <option value="{{$a->id_akun}}" {{$id_akun==$a->id_akun ? 'SELECTED' :
+                                    ''}}>{{$a->nm_akun}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -216,20 +227,22 @@
                 $(".kredit_biasa").each(function(){
                     total_kredit += parseFloat($(this).val());
                 });
-                var total_all_kredit = total_all + total_kredit;
+                var total_all_kredit = parseInt(total_all + total_kredit);
                 var totalKreditall = total_all_kredit.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                 });
                 $(".total_kredit").text(totalKreditall);
 
-                var selisih = total_all + total_kredit - total_debit;
+                var selisih = parseInt(total_all + total_kredit - total_debit);
                 var selisih_total = selisih.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                 });
 
-                if (total_kredit + total_all === total_debit) {
+                var total_semua_kredit = parseInt(total_all) + parseInt(total_kredit);
+
+                if (total_semua_kredit === total_debit) {
                     $(".cselisih").css("color", "green");
                     $(".button-save").removeAttr("hidden");
                 } else {
@@ -270,19 +283,19 @@
                 $(".kredit_biasa").each(function(){
                     total_kredit += parseFloat($(this).val());
                 });
-                var total_all_kredit = total_all + total_kredit;
+                var total_all_kredit = parseInt(total_all + total_kredit);
                 var totalKreditall = total_all_kredit.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                 });
                 $(".total_kredit").text(totalKreditall);
 
-                var selisih = total_all + total_kredit - total_debit;
+                var selisih = parseInt(total_all + total_kredit - total_debit);
                 var selisih_total = selisih.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                 });
-                if (total_kredit + total_all === total_debit) {
+                if (selisih === 0) {
                     $(".cselisih").css("color", "green");
                     $(".button-save").removeAttr("hidden");
                 } else {

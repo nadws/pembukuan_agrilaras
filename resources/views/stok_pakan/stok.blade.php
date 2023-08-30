@@ -4,6 +4,19 @@
             <div class="col-lg-3">
                 <h6>Stok Pakan</h6>
             </div>
+            <div class="col-lg-9">
+                <a href="{{route('history_perencanaan_pakan',['kategori' => 'pakan'])}}"
+                    class="btn btn-primary btn-sm float-end"><i class="fas fa-history"></i> History <span
+                        class="badge bg-danger">{{ empty($total_pakan->total)
+                        ? '0' :
+                        $total_pakan->total }}</span></a>
+            </div>
+            <div class="col-lg-12">
+                <br>
+            </div>
+            <div class="col-lg-7">
+
+            </div>
             <div class="col-lg-5">
                 <input id="pencarianPakan" placeholder="Pencarian" type="text" class="form-control">
             </div>
@@ -18,22 +31,17 @@
             </thead>
             <tbody>
                 @foreach ($pakan as $p)
-                    @if ($p->pcs_debit - $p->pcs_kredit < 1)
-                        @php
-                            continue;
-                        @endphp
-                    @endif
-                    <tr>
-                        <td><a href="#" onclick="event.preventDefault();" class="history_stok"
-                                id_pakan="{{ $p->id_pakan }}">{{ ucwords(strtolower($p->nm_produk)) }}
-                            </a>
-                        </td>
-                        <td style=" text-align: right">
-                            {{ number_format($p->pcs_debit - $p->pcs_kredit, 0) }}
-                        </td>
-                        <td style="text-align: center">{{ $p->nm_satuan }}</td>
+                @if ($p->pcs_debit - $p->pcs_kredit < 1) @php continue; @endphp @endif <tr>
+                    <td><a href="#" onclick="event.preventDefault();" class="history_stok"
+                            id_pakan="{{ $p->id_pakan }}">{{ ucwords(strtolower($p->nm_produk)) }}
+                        </a>
+                    </td>
+                    <td style=" text-align: right">
+                        {{ number_format($p->pcs_debit - $p->pcs_kredit, 0) }}
+                    </td>
+                    <td style="text-align: center">{{ $p->nm_satuan }}</td>
                     </tr>
-                @endforeach
+                    @endforeach
             </tbody>
         </table>
 
@@ -42,8 +50,20 @@
     <div class="col-lg-4">
         <div class="row mb-2">
 
-            <div class="col-lg-3">
+            <div class="col-lg-4">
                 <h6>Stok Vitamin</h6>
+            </div>
+            <div class="col-lg-8">
+                <a href="{{route('history_perencanaan_pakan',['kategori' => 'vitamin'])}}"
+                    class="btn btn-primary btn-sm float-end"><i class="fas fa-history"></i> History <span
+                        class="badge bg-danger">{{ empty($total_vitamin->total) ? '0' :
+                        $total_vitamin->total }}</span></a>
+            </div>
+            <div class="col-lg-12">
+                <br>
+            </div>
+            <div class="col-lg-7">
+
             </div>
             <div class="col-lg-5">
                 <input id="pencarianVitamin" placeholder="Pencarian" type="text" class="form-control">
@@ -59,18 +79,13 @@
             </thead>
             <tbody>
                 @foreach ($vitamin as $p)
-                    @if ($p->pcs_debit - $p->pcs_kredit < 1)
-                        @php
-                            continue;
-                        @endphp
-                    @endif
-                    <tr>
-                        <td><a href="#" onclick="event.preventDefault();" class="history_stok"
-                                id_pakan="{{ $p->id_pakan }}">{{ $p->nm_produk }}</a></td>
-                        <td style="text-align: right">{{ number_format($p->pcs_debit - $p->pcs_kredit, 0) }}</td>
-                        <td style="text-align: center">{{ $p->nm_satuan }}</td>
+                @if ($p->pcs_debit - $p->pcs_kredit < 1) @php continue; @endphp @endif <tr>
+                    <td><a href="#" onclick="event.preventDefault();" class="history_stok"
+                            id_pakan="{{ $p->id_pakan }}">{{ $p->nm_produk }}</a></td>
+                    <td style="text-align: right">{{ number_format($p->pcs_debit - $p->pcs_kredit, 0) }}</td>
+                    <td style="text-align: center">{{ $p->nm_satuan }}</td>
                     </tr>
-                @endforeach
+                    @endforeach
             </tbody>
         </table>
     </div>

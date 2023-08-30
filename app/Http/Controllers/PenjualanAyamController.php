@@ -70,6 +70,7 @@ class PenjualanAyamController extends Controller
             'title' => 'Penerimaan Uang Penjualan Ayam',
             'nota' => $r->no_nota,
             'akun' => DB::table('akun')->get(),
+
         ];
         return view('penjualan_ayam.setor', $data);
     }
