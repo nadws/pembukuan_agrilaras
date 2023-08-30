@@ -26,14 +26,16 @@
                 <thead>
                     <tr>
                         <th width="5">#</th>
-                        <th>Tanggal</th>
+                        <th>Tanggal </th>
                         <th>Kandang</th>
                         <th>Nama Pakan</th>
                         <th>Pcs</th>
                         <th>Satuan</th>
                         <th>Total Rp</th>
                         <th>Admin</th>
-                        <th style="text-align: center">Cek</th>
+                        <th style="text-align: center">Cek <br>
+                            <input type="checkbox" class="check-all">
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +51,9 @@
                         <td>{{$s->admin}}</td>
                         <td align="center">
                             <input type="checkbox" name="" no_nota="{{ $s->id_stok_telur }}"
-                                piutang="{{ $s->total_rp }}" id="" class="cek_bayar">
+                                piutang="{{ $s->total_rp }}" id=""
+                                class="cek_bayar {{$max_tgl == $s->tgl ? 'checkbox' : ''}}" {{$max_tgl==$s->tgl
+                            ? '' : 'disabled' }}>
 
                         </td>
                     </tr>
@@ -181,6 +185,28 @@
                     var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
                     window.location.href = "/pembukuan_biaya_pv?kategori=" + kategori + "&"+ queryString;
 
+                });
+
+                $(".check-all").change(function() {
+                    // Periksa apakah tombol "Check All" sekarang dicentang atau tidak
+                    var isChecked = $(this).prop("checked");
+                    
+                    // Setel semua checkbox lainnya sesuai dengan status tombol "Check All"
+                    $(".checkbox").prop("checked", isChecked);
+
+                    var anyChecked = $('.cek_bayar:checked').length > 0;
+                    $('.btn_bayar').toggle(anyChecked);
+                    $(".piutang_cek").toggle(anyChecked);
+                    $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
+                });
+
+                // Ketika salah satu checkbox diubah
+                $(".checkbox").change(function() {
+                    // Periksa apakah semua checkbox lainnya telah dicentang
+                    var allChecked = $(".checkbox").not(":checked").length === 0;
+                    
+                    // Jika semua checkbox dicentang, centang juga tombol "Check All"
+                    $(".check-all").prop("checked", allChecked);
                 });
             });
     </script>
