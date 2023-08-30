@@ -47,7 +47,7 @@
                                 <th class="dhead">Tanggal</th>
                                 <th class="dhead">Kandang</th>
                                 <th class="dhead">Nama Pakan</th>
-                                <th class="dhead">Pcs</th>
+                                <th class="dhead text-end">Pcs</th>
                                 <th class="dhead">Satuan</th>
                                 <th class="dhead text-end">Total Rp</th>
                                 <th class="dhead">Admin</th>
@@ -83,7 +83,7 @@
                                 </td>
                                 <td>{{$stok->nm_kandang}}</td>
                                 <td>{{$stok->nm_produk}}</td>
-                                <td>{{number_format($stok->pcs_kredit,1)}}</td>
+                                <td align="right">{{number_format($stok->pcs_kredit,1)}}</td>
                                 <td>{{$stok->nm_satuan}}</td>
                                 <td align="right">
                                     Rp {{number_format($stok->total_rp,0)}}
