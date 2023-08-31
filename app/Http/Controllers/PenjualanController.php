@@ -376,6 +376,7 @@ class PenjualanController extends Controller
         DB::table('invoice_telur')->where('no_nota', $r->no_nota)->delete();
         DB::table('jurnal')->where('no_nota', $r->no_nota)->delete();
         DB::table('bayar_telur')->where('no_nota', $r->no_nota)->delete();
+        DB::table('stok_telur')->where('nota_transfer', $r->no_nota)->delete();
 
 
         $max = DB::table('invoice_telur')->latest('urutan')->first();
@@ -433,6 +434,18 @@ class PenjualanController extends Controller
                 ];
                 DB::table('invoice_telur')->insert($data);
             }
+
+            $data = [
+                'id_telur' => $r->id_produk[$x],
+                'tgl' => $r->tgl,
+                'pcs_kredit' => $r->pcs[$x],
+                'kg_kredit' => $r->kg[$x],
+                'admin' => Auth::user()->name,
+                'id_gudang' => '2',
+                'check' => 'Y',
+                'nota_transfer' => $r->no_nota,
+            ];
+            DB::table('stok_telur')->insert($data);
         }
 
         $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '26')->first();
@@ -514,6 +527,7 @@ class PenjualanController extends Controller
         DB::table('invoice_telur')->where('no_nota', $r->no_nota)->delete();
         DB::table('jurnal')->where('no_nota', $r->no_nota)->delete();
         DB::table('bayar_telur')->where('no_nota', $r->no_nota)->delete();
+        DB::table('stok_telur')->where('nota_transfer', $r->no_nota)->delete();
 
         return redirect()->route('penjualan_agrilaras')->with('sukses', 'Data berhasil ditambahkan');
     }

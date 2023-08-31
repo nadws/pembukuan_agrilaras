@@ -252,10 +252,11 @@ class Stok_pakanController extends Controller
             left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
             left join tb_satuan as d on d.id_satuan = b.dosis_satuan
-            
             where a.`check` ='T' and b.kategori = 'pakan' and a.h_opname = 'T' and a.id_kandang != '0'
             order by a.tgl , a.id_kandang ASC
             ");
+
+
             $max_tgl = DB::selectOne("SELECT min(a.tgl) as tgl
             FROM stok_produk_perencanaan as a
             left join tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
@@ -272,7 +273,7 @@ class Stok_pakanController extends Controller
             $max_tgl = DB::selectOne("SELECT min(a.tgl) as tgl
             FROM stok_produk_perencanaan as a
             left join tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
-            where a.`check` ='T' and b.kategori = 'pakan' and a.id_kandang != '0'
+            where a.`check` ='T' and b.kategori in ('obat_pakan','obat_air') and a.id_kandang != '0'
             ");
         }
 
