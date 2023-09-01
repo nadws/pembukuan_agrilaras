@@ -184,7 +184,7 @@ class JurnalPenyesuaianController extends Controller
 
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
         $max_tgl = DB::selectOne("SELECT max(a.tgl) as tgl FROM jurnal as a where a.id_buku = '4' and a.id_akun = '11'")->tgl;
-
+        dd($max_tgl);
         if (empty($max_tgl)) {
             $tgl = date('Y-m-t', strtotime(date('Y-m-d')));
         } else {
