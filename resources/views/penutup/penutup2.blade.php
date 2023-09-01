@@ -19,13 +19,12 @@
                 <div class="col-lg-6 mb-4">
 
                     @if (empty($jpa->kode_penyesuaian))
-                        <button type="button" class="btn btn-primary btn-sm float-end  " data-bs-toggle="modal"
-                            data-bs-target="#delete"><i class="fas fa-window-close"></i>
-                            Penutup</button>
+                    <button type="button" class="btn btn-primary btn-sm float-end  " data-bs-toggle="modal"
+                        data-bs-target="#delete"><i class="fas fa-window-close"></i>
+                        Penutup</button>
                     @else
-                        <button type="submit" class="btn btn-primary btn-sm float-end "><i
-                                class="fas fa-window-close"></i>
-                            Penutup</button>
+                    <button type="submit" class="btn btn-primary btn-sm float-end "><i class="fas fa-window-close"></i>
+                        Penutup</button>
                     @endif
 
                     <a data-bs-toggle="modal" data-bs-target="#history" href="#"
@@ -85,12 +84,12 @@
                                 </td>
                             </tr>
                             @foreach ($pendapatan as $no => $b)
-                                <tr>
+                            <tr>
 
-                                    <td>{{ ucwords(strtolower($b->nm_akun)) }}</td>
-                                    <td align="right">Rp xxx</td>
-                                    <td align="right"></td>
-                                </tr>
+                                <td>{{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                <td align="right">Rp xxx</td>
+                                <td align="right"></td>
+                            </tr>
                             @endforeach
                             <tr>
                                 <td style="padding-left: 20px;">Ikhtisar Laba Rugi</td>
@@ -106,11 +105,11 @@
                                 <td align="right"></td>
                             </tr>
                             @foreach ($biaya as $no => $b)
-                                <tr>
-                                    <td style="padding-left: 20px">{{ ucwords(strtolower($b->nm_akun)) }}</td>
-                                    <td align="right"></td>
-                                    <td align="right">Rp xxx</td>
-                                </tr>
+                            <tr>
+                                <td style="padding-left: 20px">{{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                <td align="right"></td>
+                                <td align="right">Rp xxx</td>
+                            </tr>
                             @endforeach
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
@@ -191,29 +190,28 @@
                                 </td>
                             </tr>
                             @php
-                                $total_pendapatan = 0;
+                            $total_pendapatan = 0;
                             @endphp
                             @foreach ($pendapatan as $no => $b)
-                                @php
-                                    $total_pendapatan += $b->kredit - $b->debit;
-                                @endphp
-                                <tr>
+                            @php
+                            $total_pendapatan += $b->kredit - $b->debit;
+                            @endphp
+                            <tr>
 
-                                    <td>
-                                        {{ ucwords(strtolower($b->nm_akun)) }}
-                                        <input type="hidden" name="id_akun_pembelian[]" value="{{ $b->id_akun }}">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format($b->kredit - $b->debit, 0) }}
-                                        <input type="hidden" name="debit_pembelian[]"
-                                            value="{{ $b->kredit - $b->debit }}">
+                                <td>
+                                    {{ ucwords(strtolower($b->nm_akun)) }}
+                                    <input type="hidden" name="id_akun_pembelian[]" value="{{ $b->id_akun }}">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format($b->kredit - $b->debit, 0) }}
+                                    <input type="hidden" name="debit_pembelian[]" value="{{ $b->kredit - $b->debit }}">
 
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="kredit_pembelian[]" value="0">
-                                    </td>
-                                </tr>
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="kredit_pembelian[]" value="0">
+                                </td>
+                            </tr>
                             @endforeach
                             <tr>
                                 <td style="padding-left: 20px;">
@@ -233,12 +231,12 @@
                             </tr>
 
                             @php
-                                $total_biaya = 0;
+                            $total_biaya = 0;
                             @endphp
                             @foreach ($biaya as $c)
-                                @php
-                                    $total_biaya += $c->debit - $c->kredit;
-                                @endphp
+                            @php
+                            $total_biaya += $c->debit - $c->kredit;
+                            @endphp
                             @endforeach
                             <tr>
                                 <td>
@@ -255,88 +253,86 @@
                                 </td>
                             </tr>
                             @foreach ($biaya as $no => $b)
-                                <tr>
-                                    <td style="padding-left: 20px">
-                                        {{ ucwords(strtolower($b->nm_akun)) }}
-                                        <input type="hidden" name="id_akun_biaya[]" value="{{ $b->id_akun }}">
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="debit_biaya[]" value="0">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format($b->debit - $b->kredit, 0) }}
-                                        <input type="hidden" name="kredit_biaya[]"
-                                            value="{{ $b->debit - $b->kredit }}">
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td style="padding-left: 20px">
+                                    {{ ucwords(strtolower($b->nm_akun)) }}
+                                    <input type="hidden" name="id_akun_biaya[]" value="{{ $b->id_akun }}">
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="debit_biaya[]" value="0">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format($b->debit - $b->kredit, 0) }}
+                                    <input type="hidden" name="kredit_biaya[]" value="{{ $b->debit - $b->kredit }}">
+                                </td>
+                            </tr>
                             @endforeach
                             @php
-                                $pen = empty($total_pendapatan) ? '0' : $total_pendapatan;
-                                $biy = empty($total_biaya) ? '0' : $total_biaya;
+                            $pen = empty($total_pendapatan) ? '0' : $total_pendapatan;
+                            $biy = empty($total_biaya) ? '0' : $total_biaya;
                             @endphp
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
                             </tr>
                             @if ($pen - $biy > 0)
-                                <tr>
-                                    <td>
-                                        Ikhtisar Laba Rugi
-                                        <input type="hidden" name="id_akun_modal[]" value="515">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format($pen - $biy, 0) }}
-                                        <input type="hidden" name="debit_modal[]" value="{{ $pen - $biy }}">
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="kredit_modal[]" value="0">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding-left: 20px">
-                                        Laba Tahun Berjalan
-                                        <input type="hidden" name="id_akun_modal[]" value="516">
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="debit_modal[]" value="0">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format($pen - $biy, 0) }}
-                                        <input type="hidden" name="kredit_modal[]" value="{{ $pen - $biy }}">
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    Ikhtisar Laba Rugi
+                                    <input type="hidden" name="id_akun_modal[]" value="515">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format($pen - $biy, 0) }}
+                                    <input type="hidden" name="debit_modal[]" value="{{ $pen - $biy }}">
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="kredit_modal[]" value="0">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px">
+                                    Laba Tahun Berjalan
+                                    <input type="hidden" name="id_akun_modal[]" value="516">
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="debit_modal[]" value="0">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format($pen - $biy, 0) }}
+                                    <input type="hidden" name="kredit_modal[]" value="{{ $pen - $biy }}">
+                                </td>
+                            </tr>
                             @else
-                                <tr>
-                                    <td>
-                                        Laba Tahun Berjalan
-                                        <input type="hidden" name="id_akun_modal[]" value="516">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format(($pen - $biy) * -1, 0) }}
-                                        <input type="hidden" name="debit_modal[]" value="{{ ($pen - $biy) * -1 }}">
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="kredit_modal[]" value="0">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding-left: 20px">
-                                        Ikhtisar Laba Rugi
-                                        <input type="hidden" name="id_akun_modal[]" value="515">
-                                    </td>
-                                    <td align="right">
-                                        Rp 0
-                                        <input type="hidden" name="debit_modal[]" value="0">
-                                    </td>
-                                    <td align="right">
-                                        Rp {{ number_format(($pen - $biy) * -1, 0) }}
-                                        <input type="hidden" name="kredit_modal[]"
-                                            value="{{ ($pen - $biy) * -1 }}">
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    Laba Tahun Berjalan
+                                    <input type="hidden" name="id_akun_modal[]" value="516">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format(($pen - $biy) * -1, 0) }}
+                                    <input type="hidden" name="debit_modal[]" value="{{ ($pen - $biy) * -1 }}">
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="kredit_modal[]" value="0">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px">
+                                    Ikhtisar Laba Rugi
+                                    <input type="hidden" name="id_akun_modal[]" value="515">
+                                </td>
+                                <td align="right">
+                                    Rp 0
+                                    <input type="hidden" name="debit_modal[]" value="0">
+                                </td>
+                                <td align="right">
+                                    Rp {{ number_format(($pen - $biy) * -1, 0) }}
+                                    <input type="hidden" name="kredit_modal[]" value="{{ ($pen - $biy) * -1 }}">
+                                </td>
+                            </tr>
                             @endif
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
@@ -351,8 +347,7 @@
                                 <td align="right">Rp 0</td>
                                 <td align="right">
                                     <input type="text" class="form-control prive">
-                                    <input type="hidden" name="prive_biasa" class="form-control prive_biasa"
-                                        value="0">
+                                    <input type="hidden" name="prive_biasa" class="form-control prive_biasa" value="0">
                                 </td>
                             </tr>
 
@@ -362,15 +357,11 @@
                                         value="{{ $pen - $biy + ($pen - $biy) }}">
                                 </td>
                                 <td align="right" class="total_all fw-bold">Rp
-                                    {{ $pen - $biy < 0
-                                        ? number_format(($pen - $biy + ($pen - $biy)) * -1, 2, ',', '.')
-                                        : number_format($pen - $biy + ($pen - $biy), 2, ',', '.') }}
-                                </td>
+                                    {{ $pen - $biy < 0 ? number_format(($pen - $biy + ($pen - $biy)) * -1, 2, ',' , '.'
+                                        ) : number_format($pen - $biy + ($pen - $biy), 2, ',' , '.' ) }} </td>
                                 <td align="right" class="total_all fw-bold">Rp
-                                    {{ $pen - $biy < 0
-                                        ? number_format(($pen - $biy + ($pen - $biy)) * -1, 2, ',', '.')
-                                        : number_format($pen - $biy + ($pen - $biy), 2, ',', '.') }}
-                                </td>
+                                    {{ $pen - $biy < 0 ? number_format(($pen - $biy + ($pen - $biy)) * -1, 2, ',' , '.'
+                                        ) : number_format($pen - $biy + ($pen - $biy), 2, ',' , '.' ) }} </td>
                             </tr>
                         </tbody>
                     </table>
@@ -403,8 +394,7 @@
 
 
 
-        <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
+        <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
@@ -414,9 +404,9 @@
                             <p class=" ms-4 mt-4">Silahkan lakukan penyesuaian bulan
                                 <b>{{ date(
                                     'F
-                                                                                                                                                                                                    Y',
+                                    Y',
                                     strtotime($tgl2Tutup),
-                                ) }}</b>
+                                    ) }}</b>
                                 terlebih dahulu !!
                             </p>
 
@@ -448,8 +438,8 @@
         {{-- end history --}}
     </x-slot>
     @section('scripts')
-        <script>
-            // Menangani event klik pada setiap baris dan mengarahkan pengguna ke URL yang sesuai
+    <script>
+        // Menangani event klik pada setiap baris dan mengarahkan pengguna ke URL yang sesuai
             document.querySelectorAll('tbody .tbl').forEach(function(row) {
                 row.addEventListener('click', function() {
                     window.location.href = row.getAttribute('data-href');
@@ -538,9 +528,9 @@
 
 
             });
-        </script>
-        <!-- Tambahkan kode JavaScript di bawah ini -->
-        <!-- Tambahkan kode JavaScript di bawah ini -->
+    </script>
+    <!-- Tambahkan kode JavaScript di bawah ini -->
+    <!-- Tambahkan kode JavaScript di bawah ini -->
     @endsection
 
 </x-theme.app>
