@@ -196,6 +196,7 @@ class JurnalPenyesuaianController extends Controller
         } else {
             $nota_t = $max->nomor_nota + 1;
         }
+        dd($tgl2);
         $tglHariIni = date('Y-m-d');
         $data =  [
             'title' => 'Jurnal Penyesuaian ATK',
