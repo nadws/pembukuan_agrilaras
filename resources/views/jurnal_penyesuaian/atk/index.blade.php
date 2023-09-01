@@ -61,7 +61,7 @@
                                 <td>
                                     <input type="text" class="form-control" value="{{ date('F Y', strtotime($tgl)) }}"
                                         readonly>
-                                    <input type="hidden" class="form-control" name="tgl"
+                                    <input type="text" class="form-control" name="tgl"
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
