@@ -102,7 +102,7 @@ class PenjualanController extends Controller
             FROM bayar_telur as e 
             group by e.no_nota
         ) as e on e.no_nota = a.no_nota
-        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' and a.lokasi = 'alpa'
+        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' 
         group by a.no_nota
         ORDER BY a.no_nota ASC;");
 
