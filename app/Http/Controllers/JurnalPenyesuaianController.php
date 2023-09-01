@@ -187,7 +187,8 @@ class JurnalPenyesuaianController extends Controller
         if (empty($max_tgl)) {
             $tgl = date('Y-m-t', strtotime(date('Y-m-d')));
         } else {
-            $tgl1 = date('Y-m-t', strtotime($max_tgl));
+            $tgl1 = date('Y-m-15', strtotime($max_tgl));
+            $tgl2 = date('Y-m-t', strtotime($tgl1));
             $tgl = Carbon::parse($tgl1)->addMonth()->toDateString();
         }
         if (empty($max)) {
@@ -228,7 +229,7 @@ class JurnalPenyesuaianController extends Controller
                                 group by 
                                     b.id_produk
                                 ) as f on f.id_produk = a.id_produk 
-                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tgl';
+                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tgl2';
             "),
             'tgl' => $tgl
         ];
