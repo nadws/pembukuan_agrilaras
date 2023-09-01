@@ -111,7 +111,7 @@ class Penyetoran_telurController extends Controller
 
         DB::table('setoran_telur')->where('nota_setor', 'PET-' . $nota_t)->update(['selesai' => 'Y']);
         if (empty($r->id_akun)) {
-            # code...
+            return redirect()->route('penyetoran_telur')->with('sukses', 'Data berhasil ditambahkan');
         } else {
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
             $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
@@ -148,8 +148,8 @@ class Penyetoran_telurController extends Controller
                 'urutan' => $urutan2,
             ];
             DB::table('jurnal')->insert($data);
+            return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
         }
-        return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function get_list_perencanaan()
