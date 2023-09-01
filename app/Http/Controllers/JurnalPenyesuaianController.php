@@ -188,8 +188,8 @@ class JurnalPenyesuaianController extends Controller
             $tgl = date('Y-m-t', strtotime(date('Y-m-d')));
         } else {
             $tgl1 = date('Y-m-15', strtotime($max_tgl));
-            $tgl2 = date('Y-m-t', strtotime($tgl1));
             $tgl = Carbon::parse($tgl1)->addMonth()->toDateString();
+            $tgl2 = date('Y-m-t', strtotime($tgl));
         }
         if (empty($max)) {
             $nota_t = '1000';
