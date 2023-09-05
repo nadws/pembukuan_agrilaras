@@ -88,13 +88,13 @@ class PenjualanController extends Controller
         left join (
             SELECT b.no_nota , b.no_nota_piutang, b.nota_setor
             FROM bayar_telur as b 
-            WHERE b.debit != 0
+            WHERE b.debit != 0 GROUP BY b.no_nota
         ) as b on b.no_nota = a.no_nota
         left JOIN (
         SELECT c.no_nota, d.nm_akun, c.tgl
             FROM jurnal as c 
             left join akun as d on d.id_akun = c.id_akun
-            WHERE c.debit != '0' and c.id_buku = '7'
+            WHERE c.debit != '0' and c.id_buku = '7' GROUP BY c.no_nota
         ) as c on c.no_nota = b.nota_setor
         left JOIN customer as d on d.id_customer = a.id_customer
         LEFT join (
