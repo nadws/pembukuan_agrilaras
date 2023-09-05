@@ -30,7 +30,7 @@
             @csrf
 
             <section class="row">
-                {{-- <div class="col-lg-2 col-6">
+                <div class="col-lg-2 col-6">
                     <label for="">Tanggal</label>
                     <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
                 </div>
@@ -40,7 +40,7 @@
                 </div>
                 <div class="col-lg-12">
                     <hr style="border: 1px solid black">
-                </div> --}}
+                </div>
                 <div class="col-lg-12">
                     <table class="table table-striped table-bordered">
                         <thead>
@@ -97,7 +97,7 @@
 
 
             </section>
-            <div class="row">
+            {{-- <div class="row">
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
                     <input type="date" class="form-control" name="tgl" value="{{date('Y-m-d')}}">
@@ -126,7 +126,7 @@
                     <input type="hidden" value="3" name="id_akun_kredit">
                     <input type="hidden" value="PE-{{$nota}}" name="no_nota">
                 </div>
-            </div>
+            </div> --}}
     </x-slot>
     <x-slot name="cardFooter">
         <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>

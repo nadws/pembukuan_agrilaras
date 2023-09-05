@@ -109,47 +109,48 @@ class Penyetoran_telurController extends Controller
             DB::table('bayar_telur')->where('no_nota_piutang', $r->no_nota_jurnal[$x])->where('debit', '!=', '0')->update(['setor' => 'Y', 'nota_setor' => 'PET-' . $nota_t]);
         }
 
-        DB::table('setoran_telur')->where('nota_setor', 'PET-' . $nota_t)->update(['selesai' => 'Y']);
-        if (empty($r->id_akun)) {
-            return redirect()->route('penyetoran_telur')->with('sukses', 'Data berhasil ditambahkan');
-        } else {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
-            $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+        // DB::table('setoran_telur')->where('nota_setor', 'PET-' . $nota_t)->update(['selesai' => 'Y']);
+        // if (empty($r->id_akun)) {
+        //     return redirect()->route('penyetoran_telur')->with('sukses', 'Data berhasil ditambahkan');
+        // } else {
+        //     $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
+        //     $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
+        //     $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            $data = [
-                'tgl' => $r->tgl,
-                'no_nota' => 'PET-' . $nota_t,
-                'id_akun' => $r->id_akun1,
-                'id_buku' => '7',
-                'ket' => $r->ket,
-                'debit' => 0,
-                'kredit' => $r->total_setor,
-                'admin' => Auth::user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
+        //     $data = [
+        //         'tgl' => $r->tgl,
+        //         'no_nota' => 'PET-' . $nota_t,
+        //         'id_akun' => $r->id_akun1,
+        //         'id_buku' => '7',
+        //         'ket' => $r->ket,
+        //         'debit' => 0,
+        //         'kredit' => $r->total_setor,
+        //         'admin' => Auth::user()->name,
+        //         'no_urut' => $akun->inisial . '-' . $urutan,
+        //         'urutan' => $urutan,
+        //     ];
+        //     DB::table('jurnal')->insert($data);
 
-            $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
-            $akun2 = DB::table('akun')->where('id_akun', $r->id_akun)->first();
-            $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
+        //     $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
+        //     $akun2 = DB::table('akun')->where('id_akun', $r->id_akun)->first();
+        //     $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
 
-            $data = [
-                'tgl' => $r->tgl,
-                'no_nota' => 'PET-' . $nota_t,
-                'id_akun' => $r->id_akun,
-                'id_buku' => '7',
-                'ket' => $r->ket,
-                'debit' => $r->total_setor,
-                'kredit' => 0,
-                'admin' => Auth::user()->name,
-                'no_urut' => $akun2->inisial . '-' . $urutan2,
-                'urutan' => $urutan2,
-            ];
-            DB::table('jurnal')->insert($data);
-            return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
-        }
+        //     $data = [
+        //         'tgl' => $r->tgl,
+        //         'no_nota' => 'PET-' . $nota_t,
+        //         'id_akun' => $r->id_akun,
+        //         'id_buku' => '7',
+        //         'ket' => $r->ket,
+        //         'debit' => $r->total_setor,
+        //         'kredit' => 0,
+        //         'admin' => Auth::user()->name,
+        //         'no_urut' => $akun2->inisial . '-' . $urutan2,
+        //         'urutan' => $urutan2,
+        //     ];
+        //     DB::table('jurnal')->insert($data);
+        //     return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
+        // }
+        return redirect()->route('penyetoran_telur')->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function get_list_perencanaan()
@@ -174,7 +175,7 @@ class Penyetoran_telurController extends Controller
             left join jurnal as c on c.id_jurnal = a.id_jurnal
             where a.nota_setor = '$r->no_nota'
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice
         ];

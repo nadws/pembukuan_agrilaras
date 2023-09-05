@@ -6,9 +6,9 @@
             </div>
             <div class="col-lg-6">
                 <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Bukukan" />
-                {{--
+
                 <x-theme.button modal="Y" idModal="list" icon="fa-list" addClass="float-end list_perencanaan"
-                    teks="List Perencanaan" /> --}}
+                    teks="List Perencanaan" />
                 <x-theme.button modal="Y" idModal="history" icon="fa-history" addClass="float-end history_perencanaan"
                     teks="History Penyetoran" />
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
