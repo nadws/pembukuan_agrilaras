@@ -219,7 +219,7 @@
                     var tgl2 = $(".tgl2").val();
                     $.ajax({
                         type: "get",
-                        url: "/get_history_perencanaan?tgl1=" + tgl1 + "&tgl2=" + tgl2,
+                        url: "/penjualan_ayam/get_history_perencanaan?tgl1=" + tgl1 + "&tgl2=" + tgl2,
                         success: function(data) {
                             $('#get_history').html(data);
                         }
