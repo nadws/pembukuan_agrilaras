@@ -17,10 +17,15 @@ class Laporan_layerController extends Controller
         $tgl_sebelumnya = date("Y-m-d", strtotime($tgl . " -6 days"));
         $tgl_kemarin = date("Y-m-d", strtotime($tgl . " -1 days"));
 
+        $tgl_minggu_kemaren = date("Y-m-d", strtotime($tgl_sebelumnya . " -1 days"));
+        $tgl_minggu_sebelumnya = date("Y-m-d", strtotime($tgl_minggu_kemaren . " -6 days"));
+
+
+
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
-            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd
+            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya
             FROM kandang as a 
 
             -- Populasi --
@@ -142,6 +147,16 @@ class Laporan_layerController extends Controller
                 left JOIN kandang as b on b.id_kandang = s.id_kandang
                 group by s.id_kandang,FLOOR(DATEDIFF(s.tgl, b.chick_in) / 7)
             ) as t on t.id_kandang = a.id_kandang and t.mgg_vaksin = FLOOR(DATEDIFF('$tgl', a.chick_in) / 7)
+
+            left join (
+                SELECT h.id_kandang , sum(h.pcs) as pcs, sum(h.kg) as kg 
+                FROM stok_telur as h  where h.tgl between '$tgl_sebelumnya' and '$tgl' 
+            group by h.id_kandang) as u on u.id_kandang = a.id_kandang
+
+            left join (
+                SELECT h.id_kandang , sum(h.pcs) as pcs, sum(h.kg) as kg 
+                FROM stok_telur as h  where h.tgl between '$tgl_minggu_sebelumnya' and '$tgl_minggu_kemaren' 
+            group by h.id_kandang) as v on v.id_kandang = a.id_kandang
 
 
 
