@@ -137,7 +137,7 @@
             <tr>
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
-                    $kerugian->debit),1) }}
+                    $kerugian->debit),0) }}
                 </td>
             </tr>
         </table>
@@ -146,7 +146,7 @@
         <table class="table table-bordered">
             <tr>
                 <td class="fw-bold">Grand Total</td>
-                <td class="fw-bold" style="text-align: right">{{number_format($t_uang,1)}}</td>
+                <td class="fw-bold" style="text-align: right">{{number_format($t_uang,0)}}</td>
             </tr>
         </table>
     </div>
@@ -166,7 +166,7 @@
             <tbody>
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
-                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_b,0)}}</th>
+                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_b,1)}}</th>
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
@@ -194,7 +194,7 @@
             <tbody>
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
-                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_bi,0)}}</th>
+                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_bi,1)}}</th>
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
@@ -203,7 +203,7 @@
                 @foreach ($uangbiaya as $b)
                 <tr>
                     <td>{{ucwords(strtolower($b->nm_akun))}} </td>
-                    <td align="right">Rp {{number_format($b->kredit ,0)}}</td>
+                    <td align="right">Rp {{number_format($b->kredit ,1)}}</td>
                 </tr>
                 @endforeach
             </tbody>
