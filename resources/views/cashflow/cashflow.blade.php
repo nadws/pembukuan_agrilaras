@@ -137,7 +137,7 @@
             <tr>
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
-                    $kerugian->debit),0) }}
+                    $kerugian->debit),1) }}
                 </td>
             </tr>
         </table>
@@ -146,7 +146,7 @@
         <table class="table table-bordered">
             <tr>
                 <td class="fw-bold">Grand Total</td>
-                <td class="fw-bold" style="text-align: right">{{number_format($t_uang,0)}}</td>
+                <td class="fw-bold" style="text-align: right">{{number_format($t_uang,1)}}</td>
             </tr>
         </table>
     </div>
@@ -175,7 +175,7 @@
                 @foreach ($biaya as $b)
                 <tr>
                     <td>{{ucwords(strtolower($b->nm_akun))}} </td>
-                    <td align="right">Rp {{number_format($b->debit ,0)}}</td>
+                    <td align="right">Rp {{number_format($b->debit ,1)}}</td>
                 </tr>
                 @endforeach
             </tbody>
