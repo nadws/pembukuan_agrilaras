@@ -372,11 +372,11 @@
                             </th>
                             {{-- <th class="dhead"></th> --}}
                             <th class="dhead">{{ $gr_butir / 4 }} </th>
-                            <th class="dhead"></th>
+                            <th class="dhead"> </th>
                             <th class="dhead"></th>
                             {{-- <th class="dhead"></th> --}}
-                            <th class="dhead">{{ number_format($pakan, 2) }}</th>
                             <th class="dhead"></th>
+                            <th class="dhead">{{ number_format($pakan, 2) }}</th>
                             <th class="dhead">{{ number_format($pakan_kuml, 2) }}</th>
                             <th class="dhead">{{ number_format($telur_kuml, 2) }}</th>
                             <th class="dhead"></th>
