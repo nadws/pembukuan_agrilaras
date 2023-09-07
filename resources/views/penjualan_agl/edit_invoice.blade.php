@@ -225,7 +225,8 @@
                 var kg = $('.kgbiasa' + count).val();
                 var ikat = parseFloat(input2) / 180;
                 var kg_jual = parseFloat(kg) - ikat;
-                $('.ikat' + count).text(ikat.toFixed(1));
+                $('.ikat_text' + count).text(ikat.toFixed(1));
+                $('.ikat' + count).val(ikat.toFixed(1));
                 $('.kgminrak' + count).text(kg_jual.toFixed(1));
                 $('.kgminrakbiasa' + count).val(kg_jual.toFixed(1));
 

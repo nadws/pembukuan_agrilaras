@@ -36,7 +36,7 @@
                 <input type="hidden" class="form-control kgbiasa kgbiasa{{$no+1}}" name="kg[]" count="{{$no+1}}"
                     value="{{$a->kg}}">
             </td>
-            <td align="right" class="ikat{{$no+1}}">{{number_format($a->pcs / 180,1)}}</td>
+            <td align="right" class="ikat_text{{$no+1}}">{{number_format($a->pcs / 180,1)}}</td>
             <td align="right" class="kgminrak{{$no+1}}">{{number_format($a->kg_jual,1)}}</td>
             <td align="right">
                 <input type="text" class="form-control rp_satuan rp_satuan{{$no+1}}" count="{{$no+1}}"
