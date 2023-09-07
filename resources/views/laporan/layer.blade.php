@@ -65,7 +65,7 @@
                             <th class="dhead" colspan="7">Data Telur</th>
                             <th class="dhead">Pakan</th>
                             {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                            <th class="dhead" colspan="6">KUML</th>
+                            <th class="dhead" colspan="5">KUML</th>
                         </tr>
                         <tr>
                             {{-- Umur --}}
@@ -77,7 +77,7 @@
 
                             {{-- Populasi --}}
                             <th class="dhead">pop <br> awal / akhir</th>
-                            <th class="dhead">D/C/Week<br>
+                            <th class="dhead">D <br>C <br>Week<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="d_c"
                                     style="cursor: pointer"></i>
                             </th>
@@ -92,7 +92,7 @@
                                     style="cursor: pointer"></i>
                             </th>
                             <th class="dhead">
-                                ttl selisih <br> (butir/kg)<br> satu minggu
+                                ttl <br> selisih <br> (butir/kg)<br> 1 minggu
                             </th>
                             {{-- <th class="dhead">kg <br> today - yesterday
                                 <i class="fas text-white fa-question-circle rumus" rumus="kg_today"
@@ -106,7 +106,7 @@
                                 <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
                                     style="cursor: pointer"></i>
                             </th>
-                            <th class="dhead">hd present / hd past <br> week (%)
+                            <th class="dhead">hd/ hd<br>present/past<br>week(%)
                                 <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                     style="cursor: pointer"></i>
                             </th>
@@ -124,9 +124,9 @@
                             {{-- pakan --}}
 
                             {{-- KUML --}}
-                            <th class="dhead">pakan(kg)</th>
-                            <th class="dhead">telur(kg)</th>
-                            <th class="dhead">fcr k / fcr k+ (7,458)</th>
+                            <th class="dhead">pakan(kg) <br> telur(kg)</th>
+                            {{-- <th class="dhead">telur(kg)</th> --}}
+                            <th class="dhead">fcr <br> k&k+ <br> (7,458)</th>
                             <th class="dhead">obat/vit</th>
                             <th class="dhead">vaksin</th>
                             {{-- KUML --}}
@@ -375,17 +375,18 @@
 
                             <!-- kuml -->
                             <td align="center" class="pakan(kg)">
-                                {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
-                            </td>
-                            <td align="center" class="telur(kg)">
+                                {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }} <br>
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
                             </td>
+                            {{-- <td align="center" class="telur(kg)">
+                                {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
+                            </td> --}}
                             <td align="center" class="fcr k / fcr k+ (7,458)">
 
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                 ? '0'
                                 : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 2) }}
-                                /
+                                <br>
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                 ? '0'
                                 : number_format(
@@ -426,8 +427,9 @@
                             {{-- <th class="dhead"></th> --}}
                             <th class="dhead"></th>
                             <th class="dhead">{{ number_format($pakan, 2) }}</th>
-                            <th class="dhead">{{ number_format($pakan_kuml, 2) }}</th>
-                            <th class="dhead">{{ number_format($telur_kuml, 2) }}</th>
+                            <th class="dhead">{{ number_format($pakan_kuml, 2) }} <br> {{ number_format($telur_kuml, 2)
+                                }}</th>
+                            {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                             <th class="dhead"></th>
                             <th class="dhead">{{ number_format($obat_kuml, 0) }}</th>
                             <th class="dhead">{{ number_format($vaksin_kuml, 0) }}</th>
