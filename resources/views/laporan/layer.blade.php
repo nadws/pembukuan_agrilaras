@@ -203,8 +203,8 @@
                                         <td></td>
                                         <td></td>
                                         <td rowspan="2" style="vertical-align:middle; text-align: right">
-                                            ({{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100,
-                                            1) }}%)
+                                            {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100,
+                                            1) }}%
                                         </td>
                                     </tr>
                                     <tr>
