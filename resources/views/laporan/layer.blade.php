@@ -17,7 +17,14 @@
 
         .table-two th,
         .table-two td {
-            border: none;
+            border-color: transparent;
+            font-size: 10px;
+            padding: 2px;
+        }
+
+        .table-two_pakan th,
+        .table-two_pakan td {
+            border-color: transparent;
             font-size: 10px;
             padding: 2px;
         }
@@ -70,7 +77,7 @@
 
                             {{-- Populasi --}}
                             <th class="dhead">pop <br> awal / akhir</th>
-                            <th class="dhead">D/C <br>
+                            <th class="dhead">D/C/Week<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="d_c"
                                     style="cursor: pointer"></i>
                             </th>
@@ -103,7 +110,7 @@
                                 <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                     style="cursor: pointer"></i>
                             </th>
-                            <th class="dhead">FCR D / FCR W / FCR+ <br> (week)
+                            <th class="dhead">FCR <br> D / W / + <br>(week)
                                 <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                     style="cursor: pointer"></i>
                             </th>
@@ -217,9 +224,10 @@
                             $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
                             $tot_ayam_semua_hilang = $tot_ayam_mati;
                             @endphp
-                            <td align="center"
+                            <td align="right"
                                 class="D/C {{ $tot_ayam_semua_hilang > 3 ? 'bg-danger text-white' : '' }}">
-                                {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }}
+                                {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }} <br>
+                                {{$k->mati_week + $k->jual_week}}
                             </td>
                             <!-- populasi -->
 
@@ -261,9 +269,22 @@
                             </td>
                             <td align="center" class="hd perday (%)">
                                 {{-- {{$k->pcs}} --}}
-                                {{ number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }} /
-                                {{ empty($k->p_hd) ? 'NA' : $k->p_hd }} /
-                                {{ number_format(($k->pcs / $k->stok_awal) * 100, 0) }}
+                                <table border="0" class="table-two">
+                                    <tr>
+                                        <td>{{ number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td rowspan="2" style="vertical-align:middle; text-align: right">
+                                            ({{ empty($k->p_hd) ? 'NA' : $k->p_hd }})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ number_format(($k->pcs / $k->stok_awal) * 100, 0) }}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </table>
                             </td>
 
 
@@ -297,9 +318,23 @@
                             ($k->kg - $k->pcs / 180), 1);
                             @endphp
 
-                            <td align="center " class="FCR(week) {{ $fcr >= 2.2 ? 'bg-danger text-white' : '' }} ">
-                                {{-- {{$k->kg_telur_week}} / {{$k->pcs_telur_week}} / {{$k->kg_p_week}} <br> --}}
-                                {{ $fcr_day }} / {{ number_format($fcr, 2) }} / {{ $fcr_plus }}
+                            <td align="right" class="FCR(week) {{ $fcr >= 2.2 ? 'bg-danger text-white' : '' }} ">
+                                <table border="0" class="table-two">
+                                    <tr>
+                                        <td>{{ $fcr_day }}
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td rowspan="2" style="vertical-align:middle; text-align: right">
+                                            ({{ $fcr_plus }})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ number_format($fcr, 2) }}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </table>
                             </td>
 
 
@@ -308,9 +343,23 @@
 
 
                             <!-- pakan -->
-                            <td align="center" class="kg w_pakan">{{ number_format($k->kg_pakan / 1000, 1) }} <br> {{
-                                number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}
-                                <br>{{ empty($k->feed) ? 'NA' : $k->feed }}
+                            <td align="right" class="kg w_pakan">
+                                <table border="0" class="table-two_pakan">
+                                    <tr>
+                                        <td>{{ number_format($k->kg_pakan / 1000, 1) }}
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td rowspan="2" style="vertical-align:middle; text-align: right">
+                                            ({{ empty($k->feed) ? 'NA' : $k->feed }})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </table>
                             </td>
                             {{-- <td align="right"
                                 class="(gr/ekor) / p(day) {{ $k->kg_pakan < 100 ? 'bg-danger text-white' : '' }} w_pakan">
@@ -359,7 +408,7 @@
                             <th class="dhead" colspan="2">Total</th>
                             <th class="dhead">{{ number_format($ayam_awal, 0) }}/{{ number_format($ayam_akhir, 0) }}
                                 ({{ number_format(($ayam_akhir / $ayam_awal) * 100, 0) }} %)</th>
-                            <th class="dhead">{{ $mati }} / {{ $jual }}</th>
+                            <th class="dhead text-end">{{ $mati }} <br> {{ $jual }}</th>
                             <th class="dhead">{{ number_format($kg, 2) }} <br> {{ number_format($kg_kotor, 2) }}
                             </th>
                             <th class="dhead text-end">

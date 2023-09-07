@@ -25,7 +25,7 @@ class Laporan_layerController extends Controller
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
-            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya
+            'kandang' => DB::select("SELECT a.nm_kandang  ,FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week
             FROM kandang as a 
 
             -- Populasi --
@@ -157,6 +157,14 @@ class Laporan_layerController extends Controller
                 SELECT h.id_kandang , sum(h.pcs) as pcs, sum(h.kg) as kg 
                 FROM stok_telur as h  where h.tgl between '$tgl_minggu_sebelumnya' and '$tgl_minggu_kemaren' 
             group by h.id_kandang) as v on v.id_kandang = a.id_kandang
+
+
+            left join (
+                SELECT w.id_kandang , sum(w.mati) as mati_week , sum(w.jual) as jual_week
+                    FROM populasi as w 
+                    where w.tgl between '$tgl_sebelumnya' and '$tgl'
+                group by w.id_kandang
+            ) as w on w.id_kandang = a.id_kandang
 
 
 
