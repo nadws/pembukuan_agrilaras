@@ -61,7 +61,7 @@
                         <tr>
                             <th class="dhead" rowspan="2">Kdg</th>
                             <th class="dhead">Umur <br> 85 mgg</th>
-                            <th class="dhead" colspan="2">Populasi</th>
+                            <th class="dhead" width="10%" colspan="2">Populasi</th>
                             <th class="dhead" colspan="7">Data Telur</th>
                             <th class="dhead">Pakan</th>
                             {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
@@ -76,7 +76,7 @@
                             {{-- Umur --}}
 
                             {{-- Populasi --}}
-                            <th class="dhead">pop <br> awal / akhir</th>
+                            <th class="dhead">pop <br>awal/akhir</th>
                             <th class="dhead">D <br>C <br>Week<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="d_c"
                                     style="cursor: pointer"></i>
