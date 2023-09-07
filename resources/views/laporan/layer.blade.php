@@ -276,7 +276,7 @@
                                         <td></td>
                                         <td></td>
                                         <td rowspan="2" style="vertical-align:middle; text-align: right">
-                                            ({{ empty($k->p_hd) ? 'NA' : $k->p_hd }})
+                                            {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -326,7 +326,7 @@
                                         <td></td>
                                         <td></td>
                                         <td rowspan="2" style="vertical-align:middle; text-align: right">
-                                            ({{ $fcr_plus }})
+                                            {{ $fcr_plus }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -351,7 +351,7 @@
                                         <td></td>
                                         <td></td>
                                         <td rowspan="2" style="vertical-align:middle; text-align: right">
-                                            ({{ empty($k->feed) ? 'NA' : $k->feed }})
+                                            {{ empty($k->feed) ? 'NA' : $k->feed }}
                                         </td>
                                     </tr>
                                     <tr>

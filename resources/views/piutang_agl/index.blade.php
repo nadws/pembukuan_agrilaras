@@ -15,7 +15,7 @@
             <div class="card-body px-4 py-4-5">
                 <div class="row float-end text-center">
 
-                    <div class="col-md-12">
+                    <div class="col-lg-12">
                         @php
                         $ttlAllPiutang = 0;
 
@@ -35,7 +35,31 @@
             </div>
         </div>
         <section class="row">
-            <div class="col-lg-8"></div>
+            <div class="col-lg-8">
+                <ul class="nav nav-pills float-start">
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'All'? 'active': '' }}" aria-current="page"
+                            href="{{ route('piutang_telur',['kategori'=> 'All']) }}">All</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'Unpaid'? 'active': '' }}"
+                            href="{{ route('piutang_telur',['kategori'=> 'Unpaid']) }}">Unpaid</a>
+
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'Paid'? 'active': '' }}"
+                            href="{{ route('piutang_telur',['kategori'=> 'Paid']) }}">Paid</a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'pakan'? 'active': ''): '' }}"
+                            href="{{ route('penyesuaian.umum', ['kategori' => 'pakan']) }}">Pakan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'vitamin'? 'active': ''): '' }}"
+                            href="{{ route('penyesuaian.umum', ['kategori' => 'vitamin']) }}">Vitamin</a>
+                    </li> --}}
+                </ul>
+            </div>
             <div class="col-lg-4 mb-2">
                 <table class="float-end">
                     <td>Pencarian :</td>

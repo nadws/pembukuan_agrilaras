@@ -45,11 +45,14 @@ class PiutangtelurController extends Controller
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
 
-        $data =  [
-            'title' => 'Piutang Telur',
-            'tgl1' => $tgl1,
-            'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
+        if (empty($r->kategori)) {
+            $kategori = 'All';
+        } else {
+            $kategori = $r->kategori;
+        }
+
+        if ($kategori == 'All') {
+            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
             FROM invoice_telur as a 
             left join customer as b on b.id_customer = a.id_customer
             left join (
@@ -60,7 +63,43 @@ class PiutangtelurController extends Controller
             where  a.status = 'unpaid'
             group by a.no_nota
             order by a.urutan DESC
-            ")
+            ");
+        } elseif ($kategori == 'Unpaid') {
+            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
+            FROM invoice_telur as a 
+            left join customer as b on b.id_customer = a.id_customer
+            left join (
+                SELECT c.no_nota, sum(c.kredit -  c.debit) as paid, sum(c.debit) as bayar
+                FROM bayar_telur as c
+                group by c.no_nota
+            ) as c on c.no_nota = a.no_nota
+            where  a.status = 'unpaid' and c.paid != '0'
+            group by a.no_nota
+            order by a.urutan DESC
+            ");
+        } elseif ($kategori == 'Paid') {
+            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
+            FROM invoice_telur as a 
+            left join customer as b on b.id_customer = a.id_customer
+            left join (
+                SELECT c.no_nota, sum(c.kredit -  c.debit) as paid, sum(c.debit) as bayar
+                FROM bayar_telur as c
+                group by c.no_nota
+            ) as c on c.no_nota = a.no_nota
+            where  a.status = 'unpaid' and c.paid = '0'
+            group by a.no_nota
+            order by a.urutan DESC
+            ");
+        }
+
+
+
+        $data =  [
+            'title' => 'Piutang Telur',
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'invoice' => $invoice,
+            'kategori' => $kategori
 
         ];
         return view('piutang_agl.index', $data);
