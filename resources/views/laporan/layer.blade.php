@@ -192,7 +192,13 @@
                             <td align="center" class="kandang">{{ $k->nm_kandang }} <br>
                                 {{date('d/m/y',strtotime($k->chick_in))}} <br>
                                 {{date('d/m/y',strtotime($k->tgl_setelah_85_minggu))}} <br>
-                                {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}
+                                @php
+                                $hari_15 = date('Y-m-d', strtotime($k->tgl_setelah_85_minggu . ' +15 days'));
+                                $tgl_hari_ini = date('Y-m-d');
+                                @endphp
+
+                                <span class="{{ $tgl_hari_ini >= $hari_15 ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}</span>
 
                             </td>
                             <!-- Umur -->
