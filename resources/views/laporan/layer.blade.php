@@ -59,7 +59,7 @@
                 <table style="text-align: center; " width="100%">
                     <thead style="border: 1px solid white">
                         <tr>
-                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out</th>
+                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out <br> chick in</th>
                             <th class="dhead">Umur <br> 85 mgg</th>
                             <th class="dhead" width="10%" colspan="2">Populasi</th>
                             <th class="dhead" colspan="7">Data Telur</th>
@@ -190,7 +190,9 @@
                         <tr>
                             <td align="center" class="kandang">{{ $k->nm_kandang }} <br>
                                 {{date('d/m/y',strtotime($k->chick_in))}} <br>
-                                {{ empty($k->chick_out) ? '-' : date('d/m/y',strtotime($k->chick_out))}}
+                                {{date('d/m/y',strtotime($k->tgl_setelah_85_minggu))}} <br>
+                                {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}
+
                             </td>
                             <!-- Umur -->
                             <td align="center" class="mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
