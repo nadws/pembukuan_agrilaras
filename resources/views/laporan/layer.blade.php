@@ -59,7 +59,7 @@
                 <table style="text-align: center; " width="100%">
                     <thead style="border: 1px solid white">
                         <tr>
-                            <th class="dhead" rowspan="2">Kdg</th>
+                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out</th>
                             <th class="dhead">Umur <br> 85 mgg</th>
                             <th class="dhead" width="10%" colspan="2">Populasi</th>
                             <th class="dhead" colspan="7">Data Telur</th>
@@ -143,6 +143,7 @@
                         $pakan = 0;
                         $butir = 0;
                         $kg_today = 0;
+                        $pcs = 0;
 
                         // kuml
                         $pakan_kuml = 0;
@@ -181,13 +182,18 @@
 
                         $butir_minggu += $k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya;
                         $kg_minggu += ($k->kg_satu_minggu - ($k->pcs_satu_minggu / 180)) -
-                        ($k->kg_minggu_sebelumnya - ($k->pcs_minggu_sebelumnya / 180))
+                        ($k->kg_minggu_sebelumnya - ($k->pcs_minggu_sebelumnya / 180));
+
+                        $pcs += $k->pcs;
 
                         @endphp
                         <tr>
-                            <td align="center" class="kandang">{{ $k->nm_kandang }}</td>
+                            <td align="center" class="kandang">{{ $k->nm_kandang }} <br>
+                                {{date('d/m/y',strtotime($k->chick_in))}} <br>
+                                {{ empty($k->chick_out) ? '-' : date('d/m/y',strtotime($k->chick_out))}}
+                            </td>
                             <!-- Umur -->
-                            <td align="center" class="mgg {{ $k->mgg >= '85' ? 'bg-danger text-white' : '' }}">
+                            <td align="center" class="mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
                                 {{ $k->mgg }} <br> ({{ number_format(($k->mgg / 85) * 100, 0) }}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
@@ -217,15 +223,14 @@
 
                             </td>
                             {{-- <td align="center"
-                                class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'bg-danger text-white' : ''}}">
+                                class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'text-danger fw-bold' : ''}}">
                             </td> --}}
                             @php
                             $tot_ayam_mati = empty($k->mati) ? '0' : $k->mati;
                             $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
                             $tot_ayam_semua_hilang = $tot_ayam_mati;
                             @endphp
-                            <td align="right"
-                                class="D/C {{ $tot_ayam_semua_hilang > 3 ? 'bg-danger text-white' : '' }}">
+                            <td align="right" class="D/C {{ $tot_ayam_semua_hilang > 3 ? 'text-danger fw-bold' : '' }}">
                                 {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }} <br>
                                 {{$k->mati_week + $k->jual_week}}
                             </td>
@@ -233,7 +238,7 @@
 
                             <!-- data telur -->
                             {{-- <td align="center"
-                                class="butir / today - yesterday {{$k->pcs - $k->pcs_past < '-60' ? 'bg-danger text-white' : ''}}">
+                                class="butir / today - yesterday {{$k->pcs - $k->pcs_past < '-60' ? 'text-danger fw-bold' : ''}}">
                                 {{number_format($k->pcs,0)}} / ({{number_format($k->pcs - $k->pcs_past,0)}})
                             </td> --}}
                             <!-- mencari ikat  1 ikat = 1kg  -->
@@ -243,7 +248,7 @@
                                 {{ number_format($k->kg, 1) }}
                             </td>
                             <td align="right"
-                                class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'bg-danger text-white' : '' }} ">
+                                class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
                                 {{ number_format($k->pcs - $k->pcs_past, 0) }} <br>
                                 {{ number_format(($k->kg - ($k->pcs / 180)) - ($k->kg_past - ($k->pcs_past / 180)), 1)
                                 }}
@@ -255,7 +260,7 @@
                                 ($k->kg_minggu_sebelumnya - ($k->pcs_minggu_sebelumnya / 180)), 1) }}
                             </td>
                             {{-- <td align="center"
-                                class="kg / today - yesterday {{ $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180) < 0 ? 'bg-danger text-white' : '' }} ">
+                                class="kg / today - yesterday {{ $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180) < 0 ? 'text-danger fw-bold' : '' }} ">
 
                                 {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
                             </td> --}}
@@ -318,7 +323,7 @@
                             ($k->kg - $k->pcs / 180), 1);
                             @endphp
 
-                            <td align="right" class="FCR(week) {{ $fcr >= 2.2 ? 'bg-danger text-white' : '' }} ">
+                            <td align="right" class="FCR(week) {{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }} ">
                                 <table border="0" class="table-two">
                                     <tr>
                                         <td>{{ $fcr_day }}
@@ -362,7 +367,7 @@
                                 </table>
                             </td>
                             {{-- <td align="right"
-                                class="(gr/ekor) / p(day) {{ $k->kg_pakan < 100 ? 'bg-danger text-white' : '' }} w_pakan">
+                                class="(gr/ekor) / p(day) {{ $k->kg_pakan < 100 ? 'text-danger fw-bold' : '' }} w_pakan">
 
                             </td> --}}
                             {{-- <td align="center" class="gr(week)">{{number_format(($k->kg_p_week/1000))}}</td>
@@ -410,7 +415,12 @@
                             <th class="dhead">{{ number_format($ayam_awal, 0) }}/{{ number_format($ayam_akhir, 0) }}
                                 ({{ number_format(($ayam_akhir / $ayam_awal) * 100, 0) }} %)</th>
                             <th class="dhead text-end">{{ $mati }} <br> {{ $jual }}</th>
-                            <th class="dhead">{{ number_format($kg, 2) }} <br> {{ number_format($kg_kotor, 2) }}
+                            <th class="dhead text-end">
+                                {{number_format($pcs,0)}}
+                                <br>
+                                {{ number_format($kg, 2) }}
+                                <br>
+                                {{ number_format($kg_kotor, 2) }}
                             </th>
                             <th class="dhead text-end">
                                 {{ number_format($butir, 0) }} <br>
