@@ -191,14 +191,17 @@
                         <tr>
                             <td align="center" class="kandang">{{ $k->nm_kandang }} <br>
                                 {{date('d/m/y',strtotime($k->chick_in))}} <br>
-                                {{date('d/m/y',strtotime($k->tgl_setelah_85_minggu))}} <br>
+                                {{date('d/m/y',strtotime($k->chick_out))}} <br>
                                 @php
-                                $hari_15 = date('Y-m-d', strtotime($k->tgl_setelah_85_minggu . ' +15 days'));
+                                $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
+                                $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
                                 $tgl_hari_ini = date('Y-m-d');
                                 @endphp
 
-                                <span class="{{ $tgl_hari_ini >= $hari_15 ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}</span>
+                                <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}</span><br>
+
+                                {{date('d/m/y',strtotime($k->tgl_masuk))}}
 
                             </td>
                             <!-- Umur -->
@@ -399,14 +402,14 @@
 
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                 ? '0'
-                                : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 2) }}
+                                : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
                                 <br>
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                 ? '0'
                                 : number_format(
                                 ($k->kg_pakan_kuml / 1000 + $k->kuml_rp_vitamin / 7000 + $k->kum_ttl_rp_vaksin / 7000) /
                                 ($k->kuml_kg - $k->kuml_pcs / 180),
-                                2,
+                                1,
                                 ) }}
                             </td>
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
@@ -447,9 +450,9 @@
                             <th class="dhead"></th>
                             <th class="dhead">{{ number_format($pakan, 2) }}</th>
                             <th class="dhead">{{ number_format($pakan_kuml, 2) }} <br> {{ number_format($telur_kuml, 2)
-                                }}</th>
+                                }} </th>
                             {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
-                            <th class="dhead"></th>
+                            <th class="dhead">{{number_format($pakan_kuml/$telur_kuml,1)}}</th>
                             <th class="dhead">{{ number_format($obat_kuml, 0) }}</th>
                             <th class="dhead">{{ number_format($vaksin_kuml, 0) }}</th>
                         </tr>
