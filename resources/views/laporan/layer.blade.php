@@ -199,7 +199,7 @@
                                 @endphp
 
                                 <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->tgl_setelah_85_minggu . ' +1 month'))}}</span><br>
+                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br>
 
                                 {{date('d/m/y',strtotime($k->tgl_masuk))}}
 
