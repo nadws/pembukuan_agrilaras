@@ -16,15 +16,16 @@
             <td>{{ $d->nm_akun }}</td>
             <td>Rp. {{number_format($d->nominal,0)}}</td>
             <td align="center">
-                <a id_produk="{{ $d->nota_setor }}" class="btn btn-sm btn-primary edit"
-                    href="#"><i class="fas fa-eye"></i>
-                    </a>
-                <a href="{{ route('penyetoran.print', ['nota_setor' => $d->nota_setor]) }}" class="btn btn-sm btn-primary"><i class="fas fa-print"></i></a>
-                <a onclick="return confirm('Yakin dihapus ?')" href="{{ route('penyetoran.delete', ['nota_setor' => $d->nota_setor]) }}" class="btn btn-sm btn-danger delete_nota"><i class="fas fa-trash"></i></a>
+                <a id_produk="{{ $d->nota_setor }}" class="btn btn-sm btn-primary edit" href="#"><i
+                        class="fas fa-eye"></i>
+                </a>
+                <a href="{{ route('penyetoran.print', ['nota_setor' => $d->nota_setor]) }}"
+                    class="btn btn-sm btn-primary"><i class="fas fa-print"></i></a>
+                <a onclick="return confirm('Yakin dihapus ?')"
+                    href="{{ route('penyetoran.delete', ['nota_setor' => $d->nota_setor]) }}"
+                    class="btn btn-sm btn-danger delete_nota"><i class="fas fa-trash"></i></a>
             </td>
         </tr>
         @endforeach
     </tbody>
 </table>
-
-

@@ -30,7 +30,8 @@
                         <th>Nota <br>Pelanggan</th>
                         <th class="text-center">Qty</th>
                         <th width="19%" style="text-align: right">Total Rp <br> Semua : ({{ number_format($ttlRp,0) }})
-                            <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})</th>
+                            <br> Belum dicek : ({{ number_format($ttlRpBelumDiCek,0) }})
+                        </th>
                         <th width="10%" class="text-center">Cek</th>
                         <th class="text-center">Diterima</th>
                     </tr>

@@ -30,7 +30,11 @@
             @csrf
 
             <section class="row">
-
+                <div class="col-lg-3">
+                    <label for="">Tanggal</label>
+                    <input type="date" class="form-control" name="tgl" value="{{ date('Y-m-d') }}">
+                    <br>
+                </div>
                 <div class="col-lg-12">
                     <table class="table table-striped table-bordered">
                         <thead>
@@ -44,11 +48,11 @@
                         </thead>
                         <tbody>
                             @php
-                                $total = 0;
+                            $total = 0;
                             @endphp
                             @foreach ($id_jurnal as $no => $n)
-                                @php
-                                    $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
+                            @php
+                            $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
                             a.debit
                             FROM jurnal as a
                             left join akun as b on b.id_akun = a.id_akun
@@ -56,20 +60,20 @@
                             group by a.no_nota
                             order by a.tgl ASC
                             ");
-                                    $total += $invoice->debit;
-                                    $id_akun = $invoice->id_akun;
-                                @endphp
-                                <tr>
-                                    <td>{{ tanggal($invoice->tgl) }}</td>
-                                    <td>{{ $invoice->no_nota }}</td>
-                                    <td>{{ $invoice->nm_akun }}</td>
-                                    <td>{{ $invoice->ket }}</td>
-                                    <td align="right">{{ number_format($invoice->debit, 0) }}</td>
-                                </tr>
-                                <input type="hidden" name="id_jurnal[]" value="{{ $invoice->id_jurnal }}">
-                                <input type="hidden" name="no_nota_jurnal[]" value="{{ $invoice->no_nota }}">
-                                <input type="hidden" name="nominal[]" value="{{ $invoice->debit }}">
-                                <input type="hidden" name="id_akun_pem[]" value="{{ $invoice->id_akun }}">
+                            $total += $invoice->debit;
+                            $id_akun = $invoice->id_akun;
+                            @endphp
+                            <tr>
+                                <td>{{ tanggal($invoice->tgl) }}</td>
+                                <td>{{ $invoice->no_nota }}</td>
+                                <td>{{ $invoice->nm_akun }}</td>
+                                <td>{{ $invoice->ket }}</td>
+                                <td align="right">{{ number_format($invoice->debit, 0) }}</td>
+                            </tr>
+                            <input type="hidden" name="id_jurnal[]" value="{{ $invoice->id_jurnal }}">
+                            <input type="hidden" name="no_nota_jurnal[]" value="{{ $invoice->no_nota }}">
+                            <input type="hidden" name="nominal[]" value="{{ $invoice->debit }}">
+                            <input type="hidden" name="id_akun_pem[]" value="{{ $invoice->id_akun }}">
                             @endforeach
 
 
@@ -86,7 +90,7 @@
 
 
             </section>
-            <div class="row">
+            {{-- <div class="row">
                 <div class="col-lg-3">
                     <label for="">Tanggal</label>
                     <input type="date" class="form-control" name="tgl" value="{{ date('Y-m-d') }}">
@@ -97,7 +101,7 @@
                     <Select class="select2_add" name="id_akun" required>
                         <option value="">-Pilih Akun-</option>
                         @foreach ($akun as $a)
-                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                        <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                         @endforeach
                     </Select>
                 </div>
@@ -115,7 +119,7 @@
                     <input type="hidden" value="3" name="id_akun_kredit">
                     <input type="hidden" value="PA-{{ $nota }}" name="no_nota">
                 </div>
-            </div>
+            </div> --}}
     </x-slot>
     <x-slot name="cardFooter">
         <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>
@@ -130,8 +134,8 @@
 
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $("form").on("keypress", function(e) {
                     if (e.which === 13) {
                         e.preventDefault();
@@ -140,6 +144,6 @@
                 });
                 aksiBtn("form");
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>

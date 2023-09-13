@@ -372,7 +372,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/print_setoran', 'print_setoran')->name('print_setoran');
             Route::get('/delete_perencanaan', 'delete_perencanaan')->name('delete_perencanaan');
             Route::get('/perencanaan_setor', 'perencanaan_setor')->name('perencanaan_setor');
+            Route::get('/get_list_perencanaan', 'get_list_perencanaan')->name('get_list_perencanaan');
+            Route::get('/get_perencanaan', 'get_perencanaan')->name('get_perencanaan');
             Route::post('/save_perencanaan', 'save_perencanaan')->name('save_perencanaan');
+            Route::post('/save_setoran', 'save_setoran')->name('save_setoran');
         });
 
     Route::controller(Stok_pakanController::class)->group(function () {
