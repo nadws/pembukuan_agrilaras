@@ -421,7 +421,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan_umum_delete_perencanaan', 'delete_perencanaan')->name('penjualan_umum_delete_perencanaan');
         Route::post('/penjualan_umum_save_perencanaan', 'save_perencanaan')->name('penjualan_umum_save_perencanaan');
         Route::get('/terima_invoice_umum_cek', 'terima_invoice_umum_cek')->name('terima_invoice_umum_cek');
+        Route::get('/get_list_perencanaan_umum', 'get_list_perencanaan_umum')->name('get_list_perencanaan_umum');
+        Route::get('/get_perencanaan_umum', 'get_perencanaan_umum')->name('get_perencanaan_umum');
         Route::post('/save_cek_umum_invoice', 'save_cek_umum_invoice')->name('save_cek_umum_invoice');
+        Route::post('/save_setoran_umum', 'save_setoran_umum')->name('save_setoran_umum');
     });
 
     Route::controller(OpnamemtdController::class)->group(function () {

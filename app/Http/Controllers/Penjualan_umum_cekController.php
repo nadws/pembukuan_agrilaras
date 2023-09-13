@@ -205,45 +205,45 @@ class Penjualan_umum_cekController extends Controller
             DB::table('jurnal')->where('id_jurnal', $r->id_jurnal[$x])->update(['setor' => 'Y', 'nota_setor' => 'PEUMUM-' . $nota_t]);
         }
 
-        DB::table('setoran_umum')->where('nota_setor', 'PEUMUM-' . $nota_t)->update(['selesai' => 'Y']);
-        if (!empty($r->id_akun)) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
-            $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+        // DB::table('setoran_umum')->where('nota_setor', 'PEUMUM-' . $nota_t)->update(['selesai' => 'Y']);
+        // if (!empty($r->id_akun)) {
+        //     $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun1)->first();
+        //     $akun = DB::table('akun')->where('id_akun', $r->id_akun1)->first();
+        //     $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            $data = [
-                'tgl' => $r->tgl,
-                'no_nota' => 'PEUMUM-' . $nota_t,
-                'id_akun' => $r->id_akun1,
-                'id_buku' => '7',
-                'ket' => $r->ket,
-                'debit' => 0,
-                'kredit' => $r->total_setor,
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
+        //     $data = [
+        //         'tgl' => $r->tgl,
+        //         'no_nota' => 'PEUMUM-' . $nota_t,
+        //         'id_akun' => $r->id_akun1,
+        //         'id_buku' => '7',
+        //         'ket' => $r->ket,
+        //         'debit' => 0,
+        //         'kredit' => $r->total_setor,
+        //         'admin' => auth()->user()->name,
+        //         'no_urut' => $akun->inisial . '-' . $urutan,
+        //         'urutan' => $urutan,
+        //     ];
+        //     DB::table('jurnal')->insert($data);
 
-            $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
-            $akun2 = DB::table('akun')->where('id_akun', $r->id_akun)->first();
-            $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
+        //     $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
+        //     $akun2 = DB::table('akun')->where('id_akun', $r->id_akun)->first();
+        //     $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
 
-            $data = [
-                'tgl' => $r->tgl,
-                'no_nota' => 'PEUMUM-' . $nota_t,
-                'id_akun' => $r->id_akun,
-                'id_buku' => '7',
-                'ket' => $r->ket,
-                'debit' => $r->total_setor,
-                'kredit' => 0,
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun2->inisial . '-' . $urutan2,
-                'urutan' => $urutan2,
-            ];
-            DB::table('jurnal')->insert($data);
-        }
-        return redirect()->route('summary_buku_besar.detail', ['id_akun' => $r->id_akun, 'tgl1' => '2023-01-01', 'tgl2' => $r->tgl])->with('sukses', 'Data berhasil ditambahkan');
+        //     $data = [
+        //         'tgl' => $r->tgl,
+        //         'no_nota' => 'PEUMUM-' . $nota_t,
+        //         'id_akun' => $r->id_akun,
+        //         'id_buku' => '7',
+        //         'ket' => $r->ket,
+        //         'debit' => $r->total_setor,
+        //         'kredit' => 0,
+        //         'admin' => auth()->user()->name,
+        //         'no_urut' => $akun2->inisial . '-' . $urutan2,
+        //         'urutan' => $urutan2,
+        //     ];
+        //     DB::table('jurnal')->insert($data);
+        // }
+        return redirect()->route('penyetoran_penjualan_umum')->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function get_history_perencanaan(Request $r)
@@ -297,5 +297,81 @@ class Penjualan_umum_cekController extends Controller
         DB::table('setoran_umum')->where('nota_setor', $r->no_nota)->delete();
 
         return redirect()->route('penyetoran_penjualan_umum')->with('sukses', 'Data berhasil dihapus');
+    }
+
+    public function get_list_perencanaan_umum(Request $r)
+    {
+        $data =  [
+            'invoice' => DB::select("SELECT a.tgl, a.nota_setor , b.nm_akun, sum(a.nominal) as nominal 
+            FROM setoran_umum as a
+            left join akun as b on b.id_akun = a.id_akun
+            where a.selesai = 'T'
+            group by a.nota_setor
+            ")
+        ];
+        return view('penyetoran.list_perencanaan', $data);
+    }
+
+    public function get_perencanaan_umum(Request $r)
+    {
+        $invoice = DB::table('setoran_umum')->where('nota_setor', $r->no_nota)->first();
+        $data = [
+            'invoice' => DB::select("SELECT c.tgl, a.no_nota_jurnal, b.nm_akun, c.ket, a.nominal
+            FROM setoran_umum as a
+            left join akun as b on b.id_akun = a.id_akun
+            left join jurnal as c on c.id_jurnal = a.id_jurnal
+            where a.nota_setor = '$r->no_nota'
+            "),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'no_nota' => $r->no_nota,
+            'invo' => $invoice
+        ];
+        return view('penyetoran.get_perencanaan', $data);
+    }
+
+    public function save_setoran_umum(Request $r)
+    {
+        DB::table('setoran_umum')->where('nota_setor', $r->no_nota)->update(['selesai' => 'Y']);
+
+        if (empty($r->id_akun)) {
+            # code...
+        } else {
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun_kredit)->first();
+            $akun = DB::table('akun')->where('id_akun', $r->id_akun_kredit)->first();
+            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+
+            $data = [
+                'tgl' => $r->tgl,
+                'no_nota' => $r->no_nota,
+                'id_akun' => $r->id_akun_kredit,
+                'id_buku' => '7',
+                'ket' => $r->ket,
+                'debit' => 0,
+                'kredit' => $r->total_setor,
+                'admin' => Auth::user()->name,
+                'no_urut' => $akun->inisial . '-' . $urutan,
+                'urutan' => $urutan,
+            ];
+            DB::table('jurnal')->insert($data);
+
+            $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun)->first();
+            $akun2 = DB::table('akun')->where('id_akun', $r->id_akun)->first();
+            $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
+
+            $data = [
+                'tgl' => $r->tgl,
+                'no_nota' => $r->no_nota,
+                'id_akun' => $r->id_akun,
+                'id_buku' => '7',
+                'ket' => $r->ket,
+                'debit' => $r->total_setor,
+                'kredit' => 0,
+                'admin' => Auth::user()->name,
+                'no_urut' => $akun2->inisial . '-' . $urutan2,
+                'urutan' => $urutan2,
+            ];
+            DB::table('jurnal')->insert($data);
+        }
+        return redirect()->route('penyetoran_penjualan_umum')->with('sukses', 'Data berhasil disetor');
     }
 }
