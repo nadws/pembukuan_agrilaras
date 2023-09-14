@@ -59,7 +59,7 @@
                 <table style="text-align: center; " width="100%">
                     <thead style="border: 1px solid white">
                         <tr>
-                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out <br> chick in <br>
+                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> afkir <br> chick in <br>
                                 {{date('d/m/y')}}</th>
                             <th class="dhead">Umur <br> 85 mgg</th>
                             <th class="dhead" width="10%" colspan="2">Populasi</th>
