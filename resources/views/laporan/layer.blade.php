@@ -204,8 +204,8 @@
 
                                 <span class="{{$tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : ''}}">
                                     {{date('d/m/y',strtotime($k->chick_out))}} </span> <br>
-                                <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br>
+                                {{-- <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br> --}}
                                 <span class="{{$tgl_hari_ini >= $ckin2 ? 'text-danger fw-bold' : ''}}">
                                     {{date('d/m/y',strtotime($k->tgl_masuk))}}
                                 </span>
