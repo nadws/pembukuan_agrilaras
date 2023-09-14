@@ -55,7 +55,6 @@ class PenjualanAyamController extends Controller
                 $ttlRpBelumDiCek += $v->total;
             }
         }
-
         $data = [
             'title' => 'Penjualan Ayam',
             'penjualan' => $penjualan,

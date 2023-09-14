@@ -59,7 +59,7 @@
                 <table style="text-align: center; " width="100%">
                     <thead style="border: 1px solid white">
                         <tr>
-                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out <br> chick in <br>
+                            <th class="dhead" rowspan="2">Kdg <br> chick in <br> chick out <br> chick in2 <br>
                                 {{date('d/m/y')}}</th>
                             <th class="dhead">Umur <br> 85 mgg</th>
                             <th class="dhead" width="10%" colspan="2">Populasi</th>
@@ -191,17 +191,24 @@
                         <tr>
                             <td align="center" class="kandang">{{ $k->nm_kandang }} <br>
                                 {{date('d/m/y',strtotime($k->chick_in))}} <br>
-                                {{date('d/m/y',strtotime($k->chick_out))}} <br>
+
                                 @php
-                                $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
-                                $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
+                                // $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
+                                // $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
                                 $tgl_hari_ini = date('Y-m-d');
+                                $afkir = date('Y-m-d', strtotime($k->chick_out . ' -4 weeks'));
+                                $ckin2 = date('Y-m-d', strtotime($k->tgl_masuk . ' -20 weeks'));
+
+
                                 @endphp
 
-                                <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br>
-
-                                {{date('d/m/y',strtotime($k->tgl_masuk))}}
+                                <span class="{{$tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y',strtotime($k->chick_out))}} </span> <br>
+                                {{-- <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br> --}}
+                                <span class="{{$tgl_hari_ini >= $ckin2 ? 'text-danger fw-bold' : ''}}">
+                                    {{date('d/m/y',strtotime($k->tgl_masuk))}}
+                                </span>
 
                             </td>
                             <!-- Umur -->
