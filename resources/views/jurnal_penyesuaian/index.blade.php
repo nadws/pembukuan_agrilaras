@@ -82,7 +82,7 @@
                                     <select id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
                                         <option value="{{ $a->id_akun }}" {{ $a->id_akun == '51' ? 'SELECTED' : '' }}>
-                                            {{ $a->nm_akun }}
+                                            {{ $a->nm_akun }} === {{ $a->id_akun }}
                                         </option>
                                         @endforeach
                                     </select>

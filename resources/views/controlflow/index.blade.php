@@ -66,8 +66,8 @@
     </x-slot>
 
     @section('scripts')
-    <script>
-        loadTabel()
+        <script>
+            loadTabel()
 
             function toast(pesan) {
                 Toastify({
@@ -133,7 +133,7 @@
                     }
                 });
             }
-            
+
             $(document).on('click', '.input_pendapatan', function() {
                 $("#modalPendapatan").modal('show')
                 var jenis = $(this).attr('jenis');
@@ -257,9 +257,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        load_cash_ibu()
+        </script>
+        <script>
+            load_cash_ibu()
 
             function toast(pesan) {
                 Toastify({
@@ -361,6 +361,8 @@
                     }
                 });
             });
-    </script>
+
+            
+        </script>
     @endsection
 </x-theme.app>

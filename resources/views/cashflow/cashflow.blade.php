@@ -9,7 +9,14 @@
         color: white;
     }
 </style>
-<div class="row">
+
+<div class="row" x-data="{
+    openPbl:false,
+    openPnjl:false,
+    openPbi:false,
+    openBiaya:false,
+    openUangKeluar:false,
+}">
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tbody>
@@ -19,7 +26,8 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='1'>Piutang Bulan Lalu</a>
+                    class="tmbhakun_control me-3" kategori='1'>Piutang Bulan Lalu</a> 
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl">Buka</button>
                     </td>
                 </tr>
                 @php
@@ -30,7 +38,7 @@
                 @php
                 $total_pi += $p->debit - $p->kredit;
                 @endphp
-                <tr>
+                <tr x-show="openPbl">
                     <td>{{ucwords(strtolower($p->nm_akun))}} ({{date('F Y',strtotime($tgl_back))}}) </td>
                     <td align="right">Rp {{number_format($p->debit - $p->kredit,0)}}</td>
                 </tr>
@@ -42,13 +50,16 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='2'>Penjualan</a></td>
+                            class="tmbhakun_control me-3" kategori='2'>Penjualan</a>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPnjl = ! openPnjl">Buka</button>
+
+                        </td>
                 </tr>
                 @foreach ($penjualan as $p)
                 @php
                 $total_pe += $p->kredit;
                 @endphp
-                <tr>
+                <tr x-show="openPnjl">
                     <td>{{ucwords(strtolower($p->nm_akun))}} </td>
                     <td align="right">Rp {{number_format($p->kredit,0)}}</td>
                 </tr>
@@ -64,7 +75,10 @@
                 {{-- dasds --}}
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='4'>Piutang Bulan Ini</a></td>
+                            class="tmbhakun_control me-3" kategori='4'>Piutang Bulan Ini</a>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbi = ! openPbi">Buka</button>
+
+                        </td>
                 </tr>
                 @php
                 $t_piutang = 0;
@@ -73,12 +87,12 @@
                 @php
                 $t_piutang += $u->debit - $u->kredit ;
                 @endphp
-                <tr>
+                <tr x-show="openPbi">
                     <td>{{ucwords(strtolower($u->nm_akun))}} ({{date('F Y',strtotime($tgl2))}})</td>
                     <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} </td>
                 </tr>
                 @endforeach
-                <tr>
+                <tr x-show="openPbi">
                     <td>Biaya Kerugian Piutang</td>
                     <td align="right">Rp. {{number_format($kerugian->debit,0)}}</td>
                 </tr>
@@ -100,7 +114,7 @@
     </div>
 
     <div class="col-lg-6">
-        <table class="table table-bordered">
+        <table class="table table-bordered" >
             <thead>
                 <tr>
                     <th class="dhead2">Akun</th>
@@ -108,7 +122,9 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='3'>Uang Ditarik</a></td>
+                            class="tmbhakun_control" kategori='3'>Uang Ditarik</a>
+                            
+                        </td>
                 </tr>
                 @php
                 $t_uang = 0;
@@ -170,10 +186,13 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='5'>Biaya</a></td>
+                            class="tmbhakun_control me-3" kategori='5'>Biaya</a>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka</button>
+                             
+                        </td>
                 </tr>
                 @foreach ($biaya as $b)
-                <tr>
+                <tr x-show="openBiaya">
                     <td>{{ucwords(strtolower($b->nm_akun))}} </td>
                     <td align="right">Rp {{number_format($b->debit ,1)}}</td>
                 </tr>
@@ -198,10 +217,13 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='6'>Uang Keluar</a></td>
+                            class="tmbhakun_control me-3" kategori='6'>Uang Keluar</a>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openUangKeluar = ! openUangKeluar">Buka</button>
+
+                        </td>
                 </tr>
                 @foreach ($uangbiaya as $b)
-                <tr>
+                <tr x-show="openUangKeluar">
                     <td>{{ucwords(strtolower($b->nm_akun))}} </td>
                     <td align="right">Rp {{number_format($b->kredit ,1)}}</td>
                 </tr>
