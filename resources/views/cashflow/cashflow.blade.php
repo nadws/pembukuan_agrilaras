@@ -27,7 +27,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                     class="tmbhakun_control me-3" kategori='1'>Piutang Bulan Lalu</a> 
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl">Buka <i
+                    class="fas fa-caret-down"></i></button>
                     </td>
                 </tr>
                 @php
@@ -51,7 +52,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='2'>Penjualan</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPnjl = ! openPnjl">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPnjl = ! openPnjl">Buka <i
+                    class="fas fa-caret-down"></i></button>
 
                         </td>
                 </tr>
@@ -76,7 +78,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='4'>Piutang Bulan Ini</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbi = ! openPbi">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbi = ! openPbi">Buka <i
+                    class="fas fa-caret-down"></i></button>
 
                         </td>
                 </tr>
@@ -187,7 +190,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='5'>Biaya</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka <i
+                    class="fas fa-caret-down"></i></button>
                              
                         </td>
                 </tr>
@@ -218,7 +222,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='6'>Uang Keluar</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openUangKeluar = ! openUangKeluar">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openUangKeluar = ! openUangKeluar">Buka <i
+                    class="fas fa-caret-down"></i></button>
 
                         </td>
                 </tr>
