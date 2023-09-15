@@ -44,13 +44,15 @@
                         <td>{{ $d->no_nota }} <br>{{ $d->customer }}</td>
                         <td align="center">{{ $d->qty }}</td>
                         <td align="right">Rp. {{ number_format($d->total, 2) }}</td>
-
                         <td align="center">
                             @if ($d->cek == 'Y')
                             <i class="fas fa-check text-success"></i>
                             @else
-                            <input type="checkbox" name="" no_nota="{{ $d->urutan }}" piutang="{{ $d->total }}" id=""
-                                class="cek_bayar">
+                            <a class="btn btn-primary btn-sm"
+                                href="{{ route('penjualan_ayam.cek',['no_nota[]' => $d->urutan]) }}"><i
+                                    class="me-2 fas fa-plus"></i>Cek</a>
+                            {{-- <input type="checkbox" name="" no_nota="{{ $d->urutan }}" piutang="{{ $d->total }}"
+                                id="" class="cek_bayar"> --}}
                             @endif
                         </td>
                         <td align="center">{{ $d->admin_cek }}</td>

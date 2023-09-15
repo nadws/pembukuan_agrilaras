@@ -46,6 +46,8 @@
                                 <th class="dhead">No Nota</th>
                                 <th class="dhead">Tanggal</th>
                                 <th class="dhead">Customer</th>
+                                <th class="dhead">Qty</th>
+                                <th class="dhead">Rp Satuan</th>
                                 <th class="dhead" style="text-align: right">Total Rp</th>
                             </tr>
                         </thead>
@@ -67,15 +69,17 @@
                                 <td>{{$hutang->no_nota}}</td>
                                 <td>
                                     {{tanggal($hutang->tgl)}}
-                                    <input type="hidden" name="tgl[]" value="{{$hutang->tgl}}">
-                                    <input type="hidden" name="urutan[]" value="{{$hutang->urutan}}">
-                                    <input type="hidden" name="nm_customer[]" value="{{$hutang->customer}}">
-                                    <input type="hidden" name="no_nota[]" value="{{$hutang->no_nota}}">
-                                    <input type="hidden" name="pembayaran[]"
+                                    <input type="hidden" name="tgl" value="{{$hutang->tgl}}">
+                                    <input type="hidden" name="urutan" value="{{$hutang->urutan}}">
+                                    <input type="hidden" name="nm_customer" value="{{$hutang->customer}}">
+                                    <input type="hidden" name="no_nota" value="{{$hutang->no_nota}}">
+                                    <input type="hidden" name="pembayaran"
                                         class="form-control bayar_biasa bayar_biasa{{$no+1}}" style="text-align: right"
                                         value="{{$hutang->total}}">
                                 </td>
                                 <td>{{$hutang->customer}}</td>
+                                <td>{{$hutang->qty}}</td>
+                                <td>Rp. {{number_format($hutang->h_satuan,0)}}</td>
                                 <td align="right">
                                     Rp {{number_format($hutang->total,0)}}
 

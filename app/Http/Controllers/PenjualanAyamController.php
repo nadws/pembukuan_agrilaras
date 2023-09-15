@@ -87,27 +87,35 @@ class PenjualanAyamController extends Controller
         }
         DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '6']);
 
-        for ($x = 0; $x < count($r->no_nota); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun_penualan_ayam)->first();
-            $akun = DB::table('akun')->where('id_akun', $id_akun_penualan_ayam)->first();
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            $data = [
-                'tgl' => $r->tgl[$x],
-                'no_nota' => 'PAMTD-' . $nota_t,
-                'id_akun' => $id_akun_penualan_ayam,
-                'id_buku' => '6',
-                'ket' => 'Penjualan  ' . $r->no_nota[$x] . ':' . $r->nm_customer[$x],
-                'debit' => '0',
-                'kredit' => $r->pembayaran[$x],
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun_penualan_ayam)->first();
+        $akun = DB::table('akun')->where('id_akun', $id_akun_penualan_ayam)->first();
+        $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            DB::table('invoice_ayam')->where('urutan', $r->urutan[$x])->update(['cek' => 'Y', 'admin_cek' => auth()->user()->name]);
-        }
+        $data = [
+            'tgl' => $r->tgl,
+            'no_nota' => $r->no_nota,
+            'id_akun' => $id_akun_penualan_ayam,
+            'id_buku' => '6',
+            'ket' => 'Penjualan  ' . $r->no_nota . ':' . $r->nm_customer,
+            'debit' => '0',
+            'kredit' => $r->pembayaran,
+            'admin' => auth()->user()->name,
+            'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
+        ];
+        DB::table('jurnal')->insert($data);
+
+        $data = [
+            'tgl' => $r->tgl,
+            'no_nota' => $r->no_nota,
+            'debit' => 0,
+            'kredit' => $r->pembayaran,
+        ];
+        DB::table('bayar_ayam')->insert($data);
+
+        DB::table('invoice_ayam')->where('urutan', $r->urutan)->update(['cek' => 'Y', 'admin_cek' => auth()->user()->name]);
+
 
         for ($x = 0; $x < count($r->id_akun); $x++) {
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
@@ -115,8 +123,8 @@ class PenjualanAyamController extends Controller
 
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
             $data = [
-                'tgl' => $r->tgl[$x],
-                'no_nota' => 'PAMTD-' . $nota_t,
+                'tgl' => $r->tgl,
+                'no_nota' => $r->no_nota,
                 'id_akun' => $r->id_akun[$x],
                 'id_buku' => '6',
                 'ket' => 'Penjualan ayam di Martadah',
@@ -127,6 +135,20 @@ class PenjualanAyamController extends Controller
                 'urutan' => $urutan,
             ];
             DB::table('jurnal')->insert($data);
+            if ($r->id_akun[$x] == '66') {
+                // $nota = 'PA' . $nota_t;
+                // DB::table('invoice_ayam')->where('no_nota', $nota)->update(['status' => 'unpaid']);
+            } else {
+                $data = [
+                    'tgl' => $r->tgl,
+                    'no_nota' => $r->no_nota,
+                    'debit' => $r->debit[$x],
+                    'kredit' => $r->kredit[$x],
+                    'no_nota_piutang' => $r->no_nota,
+                    'admin' => Auth::user()->name,
+                ];
+                DB::table('bayar_ayam')->insert($data);
+            }
         }
 
         return redirect()->route('penjualan_ayam.index')->with('sukses', 'Data berhasil ditambahkan');

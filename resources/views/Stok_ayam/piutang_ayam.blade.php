@@ -55,7 +55,14 @@
                         <td>{{$no+1}}</td>
                         <td>{{tanggal($i->tgl)}}</td>
                         <td>{{$i->no_nota}}</td>
-                        <td>{{$i->nm_customer}}{{$i->urutan_customer}}</td>
+                        <td>
+                            @if ($i->lokasi == 'mtd')
+                            {{$i->customer}}
+                            @else
+                            {{$i->nm_customer}}{{$i->urutan_customer}}
+                            @endif
+
+                        </td>
                         <td class="text-end">{{$i->qty}}</td>
                         <td class="text-end">Rp. {{number_format($i->h_satuan,0)}}</td>
                         <td class="text-end">Rp. {{number_format($i->qty * $i->h_satuan,0)}}</td>
