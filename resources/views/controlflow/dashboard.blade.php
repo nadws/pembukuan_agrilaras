@@ -1111,6 +1111,19 @@
                     }
                 });
             });
+
+            $(document).on('click', '.btn-buka', function() {
+                // Temukan baris terkait dengan tombol yang diklik
+                var $parentRow = $(this).closest('tr');
+                var dataId = $parentRow.find('.detail-row').data('id');
+                var $detailRow = $('.detail-row[data-id="' + dataId + '"]');
+
+                // Toggle (sembunyikan/tampilkan) baris terkait
+                $detailRow.toggle();
+            })
+
+            // Sembunyikan semua baris detail saat halaman dimuat
+            $('.detail-row').hide();
     </script>
     @endsection
 </x-theme.app>
