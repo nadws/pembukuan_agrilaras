@@ -50,9 +50,9 @@
         </tr>
         @foreach ($subKategori1 as $d)
             <tr>
-                <th colspan="2"><a href="#" class="klikModal me-3"
+                <th colspan="2"><a href="#" class="klikModal"
                         id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }} </a>
-                    <button class="btn btn-primary btn-sm btn-buka" @click="open1 = ! open1">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open1 = ! open1">Buka</button>
                 </th>
             </tr>
             @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
@@ -80,9 +80,9 @@
         </tr>
         @foreach ($subKategori2 as $d)
             <tr>
-                <th colspan="2"><a href="#" class="klikModal me-3"
+                <th colspan="2"><a href="#" class="klikModal"
                         id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
-                    <button class="btn btn-primary btn-sm btn-buka" @click="open2 = ! open2">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open2 = ! open2">Buka</button>
 
                 </th>
             </tr>
