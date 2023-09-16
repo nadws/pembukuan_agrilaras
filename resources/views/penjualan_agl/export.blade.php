@@ -25,7 +25,14 @@
             <td>{{ $no + 1 }}</td>
             <td>{{ tanggal($i->tgl) }}</td>
             <td>{{ $i->no_nota }}</td>
-            <td>{{ $i->nm_customer }}{{$i->urutan_customer}}</td>
+            <td>
+                @if ($i->lokasi == 'alpa')
+                {{ $i->nm_customer }}{{$i->urutan_customer}}
+                @else
+                {{ $i->customer }}
+                @endif
+
+            </td>
             <td>{{$i->driver}}</td>
             <td>{{$i->pcs}}</td>
             <td>{{number_format($i->kg,1)}}</td>
