@@ -46,7 +46,7 @@
             </div>
             <section class="row">
                 <div class="col-lg-12">
-                    <table class="table table-striped">
+                    <table class="table table-striped table-bordered">
                         <thead>
                             <tr>
                                 <th class="dhead" width="15%">Bulan</th>
@@ -74,40 +74,42 @@
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota" value="JP-{{ $nota }}">
+                                    <input type="text" class="form-control" readonly name="no_nota" value="JP-{{ $nota }}">
 
                                 </td>
                                 <td>
                                     <input type="hidden" name="id_akun_debit" value="51">
-                                    <select id="" class="select2_add" disabled>
+                                    {{ ucwords($akunDebit->nm_akun) }}
+                                    {{-- <select id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
                                         <option value="{{ $a->id_akun }}" {{ $a->id_akun == '51' ? 'SELECTED' : '' }}>
-                                            {{ $a->nm_akun }} === {{ $a->id_akun }}
+                                            {{ $a->nm_akun }}
                                         </option>
                                         @endforeach
-                                    </select>
+                                    </select> --}}
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control text-end total" readonly
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    <input type="text" readonly class="text-end form-control" value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                </td>
                                     <input type="hidden" class="total_biasa" name="debit_kredit"
                                         value="{{ round($total, 2) }}">
-                                </td>
                                 <td>
+                                    {{ ucwords($akunDebit->nm_akun) }}
+
                                     <input type="hidden" name="id_akun_kredit" value="52">
-                                    <select name="" id="" class="select2_add" disabled>
+                                    {{-- <select name="" id="" class="select2_add" disabled>
                                         @foreach ($akun as $a)
                                         <option value="{{ $a->id_akun }}" {{ $a->id_akun == '52' ? 'SELECTED' : '' }}>
                                             {{ $a->nm_akun }}
                                         </option>
                                         @endforeach
-                                    </select>
+                                    </select> --}}
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control text-end total" readonly
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    <input type="text" readonly class="text-end form-control" value="Rp {{ number_format($total, 2, ',', '.') }}">
                                 </td>
                             </tr>
+                            
                         </tbody>
                     </table>
                 </div>
