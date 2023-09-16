@@ -52,7 +52,7 @@
             <tr>
                 <th colspan="2"><a href="#" class="klikModal"
                         id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }} </a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open1 = ! open1">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open1 = ! open1">Buka <i class="fas fa-caret-down"></i></button>
                 </th>
             </tr>
             @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
@@ -82,7 +82,7 @@
             <tr>
                 <th colspan="2"><a href="#" class="klikModal"
                         id_kategori="{{ $d->id }}">{{ ucwords($d->sub_kategori) }}</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open2 = ! open2">Buka</button>
+                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="open2 = ! open2">Buka <i class="fas fa-caret-down"></i></button>
 
                 </th>
             </tr>

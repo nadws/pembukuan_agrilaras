@@ -1,5 +1,10 @@
 <x-theme.app title="{{ $title }}" table="T" sizeCard="12" cont="container-fluid">
-    <div class="row">
+    <div class="row" x-data="{
+        stok: false,
+        profit: false,
+        neraca: false,
+     }">
+
         <div class="col-lg-12 mb-2">
             <div class="dropdown float-end">
                 <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -15,169 +20,179 @@
             </div>
             <x-theme.btn_filter />
         </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <h6 class="float-strat">Telur Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
+
+        <h5 class="">&nbsp;&nbsp;&nbsp; Stok Kandang Mtd
+            <button class="btn btn-primary btn-sm btn-buka" @click="stok = ! stok">Buka <i
+                    class="fas fa-caret-down"></i></button>
+        </h5>
+        <hr>
+
+        <div class="row" x-show="stok">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h6 class="float-strat">Telur Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
+                            </div>
+
                         </div>
-
                     </div>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th class="dhead">#</th>
-                                <th class="dhead" width="40%">Nama</th>
-                                <th class="dhead text-end">Pcs Selisih</th>
-                                <th class="dhead text-end">Kg Selisih</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($telur_selisih as $no => $d)
-                            <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ $d->nm_telur }}</td>
-                                <td align="right">{{ number_format($d->pcs_selisih, 0) }}</td>
-                                <td align="right">{{ number_format($d->kg_selisih, 1) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-center" colspan="2">Total</th>
-                                <th class="text-end">2</th>
-                                <th class="text-end">2</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <h6 class="float-strat">Pakan Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th class="dhead">#</th>
-                                <th class="dhead">Nama</th>
-                                <th style="text-align: right" class="dhead">Stok Selisih</th>
-                                <th style="text-align: right" class="dhead">Harga Satuan</th>
-                                <th style="text-align: right" class="dhead">Rupiah</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                            $ttlRp = 0;
-                            @endphp
-                            @foreach ($pakanSelisih as $no => $d)
-                            @php
-                            $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
-                            $selisih = $d->stok - $stokProgram;
-                            if ($d->sum_ttl_rp != 0) {
-                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
-                            } else {
-                            $hargaSatuan = 0;
-                            }
-
-                            $selisihRupiah = $hargaSatuan * $selisih;
-                            $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ $d->nm_produk }}</td>
-                                <td align="right">{{ number_format($d->stok - $stokProgram, 1) }} {{ $d->nm_satuan }}
-                                </td>
-                                <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
-                                <td align="right">
-                                    {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }} </td>
-                                        </tr>
-                                        @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-center" colspan="4">Total </th>
-                                <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <h6 class="float-strat">Vitamin Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th class="dhead">#</th>
-                                <th class="dhead">Nama</th>
-                                <th style="text-align: right" class="dhead">Stok Selisih</th>
-                                <th style="text-align: right" class="dhead">Harga Satuan</th>
-                                <th style="text-align: right" class="dhead">Rupiah</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                            $ttlRp = 0;
-                            @endphp
-                            @foreach ($vitaminSelisih as $no => $d)
-                            @php
-                            $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
-                            $selisih = $d->stok - $stokProgram;
-                            if ($d->sum_ttl_rp != 0) {
-                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
-                            } else {
-                            $hargaSatuan = 0;
-                            }
-                            $selisihRupiah = $hargaSatuan * $selisih;
-                            $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp @if ($d->stok -
-                                $stokProgram == 0 && $hargaSatuan == 0)
-                                @php
-                                continue;
-                                @endphp
-                                @else
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
                                 <tr>
-                                    <td>{{ $no + 1 }}</td>
-                                    <td>{{ $d->nm_produk }}</td>
-                                    <td align="right">{{ number_format($d->stok - $stokProgram, 1) }} {{ $d->nm_satuan
-                                        }}</td>
-                                    <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
-                                    <td align="right">
-                                        {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
-                                            </td>
+                                    <th class="dhead">#</th>
+                                    <th class="dhead" width="40%">Nama</th>
+                                    <th class="dhead text-end">Pcs Selisih</th>
+                                    <th class="dhead text-end">Kg Selisih</th>
                                 </tr>
-                                @endif
+                            </thead>
+                            <tbody>
+                                @foreach ($telur_selisih as $no => $d)
+                                    <tr>
+                                        <td>{{ $no + 1 }}</td>
+                                        <td>{{ $d->nm_telur }}</td>
+                                        <td align="right">{{ number_format($d->pcs_selisih, 0) }}</td>
+                                        <td align="right">{{ number_format($d->kg_selisih, 1) }}</td>
+                                    </tr>
                                 @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-center" colspan="4">Total </th>
-                                <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-center" colspan="2">Total</th>
+                                    <th class="text-end">2</th>
+                                    <th class="text-end">2</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h6 class="float-strat">Pakan Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="dhead">#</th>
+                                    <th class="dhead">Nama</th>
+                                    <th style="text-align: right" class="dhead">Stok Selisih</th>
+                                    <th style="text-align: right" class="dhead">Harga Satuan</th>
+                                    <th style="text-align: right" class="dhead">Rupiah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $ttlRp = 0;
+                                @endphp
+                                @foreach ($pakanSelisih as $no => $d)
+                                    @php
+                                        $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                        $selisih = $d->stok - $stokProgram;
+                                        if ($d->sum_ttl_rp != 0) {
+                                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                        } else {
+                                            $hargaSatuan = 0;
+                                        }
+                                        
+                                        $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp <tr>
+                                        <td>{{ $no + 1 }}</td>
+                                        <td>{{ $d->nm_produk }}</td>
+                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
+                                            {{ $d->nm_satuan }}
+                                        </td>
+                                        <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                        <td align="right">
+                                            {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-center" colspan="4">Total </th>
+                                    <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h6 class="float-strat">Vitamin Selisih {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}
+                                </h6>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="dhead">#</th>
+                                    <th class="dhead">Nama</th>
+                                    <th style="text-align: right" class="dhead">Stok Selisih</th>
+                                    <th style="text-align: right" class="dhead">Harga Satuan</th>
+                                    <th style="text-align: right" class="dhead">Rupiah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $ttlRp = 0;
+                                @endphp
+                                @foreach ($vitaminSelisih as $no => $d)
+                                    @php
+                                        $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                        $selisih = $d->stok - $stokProgram;
+                                        if ($d->sum_ttl_rp != 0) {
+                                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                        } else {
+                                            $hargaSatuan = 0;
+                                        }
+                                        $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp @if ($d->stok - $stokProgram == 0 && $hargaSatuan == 0)
+                                        @php
+                                            continue;
+                                        @endphp
+                                    @else
+                                        <tr>
+                                            <td>{{ $no + 1 }}</td>
+                                            <td>{{ $d->nm_produk }}</td>
+                                            <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
+                                                {{ $d->nm_satuan }}</td>
+                                            <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                            <td align="right">
+                                                {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-center" colspan="4">Total </th>
+                                    <th class="text-end">{{ number_format($ttlRp, 0) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-
         {{-- <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
@@ -202,108 +217,129 @@
                 </div>
             </div>
         </div> --}}
-        <div class="col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <h6 for="">Profit & Loss {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
-                        </div>
-                        <div class="col-lg-4">
-                            {{--
+        <h5 class="">&nbsp;&nbsp;&nbsp; Profit & Uang Ditarik
+            <button class="btn btn-primary btn-sm btn-buka" @click="profit = ! profit">Buka <i
+                    class="fas fa-caret-down"></i></button>
+        </h5>
+        <hr>
+        <div class="row" x-show="profit">
+
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h6 for="">Profit & Loss {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
+                            </div>
+                            <div class="col-lg-4">
+                                {{--
                             <x-theme.button modal="T" href="/profit/print?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}"
                                 icon="fa-print" addClass="float-end" teks="Print" /> --}}
 
-                            <button data-bs-toggle="modal" data-bs-target="#daftarprofit"
-                                class="btn btn-sm btn-primary float-end d_profit"><i class="fas fa-clipboard-list"></i>
-                                List
-                                Akun
-                                <span class="badge bg-danger ttl_akun_profit"></span>
-                            </button>
+                                <button data-bs-toggle="modal" data-bs-target="#daftarprofit"
+                                    class="btn btn-sm btn-primary float-end d_profit"><i
+                                        class="fas fa-clipboard-list"></i>
+                                    List
+                                    Akun
+                                    <span class="badge bg-danger ttl_akun_profit"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    <div class="card-body">
+                        <div id="tableLoad"></div>
+                        <form id="formtabhAkun">
+                            <x-theme.modal btnSave="T" title="Tambah Akun" idModal="tambah-profit"
+                                size="modal-lg">
+                                <div id="modalLoad"></div>
+                            </x-theme.modal>
+                        </form>
+
+                        <form action="" id="formUraian">
+                            <x-theme.modal btnSave="T" title="Tambah Uraian" idModal="tambah-uraian"
+                                size="modal-lg">
+                                <div class="uraian-modal"></div>
+                            </x-theme.modal>
+                        </form>
+
+                        <x-theme.modal title="Daftar Akun yang belum terdaftar" size="modal-lg" btnSave='T'
+                            idModal="daftarakun1">
+                            <div id="viewdaftarakun1"></div>
+                        </x-theme.modal>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="tableLoad"></div>
-                    <form id="formtabhAkun">
-                        <x-theme.modal btnSave="T" title="Tambah Akun" idModal="tambah-profit" size="modal-lg">
-                            <div id="modalLoad"></div>
-                        </x-theme.modal>
-                    </form>
-
-                    <form action="" id="formUraian">
-                        <x-theme.modal btnSave="T" title="Tambah Uraian" idModal="tambah-uraian" size="modal-lg">
-                            <div class="uraian-modal"></div>
-                        </x-theme.modal>
-                    </form>
-
-                    <x-theme.modal title="Daftar Akun yang belum terdaftar" size="modal-lg" btnSave='T'
-                        idModal="daftarakun1">
-                        <div id="viewdaftarakun1"></div>
-                    </x-theme.modal>
+            </div>
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h6 class="float-strat">Control Uang Ditarik</h6>
+                            </div>
+                            <div class="col-lg-6">
+                                <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
+                                    class="btn btn-sm btn-primary float-end d_uangditarik"><i
+                                        class="fas fa-clipboard-list"></i> List
+                                    Akun
+                                    <span class="badge bg-danger ttl_akun_ibu"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="loadcashflow_ibu"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="float-strat">Control Uang Ditarik</h6>
-                        </div>
-                        <div class="col-lg-6">
-                            <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
-                                class="btn btn-sm btn-primary float-end d_uangditarik"><i
-                                    class="fas fa-clipboard-list"></i> List
-                                Akun
-                                <span class="badge bg-danger ttl_akun_ibu"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="loadcashflow_ibu"></div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <h6 for="">Laporan Neraca</h6>
-                        </div>
-                        <div class="col-lg-8">
-                            <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end" teks="Print" />
-                            <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
-                                class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">
-                                <i class="fas fa-book"></i>
-                                Sisa Akun
-                                <span class="badge sisa_akunNeraca"></span>
-                            </button>
+        <h5 class="">&nbsp;&nbsp;&nbsp; Neraca
+            <button class="btn btn-primary btn-sm btn-buka" @click="neraca = ! neraca">Buka <i
+                    class="fas fa-caret-down"></i></button>
+        </h5>
+        <hr>
+        <div class="row" x-show="neraca">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <h6 for="">Laporan Neraca</h6>
+                            </div>
+                            <div class="col-lg-8">
+                                <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end"
+                                    teks="Print" />
+                                <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
+                                    class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">
+                                    <i class="fas fa-book"></i>
+                                    Sisa Akun
+                                    <span class="badge sisa_akunNeraca"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div id="loadneraca"></div>
-                    <x-theme.modal title="Kategori" size="modal-lg" btnSave='T' idModal="modalTambahAkun">
-                        <div id="loadInputAkun"></div>
-                    </x-theme.modal>
+                    <div class="card-body">
+                        <div id="loadneraca"></div>
+                        <x-theme.modal title="Kategori" size="modal-lg" btnSave='T' idModal="modalTambahAkun">
+                            <div id="loadInputAkun"></div>
+                        </x-theme.modal>
 
 
-                    <x-theme.modal title="Tambah Sub Kategori" size="modal-lg" btnSave='T' idModal="modalSubkategori">
-                        <div id="loadInputSub"></div>
-                    </x-theme.modal>
+                        <x-theme.modal title="Tambah Sub Kategori" size="modal-lg" btnSave='T'
+                            idModal="modalSubkategori">
+                            <div id="loadInputSub"></div>
+                        </x-theme.modal>
 
-                    <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T'
-                        idModal="daftarakun">
-                        <div id="viewdaftarakun"></div>
-                    </x-theme.modal>
+                        <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T'
+                            idModal="daftarakun">
+                            <div id="viewdaftarakun"></div>
+                        </x-theme.modal>
 
-                    <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunControl">
-                        <div id="loadAkunControl"></div>
-                    </x-theme.modal>
+                        <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T'
+                            idModal="modalAkunControl">
+                            <div id="loadAkunControl"></div>
+                        </x-theme.modal>
+                    </div>
                 </div>
             </div>
         </div>
@@ -350,8 +386,8 @@
 
 
     @section('scripts')
-    <script>
-        function toast(pesan) {
+        <script>
+            function toast(pesan) {
                 Toastify({
                     text: pesan,
                     duration: 3000,
@@ -563,9 +599,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        function toast(pesan) {
+        </script>
+        <script>
+            function toast(pesan) {
                 Toastify({
                     text: pesan,
                     duration: 3000,
@@ -701,9 +737,9 @@
                     $('.hasil_iktisar' + urutan).val('T')
                 }
             });
-    </script>
-    <script>
-        function loadSisa() {
+        </script>
+        <script>
+            function loadSisa() {
                 $.ajax({
                     type: "GET",
                     url: "{{ route('profit.count_sisa') }}?jenis=profit",
@@ -912,11 +948,11 @@
                     }
                 });
             })
-    </script>
+        </script>
 
-    {{-- script neraca --}}
-    <script>
-        load_neraca()
+        {{-- script neraca --}}
+        <script>
+            load_neraca()
             loadSisaNeraca()
 
             function loadSisaNeraca() {
@@ -1112,18 +1148,7 @@
                 });
             });
 
-            $(document).on('click', '.btn-buka', function() {
-                // Temukan baris terkait dengan tombol yang diklik
-                var $parentRow = $(this).closest('tr');
-                var dataId = $parentRow.find('.detail-row').data('id');
-                var $detailRow = $('.detail-row[data-id="' + dataId + '"]');
 
-                // Toggle (sembunyikan/tampilkan) baris terkait
-                $detailRow.toggle();
-            })
-
-            // Sembunyikan semua baris detail saat halaman dimuat
-            $('.detail-row').hide();
-    </script>
+        </script>
     @endsection
 </x-theme.app>
