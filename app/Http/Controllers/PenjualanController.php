@@ -104,7 +104,7 @@ class PenjualanController extends Controller
         ) as e on e.no_nota = a.no_nota
 
         left join (
-            SELECT f.nota_setor, f.tgl as tgl_setor_kosong
+            SELECT f.nota_setor, f.tgl as tgl_stor_kosong
             FROM setoran_telur as f 
             group by f.nota_setor
         ) as f on f.nota_setor = b.nota_setor
