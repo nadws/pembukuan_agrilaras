@@ -43,7 +43,7 @@
             <td>{{$i->kredit - $i->debit == 0 ? 'Paid' : 'Unpaid'}}</td>
             <td>{{empty($i->tgl_setor) ? '-' : tanggal($i->tgl_setor)}}</td>
             <td>{{empty($i->nota_setor) ? '-' : $i->nota_setor}}</td>
-            <td>{{empty($i->nota_setor) ? '-' : $i->akun_setor}}</td>
+            <td>{{empty($i->nota_setor) ? '-' : (empty($i->akun_setor) ? 'BCA' : $i->akun_setor)}}</td>
             <td>{{$i->admin}}</td>
         </tr>
         @endforeach
