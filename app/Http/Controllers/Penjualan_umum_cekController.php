@@ -273,7 +273,8 @@ class Penjualan_umum_cekController extends Controller
             left join akun as b on b.id_akun = a.id_akun
             LEFT JOIN (SELECT no_nota,SUBSTRING_INDEX(ket, ':', -1) AS nm_customer,tgl FROM `jurnal` WHERE debit = 0 GROUP BY no_nota) as c ON a.no_nota_jurnal = c.no_nota
             where a.nota_setor = '$r->no_nota'
-            group by a.no_nota_jurnal;
+            group by a.no_nota_jurnal
+            order by c.tgl ASC
             "),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
@@ -309,7 +310,7 @@ class Penjualan_umum_cekController extends Controller
             group by a.nota_setor
             ")
         ];
-        return view('penyetoran.list_perencanaan', $data);
+        return view('penjualan_umum_cek.list_perencanaan', $data);
     }
 
     public function get_perencanaan_umum(Request $r)

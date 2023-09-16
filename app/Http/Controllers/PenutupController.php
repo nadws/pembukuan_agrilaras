@@ -181,7 +181,7 @@ class PenutupController extends Controller
         $saldo = DB::select("SELECT b.iktisar, a.no_nota,a.id_akun, b.kode_akun, b.nm_akun, sum(a.debit) as debit , sum(a.kredit) as kredit 
         FROM jurnal as a 
         left join akun as b on b.id_akun = a.id_akun
-        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' AND a.penutup = 'T'
+        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' 
         group by a.id_akun
         ORDER by b.kode_akun ASC;");
 
