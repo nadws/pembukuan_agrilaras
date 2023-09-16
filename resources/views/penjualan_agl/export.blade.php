@@ -39,7 +39,7 @@
             <td>{{number_format($i->pcs / 180,1)}}</td>
             <td>{{number_format($i->kg_jual,1)}}</td>
             <td>{{ number_format($i->total_rp,0) }}</td>
-            <td>{{ $i->tipe }} {{$i->tgl_stor_kosong}}</td>
+            <td>{{ $i->tipe }}</td>
             <td>{{$i->kredit - $i->debit == 0 ? 'Paid' : 'Unpaid'}}</td>
             <td>{{empty($i->nota_setor) ? '-' : (empty($i->akun_setor) ? tanggal($i->tgl_stor_kosong) :
                 tanggal($i->tgl_setor))}}</td>
