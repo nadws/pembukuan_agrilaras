@@ -88,7 +88,8 @@ class AkunController extends Controller
             'inisial' => $r->inisial,
             'iktisar' => $r->iktisar,
         ];
-        Nonaktif::edit('akun', 'id_akun', $r->id_akun, $data);
+        DB::table('akun')->where('id_akun', $r->id_akun)->update($data);
+        // Nonaktif::edit('akun', 'id_akun', $r->id_akun, $data);
         return redirect()->route('akun');
     }
 
