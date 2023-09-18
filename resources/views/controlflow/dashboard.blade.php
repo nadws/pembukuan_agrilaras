@@ -11,12 +11,12 @@
                     data-bs-toggle="dropdown" aria-expanded="false">
                     Aksi
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                {{-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="/jurnal-add">Jurnal Umum</a></li>
                     <li><a class="dropdown-item" href="/summary_buku_besar">Buku besar</a></li>
                     <li><a class="dropdown-item" href="#">Penyesuaian Stok</a></li>
                     <li><a class="dropdown-item" href="/penutup">Jurnal Penutup</a></li>
-                </ul>
+                </ul> --}}
             </div>
             <x-theme.btn_filter />
         </div>
