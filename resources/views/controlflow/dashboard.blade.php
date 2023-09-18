@@ -6,18 +6,6 @@
      }">
 
         <div class="col-lg-12 mb-2">
-            <div class="dropdown float-end">
-                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    Aksi
-                </button>
-                {{-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/jurnal-add">Jurnal Umum</a></li>
-                    <li><a class="dropdown-item" href="/summary_buku_besar">Buku besar</a></li>
-                    <li><a class="dropdown-item" href="#">Penyesuaian Stok</a></li>
-                    <li><a class="dropdown-item" href="/penutup">Jurnal Penutup</a></li>
-                </ul> --}}
-            </div>
             <x-theme.btn_filter />
         </div>
 
