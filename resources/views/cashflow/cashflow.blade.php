@@ -135,12 +135,12 @@
                 @endphp
                 @foreach ($uang as $u)
                 @php
-                $t_uang += $u->debit - $u->kredit;
+                $t_uang += $u->debit ;
                 @endphp
 
                 <tr>
                     <td>{{ucwords(strtolower($u->nm_akun))}} </td>
-                    <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} </td>
+                    <td align="right">Rp. {{number_format($u->debit ,0)}} </td>
                 </tr>
                 @endforeach
                 {{-- <tr>
@@ -155,7 +155,7 @@
     $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
     '$tgl1' and
     '$tgl2'
-    and a.id_buku = '1' ")
+    and a.id_buku = '6' ")
 
     @endphp
     <div class="col-lg-6">

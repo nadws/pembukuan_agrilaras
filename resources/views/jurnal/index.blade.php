@@ -7,7 +7,7 @@
             </div>
 
             <div class="col-lg-6">
-                @if ($id_buku != '6')
+
                 {{-- <a href="{{ route('controlflow') }}" class="btn btn-primary float-end"><i
                         class="fas fa-home"></i></a> --}}
                 @if (!empty($import))
@@ -21,7 +21,7 @@
                 @endif
                 <x-theme.akses :halaman="$halaman" route="jurnal" />
 
-                @endif
+
                 @if (!empty($export))
                 <x-theme.button modal="T"
                     href="/export_jurnal?tgl1={{ $tgl1 }}&tgl2={{ $tgl2 }}&id_proyek={{ $id_proyek }}&id_buku={{ $id_buku }}"
@@ -156,14 +156,14 @@
 
 
                                     @if (!empty($hapus))
-                                    @if ($id_buku != '6')
+
                                     <li>
                                         <a class="dropdown-item text-danger delete_nota" no_nota="{{ $a->no_nota }}"
                                             href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
                                                 class="me-2 fas fa-trash"></i>Delete
                                         </a>
                                     </li>
-                                    @endif
+
                                     @endif
 
                                     @if (!empty($detail))
