@@ -115,8 +115,18 @@ class JurnalController extends Controller
         } else {
             $nota_t = $max->nomor_nota + 1;
         }
+
+        $kategori = [
+            2 => 'biaya',
+            12 => 'pengeluaran aktiva gantung',
+            13 => 'pembalikan aktiva gantung',
+            6 => 'penjualan',
+            7 => 'kas & bank',
+            10 => 'pemeblian asset',
+        ];
+
         $data =  [
-            'title' => 'Tambah Jurnal Umum',
+            'title' => "Tambah Jurnal ". ucwords($kategori[$r->id_buku]),
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),

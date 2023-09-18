@@ -4,7 +4,7 @@
         <div class="row justify-content-end">
 
             <div class="col-lg-6">
-                <h6 class="float-start mt-1">{{ $title }}</h6>
+                <h6 class="float-start mt-1">{{ $title }} </h6>
             </div>
             <div class="col-lg-6">
                 <a href="{{ route('controlflow') }}" class="btn btn-primary float-end"><i class="fas fa-home"></i></a>

@@ -72,6 +72,8 @@ class JurnalPenyesuaianController extends Controller
             'title' => 'Jurnal Penyesuaian',
             'nota' => $nota_t,
             'akun' => DB::table('akun')->get(),
+            'akunDebit' => DB::table('akun')->where('id_akun', 51)->first(),
+            'akunKredit' => DB::table('akun')->where('id_akun', 52)->first(),
             'aktiva' => DB::select("SELECT a.*, c.beban FROM aktiva as a 
             left join kelompok_aktiva as b on b.id_kelompok = a.id_kelompok
             left join(
