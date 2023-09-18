@@ -132,7 +132,8 @@ class CashflowController extends Controller
             "),
 
             'tgl_back' => $tgl_back,
-            'tgl2' => $tgl2
+            'tgl2' => $tgl2,
+            'tgl1' => $tgl1,
         ];
         return view('cashflow.cashflow', $data);
     }

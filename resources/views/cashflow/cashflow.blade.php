@@ -26,9 +26,9 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                    class="tmbhakun_control me-3" kategori='1'>Piutang Bulan Lalu</a> 
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl">Buka <i
-                    class="fas fa-caret-down"></i></button>
+                            class="tmbhakun_control me-3" kategori='1'>Piutang Bulan Lalu</a>
+                        <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl">Buka <i
+                                class="fas fa-caret-down"></i></button>
                     </td>
                 </tr>
                 @php
@@ -52,10 +52,10 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='2'>Penjualan</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPnjl = ! openPnjl">Buka <i
-                    class="fas fa-caret-down"></i></button>
+                        <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPnjl = ! openPnjl">Buka <i
+                                class="fas fa-caret-down"></i></button>
 
-                        </td>
+                    </td>
                 </tr>
                 @foreach ($penjualan as $p)
                 @php
@@ -78,10 +78,10 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='4'>Piutang Bulan Ini</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbi = ! openPbi">Buka <i
-                    class="fas fa-caret-down"></i></button>
+                        <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbi = ! openPbi">Buka <i
+                                class="fas fa-caret-down"></i></button>
 
-                        </td>
+                    </td>
                 </tr>
                 @php
                 $t_piutang = 0;
@@ -117,7 +117,7 @@
     </div>
 
     <div class="col-lg-6">
-        <table class="table table-bordered" >
+        <table class="table table-bordered">
             <thead>
                 <tr>
                     <th class="dhead2">Akun</th>
@@ -125,9 +125,9 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control" kategori='3'>Uang Ditarik</a>
-                            
-                        </td>
+                            class="tmbhakun_control" kategori='3'>Uang Ditarik (Piutang & Penjualan yg ditarik)</a>
+
+                    </td>
                 </tr>
                 @php
                 $t_uang = 0;
@@ -151,12 +151,30 @@
             </thead>
         </table>
     </div>
+    @php
+    $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
+    '$tgl1' and
+    '$tgl2'
+    and a.id_buku = '1' ")
+
+    @endphp
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
-                <td class="fw-bold">Grand Total</td>
+                <td class="fw-bold">Grand Total </td>
                 <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
                     $kerugian->debit),0) }}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold">Biaya Administrasi</td>
+                <td class="fw-bold" align="right">Rp {{number_format($biaya_admin->debit,0)}}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold">Total</td>
+                <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
+                    $kerugian->debit) - $biaya_admin->debit,0) }}
                 </td>
             </tr>
         </table>
@@ -166,6 +184,18 @@
             <tr>
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" style="text-align: right">{{number_format($t_uang,0)}}</td>
+            </tr>
+
+            <tr>
+                <td class="fw-bold">Biaya Administrasi</td>
+                <td class="fw-bold" align="right">Rp {{number_format($biaya_admin->debit,0)}}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold">Total</td>
+                <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
+                    $kerugian->debit) - $biaya_admin->debit,0) }}
+                </td>
             </tr>
         </table>
     </div>
@@ -190,10 +220,11 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='5'>Biaya</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka <i
-                    class="fas fa-caret-down"></i></button>
-                             
-                        </td>
+                        {{-- <button class="btn btn-primary btn-sm btn-buka float-end"
+                            @click="openBiaya = ! openBiaya">Buka
+                            <i class="fas fa-caret-down"></i></button> --}}
+
+                    </td>
                 </tr>
                 @foreach ($biaya as $b)
                 <tr x-show="openBiaya">
@@ -222,10 +253,10 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='6'>Uang Keluar</a>
-                    <button class="btn btn-primary btn-sm btn-buka float-end" @click="openUangKeluar = ! openUangKeluar">Buka <i
-                    class="fas fa-caret-down"></i></button>
+                        <button class="btn btn-primary btn-sm btn-buka float-end"
+                            @click="openUangKeluar = ! openUangKeluar">Buka <i class="fas fa-caret-down"></i></button>
 
-                        </td>
+                    </td>
                 </tr>
                 @foreach ($uangbiaya as $b)
                 <tr x-show="openUangKeluar">
