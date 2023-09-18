@@ -320,31 +320,31 @@
                     </div>
                     <div class="card-body">
                         <div id="loadneraca"></div>
-                        <x-theme.modal title="Kategori" size="modal-lg" btnSave='T' idModal="modalTambahAkun">
-                            <div id="loadInputAkun"></div>
-                        </x-theme.modal>
-
-
-                        <x-theme.modal title="Tambah Sub Kategori" size="modal-lg" btnSave='T'
-                            idModal="modalSubkategori">
-                            <div id="loadInputSub"></div>
-                        </x-theme.modal>
-
-                        <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T'
-                            idModal="daftarakun">
-                            <div id="viewdaftarakun"></div>
-                        </x-theme.modal>
-
-                        <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T'
-                            idModal="modalAkunControl">
-                            <div id="loadAkunControl"></div>
-                        </x-theme.modal>
+                       
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <x-theme.modal title="Kategori" size="modal-lg" btnSave='T' idModal="modalTambahAkun">
+        <div id="loadInputAkun"></div>
+    </x-theme.modal>
 
+
+    <x-theme.modal title="Tambah Sub Kategori" size="modal-lg" btnSave='T'
+        idModal="modalSubkategori">
+        <div id="loadInputSub"></div>
+    </x-theme.modal>
+
+    <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T'
+        idModal="daftarakun">
+        <div id="viewdaftarakun"></div>
+    </x-theme.modal>
+
+    <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T'
+        idModal="modalAkunControl">
+        <div id="loadAkunControl"></div>
+    </x-theme.modal>
     <x-theme.modal title="Kategori" size="modal-lg" btnSave='T' idModal="modalPendapatan">
         <div id="loadPendapatan"></div>
     </x-theme.modal>
