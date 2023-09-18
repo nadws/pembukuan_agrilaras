@@ -1,8 +1,8 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
     <x-slot name="cardHeader">
-
         <h5 class="float-start mt-1">{{ $title }}</h5>
         <div class="row justify-content-end">
+
 
             <div class="col-lg-12">
                 @if (!empty($export))
@@ -18,6 +18,8 @@
                 <x-theme.akses :halaman="$halaman" route="akun" />
             </div>
         </div>
+
+
     </x-slot>
     <x-slot name="cardBody">
         <section class="row">
@@ -213,6 +215,7 @@
             </div>
         </x-theme.modal>
         {{-- end sub akun --}}
+
     </x-slot>
     @section('scripts')
         <script>
