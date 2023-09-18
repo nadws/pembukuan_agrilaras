@@ -235,7 +235,7 @@
                             @endphp
                             @foreach ($biaya as $c)
                             @php
-                            $total_biaya += $c->debit - $c->kredit;
+                            $total_biaya += $c->debit ;
                             @endphp
                             @endforeach
                             <tr>
@@ -263,8 +263,8 @@
                                     <input type="hidden" name="debit_biaya[]" value="0">
                                 </td>
                                 <td align="right">
-                                    Rp {{ number_format($b->debit - $b->kredit, 0) }}
-                                    <input type="hidden" name="kredit_biaya[]" value="{{ $b->debit - $b->kredit }}">
+                                    Rp {{ number_format($b->debit , 0) }}
+                                    <input type="hidden" name="kredit_biaya[]" value="{{ $b->debit  }}">
                                 </td>
                             </tr>
                             @endforeach

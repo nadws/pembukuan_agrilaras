@@ -39,7 +39,7 @@ class PenutupController extends Controller
             left join (
             SELECT b.id_akun , sum(b.debit) as debit , sum(b.kredit) as kredit
                 FROM jurnal as b 
-                where b.tgl BETWEEN '$tgl1Tutup' and '$tgl2Tutup'
+                where b.tgl BETWEEN '$tgl1Tutup' and '$tgl2Tutup' and b.id_buku not in('1','5')
                 GROUP by b.id_akun
             ) as b on b.id_akun = a.id_akun
             where a.iktisar ='Y' and a.id_klasifikasi ='3';"),
