@@ -663,7 +663,7 @@
                     },
                     success: function(r) {
                         $("#loadAkunControl").html(r);
-                        alert(r)
+                        
                         // $('.jenisSub').val(jenis)
 
                         $('.select').select2({
