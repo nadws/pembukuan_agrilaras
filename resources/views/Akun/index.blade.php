@@ -2,8 +2,6 @@
     <x-slot name="cardHeader">
         <h5 class="float-start mt-1">{{ $title }}</h5>
         <div class="row justify-content-end">
-
-
             <div class="col-lg-12">
                 @if (!empty($export))
                     <x-theme.button modal="Y" idModal="import" icon="fa-file-excel"
