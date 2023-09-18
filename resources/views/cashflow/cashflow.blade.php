@@ -220,9 +220,8 @@
                 <tr>
                     <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
                             class="tmbhakun_control me-3" kategori='5'>Biaya</a>
-                        {{-- <button class="btn btn-primary btn-sm btn-buka float-end"
-                            @click="openBiaya = ! openBiaya">Buka
-                            <i class="fas fa-caret-down"></i></button> --}}
+                        <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka
+                            <i class="fas fa-caret-down"></i></button>
 
                     </td>
                 </tr>
