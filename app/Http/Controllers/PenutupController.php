@@ -47,7 +47,10 @@ class PenutupController extends Controller
             'penutup' => $tgl->penutup,
             'tgl1Tutup' => $tgl1Tutup,
             'tgl2Tutup' => $tgl2Tutup,
-            'total' => DB::selectOne("SELECT count(a.id_akun) as total FROM akun as a where  a.iktisar='T'")
+            'total' => DB::selectOne("SELECT count(a.id_akun) as total FROM akun as a where  a.iktisar='T'"),
+            'aktiva' => DB::selectOne("SELECT a.id_akun FROM jurnal as a where a.id_akun = 51 and a.tgl between '$tgl1Tutup' and '$tgl2Tutup' and a.id_buku = '4' "),
+            'peralatan' => DB::selectOne("SELECT a.id_akun FROM jurnal as a where a.id_akun = 58 and a.tgl between '$tgl1Tutup' and '$tgl2Tutup' and a.id_buku = '4' "),
+            'atk' => DB::selectOne("SELECT a.id_akun FROM jurnal as a where a.id_akun = 91 and a.tgl between '$tgl1Tutup' and '$tgl2Tutup' and a.id_buku = '4' ")
         ];
         return view('penutup.penutup2', $data);
     }
@@ -224,6 +227,34 @@ class PenutupController extends Controller
             Jurnal::create($data);
             Jurnal::whereBetween('tgl', [$tgl1, $tgl2])->update(['penutup' => 'Y', 'saldo' => 'T']);
         }
+
+        if ($r->laba_independent > 0) {
+            $data = [
+                'id_akun' => 95,
+                'debit' => $r->laba_independent,
+                'kredit' => 0,
+                'ket' => 'Saldo Penutup',
+                'id_buku' => '5',
+                'no_nota' => "PEN-$no_nota",
+                'tgl' => $nextMonth,
+                'tgl_dokumen' => $tgl2,
+                'admin' => auth()->user()->name,
+
+            ];
+        } else {
+            $data = [
+                'id_akun' => 95,
+                'debit' => 0,
+                'kredit' => $r->laba_independent * -1,
+                'ket' => 'Saldo Penutup',
+                'id_buku' => '5',
+                'no_nota' => "PEN-$no_nota",
+                'tgl' => $nextMonth,
+                'tgl_dokumen' => $tgl2,
+                'admin' => auth()->user()->name,
+            ];
+        }
+
 
 
         return redirect()->route('penutup.index')->with('sukses', 'Berhasil Tutup Saldo');

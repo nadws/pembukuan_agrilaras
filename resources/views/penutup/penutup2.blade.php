@@ -23,7 +23,8 @@
                         data-bs-target="#delete"><i class="fas fa-window-close"></i>
                         Penutup</button>
                     @else
-                    <button type="submit" class="btn btn-primary btn-sm float-end "><i class="fas fa-window-close"></i>
+                    <button type="submit" class="btn btn-primary btn-sm float-end " {{(empty($aktiva) ||
+                        empty($peralatan) || empty($atk))}} ? hidden :><i class="fas fa-window-close"></i>
                         Penutup</button>
                     @endif
 
@@ -164,6 +165,25 @@
                     </table>
                 </div>
                 <div class="col-lg-7">
+                    @if (empty($aktiva) || empty($peralatan) || empty($atk))
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                {{-- <th class="dhead" width="5">#</th> --}}
+                                {{-- <th class="dhead">Kode Akun</th> --}}
+                                <th class="dhead">Tangal</th>
+                                <th width="50%" class="dhead">Akun</th>
+                                <th width="25%" class="dhead" style="text-align: right">Debit</th>
+                                <th width="25%" class="dhead" style="text-align: right">Kredit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td colspan="4">
+                                <p class="text-center text-danger fw-bold">Jurnal penyesuaian belum dilakukan</p>
+                            </td>
+                        </tbody>
+                    </table>
+                    @else
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -275,6 +295,7 @@
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
                             </tr>
+                            <input type="hidden" name="laba_independent" value="{{$pen - $biy}}">
                             @if ($pen - $biy > 0)
                             <tr>
                                 <td>
@@ -292,7 +313,7 @@
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px">
-                                    Laba Tahun Berjalan
+                                    Modal
                                     <input type="hidden" name="id_akun_modal[]" value="516">
                                 </td>
                                 <td align="right">
@@ -307,7 +328,7 @@
                             @else
                             <tr>
                                 <td>
-                                    Laba Tahun Berjalan
+                                    Modal
                                     <input type="hidden" name="id_akun_modal[]" value="516">
                                 </td>
                                 <td align="right">
@@ -338,7 +359,7 @@
                                 <td colspan="4" class="fw-bold"></td>
                             </tr>
                             <tr>
-                                <td>Laba Tahun Berjalan</td>
+                                <td>Modal</td>
                                 <td align="right"><input type="text" readonly class="form-control modal_1"></td>
                                 <td align="right">Rp 0</td>
                             </tr>
@@ -365,6 +386,8 @@
                             </tr>
                         </tbody>
                     </table>
+                    @endif
+
                 </div>
 
             </section>
