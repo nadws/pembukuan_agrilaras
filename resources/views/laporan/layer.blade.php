@@ -382,7 +382,8 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>{{number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}</td>
+                                        <td>{{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan /
+                                            ($k->stok_awal - $k->pop_kurang), 0) }}</td>
                                         <td></td>
                                         <td></td>
                                     </tr>
