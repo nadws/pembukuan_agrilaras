@@ -75,13 +75,13 @@ class JurnalController extends Controller
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by  a.no_nota DESC");
         } else {
             $jurnal =  DB::select("SELECT a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by  a.no_nota DESC");
         }
 
         $data =  [
@@ -126,7 +126,7 @@ class JurnalController extends Controller
         ];
 
         $data =  [
-            'title' => "Tambah Jurnal ". ucwords($kategori[$r->id_buku]),
+            'title' => "Tambah Jurnal " . ucwords($kategori[$r->id_buku]),
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
@@ -273,7 +273,7 @@ class JurnalController extends Controller
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
             'akun' => Akun::all(),
             'no_nota' => $r->no_nota,
-            'head_jurnal' => DB::selectOne("SELECT a.tgl, a.id_proyek, a.no_dokumen,a.tgl_dokumen, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.no_nota = '$r->no_nota'")
+            'head_jurnal' => DB::selectOne("SELECT a.id_buku, a.tgl, a.id_proyek, a.no_dokumen,a.tgl_dokumen, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.no_nota = '$r->no_nota'")
 
         ];
         return view('jurnal.edit', $data);
@@ -315,7 +315,7 @@ class JurnalController extends Controller
                 'tgl' => $tgl,
                 'no_nota' => $nota_t,
                 'id_akun' => $id_akun[$i],
-                'id_buku' => '2',
+                'id_buku' => $r->id_buku,
                 'ket' => $keterangan[$i],
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
@@ -331,7 +331,7 @@ class JurnalController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
-        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0])->with('sukses', 'Data berhasil ditambahkan');
+        return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0, 'id_buku' => $r->id_buku])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function detail_jurnal(Request $r)

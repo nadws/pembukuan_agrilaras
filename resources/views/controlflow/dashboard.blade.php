@@ -283,7 +283,7 @@
         </h5>
         <hr>
         <div class="row" x-show="neraca">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">

@@ -295,7 +295,8 @@
                                 {{-- {{$k->pcs}} --}}
                                 <table border="0" class="table-two">
                                     <tr>
-                                        <td>{{ number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
+                                        <td>{{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format(($k->pcs /
+                                            ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
                                         </td>
                                         <td></td>
                                         <td></td>
@@ -314,13 +315,15 @@
 
                             <td align="center" class="hd week">
                                 {{-- ({{$k->pcs_telur_week}} {{$k->jlh_hari}}) --}}
-                                {{ empty($k->pcs_telur_week) || empty($k->jlh_hari) || empty($k->pop_kurang)
+                                {{ empty($k->pcs_telur_week) || empty($k->jlh_hari) || empty($k->pop_kurang) ||
+                                $k->stok_awal - $k->pop_kurang == 0
                                 ? '0'
                                 : number_format(($k->pcs_telur_week / $k->jlh_hari / ($k->stok_awal - $k->pop_kurang)) *
                                 100, 0) }}
                                 <br>
                                 {{ empty($k->pcs_telur_week_past) || empty($k->jlh_hari_past) ||
-                                empty($k->pop_kurang_past)
+                                empty($k->pop_kurang_past) || $k->stok_awal -
+                                $k->pop_kurang_past == 0
                                 ? '0'
                                 : number_format(($k->pcs_telur_week_past / $k->jlh_hari_past / ($k->stok_awal -
                                 $k->pop_kurang_past)) * 100, 0) }}
@@ -379,7 +382,8 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>{{number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}</td>
+                                        <td>{{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan /
+                                            ($k->stok_awal - $k->pop_kurang), 0) }}</td>
                                         <td></td>
                                         <td></td>
                                     </tr>
