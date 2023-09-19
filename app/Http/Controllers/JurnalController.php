@@ -126,7 +126,7 @@ class JurnalController extends Controller
         ];
 
         $data =  [
-            'title' => "Tambah Jurnal ". ucwords($kategori[$r->id_buku]),
+            'title' => "Tambah Jurnal " . ucwords($kategori[$r->id_buku]),
             'max' => $nota_t,
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
@@ -273,7 +273,7 @@ class JurnalController extends Controller
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
             'akun' => Akun::all(),
             'no_nota' => $r->no_nota,
-            'head_jurnal' => DB::selectOne("SELECT a.tgl, a.id_proyek, a.no_dokumen,a.tgl_dokumen, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.no_nota = '$r->no_nota'")
+            'head_jurnal' => DB::selectOne("SELECT a.id_buku, a.tgl, a.id_proyek, a.no_dokumen,a.tgl_dokumen, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.no_nota = '$r->no_nota'")
 
         ];
         return view('jurnal.edit', $data);
@@ -315,7 +315,7 @@ class JurnalController extends Controller
                 'tgl' => $tgl,
                 'no_nota' => $nota_t,
                 'id_akun' => $id_akun[$i],
-                'id_buku' => '2',
+                'id_buku' => $r->id_buku,
                 'ket' => $keterangan[$i],
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
