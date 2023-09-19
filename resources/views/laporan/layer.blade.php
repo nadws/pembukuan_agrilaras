@@ -322,7 +322,7 @@
                                 100, 0) }}
                                 <br>
                                 {{ empty($k->pcs_telur_week_past) || empty($k->jlh_hari_past) ||
-                                empty($k->pop_kurang_past) || k->stok_awal -
+                                empty($k->pop_kurang_past) || $k->stok_awal -
                                 $k->pop_kurang_past == 0
                                 ? '0'
                                 : number_format(($k->pcs_telur_week_past / $k->jlh_hari_past / ($k->stok_awal -
