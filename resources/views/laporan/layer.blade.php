@@ -295,7 +295,8 @@
                                 {{-- {{$k->pcs}} --}}
                                 <table border="0" class="table-two">
                                     <tr>
-                                        <td>{{ number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
+                                        <td>{{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format(($k->pcs /
+                                            ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
                                         </td>
                                         <td></td>
                                         <td></td>
