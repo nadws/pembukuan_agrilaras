@@ -1,8 +1,8 @@
 <x-theme.app title="{{ $title }}" table="T" sizeCard="12" cont="container-fluid">
     <div class="row" x-data="{
-        stok: open,
-        profit: open,
-        neraca: open,
+        stok: true,
+        profit: true,
+        neraca: true,
     }">
         <div class="col-lg-12 mb-2">
             <x-theme.btn_filter />
