@@ -68,6 +68,10 @@ class ProfitController extends Controller
                 ->where('jenis', 2)
                 ->orderBy('urutan', 'ASC')
                 ->get(),
+            'subKategori3' => DB::table('sub_kategori_cashflow')
+                ->where('jenis', 3)
+                ->orderBy('urutan', 'ASC')
+                ->get(),
         ];
         return view('profit.load', $data);
     }
@@ -99,13 +103,15 @@ class ProfitController extends Controller
 
     public function add(Request $r)
     {
-        DB::table('akunprofit')->insert([
-            'urutan' => $r->urutan,
-            'id_akun' => $r->id_akun,
-            'kategori' => $r->kategori_id,
-        ]);
+        for ($i=0; $i < count($r->id_akun); $i++) { 
+            DB::table('akunprofit')->insert([
+                'urutan' => $r->urutan ?? 1,
+                'id_akun' => $r->id_akun[$i],
+                'kategori' => $r->kategori_id,
+            ]);
+            DB::table('akun')->where('id_akun', $r->id_akun[$i])->update(['profit_loss' => 'Y']);
+        }
 
-        DB::table('akun')->where('id_akun', $r->id_akun)->update(['profit_loss' => 'Y']);
     }
 
     public function getQueryProfit($id_kategori, $jenis, $tgl1, $tgl2)

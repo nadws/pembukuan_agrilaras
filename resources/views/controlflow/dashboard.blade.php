@@ -1,6 +1,6 @@
 <x-theme.app title="{{ $title }}" table="T" sizeCard="12" cont="container-fluid">
     <div class="row" x-data="{
-        stok: true,
+        stok: false,
         profit: true,
         neraca: true,
     }">
@@ -821,7 +821,7 @@
             $(document).on('click', '.klikModal', function(e) {
                 e.preventDefault();
                 var id_kategori = $(this).attr('id_kategori')
-
+                
                 loadModal(id_kategori)
                 $("#tambah-profit").modal('show')
             })

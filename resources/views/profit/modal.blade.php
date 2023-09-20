@@ -6,7 +6,7 @@
                 <input type="hidden" min="0" class="form-control" id="kategori_idInput">
             </td>
             <td>
-                <select id="id_akun" class="form-control select2-profit">
+                <select id="id_akun" class="form-control select2-profit" multiple>
                     <option value="">- Pilih Akun -</option>
                     @foreach ($akun1 as $d)
                     <option value="{{ $d->id_akun }}">{{ ucwords($d->nm_akun) }}</option>
