@@ -62,6 +62,8 @@ class PenutupController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($tgl));
         $tgl2 = date('Y-m-t', strtotime($tgl));
+
+
         $nextMonth = Carbon::parse($tgl1)->addMonth()->toDateString();
         $prive_biasa =  $r->prive_biasa;
 
@@ -157,7 +159,7 @@ class PenutupController extends Controller
             $data = [
                 'tgl' => $tgl2,
                 'no_nota' => "PEN-$no_nota_prive",
-                'id_akun' => 504,
+                'id_akun' => 56,
                 'id_buku' => '5',
                 'ket' => 'Penutup Ikhtisar',
                 'debit' => $prive_biasa,
@@ -184,9 +186,11 @@ class PenutupController extends Controller
         $saldo = DB::select("SELECT b.iktisar, a.no_nota,a.id_akun, b.kode_akun, b.nm_akun, sum(a.debit) as debit , sum(a.kredit) as kredit 
         FROM jurnal as a 
         left join akun as b on b.id_akun = a.id_akun
-        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' 
+        WHERE a.tgl BETWEEN '2023-01-01' and '$tgl2' 
         group by a.id_akun
         ORDER by b.kode_akun ASC;");
+
+
 
 
         foreach ($saldo as $d) {
@@ -194,37 +198,17 @@ class PenutupController extends Controller
 
             $no_nota = empty($max) ? '1000' : $max->nomor_nota + 1;
             DB::table('notas')->insert(['nomor_nota' => $no_nota, 'id_buku' => '5']);
-
-            if ($d->iktisar == 'T') {
-                $data = [
-                    'id_akun' => $d->id_akun,
-                    'debit' => $d->debit,
-                    'kredit' => $d->kredit,
-                    'ket' => 'Saldo Penutup',
-                    'id_buku' => '5',
-                    'no_nota' => "PEN-$no_nota",
-                    'tgl' => $nextMonth,
-                    'tgl_dokumen' => $tgl2,
-                    'admin' => auth()->user()->name,
-                    'penutup' => 'T',
-                    'saldo' => 'Y'
-                ];
-            } else {
-                $data = [
-                    'id_akun' => $d->id_akun,
-                    'debit' => $d->debit,
-                    'kredit' => $d->kredit,
-                    'ket' => 'Saldo Penutup',
-                    'id_buku' => '5',
-                    'no_nota' => "PEN-$no_nota",
-                    'tgl' => $nextMonth,
-                    'tgl_dokumen' => $tgl2,
-                    'admin' => auth()->user()->name,
-                    'penutup' => 'T',
-                    'saldo' => 'T'
-                ];
-            }
-            Jurnal::create($data);
+            $data = [
+                'id_akun' => $d->id_akun,
+                'debit' => $d->debit,
+                'kredit' => $d->kredit,
+                'no_nota' => "PEN-$no_nota",
+                'tgl' => $nextMonth,
+                'admin' => auth()->user()->name,
+                'penutup' => 'T',
+                'saldo' => 'T'
+            ];
+            DB::table('jurnal_saldo')->insert($data);
             Jurnal::whereBetween('tgl', [$tgl1, $tgl2])->update(['penutup' => 'Y', 'saldo' => 'T']);
         }
 

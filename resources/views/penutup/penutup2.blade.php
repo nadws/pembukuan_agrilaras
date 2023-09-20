@@ -18,15 +18,11 @@
                 </div>
                 <div class="col-lg-6 mb-4">
 
-                    @if (empty($jpa->kode_penyesuaian))
-                    <button type="button" class="btn btn-primary btn-sm float-end  " data-bs-toggle="modal"
-                        data-bs-target="#delete"><i class="fas fa-window-close"></i>
+
+                    <button type="submit" class="btn btn-primary btn-sm float-end " {{empty($aktiva) ||
+                        empty($peralatan) || empty($atk) ? 'Hidden' : '' }}><i class="fas fa-window-close"></i>
                         Penutup</button>
-                    @else
-                    <button type="submit" class="btn btn-primary btn-sm float-end " {{(empty($aktiva) ||
-                        empty($peralatan) || empty($atk))}} ? hidden :><i class="fas fa-window-close"></i>
-                        Penutup</button>
-                    @endif
+
 
                     <a data-bs-toggle="modal" data-bs-target="#history" href="#"
                         class="btn btn-primary btn-sm float-end me-2 history"><i class="fas fa-history"></i> History</a>
@@ -235,8 +231,8 @@
                             @endforeach
                             <tr>
                                 <td style="padding-left: 20px;">
-                                    Ikhtisar Laba Rugi
-                                    <input type="hidden" name="id_akun_pembelian[]" value="515">
+                                    Ikhtisar Laba Rugi sda
+                                    <input type="hidden" name="id_akun_pembelian[]" value="31">
                                 </td>
                                 <td align="right">Rp 0
                                     <input type="hidden" name="debit_pembelian[]" value="0">
@@ -261,7 +257,7 @@
                             <tr>
                                 <td>
                                     Ikhtisar Laba Rugi
-                                    <input type="hidden" name="id_akun_biaya[]" value="515">
+                                    <input type="hidden" name="id_akun_biaya[]" value="31">
                                 </td>
                                 <td align="right">
                                     Rp {{ number_format($total_biaya, 0) }}
@@ -300,7 +296,7 @@
                             <tr>
                                 <td>
                                     Ikhtisar Laba Rugi
-                                    <input type="hidden" name="id_akun_modal[]" value="515">
+                                    <input type="hidden" name="id_akun_modal[]" value="31">
                                 </td>
                                 <td align="right">
                                     Rp {{ number_format($pen - $biy, 0) }}
@@ -314,7 +310,7 @@
                             <tr>
                                 <td style="padding-left: 20px">
                                     Modal
-                                    <input type="hidden" name="id_akun_modal[]" value="516">
+                                    <input type="hidden" name="id_akun_modal[]" value="56">
                                 </td>
                                 <td align="right">
                                     Rp 0
@@ -329,7 +325,7 @@
                             <tr>
                                 <td>
                                     Modal
-                                    <input type="hidden" name="id_akun_modal[]" value="516">
+                                    <input type="hidden" name="id_akun_modal[]" value="56">
                                 </td>
                                 <td align="right">
                                     Rp {{ number_format(($pen - $biy) * -1, 0) }}
@@ -343,7 +339,7 @@
                             <tr>
                                 <td style="padding-left: 20px">
                                     Ikhtisar Laba Rugi
-                                    <input type="hidden" name="id_akun_modal[]" value="515">
+                                    <input type="hidden" name="id_akun_modal[]" value="31">
                                 </td>
                                 <td align="right">
                                     Rp 0
