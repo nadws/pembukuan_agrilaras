@@ -1120,14 +1120,14 @@
                     url: "/akunprofit",
                     success: function(r) {
                         $("#loadAkunprofit").html(r)
-                        $('#tableProfitScroll').DataTable({
+                        $('#table123').DataTable({
                             "searching": true,
                             scrollY: '400px',
                             scrollX: true,
                             scrollCollapse: true,
-                            "autoWidth": true,
                             "paging": false,
                         });
+                        
                     }
                 });
             });

@@ -97,13 +97,13 @@ class ProfitController extends Controller
         $getAkun = DB::table('akunprofit')->where('id_akunprofit', $r->id_profit);
         $id_akun = $getAkun->first()->id_akun;
         $getAkun->delete();
-    
+
         DB::table('akun')->where('id_akun', $id_akun)->update(['profit_loss' => 'T']);
     }
 
     public function add(Request $r)
     {
-        for ($i=0; $i < count($r->id_akun); $i++) { 
+        for ($i = 0; $i < count($r->id_akun); $i++) {
             DB::table('akunprofit')->insert([
                 'urutan' => $r->urutan ?? 1,
                 'id_akun' => $r->id_akun[$i],
@@ -111,7 +111,6 @@ class ProfitController extends Controller
             ]);
             DB::table('akun')->where('id_akun', $r->id_akun[$i])->update(['profit_loss' => 'Y']);
         }
-
     }
 
     public function getQueryProfit($id_kategori, $jenis, $tgl1, $tgl2)
@@ -207,7 +206,21 @@ class ProfitController extends Controller
 
     public function akunprofit(Request $r)
     {
+
+        $akunPenjualan = DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
+        FROM akun as a
+        left join akunprofit as b on b.id_akun = a.id_akun WHERE b.kategori = 1");
+
+        $akunBiaya = DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
+        FROM akun as a
+        left join akunprofit as b on b.id_akun = a.id_akun WHERE b.kategori = 4");
+        $akunUangKeluar = DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
+        FROM akun as a
+        left join akunprofit as b on b.id_akun = a.id_akun WHERE b.kategori = 9");
         $data = [
+            'akunPenjualan' => $akunPenjualan,
+            'akunBiaya' => $akunBiaya,
+            'akunUangKeluar' => $akunUangKeluar,
             'akun' => DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
             FROM akun as a
             left join akunprofit as b on b.id_akun = a.id_akun;"),

@@ -141,7 +141,7 @@
         </tr>
 
         @php
-            $akunPenyesuaian = '51,58, 91,92,93,70,47,77';
+            $akunPenyesuaian = '51,58, 91,92,93,98,47,77';
             
             $ebdiba = DB::select("SELECT a.nm_akun,b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
         FROM jurnal as b
