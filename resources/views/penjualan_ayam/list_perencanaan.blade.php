@@ -27,7 +27,7 @@
                     nota_setor="{{$i->nota_setor}}">
                     <i class="fas fa-eye"></i>
                 </a>
-                <a href="{{route('print_setoran',['no_nota' => $i->nota_setor])}}" target="_blank"
+                <a href="{{route('penjualan_ayam.print_setoran',['no_nota' => $i->nota_setor])}}" target="_blank"
                     class="btn btn-sm btn-success"><i class="fas fa-print"></i></a>
                 <a onclick="return confirm('Yakin dihapus ?')"
                     href="{{route('penjualan_ayam.delete_perencanaan',['no_nota' => $i->nota_setor])}}"

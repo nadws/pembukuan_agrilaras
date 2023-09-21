@@ -65,7 +65,7 @@ class PenjualanUmumController extends Controller
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa' 
         GROUP BY a.urutan ORDER BY a.tgl DESC");
 
-        
+
 
         $data = [
             'title' => 'Penjualan Umum',
@@ -129,7 +129,7 @@ class PenjualanUmumController extends Controller
             'tgl' => $r->tgl,
             'no_nota' => 'PUM-' . $r->no_nota,
             'id_akun' => $this->akunPenjualan,
-            'id_buku' => '10',
+            'id_buku' => '6',
             'ket' => 'Penjualan Umum Alpa',
             'no_urut' => $akun2->inisial . '-' . $urutan2,
             'urutan' => $urutan2,
@@ -149,7 +149,7 @@ class PenjualanUmumController extends Controller
             Jurnal::create([
                 'tgl' => $r->tgl,
                 'id_akun' => $id_akun,
-                'id_buku' => 10,
+                'id_buku' => 6,
                 'no_nota' => 'PUM-' . $r->no_nota,
                 'ket' => "Penjualan $nm_customer",
                 'debit' => $r->debit[$i] ?? 0,

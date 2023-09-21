@@ -12,8 +12,6 @@
     </x-slot>
 
     <x-slot name="cardBody">
-
-
         <style>
             .dhead {
                 background-color: #435EBE !important;
