@@ -32,7 +32,7 @@ class Jurnal_aktivaController extends Controller
             $akun_aktiva = DB::table('akun')->where('id_akun', 9)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
         } else if ($kategori == 'peralatan') {
-            $akun_gantung = DB::table('akun')->where('id_akun', 61)->first();
+            $akun_gantung = DB::table('akun')->whereIn('id_akun', [61, 76])->get();
             $akun_aktiva = DB::table('akun')->where('id_akun', 16)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
         } else if ($kategori == 'pullet') {
