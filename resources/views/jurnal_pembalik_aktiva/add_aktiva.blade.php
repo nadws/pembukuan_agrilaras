@@ -24,11 +24,11 @@
                             href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'atk'])}}">
                             ATK & Perlengkapan</a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'pullet' ? 'active' : '' }}" aria-current="page"
                             href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'pullet'])}}">
                             Pullet</a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
 
