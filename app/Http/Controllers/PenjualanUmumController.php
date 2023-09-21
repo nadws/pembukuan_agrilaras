@@ -7,6 +7,7 @@ use App\Models\Jurnal;
 use App\Models\Produk;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use SettingHal;
 
@@ -63,9 +64,9 @@ class PenjualanUmumController extends Controller
         $penjualan = DB::select("SELECT *, sum(a.total_rp) as total, count(*) as ttl_produk  FROM `penjualan_agl` as a
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa' 
-        GROUP BY a.urutan ORDER BY a.tgl DESC");
+        GROUP BY a.urutan ORDER BY a.urutan DESC");
 
-        
+
 
         $data = [
             'title' => 'Penjualan Umum',
@@ -90,7 +91,7 @@ class PenjualanUmumController extends Controller
             'title' => 'Tambah Penjualan Umum',
             'customer' => DB::table('customer')->get(),
             'produk' => $this->produk,
-            'akun' => Akun::all(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
             'no_nota' => $nota
         ];
         return view('penjualan2.add', $data);
@@ -129,7 +130,7 @@ class PenjualanUmumController extends Controller
             'tgl' => $r->tgl,
             'no_nota' => 'PUM-' . $r->no_nota,
             'id_akun' => $this->akunPenjualan,
-            'id_buku' => '10',
+            'id_buku' => '6',
             'ket' => 'Penjualan Umum Alpa',
             'no_urut' => $akun2->inisial . '-' . $urutan2,
             'urutan' => $urutan2,
@@ -149,7 +150,7 @@ class PenjualanUmumController extends Controller
             Jurnal::create([
                 'tgl' => $r->tgl,
                 'id_akun' => $id_akun,
-                'id_buku' => 10,
+                'id_buku' => 6,
                 'no_nota' => 'PUM-' . $r->no_nota,
                 'ket' => "Penjualan $nm_customer",
                 'debit' => $r->debit[$i] ?? 0,
@@ -159,19 +160,26 @@ class PenjualanUmumController extends Controller
                 'admin' => auth()->user()->name,
             ]);
 
-            // if ($id_akun == $this->akunPiutangDagang) {
-            //     DB::table('invoice_agl')->insert([
-            //         'no_penjualan' => $r->nota_manual,
-            //         'no_nota' => 'PAGL-' . $r->no_nota,
-            //         'tgl' => $r->tgl,
-            //         'ket' => $r->ket,
-            //         'lokasi' => 'alpa',
-            //         'total_rp' => $ttlDebit,
-            //         'status' => 'unpaid',
-            //         'admin' => auth()->user()->name
-            //     ]);
-            // }
+
+            if ($akun->id_klasifikasi == '7') {
+            } else {
+                $data = [
+                    'tgl' => $r->tgl,
+                    'no_nota' => $r->no_nota,
+                    'debit' => $r->debit[$i],
+                    'kredit' => $r->kredit[$i],
+                    'no_nota_piutang' => 'PUM-' . $r->no_nota
+                ];
+                DB::table('bayar_umum')->insert($data);
+            }
         }
+        $data = [
+            'tgl' => $r->tgl,
+            'no_nota' => $r->no_nota,
+            'debit' => 0,
+            'kredit' => $ttlDebit,
+        ];
+        DB::table('bayar_umum')->insert($data);
 
         for ($i = 0; $i < count($r->id_produk); $i++) {
             DB::table('penjualan_agl')->insert([
@@ -362,5 +370,118 @@ class PenjualanUmumController extends Controller
         DB::table('penjualan_agl')->where('urutan', $r->urutan)->delete();
 
         return redirect()->route('penjualan2.index', ['period' => 'costume', 'tgl1' => $r->tgl1, 'tgl2' => $r->tgl2, 'id_proyek' => 0])->with('sukses', 'Data Berhasil Dihapus');
+    }
+
+    public function piutang(Request $r)
+    {
+        if (empty($r->tgl1)) {
+            $tgl1 = date('Y-m-01');
+            $tgl2 = date('Y-m-t');
+        } else {
+            $tgl1 = $r->tgl1;
+            $tgl2 = $r->tgl2;
+        }
+
+        $data = [
+            'title' => 'Piutang Penjualan Umum',
+            'invoice_umum' => DB::select("SELECT a.tgl, a.kode, a.urutan, GROUP_CONCAT(b.nm_produk) AS nm_produk_concat, sum(a.qty) as qty, sum(a.total_rp) as ttl_rp, c.total_bayar, d.nm_customer, a.id_customer, a.lokasi
+            FROM penjualan_agl AS a
+            LEFT JOIN tb_produk AS b ON a.id_produk = b.id_produk
+            left join (
+                SELECT c.no_nota, sum(c.kredit - c.debit) as total_bayar
+                FROM bayar_umum as c 
+                GROUP by c.no_nota
+            ) as c on c.no_nota = a.urutan 
+            
+            left JOIN customer as d on d.id_customer = a.id_customer
+            where a.lokasi in('alpa','mtd') and a.tgl between '$tgl1' and '$tgl2' and c.total_bayar != 0
+            GROUP BY a.urutan;
+            "),
+            'customer' => DB::table('customer')->get(),
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+        ];
+        return view("penjualan2.piutang", $data);
+    }
+
+    public function bayar_piutang_umum(Request $r)
+    {
+        $max = DB::table('bayar_umum')->latest('urutan_piutang')->first();
+
+        if ($max->urutan_piutang == '0') {
+            $nota_t = '1000';
+        } else {
+            $nota_t = $max->urutan_piutang + 1;
+        }
+        $data = [
+            'title' => 'Bayar Piutang Umum',
+            'no_nota' => $r->no_nota,
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'nota' => $nota_t
+        ];
+        return view('penjualan2.bayar', $data);
+    }
+
+    public function save_bayar_piutang(Request $r)
+    {
+        $max = DB::table('bayar_umum')->latest('urutan_piutang')->first();
+
+        if ($max->urutan_piutang == '0') {
+            $nota_t = '1000';
+        } else {
+            $nota_t = $max->urutan_piutang + 1;
+        }
+
+        for ($x = 0; $x < count($r->no_nota); $x++) {
+            $data = [
+                'urutan_piutang' => $nota_t,
+                'no_nota_piutang' => 'PIUM' . $nota_t,
+                'tgl' => $r->tgl,
+                'no_nota' => $r->urutan[$x],
+                'debit' => $r->pembayaran[$x],
+                'kredit' => '0',
+                'admin' => Auth::user()->name,
+            ];
+            DB::table('bayar_umum')->insert($data);
+        }
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '99')->first();
+        $akun = DB::table('akun')->where('id_akun', '99')->first();
+
+        $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+        $data = [
+            'tgl' => $r->tgl,
+            'no_nota' => 'PIUM' . $nota_t,
+            'id_akun' => '99',
+            'id_buku' => '6',
+            'ket' => 'Pelunasan piutang ' . $r->ket,
+            'debit' => 0,
+            'kredit' => $r->total_penjualan,
+            'admin' => Auth::user()->name,
+            'no_urut' => $akun->inisial . '-' . $urutan,
+            'urutan' => $urutan,
+        ];
+        DB::table('jurnal')->insert($data);
+
+        for ($x = 0; $x < count($r->id_akun); $x++) {
+            $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
+            $akun2 = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
+            $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
+            $data = [
+                'tgl' => $r->tgl,
+                'no_nota' => 'PIUM' . $nota_t,
+                'id_akun' => $r->id_akun[$x],
+                'id_buku' => '6',
+                'ket' => 'Pelunasan piutang ' . $r->ket,
+                'debit' => $r->debit[$x],
+                'kredit' => $r->kredit[$x],
+                'admin' => Auth::user()->name,
+                'no_urut' => $akun2->inisial . '-' . $urutan2,
+                'urutan' => $urutan2,
+            ];
+            DB::table('jurnal')->insert($data);
+        }
+        return redirect()->route('penjualan2.piutang')->with('sukses', 'Data berhasil ditambahkan');
     }
 }

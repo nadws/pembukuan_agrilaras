@@ -267,6 +267,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/edit', 'update')->name('update');
             Route::get('/print', 'print')->name('print');
             Route::get('/detail/{no_nota}', 'detail')->name('detail');
+            Route::get('/piutang', 'piutang')->name('piutang');
+            Route::get('/bayar_piutang_umum', 'bayar_piutang_umum')->name('bayar_piutang_umum');
+            Route::post('/save_bayar_piutang', 'save_bayar_piutang')->name('save_bayar_piutang');
         });
 
     Route::controller(PenjualanUmumController::class)

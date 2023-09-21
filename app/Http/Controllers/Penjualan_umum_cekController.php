@@ -78,7 +78,7 @@ class Penjualan_umum_cekController extends Controller
             'title' => 'Penerimaan Uang Martadah',
             'nota' => $r->no_nota,
             'jurnal' => $cekAdadiJurnal,
-            'akun' => DB::table('akun')->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
         ];
         return view('penjualan_umum_cek.penerimaan_uang', $data);
     }
@@ -113,7 +113,20 @@ class Penjualan_umum_cekController extends Controller
             DB::table('jurnal')->insert($data);
 
             DB::table('penjualan_agl')->where('urutan', $r->urutan[$x])->update(['cek' => 'Y', 'admin_cek' => Auth::user()->name]);
+
+            $nota_urutan = $r->urutan[$x];
+
+            $data = [
+                'tgl' => $r->tgl[$x],
+                'no_nota' => $r->urutan[$x],
+                'debit' => 0,
+                'kredit' => $r->pembayaran[$x],
+            ];
+            DB::table('bayar_umum')->insert($data);
         }
+
+
+
 
         for ($x = 0; $x < count($r->id_akun); $x++) {
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
@@ -133,6 +146,18 @@ class Penjualan_umum_cekController extends Controller
                 'urutan' => $urutan,
             ];
             DB::table('jurnal')->insert($data);
+
+            if ($akun->id_klasifikasi == '7') {
+            } else {
+                $data = [
+                    'tgl' => $r->tgl[$x],
+                    'no_nota' => $nota_urutan,
+                    'debit' => $r->debit[$x],
+                    'kredit' => $r->kredit[$x],
+                    'no_nota_piutang' => 'PUM-' . $nota_urutan
+                ];
+                DB::table('bayar_umum')->insert($data);
+            }
         }
 
         return redirect()->route('penjualan_umum_cek')->with('sukses', 'Data berhasil ditambahkan');

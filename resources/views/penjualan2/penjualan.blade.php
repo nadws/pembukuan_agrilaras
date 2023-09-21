@@ -42,7 +42,8 @@
                                     @php
                                     $emptyKondisi = [$edit, $delete, $detail];
                                     @endphp
-                                    {{-- <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" /> --}}
+                                    {{--
+                                    <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" /> --}}
 
                                     {{-- @if (!empty($detail)) --}}
                                     <li><a class="dropdown-item  text-info detail_nota" href="#"

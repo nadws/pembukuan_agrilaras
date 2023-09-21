@@ -24,11 +24,11 @@
                             href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'atk'])}}">
                             ATK & Perlengkapan</a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'pullet' ? 'active' : '' }}" aria-current="page"
                             href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'pullet'])}}">
                             Pullet</a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
 
@@ -102,9 +102,22 @@
                                     </button> --}}
                                 </td>
                                 <td style="vertical-align: top;">
+                                    @if ($post == 'peralatan')
+                                    <select name="id_akun[]" id="" class="select2_add pilih_akun pilih_akun1" count="1">
+                                        <option value="">-Pilih Akun-</option>
+                                        @foreach ($akun_gantung as $p)
+                                        <option value="{{$p->id_akun}}">{{$p->nm_akun}}</option>
+                                        @endforeach
+
+                                    </select>
+                                    @else
                                     <input type="hidden" name="id_akun[]" value="{{$akun_gantung->id_akun}}">
                                     <input type="text" class="form-control" value="{{$akun_gantung->nm_akun}} "
                                         readonly>
+                                    @endif
+
+
+
                                     <div class="">
                                         <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                                         <input type="text" class="form-control " name="no_urut[]">
@@ -112,6 +125,12 @@
 
                                 </td>
                                 <td style="vertical-align: top;">
+                                    @if ($post == 'peralatan')
+                                    <select name="id_post" id="" class="select2_add post1 post_center post_center1"
+                                        count="1">
+
+                                    </select>
+                                    @else
                                     <select name="id_post" id="" class="select2_add post_center post_center1" count="1">
                                         <option value="">-Pilih Post-</option>
                                         @foreach ($post as $p)
@@ -119,6 +138,8 @@
                                         @endforeach
 
                                     </select>
+                                    @endif
+
                                 </td>
 
                                 <td style="vertical-align: top;">
@@ -494,7 +515,7 @@
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
                     $.ajax({
-                        url: "/get_post2?id_akun=" + id_akun,
+                        url: "/get_post_pembalikan?id_akun=" + id_akun,
                         type: "Get",
                         success: function(data) {
                             $(".post" + count).html(data);

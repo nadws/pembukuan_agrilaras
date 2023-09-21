@@ -32,9 +32,9 @@ class Jurnal_aktivaController extends Controller
             $akun_aktiva = DB::table('akun')->where('id_akun', 9)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
         } else if ($kategori == 'peralatan') {
-            $akun_gantung = DB::table('akun')->where('id_akun', 61)->first();
+            $akun_gantung = DB::table('akun')->whereIn('id_akun', [61, 76])->get();
             $akun_aktiva = DB::table('akun')->where('id_akun', 16)->first();
-            $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
+            $post = 'peralatan';
         } else if ($kategori == 'pullet') {
             $akun_gantung = DB::table('akun')->where('id_akun', 76)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 75)->first();
@@ -184,5 +184,17 @@ class Jurnal_aktivaController extends Controller
         ];
         DB::table('tb_stok_produk')->insert($data);
         return redirect()->route('produk.index')->with('sukses', 'Data Berhasil Ditambahkan');
+    }
+
+    public function get_post_pembalikan(Request $r)
+    {
+        $id_akun = $r->id_akun;
+        // $post = DB::table('tb_post_center')->where('id_akun', $id_akun)->get();
+        $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
+
+        echo "<option value=''>Pilih sub akun</option>";
+        foreach ($post as $k) {
+            echo "<option value='" . $k->id_post_center  . "'>" . $k->nm_post . "</option>";
+        }
     }
 }

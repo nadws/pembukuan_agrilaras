@@ -52,8 +52,8 @@
                 <a href="{{route('penjualan_ayam.print_setoran',['no_nota' => $i->nota_setor])}}" target="_blank"
                     class="btn btn-sm btn-success"><i class="fas fa-print"></i></a>
 
-                <a href="{{route('penjualan_ayam.delete_perencanaan',['no_nota' => $i->nota_setor])}}" class="btn btn-sm btn-danger"><i
-                        class="fas fa-trash-alt"></i></a>
+                <a href="{{route('penjualan_ayam.delete_perencanaan',['no_nota' => $i->nota_setor])}}"
+                    class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></a>
             </td>
         </tr>
         @endforeach
