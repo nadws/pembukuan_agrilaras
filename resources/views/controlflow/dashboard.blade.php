@@ -1152,6 +1152,26 @@
                     }
                 });
             });
+            $(document).on('click', '.klikCek', function() {
+                var urutan = $(this).attr('urutan');
+                if ($(this).is(":checked")) {
+                    $('.hasil_iktisar' + urutan).val('H')
+                } else {
+                    $('.hasil_iktisar' + urutan).val('T')
+                }
+            });
+
+            $(document).on('click', '.klikCek', function(){
+                var count = $(this).attr('count')
+                var id_akun = $(this).attr('id_akun')
+                var nilai = $(this).val()
+
+                if ($(this).is(":checked")) {
+                    $('.klikCek' + count).val('Y')
+                } else {
+                    $('.klikCek' + count).val('T')
+                }
+            })
         </script>
     @endsection
 </x-theme.app>

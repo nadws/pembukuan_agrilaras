@@ -80,8 +80,8 @@
                     idModal="daftarakun">
                     <div id="viewdaftarakun"></div>
                 </x-theme.modal>
-
-                <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunControl">
+                
+                <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='Y' idModal="modalAkunControl">
                     <div id="loadAkunControl"></div>
                 </x-theme.modal>
             </div>

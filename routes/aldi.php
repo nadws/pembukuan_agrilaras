@@ -229,6 +229,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/save_subkategori', 'save_subkategori')->name('save_subkategori');
             Route::get('/delete_subkategori', 'delete_subkategori')->name('delete_subkategori');
             Route::get('/update', 'update')->name('update');
+            Route::post('/save_akun_profit', 'save_akun_profit')->name('save_akun_profit');
         });
 
     Route::controller(PeralatanController::class)

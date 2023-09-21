@@ -27,7 +27,7 @@
             where a.kategori = '$id_kategori';");
         }
         
-        $biaya_murni = DB::select("SELECT b.id_akun,c.nm_akun, b.kredit, b.debit
+        $biaya_murni = DB::select("SELECT a.id_akun,c.nm_akun, b.kredit, b.debit
         FROM akunprofit as a
         left join (
         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
@@ -38,7 +38,7 @@
         left join akun as c on c.id_akun = a.id_akun
         where a.kategori = '4';");
         
-        $biayaGantung = DB::select("SELECT a.nm_akun, b.debit, b.kredit
+        $biayaGantung = DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
         FROM akun as a
         left join (
         SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit, c.akunvs
@@ -74,6 +74,7 @@
         open2: false,
         open22: false,
         open23: false,
+        open24: false,
     }">
         <tr>
             <th class="dhead"><a class="uraian text-white" href="#" data-bs-toggle="modal" jenis="1"
@@ -92,7 +93,9 @@
             </tr>
             @foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a)
                 <tr class="detail-row" data-id="{{ $d->id }}" x-transition x-show="open1">
-                    <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+                    <td colspan="2" style="padding-left: 20px"><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
+                    </td>
                     <td style="text-align: right">Rp. {{ number_format($a->kredit, 1) }}</td>
                 </tr>
             @endforeach
@@ -124,7 +127,9 @@
             </tr>
             @foreach ($biaya_murni as $a)
                 <tr x-transition x-show="open2">
-                    <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+                    <td colspan="2" style="padding-left: 20px"><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
+                    </td>
                     <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
                 </tr>
             @endforeach
@@ -139,33 +144,71 @@
             <td colspan="2" class="fw-bold">TOTAL LABA KOTOR</td>
             <td class="fw-bold" align="right">Rp.{{ number_format($totalPendapatan - $totalBiaya, 0) }}</td>
         </tr>
-
+        <tr>
+            <th colspan="3"><a href="#" class="klikModal" id_kategori="5">Biaya Penyesuaian</a>
+                <button class="btn btn-primary btn-sm btn-buka float-end" @click="open24 = ! open24">Buka <i
+                        class="fas fa-caret-down"></i></button>
+            </th>
+        </tr>
         @php
+            $akunp = DB::table('akunprofit as a')->join('akun as b', 'a.id_akun', 'b.id_akun')->where('a.kategori',5)->get();
+            $ttlEbdiba = 0;
+
+        @endphp
+        @foreach ($akunp as $d)
+        @php
+            $asd = DB::selectOne("SELECT a.nm_akun,b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
+                FROM jurnal as b
+                LEFT JOIN akun as a ON b.id_akun = a.id_akun
+                WHERE b.id_buku not in('1','5') and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2' AND b.id_akun =
+                '$d->id_akun'
+            group by b.id_akun;");
+                $ttlEbdiba += $asd->debit ?? 0;
+        @endphp
+        <tr x-show="open24">
+            <td colspan="2" style="padding-left: 20px" class="fw-bold"><a target="_blank"
+                    href="{{ route('summary_buku_besar.detail', ['id_akun' => $d->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($d->nm_akun)) }}</a>
+            </td>
+            <td class="fw-bold" align="right">Rp.{{ number_format($asd->debit ?? 0, 0) }}</td>
+        </tr>
+        @endforeach
+        {{-- @php
             $akunPenyesuaian = '51,58, 91,92,93,98,47,77';
             
             $ebdiba = DB::select("SELECT a.nm_akun,b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-        FROM jurnal as b
-        LEFT JOIN akun as a ON b.id_akun = a.id_akun
-        WHERE b.id_buku not in('1','5') and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2' AND b.id_akun in
-        ($akunPenyesuaian)
-group by b.id_akun;");
+                FROM jurnal as b
+                LEFT JOIN akun as a ON b.id_akun = a.id_akun
+                WHERE b.id_buku not in('1','5') and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2' AND b.id_akun in
+                ($akunPenyesuaian)
+            group by b.id_akun;");
             
             $ttlEbdiba = 0;
         @endphp
+        <tr>
+            <th colspan="3"><a href="#" class="klikModal" id_kategori="5">Biaya Penyesuaian</a>
+                <button class="btn btn-primary btn-sm btn-buka float-end" @click="open24 = ! open24">Buka <i
+                        class="fas fa-caret-down"></i></button>
+            </th>
+        </tr>
+
         @foreach ($ebdiba as $d)
             @php
                 $ttlEbdiba += $d->debit;
             @endphp
-            <tr>
-                <td colspan="2" class="fw-bold">{{ ucwords($d->nm_akun) }}</td>
+
+            <tr x-show="open24">
+                <td colspan="2" style="padding-left: 20px" class="fw-bold"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $d->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($d->nm_akun)) }}</a>
+                </td>
                 <td class="fw-bold" align="right">Rp.{{ number_format($d->debit, 0) }}</td>
             </tr>
         @endforeach
+
         <tr>
             <td colspan="2" class="fw-bold">TOTAL PENYESUAIAN</td>
             <td class="fw-bold" align="right">Rp.{{ number_format($ttlEbdiba, 0) }}
             </td>
-        </tr>
+        </tr> --}}
         <tr>
             <td colspan="2" class="fw-bold">TOTAL LABA BERSIH</td>
             <td class="fw-bold" align="right">Rp.{{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba, 0) }}
@@ -186,8 +229,7 @@ group by b.id_akun;");
 
         @foreach ($subKategori3 as $no => $d)
             <tr>
-                <th colspan="3"><a href="#" class="klikModal"
-                        id_kategori="{{ $d->id }}">{{ $d->sub_kategori }}</a>
+                <th colspan="3"><a href="#" class="klikModal" id_kategori="4">{{ $d->sub_kategori }}</a>
                     <button class="btn btn-primary btn-sm btn-buka float-end" @click="open22 = ! open22">Buka <i
                             class="fas fa-caret-down"></i></button>
 
@@ -201,7 +243,9 @@ group by b.id_akun;");
                     $ttl += $a->debit;
                 @endphp
                 <tr x-transition x-show="open22">
-                    <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+                    <td colspan="2" style="padding-left: 20px"><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
+                    </td>
                     <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
                 </tr>
             @endforeach
@@ -211,7 +255,8 @@ group by b.id_akun;");
             </tr>
         @endforeach
         <tr>
-            <th colspan="3"><a href="#" class="klikModal" id_kategori="{{ $d->id }}">Uang Keluar</a>
+            <th colspan="3"><a href="#" class="klikModal" id_kategori="{{ $d->id }}">Uang
+                    Keluar</a>
                 <button class="btn btn-primary btn-sm btn-buka float-end" @click="open23 = ! open23">Buka <i
                         class="fas fa-caret-down"></i></button>
 
@@ -225,7 +270,9 @@ group by b.id_akun;");
                 $ttl2 += $a->debit;
             @endphp
             <tr x-transition x-show="open23">
-                <td colspan="2" style="padding-left: 20px">{{ ucwords(strtolower($a->nm_akun)) }}</td>
+                <td colspan="2" style="padding-left: 20px"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
+                </td>
                 <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
             </tr>
         @endforeach

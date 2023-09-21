@@ -49,7 +49,7 @@ class CashflowController extends Controller
 
         $data = [
             'title' => 'Cashflow',
-            'piutang' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
+            'piutang' => DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
             SELECT b.id_akun , sum(b.debit) as debit , sum(b.kredit) as kredit
@@ -59,7 +59,7 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in(SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '1');"),
 
-            'penjualan' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
+            'penjualan' => DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
             SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
@@ -69,7 +69,7 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '2');"),
 
-            'uang' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
+            'uang' => DB::select("SELECT a.id_akun, a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
             SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
@@ -79,7 +79,7 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '3');"),
 
-            'piutang2' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
+            'piutang2' => DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
             SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
@@ -89,12 +89,12 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '4');"),
 
-            'kerugian' => DB::selectOne("SELECT a.tgl, a.no_nota, sum(a.debit) AS debit, sum(a.kredit) AS kredit
+            'kerugian' => DB::selectOne("SELECT a.id_akun,a.tgl, a.no_nota, sum(a.debit) AS debit, sum(a.kredit) AS kredit
             FROM jurnal AS a
             LEFT JOIN akun AS b ON b.id_akun = a.id_akun
             WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.id_akun = 36"),
 
-            'biaya' => DB::select("SELECT a.nm_akun, b.debit, b.kredit
+            'biaya' => DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
             FROM akun as a
             left join (
              SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit, c.akunvs
@@ -110,7 +110,7 @@ class CashflowController extends Controller
             ) as b on b.id_akun = a.id_akun
             where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '5'); "),
 
-            'uangbiaya' => DB::select("SELECT ak.nm_akun, a.debit , a.kredit
+            'uangbiaya' => DB::select("SELECT ak.id_akun,ak.nm_akun, a.debit , a.kredit
             FROM akun as ak
             
             left join (

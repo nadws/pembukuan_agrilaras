@@ -88,8 +88,22 @@ class ProfitController extends Controller
         $data = [
             'akunProfit' => $akunProfit,
             'akun1' => $akun,
+            'id_kategori' => $r->id_kategori
         ];
         return view('profit.modal', $data);
+    }
+
+    public function save_akun_profit(Request $r)
+    {
+        DB::table('akunprofit')->where('kategori', $r->kategori)->delete();
+        for ($i = 0; $i < count($r->ceklis); $i++) {
+            DB::table('akunprofit')->insert([
+                'kategori' => $r->kategori,
+                'id_akun' => $r->id_akun[$i],
+                'urutan' => 1,
+            ]);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Data Berhasil');
     }
 
     public function delete(Request $r)
@@ -221,6 +235,7 @@ class ProfitController extends Controller
             'akunPenjualan' => $akunPenjualan,
             'akunBiaya' => $akunBiaya,
             'akunUangKeluar' => $akunUangKeluar,
+            'allAkun' => DB::table('akun')->get(),
             'akun' => DB::select("SELECT a.id_akun as akun_id, a.kode_akun , a.nm_akun, b.id_akun, a.profit_loss
             FROM akun as a
             left join akunprofit as b on b.id_akun = a.id_akun;"),
@@ -230,6 +245,7 @@ class ProfitController extends Controller
 
     public function seleksi_akun_profit(Request $r)
     {
+        dd($r->all());
         for ($x = 0; $x < count($r->id_akun); $x++) {
 
             $data = [

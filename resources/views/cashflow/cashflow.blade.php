@@ -227,7 +227,7 @@
                 </tr>
                 @foreach ($biaya as $b)
                 <tr x-show="openBiaya">
-                    <td>{{ucwords(strtolower($b->nm_akun))}} </td>
+                    <td><a target="_blank" href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a></td>
                     <td align="right">Rp {{number_format($b->debit ,1)}}</td>
                 </tr>
                 @endforeach
@@ -259,7 +259,7 @@
                 </tr>
                 @foreach ($uangbiaya as $b)
                 <tr x-show="openUangKeluar">
-                    <td>{{ucwords(strtolower($b->nm_akun))}} </td>
+                    <td><a target="_blank" href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a></td>
                     <td align="right">Rp {{number_format($b->kredit ,1)}}</td>
                 </tr>
                 @endforeach
