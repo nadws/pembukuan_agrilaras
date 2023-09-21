@@ -278,6 +278,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     function plusRowProduk(count, classPlus, url) {
         $(document).on("click", "." + classPlus, function() {
             count = count + 1;
+           
             $.ajax({
                 url: `${url}?count=` + count,
                 type: "GET",

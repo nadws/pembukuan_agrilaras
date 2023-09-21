@@ -389,7 +389,7 @@
                             <td align="center">
 
                                 <a href="{{ route('penyetoran_penjualan_umum') }}"
-                                    class="btn btn-primary btn-sm">Penyetoran</a>
+                                    class="btn btn-primary btn-sm">Setor</a>
                                 <a href="{{ route('penjualan_umum_cek') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-history"></i> History
                                     <span class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' :
@@ -397,6 +397,11 @@
                                 </a>
                                 <a href="{{ route('penjualan2.index') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-plus"></i>
+
+                                </a>
+                                <a href="{{ route('penjualan2.piutang') }}" class="btn btn-primary btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Piutang Umum">
+                                    <i class="fas fa-money-check"></i>
 
                                 </a>
                             </td>

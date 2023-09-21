@@ -39,20 +39,20 @@
                         </thead>
                         <tbody>
                             @php
-                                $produk = DB::table('penjualan_agl as a')
-                                    ->join('tb_produk as b', 'a.id_produk', 'b.id_produk')
-                                    ->where('urutan', request()->get('no_nota')[0])
-                                    ->get();
+                            $produk = DB::table('penjualan_agl as a')
+                            ->join('tb_produk as b', 'a.id_produk', 'b.id_produk')
+                            ->where('urutan', request()->get('no_nota')[0])
+                            ->get();
                             @endphp
                             @foreach ($produk as $no => $a)
-                                <tr>
-                                    <td>{{ $no + 1 }}</td>
-                                    <td>{{ $a->nm_produk }}</td>
-                                    <td>{{ $a->qty }}</td>
-                                    <td align="right">{{ number_format($a->rp_satuan, 0) }}</td>
-                                    <td align="right">{{ number_format($a->total_rp, 0) }}</td>
-                                    <td>{{ $a->admin }}</td>
-                                </tr>
+                            <tr>
+                                <td>{{ $no + 1 }}</td>
+                                <td>{{ $a->nm_produk }}</td>
+                                <td>{{ $a->qty }}</td>
+                                <td align="right">{{ number_format($a->rp_satuan, 0) }}</td>
+                                <td align="right">{{ number_format($a->total_rp, 0) }}</td>
+                                <td>{{ $a->admin }}</td>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -72,36 +72,37 @@
                         </thead>
                         <tbody>
                             @php
-                                $total = 0;
+                            $total = 0;
                             @endphp
                             @foreach ($nota as $no => $n)
-                                @php
-                                    $hutang = DB::selectOne("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total, count(*) as ttl_produk FROM
-                                            `penjualan_agl` as a
-                                            LEFT JOIN customer as b ON a.id_customer = b.id_customer
-                                            WHERE a.urutan = '$n'
-                                            GROUP BY a.urutan;");
-                                    $total += $hutang->total;
-                                @endphp
-                                <tr>
-                                    <td>{{ $hutang->kode }}-{{ $n }}</td>
-                                    <td>
-                                        {{ tanggal($hutang->tgl) }}
-                                        <input type="hidden" name="tgl[]" value="{{ $hutang->tgl }}">
-                                        <input type="hidden" name="urutan[]" value="{{ $hutang->urutan }}">
-                                        <input type="hidden" name="nm_customer[]" value="{{ $hutang->nm_customer }}">
-                                        <input type="hidden" name="no_nota[]"
-                                            value="{{ $hutang->kode }}-{{ $hutang->urutan }}">
-                                        <input type="hidden" name="pembayaran[]"
-                                            class="form-control bayar_biasa bayar_biasa{{ $no + 1 }}"
-                                            style="text-align: right" value="{{ $hutang->total }}">
-                                    </td>
-                                    <td>{{ $hutang->nm_customer }}</td>
-                                    <td align="right">
-                                        Rp {{ number_format($hutang->total, 0) }}
+                            @php
+                            $hutang = DB::selectOne("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total,
+                            count(*) as ttl_produk FROM
+                            `penjualan_agl` as a
+                            LEFT JOIN customer as b ON a.id_customer = b.id_customer
+                            WHERE a.urutan = '$n'
+                            GROUP BY a.urutan;");
+                            $total += $hutang->total;
+                            @endphp
+                            <tr>
+                                <td>{{ $hutang->kode }}-{{ $n }}</td>
+                                <td>
+                                    {{ tanggal($hutang->tgl) }}
+                                    <input type="hidden" name="tgl[]" value="{{ $hutang->tgl }}">
+                                    <input type="hidden" name="urutan[]" value="{{ $hutang->urutan }}">
+                                    <input type="hidden" name="nm_customer[]" value="{{ $hutang->nm_customer }}">
+                                    <input type="hidden" name="no_nota[]"
+                                        value="{{ $hutang->kode }}-{{ $hutang->urutan }}">
+                                    <input type="hidden" name="pembayaran[]"
+                                        class="form-control bayar_biasa bayar_biasa{{ $no + 1 }}"
+                                        style="text-align: right" value="{{ $hutang->total }}">
+                                </td>
+                                <td>{{ $hutang->nm_customer }}</td>
+                                <td align="right">
+                                    Rp {{ number_format($hutang->total, 0) }}
 
-                                    </td>
-                                </tr>
+                                </td>
+                            </tr>
                             @endforeach
 
 
@@ -125,30 +126,26 @@
                         </div>
                         <div class="col-lg-6">
                             <h6 class="total float-end">Rp {{ number_format($total, 2, ',', '.') }}</h6>
-                            <input type="hidden" class="total_semua_biasa" name="total_penjualan"
-                                value="{{ $total }}">
+                            <input type="hidden" class="total_semua_biasa" name="total_penjualan" value="{{ $total }}">
                         </div>
-                       
+
                         <div class="col-lg-5 mt-2">
                             <label for="">Pilih Akun Pembayaran</label>
                             <select name="id_akun[]" id="" class="select2_add" required>
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
-                                    <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-lg-3 mt-2">
                             <label for="">Debit</label>
-                            <input type="text" class="form-control debit debit1" count="1"
-                                style="text-align: right">
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
-                                value="0">
+                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right">
+                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1" value="0">
                         </div>
                         <div class="col-lg-3 mt-2">
                             <label for="">Kredit</label>
-                            <input type="text" class="form-control kredit kredit1" count="1"
-                                style="text-align: right">
+                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
                             <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
                                 value="0">
                         </div>
@@ -202,8 +199,8 @@
 
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
                 $(document).on("keyup", ".debit", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
@@ -396,6 +393,6 @@
 
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
