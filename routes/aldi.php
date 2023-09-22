@@ -17,6 +17,7 @@ use App\Http\Controllers\PeralatanController;
 use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PoController;
 use App\Http\Controllers\ProfitController;
+use App\Http\Controllers\RakController;
 use App\Http\Controllers\StokTelurMtdController;
 use App\Http\Controllers\SuplierController;
 use App\Http\Controllers\UserController;
@@ -251,6 +252,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/load_aktiva', 'load_aktiva')->name('load_aktiva');
             Route::get('/get_data_kelompok', 'get_data_kelompok')->name('get_data_kelompok');
             Route::post('/save_aktiva', 'save_aktiva')->name('save_aktiva');
+        });
+
+    Route::controller(RakController::class)
+        ->prefix('rak')
+        ->name('rak.')
+        ->group(function () {
+            Route::get('/history', 'history')->name('history');
+            Route::get('/pembukuan_biaya', 'pembukuan_biaya')->name('pembukuan_biaya');
+            Route::post('/bukukan', 'bukukan')->name('bukukan');
         });
 
     Route::controller(PenjualanUmumController::class)
