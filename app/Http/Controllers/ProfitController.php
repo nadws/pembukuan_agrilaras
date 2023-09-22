@@ -84,7 +84,7 @@ class ProfitController extends Controller
             ->orderBy('a.urutan', 'ASC')
             ->get();
 
-        $akun = DB::Select("SELECT * FROM akun as a where a.id_akun not in (SELECT t.id_akun FROM akunprofit as t where t.kategori = '$r->id_kategori')");
+        $akun = DB::Select("SELECT * FROM akun as a");
         $data = [
             'akunProfit' => $akunProfit,
             'akun1' => $akun,
@@ -102,6 +102,24 @@ class ProfitController extends Controller
                 'id_akun' => $r->id_akun[$i],
                 'urutan' => 1,
             ]);
+        }
+        return redirect()->route('controlflow')->with('sukses', 'Data Berhasil');
+    }
+
+    public function save_akun_profit_new(Request $r)
+    {
+
+        for ($i = 0; $i < count($r->id_akun); $i++) {
+            if ($r->profit_loss[$i] == 'T') {
+                # code...
+            } else {
+                DB::table('akunprofit')->insert([
+                    'kategori' => $r->kategori,
+                    'id_akun' => $r->id_akun[$i],
+                    'urutan' => 1,
+                ]);
+                DB::table('akun')->where('id_akun', $r->id_akun[$i])->update(['profit_loss' => 'Y']);
+            }
         }
         return redirect()->route('controlflow')->with('sukses', 'Data Berhasil');
     }
@@ -245,7 +263,7 @@ class ProfitController extends Controller
 
     public function seleksi_akun_profit(Request $r)
     {
-        dd($r->all());
+        // dd($r->all());
         for ($x = 0; $x < count($r->id_akun); $x++) {
 
             $data = [
