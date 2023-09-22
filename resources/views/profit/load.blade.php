@@ -32,7 +32,7 @@
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku in ('2','12','10') and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in ('5') and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     left join akun as c on c.id_akun = a.id_akun
