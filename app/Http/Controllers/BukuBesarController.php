@@ -63,9 +63,9 @@ class BukuBesarController extends Controller
         group by a.id_akun
         ORDER by b.kode_akun ASC;");
 
-        $buku = DB::select("SELECT 
-        FROM 
-        ");
+        // $buku = DB::select("SELECT 
+        // FROM 
+        // ");
 
         $ditutup = DB::selectOne("SELECT * FROM `jurnal` as a WHERE tgl BETWEEN '2023-05-01' AND '2023-05-31';");
 

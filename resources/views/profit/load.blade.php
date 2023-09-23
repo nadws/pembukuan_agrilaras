@@ -93,6 +93,7 @@
         open22: false,
         open23: false,
         open24: false,
+        open25: false,
     }">
         <tr>
             <th class="dhead"><a class="uraian text-white" href="#" data-bs-toggle="modal" jenis="1"
@@ -129,8 +130,7 @@
             <td>&nbsp;</td>
         </tr>
         <tr>
-            <th class="dhead"><a class="uraian text-white" href="#" data-bs-toggle="modal" jenis="2"
-                    data-bs-target="#tambah-uraian">Biaya - Biaya</a> </th>
+            <th class="dhead"><a class="uraian text-white">Biaya - Biaya</a> </th>
             <th colspan="2" class="dhead" style="text-align: right">Rupiah
             </th>
         </tr>
@@ -264,6 +264,13 @@
             <td class="fw-bold" align="right" style="border-bottom: 1px solid black;"> Rp.
                 {{ number_format($totalBiaya2 + $totalBiaya, 1) }}</td>
         </tr>
+        <tr>
+            <th colspan="3"><a href="#" class="klikModal" id_kategori="4">Biaya Bukan Uang keluar</a>
+                <button class="btn btn-primary btn-sm btn-buka float-end" @click="open25 = ! open25">Buka <i
+                        class="fas fa-caret-down"></i></button>
+
+            </th>
+        </tr>
         @php
         $ttl_bkn_klr = 0;
         @endphp
@@ -271,7 +278,7 @@
         @php
         $ttl_bkn_klr += $a->debit;
         @endphp
-        <tr>
+        <tr x-transition x-show="open25">
             <td colspan="2" style="padding-left: 20px"><a target="_blank"
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($a->nm_akun)) }}</a>
