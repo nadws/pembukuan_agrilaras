@@ -24,19 +24,22 @@ class Stok_pakanController extends Controller
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
             where b.kategori in('obat_pakan','obat_air')
             group by a.id_pakan;"),
+            
+            'stok_rak' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo FROM tb_rak_telur as a where a.id_gudang = '1'"),
 
+            'total_rak' => DB::selectOne("SELECT COUNT(a.id_rak) as total
+            FROM tb_rak_telur as a
+            where a.`cek` = 'T' AND a.h_opname = 'Y' and a.id_gudang = '1';"),
             'total_pakan' => DB::selectOne("SELECT COUNT(a.id_stok_telur) as total
             FROM stok_produk_perencanaan as a
             left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
-            
             where a.`check` = 'T' and b.kategori = 'pakan' and a.h_opname = 'T' and a.id_kandang != '0';"),
 
             'total_vitamin' => DB::selectOne("SELECT COUNT(a.id_stok_telur) as total
             FROM stok_produk_perencanaan as a
             left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
-            
             where a.`check` = 'T' and b.kategori in('obat_pakan','obat_air') and a.h_opname = 'T' and a.id_kandang != '0';"),
         ];
         return view('stok_pakan.stok', $data);
@@ -313,12 +316,14 @@ class Stok_pakanController extends Controller
     {
         if ($r->kategori == 'pakan') {
             $id_akun_penualan_ayam = 1;
+            $id_akun = 92;
         } else {
             $id_akun_penualan_ayam = 32;
+            $id_akun = 93;
+
         }
 
-
-        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '6')->first();
+        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
 
         if (empty($max)) {
             $nota_t = '1000';
@@ -348,16 +353,17 @@ class Stok_pakanController extends Controller
 
             DB::table('stok_produk_perencanaan')->where('id_stok_telur', $r->id_stok_telur[$x])->update(['check' => 'Y', 'cek_admin' => auth()->user()->name]);
         }
+        
 
-        for ($x = 0; $x < count($r->id_akun); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
-            $akun = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
+        for ($x = 0; $x < count($r->debit); $x++) {
+            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun)->first();
+            $akun = DB::table('akun')->where('id_akun', $id_akun)->first();
 
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
             $data = [
                 'tgl' => $r->tgl[$x],
                 'no_nota' => 'JUP-' . $nota_t,
-                'id_akun' => $r->id_akun[$x],
+                'id_akun' => $id_akun,
                 'id_buku' => '4',
                 'ket' => 'Biaya Pengeluaran ' . $r->kategori,
                 'debit' => $r->debit[$x],

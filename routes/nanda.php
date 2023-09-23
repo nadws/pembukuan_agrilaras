@@ -398,6 +398,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pembukuan_biaya_pv', 'pembukuan_biaya_pv')->name('pembukuan_biaya_pv');
         Route::post('/bukukan_pv', 'bukukan_pv')->name('bukukan_pv');
     });
+    
     Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
         Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
         Route::get('/detail_penjualan_mtd', 'detail_penjualan_mtd')->name('detail_penjualan_mtd');
