@@ -20,7 +20,7 @@
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku != '5' and b.kredit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in(5,13) and b.kredit != 0 and b.tgl between '$tgl1' and '$tgl2'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     where a.id_klasifikasi = '4';");
@@ -31,7 +31,7 @@
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku != '5' and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     where a.id_klasifikasi = '3';");
@@ -41,7 +41,7 @@
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku != '5' and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     where a.id_klasifikasi = '6'; ");
@@ -51,16 +51,25 @@
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku != '5' and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
     where a.id_klasifikasi = '5';");
 
-    $biaya_bkn_keluar = DB::select("SELECT b.id_akun, a.nm_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
+    $biaya_bkn_keluar = DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit
+    FROM jurnal as a
+    left join (
+    SELECT b.no_nota , b.id_akun, c.nm_akun
     FROM jurnal as b
-    left join akun as a on a.id_akun = b.id_akun
-    WHERE b.id_buku = '6' and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2' and a.id_klasifikasi = '3'
-    group by b.id_akun;
+    left join akun as c on c.id_akun = b.id_akun
+    where b.id_akun not in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6') and
+    b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0
+    GROUP by b.no_nota
+    ) as b on b.no_nota = a.no_nota
+    left join akun as c on c.id_akun = a.id_akun
+    where a.id_buku not in(5,13) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not
+    null and c.id_klasifikasi in('3','6')
+    group by a.id_akun;
     ");
 
     foreach ($subKategori1 as $d) {

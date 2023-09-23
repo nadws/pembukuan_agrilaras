@@ -65,7 +65,7 @@
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota" value="JU-{{ $nota }}">
+                                    <input type="text" class="form-control" name="no_nota" value="JPATK-{{ $nota }}">
                                     <input type="hidden" class="form-control" name="urutan" value="{{ $nota }}">
                                 </td>
                                 <td>
