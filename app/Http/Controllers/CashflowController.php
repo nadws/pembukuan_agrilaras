@@ -94,21 +94,19 @@ class CashflowController extends Controller
             LEFT JOIN akun AS b ON b.id_akun = a.id_akun
             WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.id_akun = 36"),
 
-            'biaya' => DB::select("SELECT a.id_akun,a.nm_akun, b.debit, b.kredit
-            FROM akun as a
+            'biaya' => DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit
+            FROM jurnal as a 
             left join (
-             SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit, c.akunvs
-             FROM jurnal as b
-             left join (
-                 SELECT c.no_nota, c.id_akun as akunvs
-                FROM jurnal as c 
-                WHERE c.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
-                group by c.no_nota
-             ) as c on c.no_nota = b.no_nota
-             where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku in ('2','12','10') and c.akunvs is not null
-             group by b.id_akun
-            ) as b on b.id_akun = a.id_akun
-            where a.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '5'); "),
+                SELECT b.no_nota , b.id_akun, c.nm_akun
+                FROM jurnal as b 
+                left join akun as c on c.id_akun = b.id_akun
+                where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6') and 
+                b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0 and b.id_buku in(2,10,12)
+                GROUP by b.no_nota
+            ) as b on b.no_nota = a.no_nota
+            left join akun as c on c.id_akun = a.id_akun
+            where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null
+            group by a.id_akun;"),
 
             'uangbiaya' => DB::select("SELECT ak.id_akun,ak.nm_akun, a.debit , a.kredit
             FROM akun as ak

@@ -218,8 +218,7 @@
                     <th class="dhead2 text-end" style="white-space: nowrap">Rp {{number_format($total_b,1)}}</th>
                 </tr>
                 <tr>
-                    <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control me-3" kategori='5'>Biaya</a>
+                    <td colspan="2" class="fw-bold">Biaya
                         <button class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">Buka
                             <i class="fas fa-caret-down"></i></button>
 
@@ -227,7 +226,9 @@
                 </tr>
                 @foreach ($biaya as $b)
                 <tr x-show="openBiaya">
-                    <td><a target="_blank" href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a></td>
+                    <td><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
+                            ucwords(strtolower($b->nm_akun)) }}</a></td>
                     <td align="right">Rp {{number_format($b->debit ,1)}}</td>
                 </tr>
                 @endforeach
@@ -259,7 +260,9 @@
                 </tr>
                 @foreach ($uangbiaya as $b)
                 <tr x-show="openUangKeluar">
-                    <td><a target="_blank" href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a></td>
+                    <td><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
+                            ucwords(strtolower($b->nm_akun)) }}</a></td>
                     <td align="right">Rp {{number_format($b->kredit ,1)}}</td>
                 </tr>
                 @endforeach

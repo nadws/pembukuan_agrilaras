@@ -126,6 +126,8 @@ class PenjualanUmumController extends Controller
         $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $this->akunPenjualan)->first();
         $akun2 = DB::table('akun')->where('id_akun', $this->akunPenjualan)->first();
         $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
+
+
         $dataK = [
             'tgl' => $r->tgl,
             'no_nota' => 'PUM-' . $r->no_nota,
@@ -226,33 +228,43 @@ class PenjualanUmumController extends Controller
 
     public function update(Request $r)
     {
-        $cek = DB::table('invoice_agl')->where('no_nota', 'PAGL-' . $r->no_nota)->first();
-        if ($cek) {
-            return redirect()->route('penjualan2.index')->with('error', 'Gagal Edit Karena nota Piutang Sudah PAID !');
-        }
-        $ttlDebit = 0;
-        $getProduk = DB::table('tb_stok_produk')->where('id_produk', 12)->orderBy('id_stok_produk', 'DESC')->first();
-        DB::table('tb_stok_produk')->where('no_nota', 'PAGL-' . $r->no_nota)->delete();
-        DB::table('jurnal')->where('no_nota', 'PAGL-' . $r->no_nota)->delete();
+
+        DB::table('jurnal')->where('no_nota', 'PUM-' . $r->no_nota)->delete();
         DB::table('penjualan_agl')->where('urutan', $r->no_nota)->delete();
+        DB::table('bayar_umum')->where('no_nota', $r->no_nota)->delete();
 
 
         $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $this->akunPenjualan)->first();
         $akun2 = DB::table('akun')->where('id_akun', $this->akunPenjualan)->first();
         $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
 
+        $ttlDebit = 0;
+
+        for ($i = 0; $i < count($r->akun_pembayaran); $i++) {
+            $ttlDebit += $r->debit[$i] ?? 0 - $r->kredit[$i] ?? 0;
+        }
+
         $dataK = [
             'tgl' => $r->tgl,
-            'no_nota' => 'PAGL-' . $r->no_nota,
+            'no_nota' => 'PUM-' . $r->no_nota,
             'id_akun' => $this->akunPenjualan,
-            'ket' => 'PAGL-' . $r->nota_manual,
+            'ket' => 'PUM-' . $r->no_nota,
             'no_urut' => $akun2->inisial . '-' . $urutan2,
             'urutan' => $urutan2,
             'kredit' => $ttlDebit,
             'debit' => 0,
+            'id_buku' => '6',
             'admin' => auth()->user()->name,
         ];
         $penjualan = Jurnal::create($dataK);
+
+        $data = [
+            'tgl' => $r->tgl,
+            'no_nota' => $r->no_nota,
+            'debit' => 0,
+            'kredit' => $ttlDebit,
+        ];
+        DB::table('bayar_umum')->insert($data);
 
         for ($i = 0; $i < count($r->akun_pembayaran); $i++) {
             $ttlDebit += $r->debit[$i] ?? 0 - $r->kredit[$i] ?? 0;
@@ -266,8 +278,9 @@ class PenjualanUmumController extends Controller
             Jurnal::create([
                 'tgl' => $r->tgl,
                 'id_akun' => $id_akun,
-                'no_nota' => 'PAGL-' . $r->no_nota,
-                'ket' => 'PAGL-' . $r->no_nota,
+                'id_buku' => '6',
+                'no_nota' => 'PUM-' . $r->no_nota,
+                'ket' => 'PUM-' . $r->no_nota,
                 'debit' => $r->debit[$i] ?? 0,
                 'kredit' => $r->kredit[$i] ?? 0,
                 'no_urut' => $akun->inisial . '-' . $urutan,
@@ -277,7 +290,7 @@ class PenjualanUmumController extends Controller
             if ($id_akun == $this->akunPiutangDagang) {
                 DB::table('invoice_agl')->insert([
                     'no_penjualan' => $r->nota_manual,
-                    'no_nota' => 'PAGL-' . $r->no_nota,
+                    'no_nota' => 'PUM-' . $r->no_nota,
                     'tgl' => $r->tgl,
                     'ket' => $r->ket,
                     'total_rp' => $ttlDebit,
@@ -285,14 +298,27 @@ class PenjualanUmumController extends Controller
                     'admin' => auth()->user()->name
                 ]);
             }
+            if ($akun->id_klasifikasi == '7') {
+            } else {
+                $data = [
+                    'tgl' => $r->tgl,
+                    'no_nota' => $r->no_nota,
+                    'debit' => $r->debit[$i],
+                    'kredit' => $r->kredit[$i],
+                    'no_nota_piutang' => 'PUM-' . $r->no_nota
+                ];
+                DB::table('bayar_umum')->insert($data);
+            }
         }
+
+
 
         for ($i = 0; $i < count($r->id_produk); $i++) {
             DB::table('penjualan_agl')->insert([
                 'urutan' => $r->no_nota,
                 'nota_manual' => $r->nota_manual,
                 'tgl' => $r->tgl,
-                'kode' => 'PAGL',
+                'kode' => 'PUM',
                 'id_customer' => $r->id_customer,
                 'driver' => $r->driver,
                 'id_produk' => $r->id_produk[$i],
@@ -301,29 +327,8 @@ class PenjualanUmumController extends Controller
                 'total_rp' => $r->total_rp[$i],
                 'ket' => $r->ket,
                 'id_jurnal' => $penjualan->id,
-                'admin' => auth()->user()->name
-            ]);
-            $notaProduk = buatNota('tb_stok_produk', 'urutan');
-            $jml_sebelumnya = $getProduk->jml_sebelumnya ?? 0;
-            $jml_sesudahnya = $jml_sebelumnya - $r->qty[$i];
-
-            DB::table("tb_stok_produk")->insert([
-                'id_produk' => $r->id_produk[$i],
-                'urutan' => $notaProduk,
-                'no_nota' => 'SK-' . $notaProduk,
-                'tgl' => $r->tgl,
-                'jenis' => 'selesai',
-                'status' => 'keluar',
-                'jml_sebelumnya' => $jml_sebelumnya,
-                'jml_sesudahnya' => $jml_sesudahnya,
-                'debit' => 0,
-                'kredit' => $r->qty[$i],
-                'rp_satuan' => 0,
-                'ket' => 'PAGL-' . $r->no_nota,
-                'gudang_id' => $getProduk->gudang_id,
-                'kategori_id' => 3,
-                'departemen_id' => 1,
                 'admin' => auth()->user()->name,
+                'lokasi' => 'alpa',
             ]);
         }
 
