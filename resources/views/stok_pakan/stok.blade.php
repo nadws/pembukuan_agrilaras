@@ -109,7 +109,7 @@
                 
                 <th style="text-align: center" colspan="2">
                     <a href="{{ route('rak.history') }}"
-                        class="btn btn-primary btn-sm float-center"><i class="fas fa-history"></i> History <span
+                        class="btn btn-primary btn-sm float-center"><i class="fas fa-history"></i> History Opn<span
                             class="badge bg-danger">{{ empty($total_rak->total) ? '0' : $total_rak->total }}</span></a>
                   
                 </th>
