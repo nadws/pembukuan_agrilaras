@@ -36,12 +36,12 @@
                             </thead>
                             <tbody>
                                 @foreach ($telur_selisih as $no => $d)
-                                <tr>
-                                    <td>{{ $no + 1 }}</td>
-                                    <td>{{ $d->nm_telur }}</td>
-                                    <td align="right">{{ number_format($d->pcs_selisih, 0) }}</td>
-                                    <td align="right">{{ number_format($d->kg_selisih, 1) }}</td>
-                                </tr>
+                                    <tr>
+                                        <td>{{ $no + 1 }}</td>
+                                        <td>{{ $d->nm_telur }}</td>
+                                        <td align="right">{{ number_format($d->pcs_selisih, 0) }}</td>
+                                        <td align="right">{{ number_format($d->kg_selisih, 1) }}</td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
@@ -77,31 +77,31 @@
                             </thead>
                             <tbody>
                                 @php
-                                $ttlRp = 0;
+                                    $ttlRp = 0;
                                 @endphp
                                 @foreach ($pakanSelisih as $no => $d)
-                                @php
-                                $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
-                                $selisih = $d->stok - $stokProgram;
-                                if ($d->sum_ttl_rp != 0) {
-                                $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
-                                } else {
-                                $hargaSatuan = 0;
-                                }
-
-                                $selisihRupiah = $hargaSatuan * $selisih;
-                                $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp <tr>
-                                    <td>{{ $no + 1 }}</td>
-                                    <td>{{ $d->nm_produk }}</td>
-                                    <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
-                                        {{ $d->nm_satuan }}
-                                    </td>
-                                    <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
-                                    <td align="right">
-                                        {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
-                                            </td>
-                                            </tr>
-                                            @endforeach
+                                    @php
+                                        $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                        $selisih = $d->stok - $stokProgram;
+                                        if ($d->sum_ttl_rp != 0) {
+                                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                        } else {
+                                            $hargaSatuan = 0;
+                                        }
+                                        
+                                        $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp <tr>
+                                        <td>{{ $no + 1 }}</td>
+                                        <td>{{ $d->nm_produk }}</td>
+                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
+                                            {{ $d->nm_satuan }}
+                                        </td>
+                                        <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                        <td align="right">
+                                            {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -137,36 +137,35 @@
                             </thead>
                             <tbody>
                                 @php
-                                $ttlRp = 0;
+                                    $ttlRp = 0;
                                 @endphp
                                 @foreach ($vitaminSelisih as $no => $d)
-                                @php
-                                $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
-                                $selisih = $d->stok - $stokProgram;
-                                if ($d->sum_ttl_rp != 0) {
-                                $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
-                                } else {
-                                $hargaSatuan = 0;
-                                }
-                                $selisihRupiah = $hargaSatuan * $selisih;
-                                $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp @if ($d->stok -
-                                    $stokProgram == 0 && $hargaSatuan == 0)
                                     @php
-                                    continue;
-                                    @endphp
+                                        $stokProgram = $d->stok - $d->pcs + $d->pcs_kredit;
+                                        $selisih = $d->stok - $stokProgram;
+                                        if ($d->sum_ttl_rp != 0) {
+                                            $hargaSatuan = $d->sum_ttl_rp / $d->pcs_sum_ttl_rp;
+                                        } else {
+                                            $hargaSatuan = 0;
+                                        }
+                                        $selisihRupiah = $hargaSatuan * $selisih;
+                                    $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp @if ($d->stok - $stokProgram == 0 && $hargaSatuan == 0)
+                                        @php
+                                            continue;
+                                        @endphp
                                     @else
-                                    <tr>
-                                        <td>{{ $no + 1 }}</td>
-                                        <td>{{ $d->nm_produk }}</td>
-                                        <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
-                                            {{ $d->nm_satuan }}</td>
-                                        <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
-                                        <td align="right">
-                                            {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
-                                                </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{{ $no + 1 }}</td>
+                                            <td>{{ $d->nm_produk }}</td>
+                                            <td align="right">{{ number_format($d->stok - $stokProgram, 1) }}
+                                                {{ $d->nm_satuan }}</td>
+                                            <td align="right">{{ number_format($hargaSatuan, 1) }}</td>
+                                            <td align="right">
+                                                {{ number_format($selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah, 0) }}
+                                            </td>
+                                        </tr>
                                     @endif
-                                    @endforeach
+                                @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -234,7 +233,7 @@
                     </div>
                     <div class="card-body">
                         <div id="tableLoad"></div>
-                        <form action="{{route('profit.save_akun_profit_new')}}" method="post">
+                        <form action="{{ route('profit.save_akun_profit_new') }}" method="post">
                             @csrf
                             <x-theme.modal btnSave="Y" title="Tambah Akun" idModal="tambah-profit" size="modal-lg">
                                 <div id="modalLoad"></div>
@@ -242,7 +241,8 @@
                         </form>
 
                         <form action="" id="formUraian">
-                            <x-theme.modal btnSave="T" title="Tambah Uraian" idModal="tambah-uraian" size="modal-lg">
+                            <x-theme.modal btnSave="T" title="Tambah Uraian" idModal="tambah-uraian"
+                                size="modal-lg">
                                 <div class="uraian-modal"></div>
                             </x-theme.modal>
                         </form>
@@ -292,7 +292,8 @@
                                 <h6 for="">Laporan Neraca</h6>
                             </div>
                             <div class="col-lg-8">
-                                <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end" teks="Print" />
+                                <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end"
+                                    teks="Print" />
                                 <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
                                     class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">
                                     <i class="fas fa-book"></i>
@@ -319,7 +320,8 @@
         <div id="loadInputSub"></div>
     </x-theme.modal>
 
-    <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T' idModal="daftarakun">
+    <x-theme.modal title="Daftar Akun yang belum terdaftar Neraca" size="modal-lg" btnSave='T'
+        idModal="daftarakun">
         <div id="viewdaftarakun"></div>
     </x-theme.modal>
 
@@ -367,8 +369,8 @@
 
 
     @section('scripts')
-    <script>
-        function toast(pesan) {
+        <script>
+            function toast(pesan) {
                 Toastify({
                     text: pesan,
                     duration: 3000,
@@ -580,9 +582,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        function toast(pesan) {
+        </script>
+        <script>
+            function toast(pesan) {
                 Toastify({
                     text: pesan,
                     duration: 3000,
@@ -720,9 +722,9 @@
                     $('.hasil_iktisar' + urutan).val('T')
                 }
             });
-    </script>
-    <script>
-        function loadSisa() {
+        </script>
+        <script>
+            function loadSisa() {
                 $.ajax({
                     type: "GET",
                     url: "{{ route('profit.count_sisa') }}?jenis=profit",
@@ -822,7 +824,7 @@
             $(document).on('click', '.klikModal', function(e) {
                 e.preventDefault();
                 var id_kategori = $(this).attr('id_kategori')
-                
+
                 loadModal(id_kategori)
                 $("#tambah-profit").modal('show')
             })
@@ -933,11 +935,11 @@
                     }
                 });
             })
-    </script>
+        </script>
 
-    {{-- script neraca --}}
-    <script>
-        load_neraca()
+        {{-- script neraca --}}
+        <script>
+            load_neraca()
             loadSisaNeraca()
 
             function loadSisaNeraca() {
@@ -1149,7 +1151,7 @@
                             scrollCollapse: true,
                             "paging": false,
                         });
-                        
+
                     }
                 });
             });
@@ -1162,7 +1164,7 @@
                 }
             });
 
-            $(document).on('click', '.klikCek', function(){
+            $(document).on('click', '.klikCek', function() {
                 var count = $(this).attr('count')
                 var id_akun = $(this).attr('id_akun')
                 var nilai = $(this).val()
@@ -1174,6 +1176,24 @@
                 }
             });
             pencarian('pencarian', 'table_sc')
-    </script>
+
+            $(document).keydown(function(e) {
+                // Periksa apakah tombol Ctrl dan panah kanan ditekan bersamaan
+                var bulan = "{{ request()->get('bulan') }}"
+                var tahun = "{{ request()->get('tahun') }}"
+                var period = "{{ request()->get('period') }}"
+                if(period == 'mounthly') {
+                    if (e.ctrlKey && e.keyCode == 37) {
+                        window.location.href =
+                            `controlflow/?period=mounthly&bulan=${parseFloat(bulan)-1}&tahun=${parseFloat(tahun)}`;
+                    }
+                    if (e.ctrlKey && e.keyCode == 39) {
+    
+                        window.location.href =
+                            `controlflow/?period=mounthly&bulan=${parseFloat(bulan)+1}&tahun=${parseFloat(tahun)}`;
+                    }
+                }
+            });
+        </script>
     @endsection
 </x-theme.app>
