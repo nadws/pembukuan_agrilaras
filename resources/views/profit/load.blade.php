@@ -15,46 +15,24 @@
     {
     $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
 
-    return DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit
+    return DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo
     FROM akun as a
     left join (
     SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
     FROM jurnal as b
-    WHERE b.id_buku not in(5,13) and b.kredit != 0 and b.tgl between '$tgl1' and '$tgl2'
+    WHERE b.id_buku not in(5,13) and b.kredit != 0 and b.tgl between '$tgl1' and '$tgl2' and b.penutup = 'T'
     group by b.id_akun
     ) as b on b.id_akun = a.id_akun
+
+    left JOIN (
+    SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
+    FROM jurnal_saldo as c
+    where c.tgl BETWEEN '$tgl1' and '$tgl2'
+    group by c.id_akun
+    ) as c on c.id_akun = a.id_akun
+
     where a.id_klasifikasi = '4';");
     }
-
-    $biaya_murni = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit
-    FROM akun as a
-    left join (
-    SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-    FROM jurnal as b
-    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
-    group by b.id_akun
-    ) as b on b.id_akun = a.id_akun
-    where a.id_klasifikasi = '3';");
-
-    $biayaGantung = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit
-    FROM akun as a
-    left join (
-    SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-    FROM jurnal as b
-    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
-    group by b.id_akun
-    ) as b on b.id_akun = a.id_akun
-    where a.id_klasifikasi = '6'; ");
-
-    $biaya_penyesuaian = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit
-    FROM akun as a
-    left join (
-    SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
-    FROM jurnal as b
-    WHERE b.id_buku not in(5,13) and b.debit != 0 and b.tgl between '$tgl1' and '$tgl2'
-    group by b.id_akun
-    ) as b on b.id_akun = a.id_akun
-    where a.id_klasifikasi = '5';");
 
     $biaya_bkn_keluar = DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit
     FROM jurnal as a
@@ -74,16 +52,16 @@
 
     foreach ($subKategori1 as $d) {
     foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a) {
-    $totalPendapatan += $a->kredit;
+    $totalPendapatan += $a->kredit + $a->kredit_saldo;
     }
     }
 
     foreach ($biaya_murni as $a) {
-    $totalBiaya += $a->debit;
+    $totalBiaya += $a->debit + $a->debit_saldo;
     }
 
     foreach ($biayaGantung as $d) {
-    $totalBiaya2 += $d->debit;
+    $totalBiaya2 += $d->debit + $d->debit_saldo;
     }
 
     @endphp
@@ -115,7 +93,7 @@
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($a->nm_akun)) }}</a>
             </td>
-            <td style="text-align: right">Rp. {{ number_format($a->kredit, 1) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->kredit + $a->kredit_saldo, 1) }}</td>
         </tr>
         @endforeach
         @endforeach
@@ -148,7 +126,7 @@
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($a->nm_akun)) }}</a>
             </td>
-            <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->debit + $a->debit_saldo, 1) }}</td>
         </tr>
         @endforeach
         @endforeach
@@ -176,14 +154,14 @@
         @foreach ($biaya_penyesuaian as $d)
         @php
 
-        $ttlEbdiba += $d->debit ?? 0;
+        $ttlEbdiba += $d->debit + $d->debit_saldo ?? 0;
         @endphp
         <tr x-show="open24">
-            <td colspan="2" style="padding-left: 20px" class="fw-bold"><a target="_blank"
+            <td colspan="2" style="padding-left: 20px"><a target="_blank"
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $d->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($d->nm_akun)) }}</a>
             </td>
-            <td class="fw-bold" align="right">Rp.{{ number_format($d->debit ?? 0, 0) }}</td>
+            <td align="right">Rp.{{ number_format($d->debit + $d->debit_saldo ?? 0, 0) }}</td>
         </tr>
         @endforeach
         <tr>
@@ -222,14 +200,14 @@
         @endphp
         @foreach ($biaya_murni as $a)
         @php
-        $ttl += $a->debit;
+        $ttl += $a->debit + $a->debit_saldo;
         @endphp
         <tr x-transition x-show="open22">
             <td colspan="2" style="padding-left: 20px"><a target="_blank"
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($a->nm_akun)) }}</a>
             </td>
-            <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->debit + + $a->debit_saldo, 1) }}</td>
         </tr>
         @endforeach
         <tr>
@@ -250,14 +228,14 @@
         @endphp
         @foreach ($biayaGantung as $a)
         @php
-        $ttl2 += $a->debit;
+        $ttl2 += $a->debit + $a->debit_saldo;
         @endphp
         <tr x-transition x-show="open23">
             <td colspan="2" style="padding-left: 20px"><a target="_blank"
                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{
                     ucwords(strtolower($a->nm_akun)) }}</a>
             </td>
-            <td style="text-align: right">Rp. {{ number_format($a->debit, 1) }}</td>
+            <td style="text-align: right">Rp. {{ number_format($a->debit + $a->debit_saldo, 1) }}</td>
         </tr>
         @endforeach
         <tr>

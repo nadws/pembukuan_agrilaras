@@ -62,16 +62,17 @@ class BukuBesarController extends Controller
         // WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' 
         // group by a.id_akun
         // ORDER by b.kode_akun ASC;");
+
         $buku = DB::select("SELECT a.id_akun, a.kode_akun , a.nm_akun, b.debit , b.kredit, c.debit as debit_saldo, c.kredit as kredit_saldo
         FROM akun as a
-        
+
         left JOIN(
             SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
             where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
             group by b.id_akun
         ) as b on b.id_akun = a.id_akun
-        
+
         left JOIN (
             SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
             FROM jurnal_saldo as c 

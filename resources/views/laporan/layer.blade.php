@@ -210,7 +210,8 @@
                             </td>
                             <!-- Umur -->
                             <td align="center" class="mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} <br> ({{ number_format(($k->mgg / 85) * 100, 0) }}%)
+                                {{ $k->mgg }} / {{$k->mgg_afkir}} <br> ({{ number_format(($k->mgg /
+                                $k->mgg_afkir) * 100, 0) }}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>

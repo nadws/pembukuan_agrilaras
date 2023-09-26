@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProfitModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -55,11 +56,18 @@ class ProfitController extends Controller
         $tgl2 = $r->tgl2;
         $akun = DB::table('akun')->get();
 
+        $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
+        $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
+        $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
+
         $data = [
             'title' => 'Load Profit',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'akun' => $akun,
+            'biaya_murni' => $biaya_murni,
+            'biayaGantung' => $biayaGantung,
+            'biaya_penyesuaian' => $biaya_penyesuaian,
             'subKategori1' => DB::table('sub_kategori_cashflow')
                 ->where('jenis', 1)
                 ->orderBy('urutan', 'ASC')
