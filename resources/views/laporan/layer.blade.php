@@ -157,9 +157,12 @@
 
                         $butir_minggu = 0;
                         $kg_minggu = 0;
+
+                        $dc_week = 0;
                         @endphp
                         @foreach ($kandang as $k)
                         @php
+                        $dc_week += $k->mati_week + $k->jual_week;
                         $kg += empty($k->pcs) ? '0' : $k->kg - $k->pcs / 180;
                         $kg_kotor += empty($k->pcs) ? '0' : $k->kg;
                         $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs,
@@ -210,7 +213,7 @@
                             </td>
                             <!-- Umur -->
                             <td align="center" class="mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} / {{$k->mgg_afkir}} <br> ({{ number_format(($k->mgg /
+                                {{ $k->mgg }} <br> {{$k->mgg_afkir}} <br> ({{ number_format(($k->mgg /
                                 $k->mgg_afkir) * 100, 0) }}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
@@ -463,7 +466,7 @@
                         <th class="dhead" colspan="2">Total</th>
                         <th class="dhead">{{ number_format($ayam_awal, 0) }}/{{ number_format($ayam_akhir, 0) }}
                             ({{ number_format(($ayam_akhir / $ayam_awal) * 100, 0) }} %)</th>
-                        <th class="dhead text-end">{{ $mati }} <br> {{ $jual }}</th>
+                        <th class="dhead text-end">{{ $mati }} <br> {{ $jual }} <br> {{$dc_week}}</th>
                         <th class="dhead text-end">
                             {{ number_format($pcs, 0) }}
                             <br>
