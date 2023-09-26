@@ -35,6 +35,7 @@ use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\Jurnal_aktivaController;
 use App\Http\Controllers\PenjualanAyamController;
+use App\Http\Controllers\Saldo_penutup;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -360,6 +361,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_telur', 'export')->name('export_telur');
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
     });
+    Route::controller(Saldo_penutup::class)->group(function () {
+        Route::get('/saldo_penutup', 'index')->name('saldo_penutup');
+        Route::post('/saveSaldopenutup', 'saveSaldopenutup')->name('saveSaldopenutup');
+    });
 
     Route::controller(PenjualanAyamController::class)
         ->prefix('penjualan_ayam')
@@ -398,7 +403,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pembukuan_biaya_pv', 'pembukuan_biaya_pv')->name('pembukuan_biaya_pv');
         Route::post('/bukukan_pv', 'bukukan_pv')->name('bukukan_pv');
     });
-    
+
     Route::controller(Penjualan_martadah_alpaController::class)->group(function () {
         Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
         Route::get('/detail_penjualan_mtd', 'detail_penjualan_mtd')->name('detail_penjualan_mtd');

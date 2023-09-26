@@ -146,6 +146,12 @@ class NavbarController extends Controller
                 'img' => 'penutup.png',
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
+            [
+                'judul' => 'Saldo Penutup',
+                'route' => 'saldo_penutup',
+                'img' => 'legislation.png',
+                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+            ],
 
         ];
         $title = 'Buku Besar';

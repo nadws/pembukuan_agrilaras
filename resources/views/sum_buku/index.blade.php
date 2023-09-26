@@ -20,7 +20,7 @@
             foreach ($buku as $d) {
             $ttlDebit += $d->debit + $d->debit_saldo;
             $ttlKredit += $d->kredit + $d->kredit_saldo;
-            $ttlSaldo += $d->debit + $d->debit_saldo - $d->kredit + $d->kredit_saldo;
+            $ttlSaldo += ($d->debit + $d->debit_saldo) - ($d->kredit + $d->kredit_saldo);
 
 
             }

@@ -73,10 +73,12 @@ class BukuBesarController extends Controller
         ) as b on b.id_akun = a.id_akun
         
         left JOIN (
-            SELECT c.id_akun , c.debit, c.kredit
+            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
             FROM jurnal_saldo as c 
             where  c.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by c.id_akun
         ) as c on c.id_akun = a.id_akun
+        group by a.id_akun
         ORDER by a.kode_akun ASC;
         ");
 

@@ -187,6 +187,11 @@
         </tr>
         @endforeach
         <tr>
+            <td colspan="2" class="fw-bold">TOTAL BIAYA PENYESUAIAN</td>
+            <td class="fw-bold" align="right">Rp.{{ number_format($ttlEbdiba, 0) }}
+            </td>
+        </tr>
+        <tr>
             <td colspan="2" class="fw-bold">TOTAL LABA BERSIH</td>
             <td class="fw-bold" align="right">Rp.{{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba, 0) }}
             </td>
@@ -287,8 +292,8 @@
         </tr>
         @endforeach
         <tr>
-            <th colspan="2" style="padding-left: 20px">Total Bukan Uang Keluar</th>
-            <th style="text-align: right">Rp. {{ number_format($ttl_bkn_klr, 0) }}</th>
+            <th colspan="2" style="padding-left: 20px">Total Bukan Uang Keluar </th>
+            <th style="text-align: right">Rp. {{ number_format($ttl_bkn_klr, 0) }} (-)</th>
         </tr>
         <tr>
             <th colspan="2" style="padding-left: 20px">Total Uang Keluar</th>
