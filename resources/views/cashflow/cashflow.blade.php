@@ -151,11 +151,7 @@
             </thead>
         </table>
     </div>
-    @php
-    $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
-    '$tgl1' and '$tgl2' and a.id_buku = '6' ")
 
-    @endphp
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>

@@ -293,12 +293,12 @@
                             </div>
                             <div class="col-lg-8">
                                 <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end" teks="Print" />
-                                <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
+                                {{-- <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
                                     class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">
                                     <i class="fas fa-book"></i>
                                     Sisa Akun
                                     <span class="badge sisa_akunNeraca"></span>
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>

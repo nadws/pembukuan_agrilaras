@@ -107,7 +107,7 @@
                     </select>
                 </div> --}}
                 <div class="col-lg-12">
-                    <table class="table table-striped">
+                    <table class="table ">
                         <thead>
                             <tr>
                                 <th class="dhead" width="15%">Tanggal Perolehan</th>
@@ -142,6 +142,7 @@
                             <tr>
                                 <td>{{ $d->tgl1 }}
                                     <input type="hidden" name="selisih[]" value="0" class="selisih{{ $no }}">
+
                                 </td>
                                 <td>{{ ucwords($d->nm_produk) }}</td>
                                 <td align="center">{{ $sisa }}</td>
@@ -159,6 +160,13 @@
 
                                     <input value="0" type="hidden" name="ttl_opname[]"
                                         class="form-control ttl_opname{{ $no }} ttl_opname">
+                                </td>
+                            </tr>
+                            <tr class="pering pering{{$no}}">
+                                <td colspan="8">
+                                    <p class="text-danger text-center">Jika terjadi penambahan barang harap isi di stok
+                                        atk terlebih
+                                        dahulu</p>
                                 </td>
                             </tr>
                             @endforeach
@@ -180,6 +188,7 @@
     @section('scripts')
     <script>
         $(document).ready(function() {
+            $('.pering').hide()
                 $(".select-gudang").change(function(e) {
                     e.preventDefault();
                     var gudang_id = $(this).val()
@@ -203,6 +212,14 @@
                     $(".ttl_opname" + row).val(ttlOpname);
                     $(".selisihFisik" + row).text(selisih_tes);
 
+                    if (selisih_tes < 0) {
+                        $(".button-save").hide();
+                        $(".pering" + row).show();
+                    } else {
+                        $(".button-save").show();
+                        $(".pering" + row).hide();
+                    }
+
                     var total = 0;
                     $('.ttl_opname').each(function() {
                         var value = parseFloat($(this).val());
@@ -212,7 +229,14 @@
                     })
                     $(".total").val(total);
                     $(".totalFormat").val('Rp. ' + total.toLocaleString());
-                })
+                });
+
+                $("form").on("keypress", function(e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
 
             });
     </script>

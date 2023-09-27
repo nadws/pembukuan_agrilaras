@@ -185,8 +185,8 @@ class PenutupController extends Controller
         if ($r->laba_independent > 0) {
             $data = [
                 'id_akun' => 95,
-                'debit' => $r->laba_independent,
-                'kredit' => 0,
+                'kredit' => $r->laba_independent,
+                'debit' => 0,
                 'ket' => 'Saldo Penutup',
                 'id_buku' => '5',
                 'no_nota' => "LB-$no_nota",
@@ -199,8 +199,8 @@ class PenutupController extends Controller
         } else {
             $data = [
                 'id_akun' => 95,
-                'debit' => 0,
-                'kredit' => $r->laba_independent * -1,
+                'kredit' => 0,
+                'debit' => $r->laba_independent * -1,
                 'ket' => 'Saldo Penutup',
                 'id_buku' => '5',
                 'no_nota' => "LB-$no_nota",
@@ -210,6 +210,49 @@ class PenutupController extends Controller
             ];
             DB::table('jurnal')->insert($data);
         }
+
+        $uang_ditarik = DB::selectOne("SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
+        FROM jurnal as b
+        left join akun as c on c.id_akun = b.id_akun
+        where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '6' and c.id_akun in(SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '3');");
+
+        $uang_keluar = DB::selectOne("SELECT a.id_akun , sum(a.debit) as debit , sum(a.kredit) as kredit
+        FROM jurnal as a 
+        left join (
+            SELECT j.no_nota, j.id_akun
+            FROM jurnal as j
+            LEFT JOIN akun as b ON b.id_akun = j.id_akun
+            WHERE j.debit != '0'
+            GROUP BY j.no_nota
+        ) d ON a.no_nota = d.no_nota AND d.id_akun != a.id_akun
+        left join akun as e on e.id_akun = a.id_akun
+        WHERE  a.tgl between '$tgl1' and '$tgl2'  and a.id_buku in ('2','12','10') and 
+        e.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6');");
+
+        $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
+        '$tgl1' and '$tgl2' and a.id_buku = '6' ");
+
+
+        $hutang = $uang_ditarik->debit - $biaya_admin->debit - $uang_keluar->kredit;
+
+        if ($hutang < 0) {
+            $data = [
+                'id_akun' => 96,
+                'kredit' => $hutang * -1,
+                'debit' => 0,
+                'ket' => 'Saldo Penutup',
+                'id_buku' => '5',
+                'no_nota' => "HH-$no_nota",
+                'tgl' => $tgl2,
+                'tgl_dokumen' => $tgl2,
+                'admin' => auth()->user()->name,
+
+            ];
+            DB::table('jurnal')->insert($data);
+        } else {
+        }
+
+
 
 
         $saldo_penutup = DB::select("SELECT a.id_akun, b.debit, b.kredit

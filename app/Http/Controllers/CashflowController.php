@@ -128,7 +128,8 @@ class CashflowController extends Controller
             WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
             order by acb.urutan ASC
             "),
-
+            'biaya_admin' => DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
+            '$tgl1' and '$tgl2' and a.id_buku = '6' "),
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2,
             'tgl1' => $tgl1,

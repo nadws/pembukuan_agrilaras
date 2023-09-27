@@ -62,14 +62,15 @@ class NeracaController extends Controller
         $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
         $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
         $hutang  = NeracaModel::GetKas($tgl1, $tgl2, 9);
+        $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
         $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
 
 
         $peralatan  = NeracaModel::GetPeralatan($tgl2, 16);
         $aktiva  = NeracaModel::GetPeralatan($tgl2, 9);
 
-        $akumulasi_aktiva = DB::selectOne("SELECT sum(a.b_penyusutan) as total_akumulasi FROM depresiasi_aktiva as a");
-        $akumulasi_peralatan = DB::selectOne("SELECT sum(a.b_penyusutan) as total_akumulasi FROM depresiasi_peralatan as a");
+        $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
+        $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);
 
         $data = [
             'kas' => $kas,
@@ -81,6 +82,9 @@ class NeracaController extends Controller
             'aktiva' => $aktiva,
             'hutang' => $hutang,
             'ekuitas' => $ekuitas,
+            'persediaan' => $persediaan,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2
         ];
         return view('neraca.load', $data);
     }

@@ -46,7 +46,7 @@ class ProfitModel extends Model
                 WHERE c.tgl BETWEEN ? AND ?
                 GROUP BY c.id_akun
             ) as c ON c.id_akun = a.id_akun
-            WHERE a.id_klasifikasi = '6';
+            WHERE a.id_klasifikasi in('6','11','12');
         ", [$tgl1, $tgl2, $tgl1, $tgl2]);
 
         return $result;
