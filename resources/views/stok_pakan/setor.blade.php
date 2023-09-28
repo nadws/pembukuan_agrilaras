@@ -137,12 +137,12 @@
                             <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
                                 value="0">
                         </div>
-                        <div class="col-lg-1 mt-2">
+                        {{-- <div class="col-lg-1 mt-2">
                             <label for="">aksi</label> <br>
                             <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
                                 <i class="fas fa-plus text-success"></i>
                             </button>
-                        </div>
+                        </div> --}}
                     </div>
                     <div id="load_pembayaran"></div>
 

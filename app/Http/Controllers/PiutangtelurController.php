@@ -117,7 +117,7 @@ class PiutangtelurController extends Controller
         $data = [
             'title' => 'Bayar Piutang Telur',
             'no_nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'nota' => $nota_t
         ];
         return view('piutang_agl.bayar', $data);

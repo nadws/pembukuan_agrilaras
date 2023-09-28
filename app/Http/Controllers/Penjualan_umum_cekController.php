@@ -200,7 +200,7 @@ class Penjualan_umum_cekController extends Controller
         $data = [
             'title' => 'Perencanaan Setoran Umum',
             'id_jurnal' => $r->id_jurnal,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'nota' => $nota_t
         ];
         return view('penjualan_umum_cek.perencanaan', $data);
@@ -348,7 +348,7 @@ class Penjualan_umum_cekController extends Controller
             left join jurnal as c on c.id_jurnal = a.id_jurnal
             where a.nota_setor = '$r->no_nota'
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice
         ];
