@@ -406,7 +406,7 @@ class PenjualanUmumController extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
         ];
         return view("penjualan2.piutang", $data);
     }
@@ -423,7 +423,7 @@ class PenjualanUmumController extends Controller
         $data = [
             'title' => 'Bayar Piutang Umum',
             'no_nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'nota' => $nota_t
         ];
         return view('penjualan2.bayar', $data);
