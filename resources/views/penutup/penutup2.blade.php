@@ -251,7 +251,7 @@
                             @endphp
                             @foreach ($biaya as $c)
                             @php
-                            $total_biaya += $c->debit ;
+                            $total_biaya += $c->debit;
                             @endphp
                             @endforeach
                             <tr>

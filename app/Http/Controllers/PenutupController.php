@@ -39,10 +39,10 @@ class PenutupController extends Controller
             left join (
             SELECT b.id_akun , sum(b.debit) as debit , sum(b.kredit) as kredit
                 FROM jurnal as b 
-                where b.tgl BETWEEN '$tgl1Tutup' and '$tgl2Tutup' and b.id_buku not in('1','5')
+                where b.tgl BETWEEN '$tgl1Tutup' and '$tgl2Tutup' and b.id_buku not in('5')
                 GROUP by b.id_akun
             ) as b on b.id_akun = a.id_akun
-            where a.iktisar ='Y' and a.id_klasifikasi ='3';"),
+            where a.iktisar ='Y' and a.id_klasifikasi in (3,5);"),
             'tgl' => $tgl,
             'penutup' => $tgl->penutup,
             'tgl1Tutup' => $tgl1Tutup,
@@ -146,11 +146,6 @@ class PenutupController extends Controller
         }
 
 
-
-
-
-
-
         $max_prive = DB::table('notas')->latest('nomor_nota')->where('id_buku', '5')->first();
         $no_nota_prive = empty($max_prive) ? '1000' : $max_prive->nomor_nota + 1;
         DB::table('notas')->insert(['nomor_nota' => $no_nota_prive, 'id_buku' => '5']);
@@ -172,7 +167,7 @@ class PenutupController extends Controller
             $data = [
                 'tgl' => $tgl2,
                 'no_nota' => "PEN-$no_nota_prive",
-                'id_akun' => 516,
+                'id_akun' => 57,
                 'id_buku' => '5',
                 'ket' => 'Penutup Ikhtisar',
                 'debit' => 0,
@@ -190,29 +185,74 @@ class PenutupController extends Controller
         if ($r->laba_independent > 0) {
             $data = [
                 'id_akun' => 95,
-                'debit' => $r->laba_independent,
-                'kredit' => 0,
+                'kredit' => $r->laba_independent,
+                'debit' => 0,
                 'ket' => 'Saldo Penutup',
                 'id_buku' => '5',
-                'no_nota' => "PEN-$no_nota",
-                'tgl' => $nextMonth,
+                'no_nota' => "LB-$no_nota",
+                'tgl' => $tgl2,
                 'tgl_dokumen' => $tgl2,
                 'admin' => auth()->user()->name,
 
             ];
+            DB::table('jurnal')->insert($data);
         } else {
             $data = [
                 'id_akun' => 95,
-                'debit' => 0,
-                'kredit' => $r->laba_independent * -1,
+                'kredit' => 0,
+                'debit' => $r->laba_independent * -1,
                 'ket' => 'Saldo Penutup',
                 'id_buku' => '5',
-                'no_nota' => "PEN-$no_nota",
-                'tgl' => $nextMonth,
+                'no_nota' => "LB-$no_nota",
+                'tgl' => $tgl2,
                 'tgl_dokumen' => $tgl2,
                 'admin' => auth()->user()->name,
             ];
+            DB::table('jurnal')->insert($data);
         }
+
+        $uang_ditarik = DB::selectOne("SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
+        FROM jurnal as b
+        left join akun as c on c.id_akun = b.id_akun
+        where b.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_buku = '6' and c.id_akun in(SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '3');");
+
+        $uang_keluar = DB::selectOne("SELECT a.id_akun , sum(a.debit) as debit , sum(a.kredit) as kredit
+        FROM jurnal as a 
+        left join (
+            SELECT j.no_nota, j.id_akun
+            FROM jurnal as j
+            LEFT JOIN akun as b ON b.id_akun = j.id_akun
+            WHERE j.debit != '0'
+            GROUP BY j.no_nota
+        ) d ON a.no_nota = d.no_nota AND d.id_akun != a.id_akun
+        left join akun as e on e.id_akun = a.id_akun
+        WHERE  a.tgl between '$tgl1' and '$tgl2'  and a.id_buku in ('2','12','10') and 
+        e.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6');");
+
+        $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
+        '$tgl1' and '$tgl2' and a.id_buku = '6' ");
+
+
+        $hutang = $uang_ditarik->debit - $biaya_admin->debit - $uang_keluar->kredit;
+
+        if ($hutang < 0) {
+            $data = [
+                'id_akun' => 96,
+                'kredit' => $hutang * -1,
+                'debit' => 0,
+                'ket' => 'Saldo Penutup',
+                'id_buku' => '5',
+                'no_nota' => "HH-$no_nota",
+                'tgl' => $tgl2,
+                'tgl_dokumen' => $tgl2,
+                'admin' => auth()->user()->name,
+
+            ];
+            DB::table('jurnal')->insert($data);
+        } else {
+        }
+
+
 
 
         $saldo_penutup = DB::select("SELECT a.id_akun, b.debit, b.kredit
@@ -220,7 +260,7 @@ class PenutupController extends Controller
         left join(
             SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
-            where b.tgl BETWEEN '2023-01-01' and '$tgl2' and b.id_buku != '5'
+            where b.tgl BETWEEN '$tgl1' and '$tgl2' 
             group by b.id_akun
         ) as b on b.id_akun  = a.id_akun;");
 
@@ -233,7 +273,7 @@ class PenutupController extends Controller
                 'debit' => empty($s->debit) ? 0 : $s->debit,
                 'kredit' => empty($s->kredit) ? 0 : $s->kredit,
                 'no_nota' => "PEN-$no_nota",
-                'tgl' => $nextMonth,
+                'tgl' => $tgl2,
                 'admin' => auth()->user()->name,
                 'penutup' => 'T',
                 'saldo' => 'T'
@@ -241,6 +281,7 @@ class PenutupController extends Controller
             DB::table('jurnal_saldo')->insert($data);
         }
         Jurnal::whereBetween('tgl', ['2023-01-01', $tgl2])->update(['penutup' => 'Y']);
+        DB::table('jurnal_saldo')->whereBetween('tgl', [$tgl1, $tgl2])->update(['penutup' => 'Y']);
         return redirect()->route('penutup.index')->with('sukses', 'Berhasil Tutup Saldo');
     }
 

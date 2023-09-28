@@ -56,16 +56,32 @@ class BukuBesarController extends Controller
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
 
-        $buku = DB::select("SELECT a.no_nota,a.id_akun, b.kode_akun, b.nm_akun, sum(a.debit) as debit , sum(a.kredit) as kredit 
-        FROM jurnal as a 
-        left join akun as b on b.id_akun = a.id_akun
-        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2'  
-        group by a.id_akun
-        ORDER by b.kode_akun ASC;");
+        // $buku = DB::select("SELECT a.no_nota,a.id_akun, b.kode_akun, b.nm_akun, sum(a.debit) as debit , sum(a.kredit) as kredit 
+        // FROM jurnal as a 
+        // left join akun as b on b.id_akun = a.id_akun
+        // WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' 
+        // group by a.id_akun
+        // ORDER by b.kode_akun ASC;");
 
-        // $buku = DB::select("SELECT 
-        // FROM 
-        // ");
+        $buku = DB::select("SELECT a.id_akun, a.kode_akun , a.nm_akun, b.debit , b.kredit, c.debit as debit_saldo, c.kredit as kredit_saldo
+        FROM akun as a
+
+        left JOIN(
+            SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
+            FROM jurnal as b
+            where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by b.id_akun
+        ) as b on b.id_akun = a.id_akun
+
+        left JOIN (
+            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
+            FROM jurnal_saldo as c 
+            where  c.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by c.id_akun
+        ) as c on c.id_akun = a.id_akun
+        group by a.id_akun
+        ORDER by a.kode_akun ASC;
+        ");
 
         $ditutup = DB::selectOne("SELECT * FROM `jurnal` as a WHERE tgl BETWEEN '2023-05-01' AND '2023-05-31';");
 

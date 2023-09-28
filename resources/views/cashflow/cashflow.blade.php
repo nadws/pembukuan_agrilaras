@@ -151,13 +151,7 @@
             </thead>
         </table>
     </div>
-    @php
-    $biaya_admin = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
-    '$tgl1' and
-    '$tgl2'
-    and a.id_buku = '6' ")
 
-    @endphp
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
@@ -193,8 +187,7 @@
             </tr>
             <tr>
                 <td class="fw-bold">Total</td>
-                <td class="fw-bold" align="right">Rp {{number_format(($total_pi + $total_pe) - ($t_piutang +
-                    $kerugian->debit) - $biaya_admin->debit,0) }}
+                <td class="fw-bold" align="right">Rp {{number_format($t_uang - $biaya_admin->debit,0)}}
                 </td>
             </tr>
         </table>

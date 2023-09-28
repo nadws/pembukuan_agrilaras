@@ -74,7 +74,8 @@
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" readonly name="no_nota" value="JP-{{ $nota }}">
+                                    <input type="text" class="form-control" readonly name="no_nota"
+                                        value="JP-{{ $nota }}">
 
                                 </td>
                                 <td>
@@ -89,10 +90,11 @@
                                     </select> --}}
                                 </td>
                                 <td>
-                                    <input type="text" readonly class="text-end form-control" value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    <input type="text" readonly class="text-end form-control"
+                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
                                 </td>
-                                    <input type="hidden" class="total_biasa" name="debit_kredit"
-                                        value="{{ round($total, 2) }}">
+                                <input type="hidden" class="total_biasa" name="debit_kredit"
+                                    value="{{ round($total, 2) }}">
                                 <td>
                                     {{ ucwords($akunDebit->nm_akun) }}
 
@@ -106,10 +108,11 @@
                                     </select> --}}
                                 </td>
                                 <td>
-                                    <input type="text" readonly class="text-end form-control" value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    <input type="text" readonly class="text-end form-control"
+                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
                                 </td>
                             </tr>
-                            
+
                         </tbody>
                     </table>
                 </div>

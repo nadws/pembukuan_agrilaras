@@ -135,6 +135,9 @@
                         <td align="right">{{ number_format($a->debit, 2) }}</td>
                         <td align="right">{{ number_format($a->kredit, 2) }}</td>
                         <td>
+                            @if ($a->penutup == 'Y')
+
+                            @else
                             <div class="btn-group" role="group">
                                 <span class="btn btn-sm" data-bs-toggle="dropdown">
                                     <i class="fas fa-ellipsis-v text-primary"></i>
@@ -174,6 +177,7 @@
                                     @endif
                                 </ul>
                             </div>
+                            @endif
                         </td>
                     </tr>
                     @endforeach

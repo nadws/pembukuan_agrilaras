@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NeracaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
@@ -54,75 +55,36 @@ class NeracaController extends Controller
 
     public function loadneraca(Request $r)
     {
-        $tgl1 =  $r->tgl1;
+        $tgl1 =  '2023-01-01';
         $tgl2 = $r->tgl2;
-        $aktiva_lancar = DB::select("SELECT a.id_sub_ketagori_neraca , a.nama_sub_kategori , b.debit, b.kredit
-        FROM sub_kategori_neraca as a 
-        left join (
-        SELECT b.id_sub_kategori, sum(c.debit) debit, sum(c.kredit) as kredit
-            FROM akun_neraca as b
-            left join (
-            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
-                FROM jurnal as c 
-                where c.tgl BETWEEN '$tgl1' and '$tgl2'
-                group by c.id_akun
-            ) as c on c.id_akun = b.id_akun
-            group by b.id_sub_kategori
-        ) as b on b.id_sub_kategori  = a.id_sub_ketagori_neraca
-        where a.id_kategori  ='1';");
-        $aktiva_tetap = DB::select("SELECT a.id_sub_ketagori_neraca , a.nama_sub_kategori , b.debit, b.kredit
-        FROM sub_kategori_neraca as a 
-        left join (
-        SELECT b.id_sub_kategori, sum(c.debit) debit, sum(c.kredit) as kredit
-            FROM akun_neraca as b
-            left join (
-            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
-                FROM jurnal as c 
-                where c.tgl BETWEEN '$tgl1' and '$tgl2'
-                group by c.id_akun
-            ) as c on c.id_akun = b.id_akun
-            group by b.id_sub_kategori
-        ) as b on b.id_sub_kategori  = a.id_sub_ketagori_neraca
-        where a.id_kategori  ='3';");
 
-        $hutang = DB::select("SELECT a.id_sub_ketagori_neraca , a.nama_sub_kategori , b.debit, b.kredit
-        FROM sub_kategori_neraca as a 
-        left join (
-        SELECT b.id_sub_kategori, sum(c.debit) debit, sum(c.kredit) as kredit
-            FROM akun_neraca as b
-            left join (
-            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
-                FROM jurnal as c 
-                where c.tgl BETWEEN '$tgl1' and '$tgl2'
-                group by c.id_akun
-            ) as c on c.id_akun = b.id_akun
-            group by b.id_sub_kategori
-        ) as b on b.id_sub_kategori  = a.id_sub_ketagori_neraca
-        where a.id_kategori  ='2';");
+        $kas  = NeracaModel::GetKas($tgl1, $tgl2, 1);
+        $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
+        $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
+        $hutang  = NeracaModel::GetKas($tgl1, $tgl2, 9);
+        $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
+        $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
 
-        $ekuitas = DB::select("SELECT a.id_sub_ketagori_neraca , a.nama_sub_kategori , b.debit, b.kredit
-        FROM sub_kategori_neraca as a 
-        left join (
-        SELECT b.id_sub_kategori, sum(c.debit) debit, sum(c.kredit) as kredit
-            FROM akun_neraca as b
-            left join (
-            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
-                FROM jurnal as c 
-                where c.tgl BETWEEN '$tgl1' and '$tgl2'
-                group by c.id_akun
-            ) as c on c.id_akun = b.id_akun
-            group by b.id_sub_kategori
-        ) as b on b.id_sub_kategori  = a.id_sub_ketagori_neraca
-        where a.id_kategori  ='4';");
 
-        $akumulasi_aktiva = DB::selectOne("SELECT sum(a.b_penyusutan) as total_akumulasi FROM depresiasi_aktiva as a");
+        $peralatan  = NeracaModel::GetPeralatan($tgl2, 16);
+        $aktiva  = NeracaModel::GetPeralatan($tgl2, 9);
+
+        $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
+        $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);
 
         $data = [
-            'aktiva_lancar' => $aktiva_lancar,
-            'aktiva_tetap' => $aktiva_tetap,
+            'kas' => $kas,
+            'bank' => $bank,
+            'piutang' => $piutang,
+            'peralatan' => $peralatan,
+            'akumulasi' => $akumulasi_aktiva,
+            'akumulasi_peralatan' => $akumulasi_peralatan,
+            'aktiva' => $aktiva,
             'hutang' => $hutang,
             'ekuitas' => $ekuitas,
-            'akumulasi' => $akumulasi_aktiva
+            'persediaan' => $persediaan,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2
         ];
         return view('neraca.load', $data);
     }
@@ -155,7 +117,7 @@ class NeracaController extends Controller
             left join (
             SELECT c.id_akun, sum(c.debit) as debit, sum(c.kredit) as kredit
                 FROM jurnal as c
-                where c.tgl BETWEEN '$r->tgl1' and '$r->tgl2'
+                where c.tgl BETWEEN '2023-01-01' and '$r->tgl2'
                 group by c.id_akun
             ) as c on c.id_akun = a.id_akun
             WHERE a.id_sub_kategori = '$r->id_sub_kategori';"),

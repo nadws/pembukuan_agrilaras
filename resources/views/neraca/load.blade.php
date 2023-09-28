@@ -6,7 +6,12 @@
 </style>
 <div class="row">
     <div class="col-lg-6">
-        <table class="table table-bordered">
+        <table class="table table-bordered" x-data="{
+            open1: false,
+            open2: false,
+            open3: false,
+            open4: false,
+        }">
             <thead>
                 <tr>
                     <th colspan="2" width="50%" class="dhead">AKTIVA</th>
@@ -20,29 +25,116 @@
                     </td>
                 </tr>
                 @php
-                $total1 = 0;
-                @endphp
-                @foreach ($aktiva_lancar as $a)
-                @php
-                $total1 += $a->debit - $a->kredit;
-                @endphp
-                <tr>
-                    <td>
-                        <a href="#" onclick="event.preventDefault();" class="tmbhakun_neraca"
-                            id_sub_kategori="{{$a->id_sub_ketagori_neraca}}">{{$a->nama_sub_kategori}}</a>
+                $ttl_kas = 0;
+                $ttl_bank = 0;
+                $ttl_piutang = 0;
+                $ttl_persediaan = 0;
 
+                foreach ($kas as $k) {
+                $ttl_kas += ($k->debit + $k->debit_saldo) - ($k->kredit + $k->kredit_saldo);
+                }
+                foreach ($bank as $k) {
+                $ttl_bank += ($k->debit + $k->debit_saldo) - ($k->kredit + $k->kredit_saldo);
+                }
+
+                foreach ($piutang as $k) {
+                $ttl_piutang += ($k->debit + $k->debit_saldo) - ($k->kredit + $k->kredit_saldo);
+                }
+                foreach ($persediaan as $k) {
+                $ttl_persediaan += ($k->debit + $k->debit_saldo) - ($k->kredit + $k->kredit_saldo);
+                }
+                @endphp
+
+
+                <tr>
+
+                    <td class="fw-bold">
+                        KAS
+                        <a href="javascript:void(0);" class="float-end" @click="open1 = ! open1"><i
+                                class="fa-2x fas fa-caret-down"></i></a>
                     </td>
-                    <td align="right">Rp {{number_format($a->debit - $a->kredit,0)}}</td>
+                    <td align="right" class="fw-bold">Rp {{number_format($ttl_kas,0)}}</td>
+                </tr>
+                @foreach ($kas as $k)
+                <tr x-transition x-show="open1">
+                    <td style="padding-left: 20px">
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $k->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$k->nm_akun}}
+                        </a>
+                    </td>
+                    <td align="right">Rp {{number_format($k->debit + $k->debit_saldo - $k->kredit -
+                        $k->kredit_saldo,0)}}</td>
                 </tr>
                 @endforeach
 
                 <tr>
+                    <td class="fw-bold">
+                        BANK
+                        <a href="javascript:void(0);" class="float-end" @click="open2 = ! open2"><i
+                                class="fa-2x fas fa-caret-down"></i></a>
+                    </td>
+                    <td align="right" class="fw-bold">Rp {{number_format($ttl_bank,0)}}</td>
+                </tr>
+                @foreach ($bank as $k)
+                <tr x-transition x-show="open2">
+                    <td style="padding-left: 20px">
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $k->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$k->nm_akun}}
+                        </a>
+                    </td>
+                    <td align="right">Rp {{number_format($k->debit + $k->debit_saldo - $k->kredit -
+                        $k->kredit_saldo,0)}}</td>
+                </tr>
+                @endforeach
+                <tr>
+                    <td class="fw-bold">
+                        PIUTANG DAGANG
+                        <a href="javascript:void(0);" class="float-end" @click="open3 = ! open3"><i
+                                class="fa-2x fas fa-caret-down"></i></a>
+                    </td>
+                    <td align="right" class="fw-bold">Rp {{number_format($ttl_piutang,0)}}</td>
+                </tr>
+                @foreach ($piutang as $k)
+                <tr x-transition x-show="open3">
+                    <td style="padding-left: 20px">
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $k->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$k->nm_akun}}</a>
+                    </td>
+                    <td align="right">Rp {{number_format($k->debit + $k->debit_saldo - $k->kredit -
+                        $k->kredit_saldo,0)}}</td>
+                </tr>
+                @endforeach
+                <tr>
+                    <td class="fw-bold">
+                        PERSEDIAAN
+                        <a href="javascript:void(0);" class="float-end" @click="open4 = ! open4"><i
+                                class="fa-2x fas fa-caret-down"></i></a>
+                    </td>
+                    <td align="right" class="fw-bold">Rp {{number_format($ttl_persediaan,0)}}</td>
+                </tr>
+                @foreach ($persediaan as $k)
+                <tr x-transition x-show="open4">
+                    <td style="padding-left: 20px">
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $k->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$k->nm_akun}}</a>
+                    </td>
+                    <td align="right">Rp {{number_format($k->debit + $k->debit_saldo - $k->kredit -
+                        $k->kredit_saldo,0)}}</td>
+                </tr>
+                @endforeach
+
+
+
+                <tr>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
+                @php
+                $ttl_aktiva_lancar = $ttl_kas + $ttl_bank + $ttl_piutang + $ttl_persediaan;
+                @endphp
                 <tr>
                     <td class="fw-bold">JUMLAH AKTIVA LANCAR</td>
-                    <td class="fw-bold" align="right">Rp {{number_format($total1,0)}}</td>
+                    <td class="fw-bold" align="right">Rp {{number_format($ttl_aktiva_lancar,0)}}</td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
@@ -54,33 +146,45 @@
                             TETAP</a>
                     </td>
                 </tr>
-                @php
-                $total3 = 0;
-                @endphp
-                @foreach ($aktiva_tetap as $a)
-                @php
-                $total3 += $a->debit - $a->kredit;
-                @endphp
                 <tr>
                     <td>
-                        <a href="#" onclick="event.preventDefault();" class="tmbhakun_neraca"
-                            id_sub_kategori="{{$a->id_sub_ketagori_neraca}}">{{$a->nama_sub_kategori}}</a>
-
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $peralatan->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">PERALATAN</a>
                     </td>
-                    <td align="right">Rp {{number_format($a->debit - $a->kredit,0)}}</td>
+                    <td align="right">Rp {{number_format($peralatan->debit,0)}}</td>
                 </tr>
-                @endforeach
                 <tr>
-                    <td><a href="#" onclick="event.preventDefault();">AKUMULASI PENYUSUTAN(-)</a></td>
-                    <td align="right">Rp {{number_format($akumulasi->total_akumulasi)}}</td>
+                    <td>
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $aktiva->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">AKTIVA</a>
+                    </td>
+                    <td align="right">Rp {{number_format($aktiva->debit,0)}}</td>
+                </tr>
+                <tr>
+                    <td><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $akumulasi_peralatan->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">AKUMULASI
+                            PENYUSUTAN PERALATAN(-)</a></td>
+                    <td align="right">Rp {{number_format($akumulasi_peralatan->kredit +
+                        $akumulasi_peralatan->kredit_saldo)}}</td>
+                </tr>
+                <tr>
+                    <td> <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $akumulasi->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">AKUMULASI
+                            PENYUSUTAN AKTIVA(-)</a></td>
+                    <td align="right">Rp {{number_format($akumulasi->kredit + $akumulasi->kredit_saldo)}}</td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
+                @php
+                $total_aktiva = $peralatan->debit + $aktiva->debit -
+                ($akumulasi->kredit + $akumulasi->kredit_saldo) - ($akumulasi_peralatan->kredit +
+                $akumulasi_peralatan->kredit_saldo);
+                @endphp
                 <tr>
                     <td class="fw-bold">NILAI BUKU</td>
-                    <td class="fw-bold" align="right">Rp {{number_format($total3 - $akumulasi->total_akumulasi,0)}}</td>
+                    <td class="fw-bold" align="right">Rp {{number_format($total_aktiva,0)}}</td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
@@ -88,8 +192,7 @@
                 </tr>
                 <tr>
                     <td class="fw-bold">JUMLAH AKTIVA</td>
-                    <td class="fw-bold" align="right">Rp {{number_format(($total1 + $total3) -
-                        $akumulasi->total_akumulasi,0)}}</td>
+                    <td class="fw-bold" align="right">Rp {{number_format($ttl_aktiva_lancar + $total_aktiva ,0)}}</td>
                 </tr>
 
             </tbody>
@@ -114,14 +217,15 @@
                 @endphp
                 @foreach ($hutang as $h)
                 @php
-                $total2 +=$h->kredit - $h->debit
+                $total2 += ($h->kredit + $h->kredit_saldo) - ($h->debit + $h->debit_saldo)
                 @endphp
                 <tr>
                     <td>
-                        <a href="#" onclick="event.preventDefault();" class="tmbhakun_neraca"
-                            id_sub_kategori="{{$h->id_sub_ketagori_neraca}}">{{$h->nama_sub_kategori}}</a>
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $h->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$h->nm_akun}}</a>
                     </td>
-                    <td align="right">Rp {{number_format($h->kredit - $h->debit,0)}}</td>
+                    <td align="right">Rp {{number_format(($h->kredit + $h->kredit_saldo) - ($h->debit +
+                        $h->debit_saldo),0)}}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -146,14 +250,15 @@
                 @endphp
                 @foreach ($ekuitas as $h)
                 @php
-                $total4 +=$h->kredit - $h->debit;
+                $total4 += ($h->kredit + $h->kredit_saldo) - ($h->debit + $h->debit_saldo) ;
                 @endphp
                 <tr>
                     <td>
-                        <a href="#" onclick="event.preventDefault();" class="tmbhakun_neraca"
-                            id_sub_kategori="{{$h->id_sub_ketagori_neraca}}">{{$h->nama_sub_kategori}}</a>
+                        <a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $h->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{$h->nm_akun}}</a>
                     </td>
-                    <td align="right">Rp {{number_format($h->kredit - $h->debit,0)}}</td>
+                    <td align="right">Rp {{number_format(($h->kredit + $h->kredit_saldo) - ($h->debit +
+                        $h->debit_saldo),0)}}</td>
                 </tr>
                 @endforeach
                 <tr>
