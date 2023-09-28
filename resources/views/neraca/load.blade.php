@@ -151,14 +151,14 @@
                         <a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $peralatan->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">PERALATAN</a>
                     </td>
-                    <td align="right">Rp {{number_format($peralatan->debit,0)}}</td>
+                    <td align="right">Rp {{number_format($peralatan->debit + $peralatan->debit_saldo,0)}}</td>
                 </tr>
                 <tr>
                     <td>
                         <a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $aktiva->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">AKTIVA</a>
                     </td>
-                    <td align="right">Rp {{number_format($aktiva->debit,0)}}</td>
+                    <td align="right">Rp {{number_format($aktiva->debit + $aktiva->debit_saldo,0)}}</td>
                 </tr>
                 <tr>
                     <td><a target="_blank"
@@ -178,7 +178,8 @@
                     <td>&nbsp;</td>
                 </tr>
                 @php
-                $total_aktiva = $peralatan->debit + $aktiva->debit -
+                $total_aktiva = ($peralatan->debit + $peralatan->debit_saldo) + ($aktiva->debit + $aktiva->debit_saldo)
+                -
                 ($akumulasi->kredit + $akumulasi->kredit_saldo) - ($akumulasi_peralatan->kredit +
                 $akumulasi_peralatan->kredit_saldo);
                 @endphp
