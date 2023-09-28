@@ -294,7 +294,7 @@
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
                             </tr>
-                            <input type="text" name="laba_independent" value="{{$pen - $biy2}}">
+                            <input type="hidden" name="laba_independent" value="{{$pen - $biy2}}">
                             @if ($pen - $biy > 0)
                             <tr>
                                 <td>
