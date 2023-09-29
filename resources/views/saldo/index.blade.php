@@ -134,7 +134,7 @@
                     var kredit = $(".totalKredithide").val();
                     var total = parseFloat(debit) - parseFloat(kredit);
                     var save = $("#tambah_saldo").serialize();
-                    if (debit == kredit) {
+                    // if (debit == kredit) {
                     $.ajax({
                         url: "/saveSaldo?" + save,
                         type: 'get',
@@ -143,12 +143,12 @@
                         }
                     });
                     window.location = "/saldo_awal";
-                    } else {
-                        var number_total = total.toFixed(0).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                        var rupiah_total = "Rp. " + number_total;
-                        $('.selisih').text(rupiah_total);
-                        $('#myModal').modal('show')
-                    }
+                    // } else {
+                    //     var number_total = total.toFixed(0).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    //     var rupiah_total = "Rp. " + number_total;
+                    //     $('.selisih').text(rupiah_total);
+                    //     $('#myModal').modal('show')
+                    // }
 
 
 

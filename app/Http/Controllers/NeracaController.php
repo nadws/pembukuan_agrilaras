@@ -55,7 +55,7 @@ class NeracaController extends Controller
 
     public function loadneraca(Request $r)
     {
-        $tgl1 =  '2023-01-01';
+        $tgl1 =  '2020-01-01';
         $tgl2 = $r->tgl2;
 
         $kas  = NeracaModel::GetKas($tgl1, $tgl2, 1);
@@ -66,8 +66,8 @@ class NeracaController extends Controller
         $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
 
 
-        $peralatan  = NeracaModel::GetPeralatan($tgl2, 16);
-        $aktiva  = NeracaModel::GetPeralatan($tgl2, 9);
+        $peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 16);
+        $aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 9);
 
         $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
         $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);

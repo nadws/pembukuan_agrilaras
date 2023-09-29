@@ -177,11 +177,6 @@ class PenutupController extends Controller
             Jurnal::create($data);
         }
 
-
-
-
-
-
         if ($r->laba_independent > 0) {
             $data = [
                 'id_akun' => 95,

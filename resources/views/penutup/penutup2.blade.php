@@ -248,10 +248,12 @@
 
                             @php
                             $total_biaya = 0;
+                            $laba = 0;
                             @endphp
                             @foreach ($biaya as $c)
                             @php
-                            $total_biaya += $c->debit;
+                            $total_biaya += $c->debit - $c->kredit;
+                            $laba += $c->debit;
                             @endphp
                             @endforeach
                             <tr>
@@ -279,19 +281,20 @@
                                     <input type="hidden" name="debit_biaya[]" value="0">
                                 </td>
                                 <td align="right">
-                                    Rp {{ number_format($b->debit , 0) }}
-                                    <input type="hidden" name="kredit_biaya[]" value="{{ $b->debit  }}">
+                                    Rp {{ number_format($b->debit - $b->kredit, 0) }}
+                                    <input type="hidden" name="kredit_biaya[]" value="{{ $b->debit - $b->kredit  }}">
                                 </td>
                             </tr>
                             @endforeach
                             @php
                             $pen = empty($total_pendapatan) ? '0' : $total_pendapatan;
                             $biy = empty($total_biaya) ? '0' : $total_biaya;
+                            $biy2 = empty($laba) ? '0' : $laba;
                             @endphp
                             <tr>
                                 <td colspan="4" class="fw-bold"></td>
                             </tr>
-                            <input type="hidden" name="laba_independent" value="{{$pen - $biy}}">
+                            <input type="hidden" name="laba_independent" value="{{$pen - $biy2}}">
                             @if ($pen - $biy > 0)
                             <tr>
                                 <td>

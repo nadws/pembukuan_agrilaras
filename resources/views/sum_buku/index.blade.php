@@ -37,7 +37,13 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                    $sldo = 0;
+                    @endphp
                     @foreach ($buku as $no => $a)
+                    @php
+                    $sldo += ($a->debit + $a->debit_saldo) - ($a->kredit + $a->kredit_saldo);
+                    @endphp
                     <tr>
                         <td>{{ $no + 1 }}</td>
                         <td>{{ $a->kode_akun }}</td>
