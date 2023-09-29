@@ -76,7 +76,7 @@ class Penyetoran_telurController extends Controller
         $data = [
             'title' => 'Perencanaan setoran',
             'id_jurnal' => $r->id_jurnal,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'nota' => $nota_t
         ];
         return view('penyetoran.perencanaan', $data);
