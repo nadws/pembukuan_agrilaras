@@ -204,6 +204,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/akunprofit', 'akunprofit')->name('akunprofit');
         Route::post('/seleksi_akun_profit', 'seleksi_akun_profit')->name('seleksi_akun_profit');
         Route::get('/profit_print', 'print')->name('profit_print');
+        Route::get('/persen_pendapatan', 'persen_pendapatan')->name('persen_pendapatan');
+        Route::post('/save_persen_pendapatan', 'save_persen_pendapatan')->name('save_persen_pendapatan');
     });
 
     Route::controller(AktivaController::class)->group(function () {

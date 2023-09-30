@@ -7,7 +7,7 @@
         <div class="col-lg-12 mb-2">
             <x-theme.btn_filter />
             <a href="#" data-bs-toggle="modal" data-bs-target="#persenhd"
-                class="btn btn-sm btn-primary icon icon-left me-2 float-end">Hd Persen</a>
+                class="btn btn-sm btn-primary icon icon-left me-2 float-end persen_hd">Hd Persen</a>
         </div>
 
         <h5 class="">&nbsp;&nbsp;&nbsp; Stok Kandang Mtd
@@ -347,9 +347,7 @@
         <div id="loadAkunControl"></div>
     </x-theme.modal>
 
-    <x-theme.modal title="Persen Hd" size="modal-lg" btnSave='T' idModal="persenhd">
-        <div id="data_persen_hd"></div>
-    </x-theme.modal>
+
 
     <form action="{{ route('seleksi_cash_flow_ditarik') }}" method="post">
         @csrf
@@ -370,6 +368,10 @@
             <div id="loadAkunprofit"></div>
         </x-theme.modal>
     </form>
+
+    <x-theme.modal title="Persen Hd" size="modal-lg" btnSave='T' idModal="persenhd">
+        <div id="data_persen_hd"></div>
+    </x-theme.modal>
 
 
     @section('scripts')
@@ -1178,6 +1180,41 @@
                 } else {
                     $('.klikCek' + count).val('T')
                 }
+            });
+            function loadpersenbudget() {
+                $.ajax({
+                    type: "get",
+                    url: "{{route('persen_pendapatan')}}",
+                    success: function (r) {
+                        $("#data_persen_hd").html(r)
+                    }
+                });
+            }
+            $(document).on('click', '.persen_hd', function() {
+                loadpersenbudget();
+            });
+            $(document).on('submit', '#save_percen_budget', function(event) {
+                event.preventDefault(); 
+                $('#loading').show();
+                $(".loading-hide").hide();
+                var csrfToken = $('meta[name="csrf-token"]').attr('content');
+                var formData = $(this).serialize();
+                formData += "&_token=" + csrfToken;
+                $.ajax({
+                    type: "POST",
+                    url: "{{route('save_persen_pendapatan')}}",
+                    data: formData,
+                    success: function(response) {
+                        
+                       
+                        setTimeout(function() {
+                            $('#loading').hide();
+                            toast('Data berhasil di simpan')
+                            $(".loading-hide").show();
+                            loadpersenbudget();
+                        }, 1000);
+                    },
+                });
             });
             pencarian('pencarian', 'table_sc')
 

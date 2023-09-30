@@ -319,4 +319,16 @@ class ProfitController extends Controller
         ];
         return view('profit.hd_persen', $data);
     }
+
+    function save_persen_pendapatan(Request $r)
+    {
+        for ($x = 0; $x < count($r->id_persen_budget); $x++) {
+            $data = [
+                'umur_dari' => $r->dari[$x],
+                'umur_sampai' => $r->sampai[$x],
+                'persen' => $r->persen[$x],
+            ];
+            DB::table('persen_budget_ayam')->where('id_persen_budget', $r->id_persen_budget[$x])->update($data);
+        }
+    }
 }
