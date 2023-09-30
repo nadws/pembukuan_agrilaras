@@ -15,7 +15,7 @@ class Stok_ayam extends Controller
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
             'customer' => DB::table('customer')->get(),
             'history_ayam' => DB::table('stok_ayam')->where('jenis', 'ayam')->where('id_gudang', '2')->get(),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
         ];
         return view("Stok_ayam.index", $data);
     }
@@ -168,7 +168,7 @@ class Stok_ayam extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
         ];
         return view("Stok_ayam.history", $data);
     }
@@ -199,7 +199,7 @@ class Stok_ayam extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
         ];
         return view("Stok_ayam.piutang_ayam", $data);
     }
@@ -216,7 +216,7 @@ class Stok_ayam extends Controller
         $data = [
             'title' => 'Bayar Piutang Telur',
             'no_nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
             'nota' => $nota_t
         ];
         return view('Stok_ayam.bayar', $data);

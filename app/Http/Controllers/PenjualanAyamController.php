@@ -293,7 +293,7 @@ class PenjualanAyamController extends Controller
             where a.nota_setor = '$r->no_nota'
             group by a.no_nota_jurnal;
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice,
             'title' => 'Print Setoran'
