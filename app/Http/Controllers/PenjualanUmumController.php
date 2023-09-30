@@ -91,7 +91,7 @@ class PenjualanUmumController extends Controller
             'title' => 'Tambah Penjualan Umum',
             'customer' => DB::table('customer')->get(),
             'produk' => $this->produk,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
             'no_nota' => $nota
         ];
         return view('penjualan2.add', $data);

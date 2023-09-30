@@ -89,7 +89,7 @@ class OpnamemtdController extends Controller
             'title' => 'Pembayran Opname',
             'produk' => DB::table('telur_produk')->get(),
             'customer' => DB::table('customer')->get(),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
             'nota' => $r->no_nota,
             'invoice2' => DB::selectOne("SELECT a.urutan, a.urutan_customer, a.tgl, a.id_customer, a.id_produk, a.tipe, a.driver, sum(a.total_rp) as total_rp FROM invoice_telur as a where a.no_nota='$r->no_nota'"),
             'invoice' => DB::table('invoice_telur')->where('no_nota', $r->no_nota)->get(),

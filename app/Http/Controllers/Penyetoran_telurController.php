@@ -242,7 +242,7 @@ class Penyetoran_telurController extends Controller
             group by a.no_nota_jurnal
             ORDER BY c.tgl ASC
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice,
             'title' => 'Print Setoran'
