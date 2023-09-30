@@ -1212,6 +1212,7 @@
                             toast('Data berhasil di simpan')
                             $(".loading-hide").show();
                             loadpersenbudget();
+                            loadTabel();
                         }, 1000);
                     },
                 });
