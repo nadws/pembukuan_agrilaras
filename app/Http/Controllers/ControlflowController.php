@@ -70,7 +70,7 @@ class ControlflowController extends Controller
         $telurSelisih = DB::select("SELECT a.nm_telur, sum(b.kg_selisih) as kg_selisih, sum(b.pcs_selisih) as pcs_selisih FROM telur_produk as a
         LEFT JOIN stok_telur as b ON a.id_produk_telur = b.id_telur
         WHERE b.jenis = 'Opname' AND b.id_gudang = 1 AND b.tgl BETWEEN '2023-08-12' AND '$tgl2' AND b.admin not in ('nanda', 'import')  GROUP BY b.id_telur;");
-        
+
         $pakanSelisih = $this->getQueryPakanSelisih("'pakan'", $tgl1, $tgl2);
         $vitaminSelisih = $this->getQueryPakanSelisih("'obat_pakan', 'obat_air'", $tgl1, $tgl2);
 
@@ -85,7 +85,6 @@ class ControlflowController extends Controller
             'vitaminSelisih' => $vitaminSelisih,
         ];
         return view('controlflow.dashboard', $data);
-
     }
 
     public function total_cash_flow()
@@ -303,5 +302,4 @@ class ControlflowController extends Controller
         ];
         return view('controlflow.akuncashflow', $data);
     }
-    
 }

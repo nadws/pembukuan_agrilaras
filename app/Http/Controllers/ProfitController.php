@@ -59,6 +59,20 @@ class ProfitController extends Controller
         $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
         $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
         $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
+
+
+        $kg_per_butir = 0.064;
+        $rp_kg = 25000;
+
+        $month = date('m');
+        $year = date('Y');
+
+        $ttl_day = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $tgl_now =  date('d');
+        $hari = $tgl_now;
+
+        $estimasi_telur = ProfitModel::estimasi($tgl1, $kg_per_butir, $rp_kg, $hari);
+
         $biaya_bkn_keluar = DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit
         FROM jurnal as a
         left join (
@@ -83,6 +97,7 @@ class ProfitController extends Controller
             'biayaGantung' => $biayaGantung,
             'biaya_penyesuaian' => $biaya_penyesuaian,
             'biaya_bkn_keluar' => $biaya_bkn_keluar,
+            'estimasi_telur' => $estimasi_telur,
             'subKategori1' => DB::table('sub_kategori_cashflow')
                 ->where('jenis', 1)
                 ->orderBy('urutan', 'ASC')
@@ -295,5 +310,13 @@ class ProfitController extends Controller
             DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
         }
         return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
+    }
+
+    function persen_pendapatan(Request $r)
+    {
+        $data = [
+            'hd_persen' => DB::table('persen_budget_ayam')->get(),
+        ];
+        return view('profit.hd_persen', $data);
     }
 }

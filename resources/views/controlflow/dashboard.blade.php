@@ -6,6 +6,8 @@
     }">
         <div class="col-lg-12 mb-2">
             <x-theme.btn_filter />
+            <a href="#" data-bs-toggle="modal" data-bs-target="#persenhd"
+                class="btn btn-sm btn-primary icon icon-left me-2 float-end">Hd Persen</a>
         </div>
 
         <h5 class="">&nbsp;&nbsp;&nbsp; Stok Kandang Mtd
@@ -343,6 +345,10 @@
 
     <x-theme.modal title="Tambah Akun" size="modal-lg" btnSave='T' idModal="modalAkunibu">
         <div id="loadAkunControl"></div>
+    </x-theme.modal>
+
+    <x-theme.modal title="Persen Hd" size="modal-lg" btnSave='T' idModal="persenhd">
+        <div id="data_persen_hd"></div>
     </x-theme.modal>
 
     <form action="{{ route('seleksi_cash_flow_ditarik') }}" method="post">

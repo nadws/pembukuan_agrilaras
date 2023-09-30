@@ -72,4 +72,24 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function estimasi($tgl1, $kg_per_butir, $rp_kg, $hari)
+    {
+        $result = DB::selectOne("SELECT a.nm_kandang, FLOOR(DATEDIFF('2023-09-01', a.chick_in) / 7) AS mgg, b.persen, (a.stok_awal - c.mati - c.jual) as populasi, (((a.stok_awal - c.mati - c.jual) * b.persen) / 100) as pcs, ((((a.stok_awal - c.mati - c.jual) * b.persen) / 100) * 0.064) as kg , sum((((((a.stok_awal - c.mati - c.jual) * b.persen) / 100) * ? ) * ?) * ?) as estimasi
+
+        FROM kandang as a
+        
+        left join persen_budget_ayam as b on  FLOOR(DATEDIFF(?, a.chick_in) / 7) BETWEEN b.umur_dari and b.umur_sampai
+        
+        left join (
+        SELECT c.id_kandang, sum(c.mati) as mati , sum(c.jual) as jual
+            FROM populasi as c 
+            where c.tgl BETWEEN '2020-01-01' and ?
+            group by c.id_kandang
+        ) as c on c.id_kandang = a.id_kandang
+        
+        where a.selesai = 'T';
+        ", [$kg_per_butir,  $rp_kg, $hari, $tgl1,  $tgl1]);
+
+        return $result;
+    }
 }

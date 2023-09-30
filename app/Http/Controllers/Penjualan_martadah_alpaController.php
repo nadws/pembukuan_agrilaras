@@ -67,7 +67,7 @@ class Penjualan_martadah_alpaController extends Controller
         $data = [
             'title' => 'Penerimaan Uang Martadah',
             'nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
             'jurnal' => DB::select("SELECT *
             FROM jurnal as a
             WHERE a.no_nota = '$r->no_nota' and a.id_akun != '26'; "),
