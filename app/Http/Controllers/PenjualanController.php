@@ -131,7 +131,7 @@ class PenjualanController extends Controller
             'produk' => DB::table('telur_produk')->get(),
             'customer' => DB::table('customer')->get(),
             'nota' => $nota_t,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7'])->get()
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get()
         ];
         return view('penjualan_agl.invoice', $data);
     }
