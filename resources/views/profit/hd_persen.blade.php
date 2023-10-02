@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-lg-12" id="loading" style="display: none;">
-        <h3>Loading .... <i class="fas fa-spinner fa-spin"></i></h3>
+        <h3 class="text-center">Loading .... <i class="fas fa-spinner fa-spin"></i></h3>
     </div>
 
     <div class="col-lg-6 loading-hide">
