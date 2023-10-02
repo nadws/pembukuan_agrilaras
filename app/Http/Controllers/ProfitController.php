@@ -56,21 +56,34 @@ class ProfitController extends Controller
         $tgl2 = $r->tgl2;
         $akun = DB::table('akun')->get();
 
+
         $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
         $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
         $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
         $kg_butir = DB::table('rules_budget')->where('id_rules_budget', '1')->first();
         $rp_kg = DB::table('rules_budget')->where('id_rules_budget', '2')->first();
 
-        $kg_per_butir = $kg_butir->jumlah / 1000;
+        $kg_per_butir =  $kg_butir->jumlah / 1000;
         $rp_kg = $rp_kg->jumlah;
 
         $month = date('m');
         $year = date('Y');
 
         $ttl_day = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        $tgl1_ini = date('Y-m-01');
+        $tgl1_filter = $tgl1;
+
+
+
         $tgl_now =  date('d');
+        if ($tgl1_ini == $tgl1_filter) {
+            $tgl_now =  date('d');
+        } else {
+            $tgl_now =  date('d', strtotime($tgl2));
+        }
         $hari = $tgl_now;
+
 
         $estimasi_telur = ProfitModel::estimasi($tgl1, $kg_per_butir, $rp_kg, $hari);
 
@@ -333,13 +346,14 @@ class ProfitController extends Controller
 
     function save_persen_pendapatan(Request $r)
     {
-        for ($x = 0; $x < count($r->id_persen_budget); $x++) {
+        DB::table('persen_budget_ayam')->truncate();
+        for ($x = 0; $x < count($r->dari); $x++) {
             $data = [
                 'umur_dari' => $r->dari[$x],
                 'umur_sampai' => $r->sampai[$x],
                 'persen' => $r->persen[$x],
             ];
-            DB::table('persen_budget_ayam')->where('id_persen_budget', $r->id_persen_budget[$x])->update($data);
+            DB::table('persen_budget_ayam')->insert($data);
         }
 
         for ($x = 0; $x < count($r->id_rules_budget); $x++) {

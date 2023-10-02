@@ -92,7 +92,7 @@
                 @endphp
                 <tr x-show="openPbi">
                     <td>{{ucwords(strtolower($u->nm_akun))}} ({{date('F Y',strtotime($tgl2))}})</td>
-                    <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} </td>
+                    <td align="right">Rp. {{number_format($u->debit - $u->kredit,0)}} dsa</td>
                 </tr>
                 @endforeach
                 <tr x-show="openPbi">

@@ -7,7 +7,7 @@
         <div class="col-lg-12 mb-2">
             <x-theme.btn_filter />
             <a href="#" data-bs-toggle="modal" data-bs-target="#persenhd"
-                class="btn btn-sm btn-primary icon icon-left me-2 float-end persen_hd">Hd Persen</a>
+                class="btn btn-sm btn-primary icon icon-left me-2 float-end persen_hd">Rencana penjualan</a>
         </div>
 
         <h5 class="">&nbsp;&nbsp;&nbsp; Stok Kandang Mtd
@@ -1199,13 +1199,18 @@
                 $(document).on("click", ".tbh_baris", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "/tambah_baris_jurnal?count=" + count,
+                        url: "/tambah_baris_budget_persen?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#tb_baris").append(data);
                             $(".select").select2();
                         },
                     });
+                });
+
+                $(document).on("click", ".remove_baris", function() {
+                    var delete_row = $(this).attr("count");
+                    $(".baris" + delete_row).remove(); 
                 });
             $(document).on('submit', '#save_percen_budget', function(event) {
                 event.preventDefault(); 

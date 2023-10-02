@@ -37,12 +37,12 @@
                     <input type="text" class="form-control" name="no_nota" value="JU-{{ $max }}" readonly>
                 </div>
                 @if ($id_buku == '12')
-                    <div class="col-lg-3">
-                        <label for="">Proyek</label>
-                        <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
+                <div class="col-lg-3">
+                    <label for="">Proyek</label>
+                    <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
 
-                        </select>
-                    </div>
+                    </select>
+                </div>
                 @endif
 
                 <div class="col-lg-3">
@@ -50,7 +50,7 @@
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -127,25 +127,25 @@
                 </div>
 
                 {{-- <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Tanggal Estimasi Selesai</label>
-                            <input type="date" class="form-control " name="tgl_estimasi">
-                        </div>
+                    <div class="form-group">
+                        <label for="">Tanggal Estimasi Selesai</label>
+                        <input type="date" class="form-control " name="tgl_estimasi">
                     </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Manager Proyek</label>
-                            <input type="text" name="manager_proyek" class="form-control">
-                        </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="">Manager Proyek</label>
+                        <input type="text" name="manager_proyek" class="form-control">
                     </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="">Estimasi Biaya</label>
-                            <input type="text" class="form-control b_estimasi" style="text-align: right">
-                            <input type="hidden" name="biaya_estimasi" class="form-control b_estimasi_biasa"
-                                style="text-align: right">
-                        </div>
-                    </div> --}}
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="">Estimasi Biaya</label>
+                        <input type="text" class="form-control b_estimasi" style="text-align: right">
+                        <input type="hidden" name="biaya_estimasi" class="form-control b_estimasi_biasa"
+                            style="text-align: right">
+                    </div>
+                </div> --}}
             </div>
         </x-theme.modal>
 
@@ -156,8 +156,8 @@
 
 
     @section('scripts')
-        <script>
-            $(".select2suplier").select2()
+    <script>
+        $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
 
@@ -375,9 +375,9 @@
 
                 aksiBtn("form");
             });
-        </script>
-        <script>
-            $(document).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -429,9 +429,9 @@
                     });
                 });
             });
-        </script>
-        <script>
-            $(document).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function() {
                 $(document).on("change", ".proyek", function() {
                     var tambah = $(this).val();
                     if (tambah == 'tambah_proyek') {
@@ -491,6 +491,6 @@
                     });
                 });
             });
-        </script>
+    </script>
     @endsection
 </x-theme.app>
