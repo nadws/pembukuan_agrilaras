@@ -235,7 +235,9 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div id="tableLoad"></div>
+                        <div id="tableLoad">
+
+                        </div>
                         <form action="{{ route('profit.save_akun_profit_new') }}" method="post">
                             @csrf
                             <x-theme.modal btnSave="Y" title="Tambah Akun" idModal="tambah-profit" size="modal-lg">
@@ -1232,6 +1234,24 @@
                             loadTabel();
                         }, 1000);
                     },
+                });
+            });
+            
+            $(document).on('submit', '#save_budget', function(event) {
+                event.preventDefault(); 
+                var csrfToken = $('meta[name="csrf-token"]').attr('content');
+                var formData = $(this).serialize();
+                formData += "&_token=" + csrfToken;
+                $.ajax({
+                    type: "POST",
+                    url: "{{route('save_budget')}}",
+                    data: formData,
+                    success: function(response) {
+                        toast('Data berhasil di simpan')
+                    },
+                    error: function(xhr, status, error) {
+                        toast('gagal')
+                    }
                 });
             });
             pencarian('pencarian', 'table_sc')

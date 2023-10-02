@@ -363,4 +363,18 @@ class ProfitController extends Controller
             DB::table('rules_budget')->where('id_rules_budget', $r->id_rules_budget[$x])->update($data);
         }
     }
+
+    function save_budget(Request $r)
+    {
+        DB::table('budget')->where('tgl', $r->tgl)->delete();
+        for ($x = 0; $x < count($r->id_akun_budget); $x++) {
+            $duit = str()->remove(',', $r->rupiah_budget[$x]);
+            $data = [
+                'id_akun' => $r->id_akun_budget[$x],
+                'tgl' => $r->tgl,
+                'rupiah' => $duit,
+            ];
+            DB::table('budget')->insert($data);
+        }
+    }
 }
