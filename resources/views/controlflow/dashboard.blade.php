@@ -369,9 +369,11 @@
         </x-theme.modal>
     </form>
 
-    <x-theme.modal title="Persen Hd" size="modal-lg" btnSave='T' idModal="persenhd">
-        <div id="data_persen_hd"></div>
-    </x-theme.modal>
+    <form id="save_percen_budget">
+        <x-theme.modal title="Persen Hd" size="modal-lg" btnSave='Y' idModal="persenhd">
+            <div id="data_persen_hd"></div>
+        </x-theme.modal>
+    </form>
 
 
     @section('scripts')
@@ -1205,8 +1207,6 @@
                     url: "{{route('save_persen_pendapatan')}}",
                     data: formData,
                     success: function(response) {
-                        
-                       
                         setTimeout(function() {
                             $('#loading').hide();
                             toast('Data berhasil di simpan')

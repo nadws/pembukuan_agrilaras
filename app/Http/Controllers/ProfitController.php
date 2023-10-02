@@ -59,10 +59,11 @@ class ProfitController extends Controller
         $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
         $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
         $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
+        $kg_butir = DB::table('rules_budget')->where('id_rules_budget', '1')->first();
+        $rp_kg = DB::table('rules_budget')->where('id_rules_budget', '2')->first();
 
-
-        $kg_per_butir = 0.064;
-        $rp_kg = 25000;
+        $kg_per_butir = $kg_butir->jumlah / 1000;
+        $rp_kg = $rp_kg->jumlah;
 
         $month = date('m');
         $year = date('Y');
@@ -316,6 +317,8 @@ class ProfitController extends Controller
     {
         $data = [
             'hd_persen' => DB::table('persen_budget_ayam')->get(),
+            'kg_butir' => DB::table('rules_budget')->where('id_rules_budget', '1')->first(),
+            'rp_kg' => DB::table('rules_budget')->where('id_rules_budget', '2')->first()
         ];
         return view('profit.hd_persen', $data);
     }
@@ -329,6 +332,13 @@ class ProfitController extends Controller
                 'persen' => $r->persen[$x],
             ];
             DB::table('persen_budget_ayam')->where('id_persen_budget', $r->id_persen_budget[$x])->update($data);
+        }
+
+        for ($x = 0; $x < count($r->id_rules_budget); $x++) {
+            $data = [
+                'jumlah' => $r->jumlah[$x]
+            ];
+            DB::table('rules_budget')->where('id_rules_budget', $r->id_rules_budget[$x])->update($data);
         }
     }
 }
