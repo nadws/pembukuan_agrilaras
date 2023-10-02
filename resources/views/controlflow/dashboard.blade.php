@@ -212,7 +212,7 @@
         <hr>
         <div class="row" x-show="profit">
 
-            <div class="col-lg-5">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
@@ -258,7 +258,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-7">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">

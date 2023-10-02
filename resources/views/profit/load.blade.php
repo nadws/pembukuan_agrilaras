@@ -124,7 +124,7 @@
             between
             '$tgl1' and '$tgl2' ");
 
-            $total_budget += $budget->rupiah;
+            $total_budget += empty($budget->rupiah) ? 0 : $budget->rupiah;
             @endphp
             <tr x-transition x-show="open2">
                 <td style="padding-left: 20px"><a target="_blank"
@@ -144,7 +144,7 @@
                 <td></td>
                 <td></td>
 
-                <td><button type="submit" class="btn btn-sm btn-primary ">Save budget</button></td>
+                <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
             </tr>
 
 
