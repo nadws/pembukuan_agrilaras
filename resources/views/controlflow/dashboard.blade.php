@@ -1195,6 +1195,18 @@
             $(document).on('click', '.persen_hd', function() {
                 loadpersenbudget();
             });
+            var count = 3;
+                $(document).on("click", ".tbh_baris", function() {
+                    count = count + 1;
+                    $.ajax({
+                        url: "/tambah_baris_jurnal?count=" + count,
+                        type: "Get",
+                        success: function(data) {
+                            $("#tb_baris").append(data);
+                            $(".select").select2();
+                        },
+                    });
+                });
             $(document).on('submit', '#save_percen_budget', function(event) {
                 event.preventDefault(); 
                 $('#loading').show();

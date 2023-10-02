@@ -131,7 +131,8 @@ class PenjualanController extends Controller
             'produk' => DB::table('telur_produk')->get(),
             'customer' => DB::table('customer')->get(),
             'nota' => $nota_t,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get()
+            // 'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
+            'akun' => DB::table('akun')->get(),
         ];
         return view('penjualan_agl.invoice', $data);
     }
@@ -159,7 +160,8 @@ class PenjualanController extends Controller
     {
         $data = [
             'count' => $r->count,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get()
+            // 'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
+            'akun' => DB::table('akun')->get(),
         ];
         return view('penjualan_agl.tbh_pembayaran', $data);
     }
@@ -346,7 +348,8 @@ class PenjualanController extends Controller
             'title' => 'Buat Invoice',
             'produk' => DB::table('telur_produk')->get(),
             'customer' => DB::table('customer')->get(),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
+            // 'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
+            'akun' => DB::table('akun')->get(),
             'nota' => $r->no_nota,
             'invoice2' => DB::selectOne("SELECT a.urutan, a.urutan_customer, a.tgl, a.id_customer, a.id_produk, a.tipe, a.driver, sum(a.total_rp) as total_rp FROM invoice_telur as a where a.no_nota='$r->no_nota'"),
             'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '26'"),

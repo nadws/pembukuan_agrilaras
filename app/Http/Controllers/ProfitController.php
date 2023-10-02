@@ -323,6 +323,15 @@ class ProfitController extends Controller
         return view('profit.hd_persen', $data);
     }
 
+    function tambah_baris_budget_persen(Request $r)
+    {
+        $data =  [
+            'count' => $r->count
+
+        ];
+        return view('profit.tbh_baris', $data);
+    }
+
     function save_persen_pendapatan(Request $r)
     {
         for ($x = 0; $x < count($r->id_persen_budget); $x++) {

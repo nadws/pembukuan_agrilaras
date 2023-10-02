@@ -39,7 +39,22 @@
                 </tr>
                 @endforeach
 
+
             </tbody>
+            <tbody id="tb_baris">
+
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4">
+                        <button type="button" class="btn btn-block btn-lg tbh_baris"
+                            style="background-color: #F4F7F9; color: #8FA8BD; font-size: 14px; padding: 13px;">
+                            <i class="fas fa-plus"></i> Tambah Baris Baru
+
+                        </button>
+                    </th>
+                </tr>
+            </tfoot>
         </table>
         {{-- <button type="submit" class="btn btn-sm btn-primary float-end">Simpan</button> --}}
 
