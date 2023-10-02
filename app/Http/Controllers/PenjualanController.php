@@ -492,10 +492,11 @@ class PenjualanController extends Controller
             $akun2 = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
             $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
 
-            if ($r->id_akun2[$x] == $r->id_akun[$x]) {
-                $uruan_jurnal = $r->urutan_jurnal[$x];
-            } else {
+
+            if (empty($r->id_akun2[$x]) || $r->id_akun2[$x] != $r->id_akun[$x]) {
                 $uruan_jurnal = $urutan2;
+            } else {
+                $uruan_jurnal = $r->urutan_jurnal[$x];
             }
 
             $data = [
@@ -527,8 +528,8 @@ class PenjualanController extends Controller
                 DB::table('bayar_telur')->insert($data);
             }
         }
-
-        return redirect()->route('penjualan_agrilaras')->with('sukses', 'Data berhasil ditambahkan');
+        $bulan = date('m', strtotime($r->tgl));
+        return redirect()->route('penjualan_agrilaras', ['period' => 'mounthly', 'bulan' => $bulan, 'tahun' => '2023'])->with('sukses', 'Data berhasil ditambahkan');
     }
 
     public function delete_invoice_telur(Request $r)

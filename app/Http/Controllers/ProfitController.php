@@ -327,7 +327,6 @@ class ProfitController extends Controller
     {
         $data =  [
             'count' => $r->count
-
         ];
         return view('profit.tbh_baris', $data);
     }
