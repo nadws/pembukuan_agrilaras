@@ -77,11 +77,30 @@
                             <input type="hidden" class="total_semua_biasa" name="total_penjualan"
                                 value="{{$invoice2->total_rp}}">
                         </div>
+                        <div class="col-lg-5 mt-2">
+                            <label for="">Pilih Akun Pembayaran</label>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Debit</label>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <label for="">Kredit</label>
+                        </div>
+                        <div class="col-lg-1 mt-2">
+                            <label for="">aksi</label> <br>
+                        </div>
+                        @php
+                        $ttl_debit = 0;
+                        $ttl_kredit = 0;
+                        @endphp
                         @foreach ($jurnal as $no => $j)
+                        @php
+                        $ttl_debit += $j->debit;
+                        $ttl_kredit += $j->kredit;
+                        @endphp
                         <input type="hidden" name="urutan_jurnal[]" value="{{$j->urutan}}">
                         <input type="hidden" name="no_urut[]" value="{{$j->no_urut}}">
                         <div class="col-lg-5 mt-2">
-                            <label for="">Pilih Akun Pembayaran</label>
                             <select name="id_akun[]" id="" class="select2_add">
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
@@ -92,21 +111,20 @@
                             <input type="hidden" name="id_akun2[]" value="{{$j->id_akun}}">
                         </div>
                         <div class="col-lg-3 mt-2">
-                            <label for="">Debit</label>
+
                             <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
                                 value="Rp {{number_format($j->debit,0,',','.')}}">
                             <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
                                 value="{{$j->debit}}">
                         </div>
                         <div class="col-lg-3 mt-2">
-                            <label for="">Kredit</label>
+
                             <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right"
                                 value="Rp {{number_format($j->kredit,0,',','.')}}">
                             <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
                                 value="{{$j->kredit}}">
                         </div>
                         <div class="col-lg-1 mt-2">
-                            <label for="">aksi</label> <br>
                             <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
                                 <i class="fas fa-plus text-success"></i>
                             </button>
@@ -123,7 +141,7 @@
                             <h6>Total Pembayaran</h6>
                         </div>
                         <div class="col-lg-3">
-                            <h6 class="total_debit float-end">Rp {{number_format($j->debit,2,'.',',')}}</h6>
+                            <h6 class="total_debit float-end">Rp {{number_format($ttl_debit,2,'.',',')}}</h6>
                         </div>
                         <div class="col-lg-4">
                             <h6 class="total_kredit float-end">Rp {{number_format($invoice2->total_rp +
@@ -135,9 +153,8 @@
                         <div class="col-lg-3">
                         </div>
                         <div class="col-lg-4">
-                            <h6 class="selisih float-end cselisih ">Rp {{number_format($j->debit -
-                                ($invoice2->total_rp +
-                                $j->kredit),2,'.',',')}}</h6>
+                            <h6 class="selisih float-end cselisih ">Rp {{number_format($ttl_debit -
+                                ($invoice2->total_rp + $ttl_kredit),2,'.',',')}}</h6>
                         </div>
                     </div>
 
