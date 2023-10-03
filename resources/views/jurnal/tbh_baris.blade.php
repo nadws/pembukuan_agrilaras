@@ -37,6 +37,7 @@
         <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="{{ $count }}">
         <input type="hidden" class="form-control kredit_biasa kredit_biasa{{ $count }}" value="0" name="kredit[]">
         <input type="hidden" class="form-control id_klasifikasi{{ $count }}" value="0" name="id_klasifikasi[]">
+        <input type="hidden" class="form-control nilai nilai{{ $count }}" value="0">
         <p class="peringatan{{ $count }} mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah
             kredit
         </p>

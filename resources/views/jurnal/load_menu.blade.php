@@ -6,6 +6,32 @@
         width: 100px;
 
     }
+
+    .vibrate {
+        animation: vibrate 0.3s ease infinite;
+    }
+
+    @keyframes vibrate {
+        0% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(5px);
+        }
+    }
 </style>
 <table class="table table-striped">
     <thead>
@@ -44,11 +70,14 @@
                 <select name="id_post[]" id="" class="select post1">
 
                 </select>
+
             </td>
 
             <td style="vertical-align: top;">
                 <input type="text" name="keterangan[]" class="form-control" style="vertical-align: top"
                     placeholder="nama barang, qty, @rp">
+                <p class="peringatan_akun1 vibrate mt-2 text-danger" hidden>Akun tidak terdaftar di cashflow !!!
+                </p>
 
             </td>
             <td style="vertical-align: top;">
@@ -61,6 +90,7 @@
                 <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="1">
                 <input type="hidden" class="form-control kredit_biasa kredit_biasa1" value="0" name="kredit[]">
                 <input type="hidden" class="form-control id_klasifikasi1" value="0" name="id_klasifikasi[]">
+                <input type="hidden" class="form-control nilai nilai1" value="0">
                 <p class="peringatan1 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah kredit
                 </p>
             </td>
@@ -97,12 +127,14 @@
                 <select name="id_post[]" id="" class="select post2">
 
                 </select>
+
             </td>
 
 
             <td style="vertical-align: top;">
                 <input type="text" name="keterangan[]" class="form-control" placeholder="nama barang, qty, @rp">
-
+                <p class="peringatan_akun2 mt-2 text-danger" hidden>Akun tidak terdaftar di cashflow !!!
+                </p>
             </td>
             <td style="vertical-align: top;">
                 <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="2">
@@ -115,6 +147,7 @@
                 <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="2">
                 <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0" name="kredit[]">
                 <input type="hidden" class="form-control id_klasifikasi2" value="0" name="id_klasifikasi[]">
+                <input type="hidden" class="form-control nilai nilai2" value="0">
                 <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah kredit
                 </p>
             </td>

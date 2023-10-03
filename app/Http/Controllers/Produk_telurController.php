@@ -40,7 +40,7 @@ class Produk_telurController extends Controller
             'cekTransfer' => $cekTransfer,
             'cekPenjualanTelur' => $cekPenjualanTelur,
             'cekPenjualanUmum' => $cekPenjualanUmum,
-            'kandang' => DB::table('kandang')->get(),
+            'kandang' => DB::table('kandang')->where('selesai', 'T')->get(),
             'gudang' => DB::table('gudang_telur')->get(),
             'penjualan_cek_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.cek ='Y' and a.lokasi ='mtd';"),
             'penjualan_blmcek_mtd' => DB::selectOne("SELECT sum(a.ttl_rp) as ttl_rp , count(a.no_nota) as jumlah

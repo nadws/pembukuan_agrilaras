@@ -205,7 +205,9 @@ class JurnalController extends Controller
         }
         DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '2']);
 
+
         for ($i = 0; $i < count($id_akun); $i++) {
+
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun[$i])->first();
             $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
@@ -376,9 +378,16 @@ class JurnalController extends Controller
             $id_klasifikasi = $akun->id_klasifikasi;
         }
 
+        if ($akun->cash_uang_ditarik == 'T') {
+            $nilai = 1;
+        } else {
+            $nilai = 0;
+        }
+
 
         $data = [
             'id_klasifikasi' => $id_klasifikasi,
+            'nilai' => $nilai,
         ];
         echo json_encode($data);
     }

@@ -392,6 +392,35 @@
                         success: function(data) {
                             var id_klasifikasi = $(".id_klasifikasi" + count).val(data[
                                 'id_klasifikasi']);
+                                $(".nilai" + count).val(data['nilai'])
+                            var nilai = data['nilai'];
+
+                            // if (nilai == 1) {
+                            //     $('.peringatan_akun' + count).attr("hidden", false);
+                            // } else {
+                            //     $('.peringatan_akun' + count).attr("hidden", true);
+                            // }
+
+                            var total_nilai = 0;
+                            $(".nilai").each(function() {
+                                total_nilai += parseFloat($(this).val());
+                            });
+
+                            if (total_nilai > 0) {
+                                $('.button-save').prop('disabled', true);
+                            } else {
+                                $('.button-save').prop('disabled', false);
+                            }
+
+                            if (nilai != 1) {
+                                $('.peringatan_akun' + count).attr("hidden", true);
+                               
+                            } else {
+                                $('.peringatan_akun' + count).attr("hidden", false);
+                                    setTimeout(function() {
+                                    $('.peringatan_akun' + count).removeClass("vibrate");
+                                }, 1000);
+                            }
 
                             if (id_klasifikasi == 3) {
                                 if (kredit_biasa != '0') {
