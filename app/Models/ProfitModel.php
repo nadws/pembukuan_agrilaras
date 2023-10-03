@@ -113,4 +113,35 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function aktiva($tgl2)
+    {
+        $result = DB::selectOne("SELECT a.h_perolehan, sum(a.biaya_depresiasi) as biaya, c.beban 
+        FROM aktiva as a 
+        left join kelompok_aktiva as b on b.id_kelompok = a.id_kelompok 
+        left join( 
+            SELECT sum(c.b_penyusutan) as beban , c.id_aktiva 
+                  FROM depresiasi_aktiva as 
+                  c group by c.id_aktiva 
+        ) as c on c.id_aktiva = a.id_aktiva
+        where a.tgl between '2017-01-01' and ? and (a.h_perolehan - c.beban) > 0 
+        order by a.tgl ASC;
+        ", [$tgl2]);
+
+        return $result;
+    }
+    public static function peralatan($tgl2)
+    {
+        $result = DB::select("SELECT a.*, c.beban FROM peralatan as a 
+        left join kelompok_peralatan as b on b.id_kelompok = a.id_kelompok
+        left join(
+        SELECT sum(c.b_penyusutan) as beban , c.id_aktiva
+            FROM depresiasi_peralatan as c
+            group by c.id_aktiva
+        ) as c on c.id_aktiva = a.id_aktiva
+        where a.tgl between '2017-01-01' and ? 
+        order by a.tgl ASC
+        ", [$tgl2]);
+
+        return $result;
+    }
 }

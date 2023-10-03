@@ -63,55 +63,57 @@
                             @endphp
                             @foreach ($aktiva as $a)
                             @php
-                            $total += $a->biaya_depresiasi;
-                            @endphp
-                            @endforeach
-                            <tr>
-                                <td>
-                                    <input type="text" class="form-control" value="{{ date('F Y', strtotime($tgl)) }}"
-                                        readonly>
-                                    <input type="hidden" class="form-control" name="tgl"
-                                        value="{{ date('Y-m-d', strtotime($tgl)) }}">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control" readonly name="no_nota"
-                                        value="JP-{{ $nota }}">
+                            $total += $a->h_perolehan - $a->beban <= 0 ? 0 : $a->biaya_depresiasi;
+                                @endphp
+                                @endforeach
+                                <tr>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                            value="{{ date('F Y', strtotime($tgl)) }}" readonly>
+                                        <input type="hidden" class="form-control" name="tgl"
+                                            value="{{ date('Y-m-d', strtotime($tgl)) }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" readonly name="no_nota"
+                                            value="JP-{{ $nota }}">
 
-                                </td>
-                                <td>
-                                    <input type="hidden" name="id_akun_debit" value="51">
-                                    {{ ucwords($akunDebit->nm_akun) }}
-                                    {{-- <select id="" class="select2_add" disabled>
-                                        @foreach ($akun as $a)
-                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == '51' ? 'SELECTED' : '' }}>
-                                            {{ $a->nm_akun }}
-                                        </option>
-                                        @endforeach
-                                    </select> --}}
-                                </td>
-                                <td>
-                                    <input type="text" readonly class="text-end form-control"
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
-                                </td>
-                                <input type="hidden" class="total_biasa" name="debit_kredit"
-                                    value="{{ round($total, 2) }}">
-                                <td>
-                                    {{ ucwords($akunDebit->nm_akun) }}
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="id_akun_debit" value="51">
+                                        {{ ucwords($akunDebit->nm_akun) }}
+                                        {{-- <select id="" class="select2_add" disabled>
+                                            @foreach ($akun as $a)
+                                            <option value="{{ $a->id_akun }}" {{ $a->id_akun == '51' ? 'SELECTED' : ''
+                                                }}>
+                                                {{ $a->nm_akun }}
+                                            </option>
+                                            @endforeach
+                                        </select> --}}
+                                    </td>
+                                    <td>
+                                        <input type="text" readonly class="text-end form-control"
+                                            value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    </td>
+                                    <input type="hidden" class="total_biasa" name="debit_kredit"
+                                        value="{{ round($total, 2) }}">
+                                    <td>
+                                        {{ ucwords($akunDebit->nm_akun) }}
 
-                                    <input type="hidden" name="id_akun_kredit" value="52">
-                                    {{-- <select name="" id="" class="select2_add" disabled>
-                                        @foreach ($akun as $a)
-                                        <option value="{{ $a->id_akun }}" {{ $a->id_akun == '52' ? 'SELECTED' : '' }}>
-                                            {{ $a->nm_akun }}
-                                        </option>
-                                        @endforeach
-                                    </select> --}}
-                                </td>
-                                <td>
-                                    <input type="text" readonly class="text-end form-control"
-                                        value="Rp {{ number_format($total, 2, ',', '.') }}">
-                                </td>
-                            </tr>
+                                        <input type="hidden" name="id_akun_kredit" value="52">
+                                        {{-- <select name="" id="" class="select2_add" disabled>
+                                            @foreach ($akun as $a)
+                                            <option value="{{ $a->id_akun }}" {{ $a->id_akun == '52' ? 'SELECTED' : ''
+                                                }}>
+                                                {{ $a->nm_akun }}
+                                            </option>
+                                            @endforeach
+                                        </select> --}}
+                                    </td>
+                                    <td>
+                                        <input type="text" readonly class="text-end form-control"
+                                            value="Rp {{ number_format($total, 2, ',', '.') }}">
+                                    </td>
+                                </tr>
 
                         </tbody>
                     </table>
