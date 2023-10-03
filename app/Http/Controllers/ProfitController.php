@@ -60,6 +60,7 @@ class ProfitController extends Controller
         $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
         $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
         $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
+        $biaya_disusutkan = ProfitModel::getData4($tgl1, $tgl2);
         $kg_butir = DB::table('rules_budget')->where('id_rules_budget', '1')->first();
         $rp_kg = DB::table('rules_budget')->where('id_rules_budget', '2')->first();
 
@@ -86,6 +87,7 @@ class ProfitController extends Controller
 
 
         $estimasi_telur = ProfitModel::estimasi($tgl1, $kg_per_butir, $rp_kg, $hari);
+        $estimasi_telur_bulan = ProfitModel::estimasi($tgl1, $kg_per_butir, $rp_kg, $ttl_day);
 
         $biaya_bkn_keluar = DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit
         FROM jurnal as a
@@ -112,6 +114,8 @@ class ProfitController extends Controller
             'biaya_penyesuaian' => $biaya_penyesuaian,
             'biaya_bkn_keluar' => $biaya_bkn_keluar,
             'estimasi_telur' => $estimasi_telur,
+            'estimasi_telur_bulan' => $estimasi_telur_bulan,
+            'biaya_disusutkan' => $biaya_disusutkan,
             'subKategori1' => DB::table('sub_kategori_cashflow')
                 ->where('jenis', 1)
                 ->orderBy('urutan', 'ASC')

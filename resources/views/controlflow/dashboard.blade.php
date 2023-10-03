@@ -1231,10 +1231,23 @@
                             toast('Data berhasil di simpan')
                             $(".loading-hide").show();
                             loadpersenbudget();
-                            loadTabel();
                         }, 1000);
                     },
                 });
+            });
+
+            $(document).on("keyup", ".budget_uang", function() {
+                var total_budget = 0;
+                $(".budget_uang").each(function() {
+                    // Hapus pemisah ribuan dan tanda mata uang
+                    var value = $(this).val().replace(/\D/g, '');
+                    total_budget += parseFloat(value);
+                });
+                    var total_budget2 = total_budget.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                    });
+                    $('.total_budget').text(total_budget2)
             });
             
             $(document).on('submit', '#save_budget', function(event) {
@@ -1247,6 +1260,7 @@
                     url: "{{route('save_budget')}}",
                     data: formData,
                     success: function(response) {
+                        loadTabel()
                         toast('Data berhasil di simpan')
                     },
                     error: function(xhr, status, error) {
