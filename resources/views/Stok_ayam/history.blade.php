@@ -7,8 +7,7 @@
             <div class="col-lg-6">
                 <a href="#" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
                     class="btn btn-sm btn-primary float-end">Penjualan Ayam</a>
-                <x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end"
-                    teks="View" />
+                <x-theme.btn_filter />
             </div>
         </div>
 
