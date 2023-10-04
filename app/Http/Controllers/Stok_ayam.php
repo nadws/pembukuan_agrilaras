@@ -8,6 +8,37 @@ use Illuminate\Support\Facades\DB;
 
 class Stok_ayam extends Controller
 {
+    protected $tgl1, $tgl2, $period;
+    public function __construct(Request $r)
+    {
+        if (empty($r->period)) {
+            $this->tgl1 = date('Y-m-01');
+            $this->tgl2 = date('Y-m-t');
+        } elseif ($r->period == 'daily') {
+            $this->tgl1 = date('Y-m-d');
+            $this->tgl2 = date('Y-m-d');
+        } elseif ($r->period == 'weekly') {
+            $this->tgl1 = date('Y-m-d', strtotime("-6 days"));
+            $this->tgl2 = date('Y-m-d');
+        } elseif ($r->period == 'mounthly') {
+            $bulan = $r->bulan;
+            $tahun = $r->tahun;
+            $tgl = "$tahun" . "-" . "$bulan" . "-" . "01";
+
+            $this->tgl1 = date('Y-m-01', strtotime($tgl));
+            $this->tgl2 = date('Y-m-t', strtotime($tgl));
+        } elseif ($r->period == 'costume') {
+            $this->tgl1 = $r->tgl1;
+            $this->tgl2 = $r->tgl2;
+        } elseif ($r->period == 'years') {
+            $tahun = $r->tahunfilter;
+            $tgl_awal = "$tahun" . "-" . "01" . "-" . "01";
+            $tgl_akhir = "$tahun" . "-" . "12" . "-" . "01";
+
+            $this->tgl1 = date('Y-m-01', strtotime($tgl_awal));
+            $this->tgl2 = date('Y-m-t', strtotime($tgl_akhir));
+        }
+    }
     public function index(Request $r)
     {
         $data = [
@@ -15,7 +46,7 @@ class Stok_ayam extends Controller
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
             'customer' => DB::table('customer')->get(),
             'history_ayam' => DB::table('stok_ayam')->where('jenis', 'ayam')->where('id_gudang', '2')->get(),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
         ];
         return view("Stok_ayam.index", $data);
     }
@@ -143,13 +174,8 @@ class Stok_ayam extends Controller
 
     public function history_ayam(Request $r)
     {
-        if (empty($r->tgl1)) {
-            $tgl1 = date('Y-m-01');
-            $tgl2 = date('Y-m-t');
-        } else {
-            $tgl1 = $r->tgl1;
-            $tgl2 = $r->tgl2;
-        }
+        $tgl1 =  $this->tgl1;
+        $tgl2 =  $this->tgl2;
 
         $data = [
             'title' => 'History Penjualan ayam',
@@ -168,7 +194,7 @@ class Stok_ayam extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
         ];
         return view("Stok_ayam.history", $data);
     }
@@ -199,7 +225,7 @@ class Stok_ayam extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
         ];
         return view("Stok_ayam.piutang_ayam", $data);
     }
@@ -216,7 +242,7 @@ class Stok_ayam extends Controller
         $data = [
             'title' => 'Bayar Piutang Telur',
             'no_nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1','2','7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
             'nota' => $nota_t
         ];
         return view('Stok_ayam.bayar', $data);
