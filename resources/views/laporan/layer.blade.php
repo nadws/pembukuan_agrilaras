@@ -45,7 +45,7 @@
             position: sticky;
             z-index: 10;
             background-color: #F2F7FF;
-            padding-left: 0;
+            left: 0;
             border: 1px solid #435EBE;
         }
 
@@ -53,7 +53,7 @@
             position: sticky;
             z-index: 10;
             background-color: #F2F7FF;
-            padding-left: 62.5px;
+            left: 62.5px;
 
         }
     </style>
