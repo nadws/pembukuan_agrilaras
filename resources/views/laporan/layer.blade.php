@@ -89,7 +89,7 @@
                             <th class="dhead" colspan="7">Data Telur</th>
                             <th class="dhead">Pakan</th>
                             {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                            <th class="dhead" colspan="5">KUML</th>
+                            <th class="dhead" colspan="3">KUML</th>
                         </tr>
                         <tr>
                             {{-- Umur --}}
@@ -152,8 +152,7 @@
                             <th class="dhead">pakan(kg) <br> telur(kg)</th>
                             {{-- <th class="dhead">telur(kg)</th> --}}
                             <th class="dhead">fcr <br> k&k+ <br> (7,458)</th>
-                            <th class="dhead">obat/vit</th>
-                            <th class="dhead">vaksin</th>
+                            <th class="dhead">obat/vit <br> vaksin <br> Ayam</th>
                             {{-- KUML --}}
                         </tr>
                     </thead>
@@ -257,7 +256,7 @@
                                     $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
                                     $tot_ayam_semua_hilang = $tot_ayam_mati;
                                 @endphp
-                                <td align="right"
+                                <td align="center"
                                     class="D/C {{ $tot_ayam_semua_hilang > 3 ? 'text-danger fw-bold' : '' }}">
                                     {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }}
                                     <br>
@@ -271,23 +270,26 @@
                                 {{number_format($k->pcs,0)}} / ({{number_format($k->pcs - $k->pcs_past,0)}})
                             </td> --}}
                                 <!-- mencari ikat  1 ikat = 1kg  -->
-                                <td align="right" class="kg telur">
+                                <td align="center" class="kg telur">
                                     {{ number_format($k->pcs, 0) }} <br>
                                     <dt>{{ number_format($k->kg - $k->pcs / 180, 1) }}</dt>
                                     {{ number_format($k->kg, 1) }}
                                 </td>
-                                <td align="right" class="gr per butir">
-                                    {{ empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0) }}
+                                @php
+                                    $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
+                                @endphp
+                                <td align="center" class="gr per butir {{ $gr_butir < 58 ? 'text-danger' : '' }}">
+                                    {{ $gr_butir }}
                                     <br>{{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }} <br> &nbsp;
                                 </td>
-                                <td align="right"
+                                <td align="center"
                                     class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
                                     {{ number_format($k->pcs - $k->pcs_past, 0) }} <br>
                                     {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
                                     <br> &nbsp;
                                 </td>
 
-                                <td align="right" class="butir">
+                                <td align="center" class="butir">
                                     {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }} <br>
                                     {{ number_format(
                                         $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180),
@@ -382,8 +384,9 @@
                                         ) }}
                                 </td>
                                 <!--(144,502.2 , 60,920.9 , 864,183.0)-->
-                                <td align="center" class="obat/vit">{{ number_format($k->kuml_rp_vitamin, 0) }} </td>
-                                <td align="center" class="vaksin">{{ number_format($k->kum_ttl_rp_vaksin, 0) }}</td>
+                                <td align="center" class="obat/vit">{{ number_format($k->kuml_rp_vitamin, 0) }} <br>
+                                    {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
+                                    {{ number_format($k->rupiah, 0) }} </td>
                                 <!-- kuml -->
                                 <!-- listrik -->
 
@@ -426,8 +429,8 @@
                                 {{ number_format($telur_kuml, 2) }} </th>
                             {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                             <th class="dhead">{{ number_format($pakan_kuml / $telur_kuml, 1) }}</th>
-                            <th class="dhead">{{ number_format($obat_kuml, 0) }}</th>
-                            <th class="dhead">{{ number_format($vaksin_kuml, 0) }}</th>
+                            <th class="dhead">{{ number_format($obat_kuml, 0) }} <br>
+                                {{ number_format($vaksin_kuml, 0) }}</th>
                         </tr>
                     </tfoot>
 
