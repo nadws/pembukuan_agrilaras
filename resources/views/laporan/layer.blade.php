@@ -55,27 +55,6 @@
             left: 62.5px;
 
         }
-
-        .freeze-cell1::before,
-        .freeze-cell::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            /* Lebar border */
-            background-color: #435EBE;
-            /* Warna border */
-        }
-
-        .freeze-cell1::before {
-            left: 0;
-        }
-
-        .freeze-cell::before {
-            left: 62.5px;
-            /* Sesuaikan dengan nilai left yang Anda inginkan */
-        }
     </style>
     <div class="row">
         <div class="col-lg-12">
