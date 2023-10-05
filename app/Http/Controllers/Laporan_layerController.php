@@ -164,15 +164,8 @@ class Laporan_layerController extends Controller
                     where w.tgl between '$tgl_sebelumnya' and '$tgl'
                 group by w.id_kandang
             ) as w on w.id_kandang = a.id_kandang
-
-
-
-
-            -- Data telur --
-
-
             where a.selesai = 'T'
-            order by a.id_kandang ASC
+            order by a.nm_kandang ASC
             ")
         ];
         return view('laporan.layer', $data);
