@@ -453,6 +453,7 @@ Route::middleware('auth')->group(function () {
 Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
+    Route::get('/get_history_produk', 'get_history_produk')->name('get_history_produk');
 });
 Route::controller(ExportRecordingController::class)->group(function () {
     Route::get('/commercial_layer', 'commercial_layer')->name('commercial_layer');

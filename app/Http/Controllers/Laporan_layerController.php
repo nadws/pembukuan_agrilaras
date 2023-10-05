@@ -25,7 +25,7 @@ class Laporan_layerController extends Controller
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
-            'kandang' => DB::select("SELECT a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah
+            'kandang' => DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah
             FROM kandang as a 
             -- Populasi --
             left join(SELECT b.id_kandang, sum(b.mati+b.jual) as pop_kurang 
@@ -224,5 +224,37 @@ class Laporan_layerController extends Controller
             echo "<b>Butir =</b> <em >telur sekarang pcs - telur kemarin pcs</em><br><br>";
             echo "<b>Note =</b> <em >Jika minus maka akan merah</em>";
         }
+    }
+
+    function get_history_produk(Request $r)
+    {
+        if (empty($r->tgl1)) {
+            $tgl1 = date('Y-m-01');
+            $tgl2 = date('Y-m-d');
+        } else {
+            $tgl1 = $r->tgl1;
+            $tgl2 = $r->tgl2;
+        }
+
+        $history = DB::select("SELECT a.tgl, a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori, a.admin
+        FROM stok_produk_perencanaan as a
+        left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+        left join tb_satuan as c on c.id_satuan = b.dosis_satuan
+        WHERE a.tgl between '$tgl1' and '$tgl2' and a.id_kandang = '$r->id_kandang' and a.id_pakan = '$r->id_produk';
+        ");
+        $kandang = DB::table('kandang')->where('id_kandang', $r->id_kandang)->first();
+
+
+
+        $data = [
+            'history' => $history,
+            'id_kandang' => $r->id_kandang,
+            'id_produk' => $r->id_produk,
+            'kandang' => $kandang,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+        ];
+
+        return view('laporan.history_produk', $data);
     }
 }
