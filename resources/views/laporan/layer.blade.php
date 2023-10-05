@@ -46,6 +46,7 @@
             z-index: 10;
             background-color: #F2F7FF;
             left: 0;
+            border: 1px solid #435EBE;
         }
 
         .freeze-cell {
@@ -53,6 +54,7 @@
             z-index: 10;
             background-color: #F2F7FF;
             left: 62.5px;
+            border: 1px solid #435EBE;
         }
     </style>
     <div class="row">
