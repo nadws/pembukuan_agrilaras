@@ -46,7 +46,6 @@
             z-index: 10;
             background-color: #F2F7FF;
             left: 0;
-            border: 1px solid #435EBE;
         }
 
         .freeze-cell {
