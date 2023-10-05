@@ -265,10 +265,6 @@
                                 <!-- populasi -->
 
                                 <!-- data telur -->
-                                {{-- <td align="center"
-                                class="butir / today - yesterday {{$k->pcs - $k->pcs_past < '-60' ? 'text-danger fw-bold' : ''}}">
-                                {{number_format($k->pcs,0)}} / ({{number_format($k->pcs - $k->pcs_past,0)}})
-                            </td> --}}
                                 <!-- mencari ikat  1 ikat = 1kg  -->
                                 <td align="center" class="kg telur">
                                     {{ number_format($k->pcs, 0) }} <br>
