@@ -45,7 +45,7 @@
             position: sticky;
             z-index: 10;
             background-color: #F2F7FF;
-            left: 0;
+            padding-left: 0;
             border: 1px solid #435EBE;
         }
 
@@ -53,8 +53,8 @@
             position: sticky;
             z-index: 10;
             background-color: #F2F7FF;
-            left: 62.5px;
-            border: 1px solid #435EBE;
+            padding-left: 62.5px;
+
         }
     </style>
     <div class="row">
