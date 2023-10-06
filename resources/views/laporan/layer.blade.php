@@ -425,7 +425,7 @@
                                         <a href="#" onclick="return false;" data-bs-toggle="modal"
                                             data-bs-target="#history" class="history" id_produk="{{ $v->id_pakan }}"
                                             id_kandang="{{ $k->id_kandang }}"> {{ $v->nm_produk }} :
-                                            {{ $v->pcs_kredit }}
+                                            {{ number_format($v->pcs_kredit, 1) }}
                                             {{ $v->nm_satuan }} </a> <br>
                                     @endforeach
                                 </td>
@@ -443,8 +443,8 @@
                                             data-bs-target="#history" class="history"
                                             id_produk="{{ $v->id_pakan }}"
                                             id_kandang="{{ $k->id_kandang }}">{{ $v->nm_produk }} :
-                                            {{ number_format($v->pcs_kredit, 2) }}
-                                            {{ $v->nm_satuan }}</a> <br>
+                                            {{ number_format($v->pcs_kredit / 1000, 1) }}
+                                            Kg</a> <br>
                                     @endforeach
                                 </td>
                                 {{-- vitamin --}}
