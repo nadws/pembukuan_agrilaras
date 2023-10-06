@@ -225,6 +225,7 @@
                             $kg_minggu = 0;
                             
                             $dc_week = 0;
+                            $rp_ayam = 0;
                         @endphp
                         @foreach ($kandang as $k)
                             @php
@@ -252,6 +253,7 @@
                                 $kg_minggu += $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180);
                                 
                                 $pcs += $k->pcs;
+                                $rp_ayam += $k->rupiah;
                                 
                             @endphp
                             <tr>
@@ -519,9 +521,16 @@
                             <th class="dhead table_layer"></th>
                             <th class="dhead table_layer"></th>
                             {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
-                            <th class="dhead table_layer">{{ number_format($pakan_kuml / $telur_kuml, 1) }}</th>
+                            <th class="dhead table_layer">
+                                {{ number_format($pakan_kuml / $telur_kuml, 1) }}
+                                <br>
+                                @php
+                                    $plus = ($obat_kuml + $vaksin_kuml + $rp_ayam) / 7000;
+                                @endphp
+                                {{ number_format($pakan_kuml + $plus / $telur_kuml, 1) }}
+                            </th>
                             <th class="dhead table_layer">{{ number_format($obat_kuml, 0) }} <br>
-                                {{ number_format($vaksin_kuml, 0) }}</th>
+                                {{ number_format($vaksin_kuml, 0) }} <br> {{ number_format($rp_ayam, 0) }}</th>
                         </tr>
                     </tfoot>
 
