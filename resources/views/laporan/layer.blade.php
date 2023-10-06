@@ -375,6 +375,7 @@
                                     
                                     $vitamin = empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                                     $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
+                                    
                                     $fcr_plus = empty($k->kg_p_week) || empty($k->kg_telur_week) ? '0' : number_format(($k->kg_p_week / 1000 + $vitamin + $vaksin) / ($k->kg_telur_week - $k->pcs_telur_week / 180), 1);
                                     
                                     $fcr_day = empty($k->kg_pakan) || empty($k->pcs) ? '0' : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
@@ -454,13 +455,15 @@
                                         ? '0'
                                         : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
                                     <br>
+
+                                    @php
+                                        $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
+                                        $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
+                                        $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
+                                    @endphp
                                     {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                         ? '0'
-                                        : number_format(
-                                            ($k->kg_pakan_kuml / 1000 + $k->kuml_rp_vitamin / 7000 + $k->kum_ttl_rp_vaksin / 7000) /
-                                                ($k->kuml_kg - $k->kuml_pcs / 180),
-                                            1,
-                                        ) }}
+                                        : number_format(($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak) / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
                                 </td>
 
                                 <!--(144,502.2 , 60,920.9 , 864,183.0)-->
