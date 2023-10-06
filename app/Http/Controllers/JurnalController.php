@@ -75,13 +75,13 @@ class JurnalController extends Controller
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by  a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by  a.no_nota DESC");
         } else {
             $jurnal =  DB::select("SELECT a.penutup, a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by  a.id_jurnal DESC");
+            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by  a.no_nota DESC");
         }
 
         $data =  [
