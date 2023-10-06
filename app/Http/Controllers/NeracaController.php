@@ -68,6 +68,8 @@ class NeracaController extends Controller
 
         $peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 16);
         $aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 9);
+        $aktiva_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 43);
+        $peralatan_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 61);
 
         $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
         $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);
@@ -77,9 +79,11 @@ class NeracaController extends Controller
             'bank' => $bank,
             'piutang' => $piutang,
             'peralatan' => $peralatan,
+            'peralatan_gantung' => $peralatan_gantung,
             'akumulasi' => $akumulasi_aktiva,
             'akumulasi_peralatan' => $akumulasi_peralatan,
             'aktiva' => $aktiva,
+            'aktiva_gantung' => $aktiva_gantung,
             'hutang' => $hutang,
             'ekuitas' => $ekuitas,
             'persediaan' => $persediaan,
