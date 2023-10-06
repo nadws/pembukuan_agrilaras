@@ -68,7 +68,7 @@
             position: sticky;
             z-index: 30;
             background-color: #F2F7FF;
-            top: 52px;
+            top: 51px;
             left: 62.5px;
             /* Sesuaikan dengan lebar elemen .freeze-cell1 */
         }
@@ -92,7 +92,7 @@
             position: sticky;
             z-index: 10;
             background-color: #F2F7FF;
-            top: 52px;
+            top: 51px;
         }
     </style>
     <div class="row">
