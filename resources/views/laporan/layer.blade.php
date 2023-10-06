@@ -460,10 +460,14 @@
                                         $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
                                         $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                         $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
+                                        $ayam = $k->rupiah / 7000;
                                     @endphp
                                     {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                         ? '0'
-                                        : number_format(($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak) / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
+                                        : number_format(
+                                            ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam) / ($k->kuml_kg - $k->kuml_pcs / 180),
+                                            1,
+                                        ) }}
                                 </td>
 
                                 <!--(144,502.2 , 60,920.9 , 864,183.0)-->
