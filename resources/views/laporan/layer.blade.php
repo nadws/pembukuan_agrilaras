@@ -530,7 +530,7 @@
         <div id="rumus_layer"></div>
     </x-theme.modal>
 
-    <x-theme.modal title="History Stok" btnSave='T' size="modal-lg" idModal="history">
+    <x-theme.modal title="Kegunaan" btnSave='T' idModal="history">
         <div class="row">
             <div class="col-lg-12">
                 <div id="history_pemakaian"></div>

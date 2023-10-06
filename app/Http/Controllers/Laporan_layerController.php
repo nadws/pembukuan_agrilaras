@@ -236,15 +236,8 @@ class Laporan_layerController extends Controller
             $tgl2 = $r->tgl2;
         }
 
-        $history = DB::select("SELECT a.tgl, a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori, a.admin
-        FROM stok_produk_perencanaan as a
-        left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-        left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-        WHERE a.tgl between '$tgl1' and '$tgl2' and a.id_kandang = '$r->id_kandang' and a.id_pakan = '$r->id_produk';
-        ");
+        $history = DB::table('tb_produk_perencanaan')->where('id_produk', $r->id_produk)->first();
         $kandang = DB::table('kandang')->where('id_kandang', $r->id_kandang)->first();
-
-
 
         $data = [
             'history' => $history,
