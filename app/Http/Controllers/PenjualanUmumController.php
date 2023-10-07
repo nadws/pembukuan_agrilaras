@@ -91,7 +91,7 @@ class PenjualanUmumController extends Controller
             'title' => 'Tambah Penjualan Umum',
             'customer' => DB::table('customer')->get(),
             'produk' => $this->produk,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
             'no_nota' => $nota
         ];
         return view('penjualan2.add', $data);
@@ -399,7 +399,7 @@ class PenjualanUmumController extends Controller
             ) as c on c.no_nota = a.urutan 
             
             left JOIN customer as d on d.id_customer = a.id_customer
-            where a.lokasi in('alpa','mtd') and a.tgl between '$tgl1' and '$tgl2' and c.total_bayar != 0
+            where a.lokasi in('alpa','mtd') and  c.total_bayar != 0
             GROUP BY a.urutan;
             "),
             'customer' => DB::table('customer')->get(),

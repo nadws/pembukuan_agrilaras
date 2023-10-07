@@ -441,7 +441,7 @@
                             <p class=" ms-4 mt-4">Silahkan lakukan penyesuaian bulan
                                 <b>{{ date(
                                     'F
-                                                                    Y',
+                                                                                                    Y',
                                     strtotime($tgl2Tutup),
                                 ) }}</b>
                                 terlebih dahulu !!
