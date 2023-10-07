@@ -156,7 +156,7 @@ class PenutupController extends Controller
             $data = [
                 'tgl' => $tgl2,
                 'no_nota' => "PEN-$no_nota_prive",
-                'id_akun' => 56,
+                'id_akun' => 95,
                 'id_buku' => '5',
                 'ket' => 'Penutup Ikhtisar',
                 'debit' => $prive_biasa,
@@ -177,34 +177,34 @@ class PenutupController extends Controller
             Jurnal::create($data);
         }
 
-        if ($r->laba_independent > 0) {
-            $data = [
-                'id_akun' => 95,
-                'kredit' => $r->laba_independent,
-                'debit' => 0,
-                'ket' => 'Saldo Penutup',
-                'id_buku' => '5',
-                'no_nota' => "LB-$no_nota",
-                'tgl' => $tgl2,
-                'tgl_dokumen' => $tgl2,
-                'admin' => auth()->user()->name,
+        // if ($r->laba_independent > 0) {
+        //     $data = [
+        //         'id_akun' => 95,
+        //         'kredit' => $r->laba_independent,
+        //         'debit' => 0,
+        //         'ket' => 'Saldo Penutup',
+        //         'id_buku' => '5',
+        //         'no_nota' => "LB-$no_nota",
+        //         'tgl' => $tgl2,
+        //         'tgl_dokumen' => $tgl2,
+        //         'admin' => auth()->user()->name,
 
-            ];
-            DB::table('jurnal')->insert($data);
-        } else {
-            $data = [
-                'id_akun' => 95,
-                'kredit' => 0,
-                'debit' => $r->laba_independent * -1,
-                'ket' => 'Saldo Penutup',
-                'id_buku' => '5',
-                'no_nota' => "LB-$no_nota",
-                'tgl' => $tgl2,
-                'tgl_dokumen' => $tgl2,
-                'admin' => auth()->user()->name,
-            ];
-            DB::table('jurnal')->insert($data);
-        }
+        //     ];
+        //     DB::table('jurnal')->insert($data);
+        // } else {
+        //     $data = [
+        //         'id_akun' => 95,
+        //         'kredit' => 0,
+        //         'debit' => $r->laba_independent * -1,
+        //         'ket' => 'Saldo Penutup',
+        //         'id_buku' => '5',
+        //         'no_nota' => "LB-$no_nota",
+        //         'tgl' => $tgl2,
+        //         'tgl_dokumen' => $tgl2,
+        //         'admin' => auth()->user()->name,
+        //     ];
+        //     DB::table('jurnal')->insert($data);
+        // }
 
         $uang_ditarik = DB::selectOne("SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit
         FROM jurnal as b

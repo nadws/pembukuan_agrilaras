@@ -16,7 +16,7 @@ class ProfitModel extends Model
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku NOT IN (5, 13) AND b.debit != 0 AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
+                WHERE b.id_buku NOT IN (5, 13) AND  b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
                 GROUP BY b.id_akun
             ) as b ON b.id_akun = a.id_akun
             LEFT JOIN (
@@ -37,7 +37,7 @@ class ProfitModel extends Model
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku NOT IN (5, 13) AND b.debit != 0 AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
+                WHERE b.id_buku NOT IN (5, 13) AND  b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
                 GROUP BY b.id_akun
             ) as b ON b.id_akun = a.id_akun
             LEFT JOIN (
@@ -58,7 +58,7 @@ class ProfitModel extends Model
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku NOT IN (5, 13) AND b.debit != 0 AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
+                WHERE b.id_buku NOT IN (5, 13)  AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
                 GROUP BY b.id_akun
             ) as b ON b.id_akun = a.id_akun
             LEFT JOIN (
@@ -79,7 +79,7 @@ class ProfitModel extends Model
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
                 FROM jurnal as b
-                WHERE b.id_buku NOT IN (5, 13) AND b.debit != 0 AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
+                WHERE b.id_buku NOT IN (5, 13)  AND b.tgl BETWEEN ? AND ? AND b.penutup = 'T'
                 GROUP BY b.id_akun
             ) as b ON b.id_akun = a.id_akun
             LEFT JOIN (
