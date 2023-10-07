@@ -19,39 +19,39 @@
                 </td>
             </tr>
             @php
-            $total_p = 0;
+                $total_p = 0;
             @endphp
             @foreach ($pendapatan as $p)
-            @php
-            $total_p += $p->debit - $p->kredit;
-            @endphp
-            <tr>
-                <td style="padding-left: 20px"><a
-                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $p->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ucwords(strtolower($p->nm_akun))}}</a>
-                </td>
-                <td align="right">Rp {{number_format($p->debit - $p->kredit,0)}}</td>
-            </tr>
+                @php
+                    $total_p += $p->debit - $p->kredit;
+                @endphp
+                <tr>
+                    <td style="padding-left: 20px"><a
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $p->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($p->nm_akun)) }}</a>
+                    </td>
+                    <td align="right">Rp {{ number_format($p->debit - $p->kredit, 0) }}</td>
+                </tr>
             @endforeach
 
             <tr>
                 <td class="fw-bold">Total Penjualan</td>
-                <td class="fw-bold" align="right">Rp. {{number_format($total_p,0)}}</td>
+                <td class="fw-bold" align="right">Rp. {{ number_format($total_p, 0) }}</td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
             </tr>
             @php
-            $total_b =0;
+                $total_b = 0;
             @endphp
             @foreach ($biaya as $p)
-            @php
-            $total_b += $p->debit;
-            @endphp
+                @php
+                    $total_b += $p->debit;
+                @endphp
             @endforeach
             <tr>
                 <td class="fw-bold">Total Biaya</td>
-                <td class="fw-bold" align="right">Rp. {{number_format($total_b,0)}}</td>
+                <td class="fw-bold" align="right">Rp. {{ number_format($total_b, 0) }}</td>
             </tr>
 
             <tr>
@@ -62,15 +62,14 @@
             </tr>
 
             @foreach ($biaya as $p)
-
-            <tr>
-                <td style="padding-left: 20px">
-                    <a
-                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $p->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ucwords(strtolower($p->nm_akun))}}
-                    </a>
-                </td>
-                <td align="right">Rp {{number_format($p->debit,0)}}</td>
-            </tr>
+                <tr>
+                    <td style="padding-left: 20px">
+                        <a
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $p->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($p->nm_akun)) }}
+                        </a>
+                    </td>
+                    <td align="right">Rp {{ number_format($p->debit, 0) }}</td>
+                </tr>
             @endforeach
 
         </table>

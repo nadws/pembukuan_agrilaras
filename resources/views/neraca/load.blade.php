@@ -49,12 +49,12 @@
 
                 <tr>
 
-                    <td class="fw-bold">
+                    <td>
                         KAS
                         <a href="javascript:void(0);" class="float-end" @click="open1 = ! open1"><i
-                                class="fa-2x fas fa-caret-down"></i></a>
+                                class=" fas fa-caret-down"></i></a>
                     </td>
-                    <td align="right" class="fw-bold">Rp {{ number_format($ttl_kas, 0) }}</td>
+                    <td align="right">Rp {{ number_format($ttl_kas, 0) }}</td>
                 </tr>
                 @foreach ($kas as $k)
                     <tr x-transition x-show="open1">
@@ -70,12 +70,12 @@
                 @endforeach
 
                 <tr>
-                    <td class="fw-bold">
+                    <td>
                         BANK
                         <a href="javascript:void(0);" class="float-end" @click="open2 = ! open2"><i
-                                class="fa-2x fas fa-caret-down"></i></a>
+                                class=" fas fa-caret-down"></i></a>
                     </td>
-                    <td align="right" class="fw-bold">Rp {{ number_format($ttl_bank, 0) }}</td>
+                    <td align="right">Rp {{ number_format($ttl_bank, 0) }}</td>
                 </tr>
                 @foreach ($bank as $k)
                     <tr x-transition x-show="open2">
@@ -90,12 +90,12 @@
                     </tr>
                 @endforeach
                 <tr>
-                    <td class="fw-bold">
+                    <td>
                         PIUTANG DAGANG
                         <a href="javascript:void(0);" class="float-end" @click="open3 = ! open3"><i
-                                class="fa-2x fas fa-caret-down"></i></a>
+                                class=" fas fa-caret-down"></i></a>
                     </td>
-                    <td align="right" class="fw-bold">Rp {{ number_format($ttl_piutang, 0) }}</td>
+                    <td align="right">Rp {{ number_format($ttl_piutang, 0) }}</td>
                 </tr>
                 @foreach ($piutang as $k)
                     <tr x-transition x-show="open3">
@@ -109,12 +109,12 @@
                     </tr>
                 @endforeach
                 <tr>
-                    <td class="fw-bold">
+                    <td>
                         PERSEDIAAN
                         <a href="javascript:void(0);" class="float-end" @click="open4 = ! open4"><i
-                                class="fa-2x fas fa-caret-down"></i></a>
+                                class=" fas fa-caret-down"></i></a>
                     </td>
-                    <td align="right" class="fw-bold">Rp {{ number_format($ttl_persediaan, 0) }}</td>
+                    <td align="right">Rp {{ number_format($ttl_persediaan, 0) }}</td>
                 </tr>
                 @foreach ($persediaan as $k)
                     <tr x-transition x-show="open4">
@@ -289,6 +289,10 @@
                         </td>
                     </tr>
                 @endforeach
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
                 <tr>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
