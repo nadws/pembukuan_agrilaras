@@ -45,12 +45,12 @@
         }
         
         foreach ($biaya_murni as $a) {
-            $totalBiaya += $a->debit + $a->debit_saldo - ($a->kredit + $a->kredit_saldo);
-            $totalBiaya3 += $a->debit + $a->debit_saldo;
+            $totalBiaya += $a->debit - $a->kredit;
+            $totalBiaya3 += $a->debit;
         }
         
         foreach ($biayaGantung as $d) {
-            $totalBiaya2 += $d->debit + $d->debit_saldo;
+            $totalBiaya2 += $d->debit;
         }
         foreach ($biaya_bkn_keluar as $d) {
             $totalbkn += $d->debit;
@@ -149,7 +149,7 @@
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                     </td>
                     <td style="text-align: right">Rp
-                        {{ number_format($a->debit + $a->debit_saldo - ($a->kredit + $a->kredit_saldo), 1) }}
+                        {{ number_format($a->debit - $a->kredit, 1) }}
                     </td>
                     <td style="text-align: right" colspan="2">
                         <input type="hidden" name="id_akun_budget[]" value="{{ $a->id_akun }}">
@@ -193,13 +193,14 @@
             @endphp
             @foreach ($biaya_penyesuaian as $d)
                 @php
-                    $ttlEbdiba += $d->debit + $d->debit_saldo - ($d->kredit + $d->kredit_saldo) ?? 0;
+                    $ttlEbdiba += $d->debit - $d->kredit ?? 0;
                 @endphp
                 <tr x-show="open24">
                     <td style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $d->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($d->nm_akun)) }}</a>
                     </td>
-                    <td align="right">Rp {{ number_format($d->debit + $d->debit_saldo ?? 0, 0) }}</td>
+                    <td align="right">Rp {{ number_format($d->debit - $d->kredit ?? 0, 0) }}
+                    </td>
                     <td colspan="2" align="right">Rp 0</td>
                 </tr>
             @endforeach
@@ -227,8 +228,7 @@
                     <td style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
                     </td>
-                    <td align="right">Rp {{ number_format($b->debit + $b->debit_saldo ?? 0, 0) }} /
-                        {{ number_format($b->kredit + $b->kredit_saldo ?? 0, 0) }}</td>
+                    <td align="right">Rp {{ number_format($b->debit ?? 0, 0) }}</td>
                     <td colspan="2" align="right">Rp
                         {{ $b->id_akun == 51 ? number_format($aktiva->biaya, 0) : number_format($totalperalatan, 0) }}
                     </td>
@@ -276,14 +276,14 @@
                 @endphp
                 @foreach ($biaya_murni as $a)
                     @php
-                        $ttl += $a->debit + $a->debit_saldo;
+                        $ttl += $a->debit;
                     @endphp
                     <tr x-transition x-show="open22">
                         <td colspan="2" style="padding-left: 20px"><a target="_blank"
                                 href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                         </td>
                         <td colspan="2" style="text-align: right">Rp.
-                            {{ number_format($a->debit + +$a->debit_saldo, 1) }}
+                            {{ number_format($a->debit, 1) }}
                         </td>
                     </tr>
                 @endforeach
@@ -305,14 +305,14 @@
             @endphp
             @foreach ($biayaGantung as $a)
                 @php
-                    $ttl2 += $a->debit + $a->debit_saldo;
+                    $ttl2 += $a->debit;
                 @endphp
                 <tr x-transition x-show="open23">
                     <td colspan="2" style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                     </td>
                     <td colspan="2" style="text-align: right">Rp.
-                        {{ number_format($a->debit + $a->debit_saldo, 1) }}
+                        {{ number_format($a->debit, 1) }}
                     </td>
                 </tr>
             @endforeach
