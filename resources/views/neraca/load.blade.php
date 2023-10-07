@@ -64,7 +64,7 @@
                             </a>
                         </td>
                         <td align="right">Rp
-                            {{ number_format($k->debit + $k->debit_saldo - $k->kredit - $k->kredit_saldo, 0) }}
+                            {{ number_format($k->debit + $k->debit_saldo, 0) }} /{{ $k->kredit - $k->kredit_saldo }}
                         </td>
                     </tr>
                 @endforeach
