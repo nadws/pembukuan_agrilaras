@@ -69,13 +69,15 @@ class ProfitController extends Controller
         $kg_per_butir =  $kg_butir->jumlah / 1000;
         $rp_kg = $rp_kg->jumlah;
 
-        $month = date('m');
-        $year = date('Y');
+        $month = date('m', strtotime($tgl2));
+        $year = date('Y', strtotime($tgl2));
 
         $ttl_day = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
         $tgl1_ini = date('Y-m-01');
         $tgl1_filter = $tgl1;
+
+
 
 
 
@@ -86,6 +88,7 @@ class ProfitController extends Controller
             $tgl_now =  date('d', strtotime($tgl2));
         }
         $hari = $tgl_now;
+
 
 
         $estimasi_telur = ProfitModel::estimasi($tgl1, $kg_per_butir, $rp_kg, $hari);
@@ -375,7 +378,8 @@ class ProfitController extends Controller
 
     function save_budget(Request $r)
     {
-        DB::table('budget')->where('tgl', $r->tgl)->delete();
+        DB::table('budget')->truncate();
+
         for ($x = 0; $x < count($r->id_akun_budget); $x++) {
             $duit = str()->remove(',', $r->rupiah_budget[$x]);
             $data = [

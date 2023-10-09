@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/saldo', 'saldo')->name('saldo');
             Route::post('/edit_akun', 'edit_akun')->name('edit_akun');
+            Route::post('/cancel_penutup', 'cancel_penutup')->name('cancel_penutup');
             Route::get('/akun', 'akun')->name('akun');
             Route::get('/history', 'history')->name('history');
         });

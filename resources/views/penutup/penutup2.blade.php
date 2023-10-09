@@ -17,7 +17,9 @@
 
                 </div>
                 <div class="col-lg-6 mb-4">
-
+                    <a data-bs-toggle="modal" data-bs-target="#cencel" href="#"
+                        class="btn btn-primary btn-sm float-end ms-2 cencel"><i class="fas fa-history"></i> Cancel
+                        Penutup</a>
 
                     <button type="submit" class="btn btn-primary btn-sm float-end "
                         {{ empty($aktiva) || empty($peralatan) || empty($atk) ? 'Hidden' : '' }}><i
@@ -27,6 +29,7 @@
 
                     <a data-bs-toggle="modal" data-bs-target="#history" href="#"
                         class="btn btn-primary btn-sm float-end me-2 history"><i class="fas fa-history"></i> History</a>
+
 
                     <a data-bs-toggle="modal" data-bs-target="#akun" href="#"
                         class="btn btn-primary btn-sm float-end me-2 list_akun"><i class="fas fa-clipboard-list"></i>
@@ -441,7 +444,7 @@
                             <p class=" ms-4 mt-4">Silahkan lakukan penyesuaian bulan
                                 <b>{{ date(
                                     'F
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Y',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Y',
                                     strtotime($tgl2Tutup),
                                 ) }}</b>
                                 terlebih dahulu !!
@@ -469,6 +472,39 @@
             @csrf
             <x-theme.modal title="Akun" size="modal-lg" btnSave="" idModal="akun">
                 <div id="load-akun"></div>
+            </x-theme.modal>
+
+        </form>
+        <form action="{{ route('penutup.cancel_penutup') }}" method="post">
+            @csrf
+            <x-theme.modal title="Cancel Jurnal Penutup" size="modal-sm" btnSave="Y" idModal="cencel">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="dhead text-center">Bulan & Tahun</th>
+                                    <th class="text-center dhead">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($cancel as $c)
+                                    <tr>
+                                        <td class="text-center">{{ date('M-Y', strtotime($c->tgl)) }}</td>
+                                        <td class="text-center"><input type="radio" name="tgl1" id=""
+                                                value="{{ $c->tgl }}">
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                @php
+                                    $tgl_akhir_penutup = empty($c->tgl) ? '0' : $c->tgl;
+                                @endphp
+                            </tbody>
+
+                        </table>
+                        <input type="hidden" name="tgl2" value="{{ $tgl_akhir_penutup }}">
+                    </div>
+                </div>
             </x-theme.modal>
 
         </form>
