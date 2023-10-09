@@ -379,7 +379,6 @@ class ProfitController extends Controller
     function save_budget(Request $r)
     {
         DB::table('budget')->truncate();
-
         for ($x = 0; $x < count($r->id_akun_budget); $x++) {
             $duit = str()->remove(',', $r->rupiah_budget[$x]);
             $data = [

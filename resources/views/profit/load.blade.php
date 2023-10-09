@@ -15,6 +15,7 @@
         $totaldisusutkan = 0;
         $totalperalatan = 0;
         $ttl_penyesuaian = 0;
+        $ttl_budget_peny = 0;
         
         function getAkun($id_kategori, $tgl1, $tgl2, $jenis)
         {
@@ -61,7 +62,9 @@
             $totalperalatan += $a->h_perolehan - $a->beban < 1 ? 0 : $a->biaya_depresiasi;
         }
         foreach ($biaya_penyesuaian as $d) {
+            $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $d->id_akun ");
             $ttl_penyesuaian += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo;
+            $ttl_budget_peny += empty($budget->rupiah) ? 0 : $budget->rupiah;
         }
         
     @endphp
@@ -140,8 +143,7 @@
             @php
                 $total_budget = 0;
                 foreach ($biaya_murni as $a) {
-                    $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $a->id_akun and a.tgl
-                between '$tgl1' and '$tgl2' ");
+                    $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $a->id_akun ");
                     $total_budget += empty($budget->rupiah) ? 0 : $budget->rupiah;
                 }
             @endphp
@@ -153,7 +155,7 @@
                 </th>
                 <th class="text-end">Rp {{ number_format($totalBiaya, 1) }}</th>
                 <th class="text-end">Rp 0</th>
-                <th class="text-end">Rp {{ number_format($total_budget, 1) }}</th>
+                <th class="text-end">Rp {{ number_format($total_budget, 1) }} </th>
             </tr>
 
             @php
@@ -194,9 +196,7 @@
                 <td class="fw-bold total_budget" align="right" style="border-bottom: 1px solid black;">
                     Rp {{ number_format($total_budget, 2) }}</td>
             </tr>
-            <tr>
-                <td colspan="4">&nbsp;</td>
-            </tr>
+
             <tr>
                 <th><a href="#" class="klikModal" id_kategori="5">Biaya Penyesuaian</a>
                     <button type="button" class="btn btn-primary btn-sm btn-buka float-end"
@@ -207,15 +207,17 @@
                     Rp {{ number_format($ttl_penyesuaian, 1) }}
                 </th>
                 <th class="text-end">Rp 0</th>
-                <th class="text-end">Rp 0</th>
+                <th class="text-end">Rp {{ number_format($ttl_budget_peny, 0) }}</th>
 
             </tr>
             @php
                 $ttlEbdiba = 0;
+                $ttl_buget_penyesuaian = 0;
             @endphp
             @foreach ($biaya_penyesuaian as $d)
                 @php
                     $ttlEbdiba += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo ?? 0;
+                    $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $d->id_akun");
                 @endphp
                 <tr x-show="open24">
                     <td style="padding-left: 20px"><a target="_blank"
@@ -225,9 +227,20 @@
                         {{ number_format($d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo ?? 0, 0) }}
                     </td>
                     <td align="right">Rp 0</td>
-                    <td align="right">Rp 0</td>
+                    <td align="right">
+                        <input type="hidden" name="id_akun_budget[]" value="{{ $d->id_akun }}">
+                        <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
+                            class="form-control budget_uang" style="font-size: 13px"
+                            value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
+                    </td>
                 </tr>
             @endforeach
+            <tr x-show="open24">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
+            </tr>
             <tr x-show="open24">
                 <td class="fw-bold">TOTAL BIAYA PENYESUAIAN</td>
                 <td class="fw-bold" align="right">Rp {{ number_format($ttlEbdiba, 0) }}</td>
