@@ -190,7 +190,7 @@
                             {{-- pakan --}}
 
                             {{-- KUML --}}
-                            <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg)</th>
+                            <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> Rata2 Harga</th>
                             <th class="dhead table_layer th_atas2">Obat/vit</th>
                             <th class="dhead table_layer th_atas2">Pakan</th>
                             {{-- <th class="dhead table_layer">telur(kg)</th> --}}
@@ -413,6 +413,10 @@
                                     {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
                                     <br>
                                     {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
+                                    <br>
+                                    {{ empty($k->count_bagi) ? 0 : number_format((($k->kuml_kg - $k->kuml_pcs / 180) * ($harga->rp_satuan / $harga->total)) / ($k->mgg * 7), 0) }}
+
+
                                 </td>
                                 {{-- vitamin --}}
                                 <td class="td_layer">
