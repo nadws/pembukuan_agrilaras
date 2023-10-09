@@ -132,7 +132,7 @@ class JurnalController extends Controller
             'suplier' => DB::table('tb_suplier')->get(),
             'id_buku' => $r->id_buku,
             'kategori' => $r->kategori ?? 'aktiva',
-            'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9')")
+            'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9') and a.nonaktif = 'T'")
 
         ];
         switch ($r->id_buku) {
@@ -164,7 +164,7 @@ class JurnalController extends Controller
     {
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::all(),
+            'akun' => Akun::where('nonaktif', 'T')->get(),
             'proyek' => proyek::all(),
             'satuan' => DB::table('tb_satuan')->get()
         ];
@@ -174,7 +174,7 @@ class JurnalController extends Controller
     {
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::all(),
+            'akun' => Akun::where('nonaktif', 'T')->get(),
             'count' => $r->count
 
         ];
@@ -273,7 +273,7 @@ class JurnalController extends Controller
             'title' => 'Edit Jurnal Umum',
             'proyek' => proyek::all(),
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
-            'akun' => Akun::all(),
+            'akun' => Akun::where('nonaktif', 'T')->get(),
             'no_nota' => $r->no_nota,
             'head_jurnal' => DB::selectOne("SELECT a.id_buku, a.tgl, a.id_proyek, a.no_dokumen,a.tgl_dokumen, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.no_nota = '$r->no_nota'")
 

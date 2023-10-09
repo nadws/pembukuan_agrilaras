@@ -23,7 +23,6 @@ class AkunController extends Controller
             'title' => 'Daftar Akun',
             'akun' => DB::table('akun as a')->join('subklasifikasi_akun as b', 'a.id_klasifikasi', 'b.id_subklasifikasi_akun')->where('a.nonaktif', 'T')->orderBy('a.id_akun', 'DESC')->get(),
             'subklasifikasi' => SubklasifikasiAkun::all(),
-
             'user' => User::where('posisi_id', 1)->get(),
             'halaman' => 4,
             'create' => SettingHal::btnHal(18, $id_user),
@@ -88,8 +87,14 @@ class AkunController extends Controller
             'inisial' => $r->inisial,
             'iktisar' => $r->iktisar,
         ];
-        DB::table('akun')->where('id_akun', $r->id_akun)->update($data);
-        // Nonaktif::edit('akun', 'id_akun', $r->id_akun, $data);
+        // DB::table('akun')->where('id_akun', $r->id_akun)->update($data);
+        Nonaktif::edit('akun', 'id_akun', $r->id_akun, $data);
+        return redirect()->route('akun');
+    }
+
+    function delete(Request $r)
+    {
+        Nonaktif::delete('akun', 'id_akun', $r->id_akun);
         return redirect()->route('akun');
     }
 
@@ -118,8 +123,8 @@ class AkunController extends Controller
     public function export_akun(Request $r)
     {
         $tbl = DB::table('akun as a')
-                ->join('subklasifikasi_akun as b', 'b.id_subklasifikasi_akun', 'a.id_klasifikasi')
-                ->where('a.nonaktif', 'T')->get();
+            ->join('subklasifikasi_akun as b', 'b.id_subklasifikasi_akun', 'a.id_klasifikasi')
+            ->where('a.nonaktif', 'T')->get();
         $tblKlasifikasi = DB::table('subklasifikasi_akun')->get();
 
         $totalrow = count($tbl) + 1;

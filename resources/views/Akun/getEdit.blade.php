@@ -30,9 +30,15 @@
             <input type="text" value="{{ $akun->nm_akun }}" name="nm_akun" class="form-control">
         </div>
     </div>
+    <div class="col-lg-12">
+        <div class="form-group">
+            <label for="">Iktisar Laba Rugi</label>
+        </div>
+    </div>
     <div class="col-lg-2">
         <div class="form-check">
-            <input  {{ $akun->iktisar == 'Y' ? 'checked' : '' }} value="Y" required class="form-check-input" type="radio" name="iktisar" id="check1">
+            <input {{ $akun->iktisar == 'Y' ? 'checked' : '' }} value="Y" required class="form-check-input"
+                type="radio" name="iktisar" id="check1">
             <label class="form-check-label" for="check1">
                 Ya
             </label>
@@ -41,7 +47,8 @@
     </div>
     <div class="col-lg-2">
         <div class="form-check">
-            <input {{ $akun->iktisar == 'T' ? 'checked' : '' }} value="T" required class="form-check-input" type="radio" name="iktisar" id="check2">
+            <input {{ $akun->iktisar == 'T' ? 'checked' : '' }} value="T" required class="form-check-input"
+                type="radio" name="iktisar" id="check2">
             <label class="form-check-label" for="check2">
                 Tidak
             </label>

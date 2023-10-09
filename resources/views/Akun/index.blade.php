@@ -78,6 +78,12 @@
                                                     Akun</a>
                                             </li>
                                         @endif
+                                        <li>
+                                            <a class="dropdown-item text-danger delete" href="#"
+                                                data-bs-toggle="modal" data-bs-target="#delete"
+                                                id_akun="{{ $a->id_akun }}"><i
+                                                    class="me-2 fas fa-trash-alt"></i>Delete</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>
@@ -214,6 +220,28 @@
         </x-theme.modal>
         {{-- end sub akun --}}
 
+        <form action="{{ route('akun.delete') }}" method="get">
+            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="row">
+                                <h5 class="text-danger ms-4 mt-4"><i class="fas fa-trash"></i> Hapus Data</h5>
+                                <p class=" ms-4 mt-4">Apa anda yakin ingin menghapus ?</p>
+                                <input type="hidden" class="id_akun" name="id_akun">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger"
+                                data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
     </x-slot>
     @section('scripts')
         <script>
@@ -306,7 +334,13 @@
                             }
                         });
                     }
-                })
+                });
+                $(document).on('click', '.delete', function() {
+                    var id_akun = $(this).attr('id_akun');
+                    $('.id_akun').val(id_akun);
+                });
+
+
             });
         </script>
     @endsection
