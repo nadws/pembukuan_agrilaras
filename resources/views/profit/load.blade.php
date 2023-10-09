@@ -290,7 +290,7 @@
             <tr>
                 <td class="fw-bold">TOTAL LABA BERSIH</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $ttl_budget_peny - $totaldisusutkan, 0) }}
+                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $totaldisusutkan, 0) }}
                 </td>
                 <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp
