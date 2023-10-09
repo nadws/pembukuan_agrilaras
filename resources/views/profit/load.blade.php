@@ -254,7 +254,7 @@
                 </td>
                 <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget, 0) }}</td>
+                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $ttl_budget_peny, 0) }}</td>
             </tr>
             <tr>
                 <td colspan="4">&nbsp;</td>
@@ -290,11 +290,11 @@
             <tr>
                 <td class="fw-bold">TOTAL LABA BERSIH</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $totaldisusutkan, 0) }}
+                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $ttl_budget_peny - $totaldisusutkan, 0) }}
                 </td>
                 <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $aktiva->biaya - $totalperalatan, 0) }}
+                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $ttl_budget_peny - $aktiva->biaya - $totalperalatan, 0) }}
                 </td>
             </tr>
 
@@ -336,7 +336,7 @@
                 </td>
                 <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $aktiva->biaya - $totalperalatan, 0) }}
+                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $aktiva->biaya - $totalperalatan - $ttl_budget_peny, 0) }}
                 </td>
             </tr>
 
