@@ -407,7 +407,7 @@
                                 </td>
                                 <!-- pakan -->
 
-                                @php
+                                {{-- @php
                                     if (empty($k->tgl_awal)) {
                                         $harga = 0;
                                     } else {
@@ -416,7 +416,7 @@
                                         where a.tgl BETWEEN '$k->tgl_awal' and '$k->tgl_akhir'");
                                     }
                                     
-                                @endphp
+                                @endphp --}}
 
                                 <!-- kuml -->
                                 <td align="center" class="pakan(kg) td_layer">
@@ -424,7 +424,7 @@
                                     <br>
                                     {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
                                     <br>
-                                    {{ $harga == 0 ? '-' : $harga->ttl / $harga->ttl_bagi }}
+                                    {{-- {{ $harga == 0 ? '-' : $harga->ttl / $harga->ttl_bagi }} --}}
 
 
                                 </td>
