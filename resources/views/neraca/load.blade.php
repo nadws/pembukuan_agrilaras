@@ -259,6 +259,18 @@
                     <td>&nbsp;</td>
                 </tr>
                 <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
                     <td class="fw-bold">JUMLAH KEWAJIBAN LANCAR</td>
                     <td class="fw-bold" align="right">Rp {{ number_format($total2, 0) }}</td>
                 </tr>

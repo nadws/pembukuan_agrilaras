@@ -407,6 +407,16 @@
                                 </td>
                                 <!-- pakan -->
 
+                                @php
+                                    if (empty($k->tgl_awal)) {
+                                        $harga = 0;
+                                    } else {
+                                        $harga = DB::selectOne("SELECT sum(a.rp_satuan) as ttl, COUNT(a.id_invoice_telur) as ttl_bagi
+                                        FROM invoice_telur as a
+                                        where a.tgl BETWEEN '$k->tgl_awal' and '$k->tgl_akhir'");
+                                    }
+                                    
+                                @endphp
 
                                 <!-- kuml -->
                                 <td align="center" class="pakan(kg) td_layer">
@@ -414,7 +424,7 @@
                                     <br>
                                     {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
                                     <br>
-                                    {{ empty($k->count_bagi) ? 0 : number_format((($k->kuml_kg - $k->kuml_pcs / 180) * ($harga->rp_satuan / $harga->total)) / ($k->mgg * 7), 0) }}
+                                    {{ $harga == 0 ? '-' : $harga->ttl / $harga->ttl_bagi }}
 
 
                                 </td>

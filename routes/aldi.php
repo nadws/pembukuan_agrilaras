@@ -165,7 +165,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/save_atk', 'save_atk')->name('save_atk');
 
             Route::get('/umum', 'umum')->name('umum');
+            Route::get('/load_data_cancel', 'load_data_cancel')->name('load_data_cancel');
             Route::post('/save_umum', 'save_umum')->name('save_umum');
+            Route::post('/save_cancel_penyesuaian', 'save_cancel_penyesuaian')->name('save_cancel_penyesuaian');
             // Route::get('/atk/{gudang_id}', 'atk')->name('atk_gudang');
         });
 

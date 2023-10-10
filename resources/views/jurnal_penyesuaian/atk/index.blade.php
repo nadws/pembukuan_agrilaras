@@ -59,32 +59,36 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <input type="text" class="form-control" value="{{ date('F Y', strtotime($tgl)) }}"
-                                        readonly>
+                                    <input type="text" class="form-control"
+                                        value="{{ date('F Y', strtotime($tgl)) }}" readonly>
                                     <input type="hidden" class="form-control" name="tgl"
                                         value="{{ date('Y-m-d', strtotime($tgl)) }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="no_nota" value="JPATK-{{ $nota }}">
-                                    <input type="hidden" class="form-control" name="urutan" value="{{ $nota }}">
+                                    <input type="text" class="form-control" name="no_nota"
+                                        value="JPATK-{{ $nota }}">
+                                    <input type="hidden" class="form-control" name="urutan"
+                                        value="{{ $nota }}">
                                 </td>
                                 <td>
                                     {{ ucwords(strtolower($akunBiaya->nm_akun)) }}
-                                    <input type="hidden" name="id_akun_debit" readonly value="{{ $akunBiaya->id_akun }}"
-                                        class="form-control">
+                                    <input type="hidden" name="id_akun_debit" readonly
+                                        value="{{ $akunBiaya->id_akun }}" class="form-control">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control text-end totalFormat" readonly value="Rp 0">
+                                    <input type="text" class="form-control text-end totalFormat" readonly
+                                        value="Rp 0">
                                     <input type="hidden" class="total" name="debit_kredit" value="0">
                                 </td>
                                 <td>
                                     {{ ucwords(strtolower($akunAtk->nm_akun)) }}
 
-                                    <input type="hidden" name="id_akun_kredit" readonly value="{{ $akunAtk->id_akun }}"
-                                        class="form-control">
+                                    <input type="hidden" name="id_akun_kredit" readonly
+                                        value="{{ $akunAtk->id_akun }}" class="form-control">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control text-end totalFormat" readonly value="Rp 0">
+                                    <input type="text" class="form-control text-end totalFormat" readonly
+                                        value="Rp 0">
                                 </td>
                             </tr>
                         </tbody>
@@ -122,53 +126,58 @@
                         </thead>
                         <tbody>
                             @php
-                            $total = 0;
+                                $total = 0;
                             @endphp
                             @foreach ($atk as $no => $d)
-                            @php
+                                @php
+                                    
+                                    $sisa = $d->debit - $d->kredit;
+                                    $rp_satuan = $d->rp_satuan;
+                                    $ttl = $rp_satuan * $d->debit;
+                                    $total += $rp_satuan * $d->debit;
+                                @endphp
+                                <input type="hidden" name="id_produk[]" value="{{ $d->id_produk }}">
+                                <input type="hidden" name="sisa[]" class="sisa{{ $no }}"
+                                    value="{{ $sisa }}">
+                                <input type="hidden" name="rp_satuan[]" class="rp_satuan{{ $no }}"
+                                    value="{{ $rp_satuan }}">
+                                <input type="hidden" name="gudang_id[]" value="{{ $d->gudang_id }}">
+                                <input type="hidden" name="ttl[]" value="{{ $ttl }}"
+                                    class="ttl{{ $no }}">
 
-                            $sisa = $d->debit - $d->kredit;
-                            $rp_satuan = $d->rp_satuan;
-                            $ttl = $rp_satuan * $d->debit;
-                            $total += $rp_satuan * $d->debit;
-                            @endphp
-                            <input type="hidden" name="id_produk[]" value="{{ $d->id_produk }}">
-                            <input type="hidden" name="sisa[]" class="sisa{{ $no }}" value="{{ $sisa }}">
-                            <input type="hidden" name="rp_satuan[]" class="rp_satuan{{ $no }}" value="{{ $rp_satuan }}">
-                            <input type="hidden" name="gudang_id[]" value="{{ $d->gudang_id }}">
-                            <input type="hidden" name="ttl[]" value="{{ $ttl }}" class="ttl{{ $no }}">
 
+                                <tr>
+                                    <td>{{ $d->tgl1 }}
+                                        <input type="hidden" name="selisih[]" value="0"
+                                            class="selisih{{ $no }}">
 
-                            <tr>
-                                <td>{{ $d->tgl1 }}
-                                    <input type="hidden" name="selisih[]" value="0" class="selisih{{ $no }}">
+                                    </td>
+                                    <td>{{ ucwords($d->nm_produk) }}</td>
+                                    <td align="center">{{ $sisa }}</td>
+                                    <td align="right">Rp. {{ number_format($rp_satuan, 0) }}</td>
+                                    <td align="right">Rp. {{ number_format($ttl, 0) }}</td>
+                                    <td>
+                                        <input type="text" class="form-control stok_aktual" name="fisik[]"
+                                            row="{{ $no }}" value="{{ $sisa }}">
+                                    </td>
+                                    <td align="center" class="selisihFisik{{ $no }}">0
+                                    </td>
+                                    <td>
+                                        <input value="Rp. 0" style="text-align: right" readonly type="text"
+                                            class="form-control ttl_opnameFormat{{ $no }}">
 
-                                </td>
-                                <td>{{ ucwords($d->nm_produk) }}</td>
-                                <td align="center">{{ $sisa }}</td>
-                                <td align="right">Rp. {{ number_format($rp_satuan, 0) }}</td>
-                                <td align="right">Rp. {{ number_format($ttl, 0) }}</td>
-                                <td>
-                                    <input type="text" class="form-control stok_aktual" name="fisik[]" row="{{ $no }}"
-                                        value="{{ $sisa }}">
-                                </td>
-                                <td align="center" class="selisihFisik{{ $no }}">0
-                                </td>
-                                <td>
-                                    <input value="Rp. 0" style="text-align: right" readonly type="text"
-                                        class="form-control ttl_opnameFormat{{ $no }}">
-
-                                    <input value="0" type="hidden" name="ttl_opname[]"
-                                        class="form-control ttl_opname{{ $no }} ttl_opname">
-                                </td>
-                            </tr>
-                            <tr class="pering pering{{$no}}">
-                                <td colspan="8">
-                                    <p class="text-danger text-center">Jika terjadi penambahan barang harap isi di stok
-                                        atk terlebih
-                                        dahulu</p>
-                                </td>
-                            </tr>
+                                        <input value="0" type="hidden" name="ttl_opname[]"
+                                            class="form-control ttl_opname{{ $no }} ttl_opname">
+                                    </td>
+                                </tr>
+                                <tr class="pering pering{{ $no }}">
+                                    <td colspan="8">
+                                        <p class="text-danger text-center">Jika terjadi penambahan barang harap isi di
+                                            stok
+                                            atk terlebih
+                                            dahulu</p>
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -186,9 +195,9 @@
         </form>
     </x-slot>
     @section('scripts')
-    <script>
-        $(document).ready(function() {
-            $('.pering').hide()
+        <script>
+            $(document).ready(function() {
+                $('.pering').hide()
                 $(".select-gudang").change(function(e) {
                     e.preventDefault();
                     var gudang_id = $(this).val()
@@ -239,6 +248,6 @@
                 });
 
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

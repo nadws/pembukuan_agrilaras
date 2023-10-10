@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gudang;
 use App\Models\Jurnal;
+use App\Models\ProfitModel;
 use App\Models\Stok;
 use App\Models\User;
 use Carbon\Carbon;
@@ -565,5 +566,33 @@ class JurnalPenyesuaianController extends Controller
         }
 
         return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
+    }
+
+    function load_data_cancel(Request $r)
+    {
+        $cancel_jurnal = ProfitModel::cancel_penyesuaian($r->id_akun);
+
+        $data = [
+            'cancel_jurnal' => $cancel_jurnal,
+            'id_akun' => $r->id_akun
+        ];
+
+        return view('jurnal_penyesuaian.load_penyesuaian', $data);
+    }
+
+    function save_cancel_penyesuaian(Request $r)
+    {
+        if ($r->id_akun_penyesuaian == 58) {
+            DB::table('jurnal')->whereIn('id_akun', ['58', '59'])->where('id_buku', '4')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->delete();
+            DB::table('depresiasi_peralatan')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->delete();
+        } elseif ($r->id_akun_penyesuaian == 51) {
+            DB::table('jurnal')->whereIn('id_akun', ['51', '52'])->where('id_buku', '4')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->delete();
+            DB::table('depresiasi_aktiva')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->delete();
+        } elseif ($r->id_akun_penyesuaian == 91) {
+            DB::table('jurnal')->whereIn('id_akun', ['30', '91'])->where('id_buku', '4')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->delete();
+            DB::table('tb_stok_produk')->whereBetween('tgl', [$r->tgl1, $r->tgl2])->where('status', 'opname')->delete();
+        }
+
+        return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil di cancel');
     }
 }

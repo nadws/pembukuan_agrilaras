@@ -14,10 +14,10 @@ class SaldoController extends Controller
     {
         $data =  [
             'title' => 'Saldo Awal',
-            'akun' => DB::select("SELECT a.* , b.debit, b.kredit
+            'akun' => DB::select("SELECT a.* , b.debit, b.kredit, b.penutup
             FROM akun as a 
             left join (
-            SELECT b.id_akun, sum(b.debit) as debit , sum(b.kredit) as kredit FROM jurnal as b 
+            SELECT b.id_akun, b.penutup, sum(b.debit) as debit , sum(b.kredit) as kredit FROM jurnal as b 
             where b.saldo = 'Y'
             group by b.id_akun
             ) as b on b.id_akun = a.id_akun

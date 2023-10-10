@@ -144,4 +144,15 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function cancel_penyesuaian($id_akun)
+    {
+        $result = DB::select("SELECT a.tgl
+        FROM jurnal as a 
+        where a.id_akun = ? and a.id_buku = '4'
+        group by a.tgl
+        order by a.tgl ASC
+        ", [$id_akun]);
+
+        return $result;
+    }
 }
