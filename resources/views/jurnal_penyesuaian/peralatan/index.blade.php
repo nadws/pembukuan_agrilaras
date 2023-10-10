@@ -80,7 +80,7 @@
                                 <td>
                                     <input type="text" class="form-control text-end totalFormat total" readonly
                                         value="Rp {{ number_format($total, 2, ',', '.') }}">
-                                    <input type="hidden" class="total" name="debit_kredit"
+                                    <input type="text" class="total" name="debit_kredit"
                                         value="{{ round($total, 2) }}">
                                 </td>
                                 <td>
