@@ -172,7 +172,7 @@
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
-                <td class="fw-bold">Grand Total </td>
+                <td class="fw-bold">Total </td>
                 <td class="fw-bold" align="right">Rp
                     {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit), 0) }}
                 </td>
@@ -183,7 +183,7 @@
                 </td>
             </tr>
             <tr>
-                <td class="fw-bold">Total</td>
+                <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
                     {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit, 0) }}
                 </td>
@@ -193,7 +193,7 @@
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
-                <td class="fw-bold">Grand Total</td>
+                <td class="fw-bold">Total</td>
                 <td class="fw-bold" style="text-align: right">{{ number_format($t_uang, 0) }}</td>
             </tr>
 
@@ -203,7 +203,7 @@
                 </td>
             </tr>
             <tr>
-                <td class="fw-bold">Total</td>
+                <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp {{ number_format($t_uang - $biaya_admin->debit, 0) }}
                 </td>
             </tr>
