@@ -183,7 +183,7 @@
                     });
 
                     console.log(totalRupiah);
-                    var debit = $(".total").val(totalRupiah);
+                    var debit = $(".total").val(total_debit);
                     var debit_biasa = $(".total_biasa").val(total_debit);
                 });
                 aksiBtn("form");
