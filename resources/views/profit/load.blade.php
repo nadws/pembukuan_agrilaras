@@ -16,7 +16,7 @@
         $totalperalatan = 0;
         $ttl_penyesuaian = 0;
         $ttl_budget_peny = 0;
-        
+
         function getAkun($id_kategori, $tgl1, $tgl2, $jenis)
         {
             $jenis = $jenis == 1 ? 'b.kredit' : 'b.debit';
@@ -37,18 +37,18 @@
             ) as c on c.id_akun = a.id_akun
             where a.id_klasifikasi = '4';");
         }
-        
+
         foreach ($subKategori1 as $d) {
             foreach (getAkun($d->id, $tgl1, $tgl2, 1) as $a) {
                 $totalPendapatan += $a->kredit + $a->kredit_saldo;
             }
         }
-        
+
         foreach ($biaya_murni as $a) {
             $totalBiaya += $a->debit + $a->debit_saldo - $a->kredit - $a->kredit_saldo;
             $totalBiaya3 += $a->debit + $a->debit_saldo;
         }
-        
+
         foreach ($biayaGantung as $d) {
             $totalBiaya2 += $d->debit + $d->debit_saldo;
         }
@@ -66,7 +66,7 @@
             $ttl_penyesuaian += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo;
             $ttl_budget_peny += empty($budget->rupiah) ? 0 : $budget->rupiah;
         }
-        
+
     @endphp
     <form id="save_budget">
         <input type="hidden" name="tgl" value="{{ $tgl1 }}">

@@ -22,9 +22,9 @@ class Laporan_layerController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($tgl));
 
-        $harga = DB::selectOne("SELECT count(`id_invoice_telur`) as total, sum(`rp_satuan`) as rp_satuan
-        FROM `invoice_telur` 
-        WHERE `id_produk`='1' and `tgl` BETWEEN '$tgl1' and '$tgl';");
+        $harga = DB::selectOne("SELECT sum(a.rp_satuan) as rp_satuan, count(a.id_invoice_telur) as ttl
+        FROM invoice_telur as a 
+        where a.id_produk = '1' and a.tgl BETWEEN '$tgl1' and '$tgl' and `lokasi`!= 'opname';");
 
 
 
@@ -32,7 +32,7 @@ class Laporan_layerController extends Controller
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
             'harga' => $harga,
-            'kandang' => DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir
+            'kandang' => DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan /y.ttl)) as rp_satuan_y
             FROM kandang as a 
             -- Populasi --
             left join(SELECT b.id_kandang, sum(b.mati+b.jual) as pop_kurang 
@@ -179,8 +179,23 @@ class Laporan_layerController extends Controller
                 group by a.id_kandang
             ) as x on x.id_kandang = a.id_kandang
 
+            left join (
+                SELECT a.id_kandang, b.nm_kandang, month(a.tgl) as bulan, YEAR(a.tgl) as tahun , round(sum(a.kg),1) as kg,c.rp_satuan, c.ttl, sum(a.pcs) as pcs_y
+                FROM stok_telur as a
+                left join kandang as b on b.id_kandang = a.id_kandang
+                left join (
+                SELECT sum(a.total_rp) as rp_satuan, sum(a.kg_jual) as ttl, MONTH(a.tgl) as bulan, YEAR(a.tgl) as tahun
+                        FROM invoice_telur as a 
+                        where a.id_produk = '1' and a.`lokasi`!= 'opname' and a.tgl BETWEEN '2020-01-01' and '$tgl'
+                    group by MONTH(a.tgl) , YEAR(a.tgl)
+                ) as c on c.bulan = month(a.tgl) and c.tahun = YEAR(a.tgl)
+                where a.id_kandang != 0 and a.tgl BETWEEN '2020-01-01' and '$tgl'
+                group by  month(a.tgl) , YEAR(a.tgl) , a.id_kandang
+            ) as y on y.id_kandang = a.id_kandang
+
 
             where a.selesai = 'T'
+            group by a.id_kandang
             order by a.nm_kandang ASC
             ")
         ];

@@ -100,7 +100,7 @@ class ProfitController extends Controller
         SELECT b.no_nota , b.id_akun, c.nm_akun
         FROM jurnal as b
         left join akun as c on c.id_akun = b.id_akun
-        where b.id_akun not in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6') and
+        where b.id_akun not in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori in( '6','7')) and
         b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0
         GROUP by b.no_nota
         ) as b on b.no_nota = a.no_nota

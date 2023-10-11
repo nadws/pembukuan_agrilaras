@@ -190,7 +190,7 @@
                             {{-- pakan --}}
 
                             {{-- KUML --}}
-                            <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> Rata2 Harga</th>
+                            <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2 Harga</th>
                             <th class="dhead table_layer th_atas2">Obat/vit</th>
                             <th class="dhead table_layer th_atas2">Pakan</th>
                             {{-- <th class="dhead table_layer">telur(kg)</th> --}}
@@ -203,7 +203,7 @@
                         @php
                             $ayam_awal = 0;
                             $ayam_akhir = 0;
-                            
+
                             $kg = 0;
                             $kg_kotor = 0;
                             $gr_butir = 0;
@@ -211,19 +211,19 @@
                             $butir = 0;
                             $kg_today = 0;
                             $pcs = 0;
-                            
+
                             // kuml
                             $pakan_kuml = 0;
                             $telur_kuml = 0;
                             $obat_kuml = 0;
                             $vaksin_kuml = 0;
-                            
+
                             $mati = 0;
                             $jual = 0;
-                            
+
                             $butir_minggu = 0;
                             $kg_minggu = 0;
-                            
+
                             $dc_week = 0;
                             $rp_ayam = 0;
                         @endphp
@@ -236,25 +236,25 @@
                                 $pakan += empty($k->kg_pakan) ? '0' : $k->kg_pakan / 1000;
                                 $butir += $k->pcs - $k->pcs_past;
                                 $kg_today += $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180);
-                                
+
                                 // kuml
                                 $pakan_kuml += $k->kg_pakan_kuml / 1000;
                                 $telur_kuml += $k->kuml_kg - $k->kuml_pcs / 180;
                                 $obat_kuml += $k->kuml_rp_vitamin;
                                 $vaksin_kuml += $k->kum_ttl_rp_vaksin;
-                                
+
                                 $ayam_awal += $k->stok_awal;
                                 $ayam_akhir += $k->stok_awal - $k->pop_kurang;
-                                
+
                                 $mati += empty($k->mati) ? '0' : $k->mati;
                                 $jual += empty($k->jual) ? '0' : $k->jual;
-                                
+
                                 $butir_minggu += $k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya;
                                 $kg_minggu += $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180);
-                                
+
                                 $pcs += $k->pcs;
                                 $rp_ayam += $k->rupiah;
-                                
+
                             @endphp
                             <tr>
                                 <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }} <br>
@@ -266,7 +266,7 @@
                                         $tgl_hari_ini = date('Y-m-d');
                                         $afkir = date('Y-m-d', strtotime($k->chick_out . ' -4 weeks'));
                                         $ckin2 = date('Y-m-d', strtotime($k->tgl_masuk . ' -20 weeks'));
-                                        
+
                                     @endphp
 
                                     <span class="{{ $tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : '' }}">
@@ -374,12 +374,12 @@
                                 <!-- (12777) / (3) / (2296) -->
                                 @php
                                     $fcr = empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ? '0' : $k->kg_p_week / 1000 / ($k->kg_telur_week - $k->pcs_telur_week / 180);
-                                    
+
                                     $vitamin = empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                                     $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
-                                    
+
                                     $fcr_plus = empty($k->kg_p_week) || empty($k->kg_telur_week) ? '0' : number_format(($k->kg_p_week / 1000 + $vitamin + $vaksin) / ($k->kg_telur_week - $k->pcs_telur_week / 180), 1);
-                                    
+
                                     $fcr_day = empty($k->kg_pakan) || empty($k->pcs) ? '0' : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
                                 @endphp
 
@@ -407,24 +407,20 @@
                                 </td>
                                 <!-- pakan -->
 
-                                {{-- @php
-                                    if (empty($k->tgl_awal)) {
-                                        $harga = 0;
-                                    } else {
-                                        $harga = DB::selectOne("SELECT sum(a.rp_satuan) as ttl, COUNT(a.id_invoice_telur) as ttl_bagi
-                                        FROM invoice_telur as a
-                                        where a.tgl BETWEEN '$k->tgl_awal' and '$k->tgl_akhir'");
-                                    }
-                                    
-                                @endphp --}}
+
 
                                 <!-- kuml -->
                                 <td align="center" class="pakan(kg) td_layer">
                                     {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
                                     <br>
                                     {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
+                                    @php
+
+                                    @endphp
                                     <br>
-                                    {{-- {{ $harga == 0 ? '-' : $harga->ttl / $harga->ttl_bagi }} --}}
+                                    {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }}
+
+
 
 
                                 </td>
@@ -440,8 +436,9 @@
 
                                     @foreach ($vitamin as $v)
                                         <a href="#" onclick="return false;" data-bs-toggle="modal"
-                                            data-bs-target="#history" class="history" id_produk="{{ $v->id_pakan }}"
-                                            id_kandang="{{ $k->id_kandang }}"> {{ $v->nm_produk }} :
+                                            data-bs-target="#history" class="history"
+                                            id_produk="{{ $v->id_pakan }}" id_kandang="{{ $k->id_kandang }}">
+                                            {{ $v->nm_produk }} :
                                             {{ number_format($v->pcs_kredit, 1) }}
                                             {{ $v->nm_satuan }} </a> <br>
                                     @endforeach
