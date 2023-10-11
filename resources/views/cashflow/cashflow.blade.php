@@ -272,7 +272,7 @@
                             @click="openUangKeluar = ! openUangKeluar"> <i class="fas fa-caret-down"></i></button>
 
                     </td>
-                    <td align="right">{{ number_format($total_bi, 1) }}</td>
+                    <td align="right">Rp {{ number_format($total_bi, 1) }}</td>
                 </tr>
                 @foreach ($uangbiayacosh as $b)
                     <tr x-show="openUangKeluar">
@@ -290,7 +290,7 @@
                                 class="fas fa-caret-down"></i></button>
 
                     </td>
-                    <td align="right">{{ number_format($total_biproyek, 1) }}</td>
+                    <td align="right">Rp {{ number_format($total_biproyek, 1) }}</td>
                 </tr>
                 @foreach ($uangbiayaproyek as $b)
                     <tr x-show="openUangKeluarProyek">
