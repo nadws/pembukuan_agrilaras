@@ -80,7 +80,7 @@
                                 <td>
                                     <input type="text" class="form-control text-end totalFormat total" readonly
                                         value="Rp {{ number_format($total, 2, ',', '.') }}">
-                                    <input type="text" class="total" name="debit_kredit"
+                                    <input type="hidden" class="total_biasa" name="debit_kredit"
                                         value="{{ round($total, 2) }}">
                                 </td>
                                 <td>
@@ -183,7 +183,7 @@
                     });
 
                     console.log(totalRupiah);
-                    var debit = $(".total").val(total_debit);
+                    var debit = $(".total").val(totalRupiah);
                     var debit_biasa = $(".total_biasa").val(total_debit);
                 });
                 aksiBtn("form");
