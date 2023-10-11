@@ -11,7 +11,7 @@ class CashflowModel extends Model
     use HasFactory;
     public static function uangBiaya($tgl1, $tgl2, $id_kategori)
     {
-        $result = DB::select("SELECT ak.id_akun,ak.nm_akun, a.debit , a.kredit, ak.kategori
+        $result = DB::select("SELECT ak.id_akun,ak.nm_akun, a.debit , a.kredit
         FROM akun as ak
         
         left join (
