@@ -56,7 +56,8 @@ class PeralatanController extends Controller
         $id_user = auth()->user()->id;
         $data = [
             'title' => 'Data Peralatan',
-            'peralatan' => DB::select("SELECT a.*, b.*, c.beban FROM peralatan as a 
+            'peralatan' => DB::select("SELECT a.*, b.*, c.beban 
+            FROM peralatan as a 
             left join kelompok_peralatan as b on b.id_kelompok = a.id_kelompok
             left join(
             SELECT sum(c.b_penyusutan) as beban , c.id_aktiva
@@ -264,7 +265,7 @@ class PeralatanController extends Controller
         return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
     }
 
-    public function tbh_baris_peralatan (Request $r)
+    public function tbh_baris_peralatan(Request $r)
     {
         $data =  [
             'kelompok' => DB::table('kelompok_peralatan')->get(),

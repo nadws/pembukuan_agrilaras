@@ -3,13 +3,13 @@
         <h6>{{ $title }}</h6>
         <div class="row justify-content-end">
             <div class="col-lg-6">
-            @if (!empty($create))
-            <x-theme.button modal="T" href="{{ route('peralatan.add') }}" icon="fa-plus" addClass="float-end"
-                teks="Buat Baru" />
+                @if (!empty($create))
+                    <x-theme.button modal="T" href="{{ route('peralatan.add') }}" icon="fa-plus" addClass="float-end"
+                        teks="Buat Baru" />
                 @endif
                 {{-- <x-theme.button modal="Y" idModal="view" icon="fa-print" addClass="float-end" teks="Print" /> --}}
                 <x-theme.akses :halaman="$halaman" route="peralatan.index" />
- 
+
             </div>
         </div>
     </x-slot>
@@ -26,7 +26,7 @@
                         <th>Penysutan Perbulan</th>
                         <th>Akumulasi Penyusutan</th>
                         <th>Nilai Buku</th>
-                        <th>Aksi</th>
+
                     </tr>
                 </thead>
                 <tbody>
@@ -40,45 +40,15 @@
                             <td align="right">Rp {{ number_format($a->biaya_depresiasi, 0) }}</td>
                             <td align="right">Rp {{ number_format($a->beban, 0) }}</td>
                             <td align="right">Rp {{ number_format($a->h_perolehan - $a->beban, 0) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v text-primary"></i>
-                                    </span>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                        @php
-                                            $emptyKondisi = [$edit,$delete, $detail];
-                                        @endphp
-                                        <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
-                                        @if (!empty($edit))
-                                        <li><a class="dropdown-item text-primary edit_akun" href=""><i
-                                                    class="me-2 fas fa-pen"></i>Edit</a>
-                                        </li>
-                                        @endif
-                                        @if (!empty($delete))
-                                        <li>
-                                            <a class="dropdown-item text-danger delete_nota" no_nota="{{ $a->id_aktiva }}"
-                                                href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                    class="me-2 fas fa-trash"></i>Delete
-                                            </a>
-                                        </li>
-                                        @endif
-                                        @if (!empty($detail))
-                                        <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                no_nota="" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#detail"><i class="me-2 fas fa-search"></i>Detail</a>
-                                        </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </td>
+
                         </tr>
                     @endforeach
                 </tbody>
 
             </table>
         </section>
-        <x-theme.btn_alert_delete route="peralatan.delete_peralatan" name="id_peralatan" :tgl1="$tgl1" :tgl2="$tgl2" :id_proyek="$id_proyek" />
+        <x-theme.btn_alert_delete route="peralatan.delete_peralatan" name="id_peralatan" :tgl1="$tgl1"
+            :tgl2="$tgl2" :id_proyek="$id_proyek" />
     </x-slot>
     @section('scripts')
     @endsection

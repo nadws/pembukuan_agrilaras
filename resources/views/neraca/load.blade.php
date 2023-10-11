@@ -30,14 +30,14 @@
                     $ttl_bank = 0;
                     $ttl_piutang = 0;
                     $ttl_persediaan = 0;
-                    
+
                     foreach ($kas as $k) {
                         $ttl_kas += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
                     }
                     foreach ($bank as $k) {
                         $ttl_bank += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
                     }
-                    
+
                     foreach ($piutang as $k) {
                         $ttl_piutang += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
                     }
@@ -266,10 +266,7 @@
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
+
                 <tr>
                     <td class="fw-bold">JUMLAH KEWAJIBAN LANCAR</td>
                     <td class="fw-bold" align="right">Rp {{ number_format($total2, 0) }}</td>

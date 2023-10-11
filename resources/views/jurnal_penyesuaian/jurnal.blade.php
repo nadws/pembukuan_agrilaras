@@ -5,8 +5,10 @@
                 <h6 class="float-start mt-1">{{ $title }}</h6>
             </div>
             <div class="col-lg-6">
-                <x-theme.button modal="Y" idModal="cancel" href="#" icon="fa-undo-alt" addClass="float-end"
-                    teks="Cancel Jurnal" />
+                @if (auth()->user()->posisi_id == 1)
+                    <x-theme.button modal="Y" idModal="cancel" href="#" icon="fa-undo-alt" addClass="float-end"
+                        teks="Cancel Jurnal" />
+                @endif
                 @if (!empty($export))
                     <a href="{{ route('export_jurnal', ['tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_buku' => '4']) }}"
                         class="float-end btn   btn-success me-2"><i class="fas fa-file-excel"></i> Export</a>

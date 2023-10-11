@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashflowModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -100,7 +101,7 @@ class CashflowController extends Controller
                 SELECT b.no_nota , b.id_akun, c.nm_akun
                 FROM jurnal as b 
                 left join akun as c on c.id_akun = b.id_akun
-                where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6') and 
+                where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori in ('6','7')) and 
                 b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0 and b.id_buku in(2,10,12)
                 GROUP by b.no_nota
             ) as b on b.no_nota = a.no_nota
@@ -108,26 +109,8 @@ class CashflowController extends Controller
             where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null
             group by a.id_akun;"),
 
-            'uangbiaya' => DB::select("SELECT ak.id_akun,ak.nm_akun, a.debit , a.kredit
-            FROM akun as ak
-            
-            left join (
-            SELECT a.id_akun , sum(a.debit) as debit , sum(a.kredit) as kredit
-                FROM jurnal as a 
-                left join (
-                	SELECT j.no_nota, j.id_akun
-                    FROM jurnal as j
-                    LEFT JOIN akun as b ON b.id_akun = j.id_akun
-                    WHERE j.debit != '0'
-                    GROUP BY j.no_nota
-                ) d ON a.no_nota = d.no_nota AND d.id_akun != a.id_akun
-                WHERE  a.tgl between '$tgl1' and '$tgl2'  and a.id_buku in ('2','12','10')
-                 group by a.id_akun
-            ) as a on a.id_akun = ak.id_akun
-            left join akuncash_ibu as acb on acb.id_akun = ak.id_akun and acb.kategori = '6'
-            WHERE ak.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori = '6')
-            order by acb.urutan ASC
-            "),
+            'uangbiayacosh' => CashflowModel::uangBiaya($tgl1, $tgl2, '6'),
+            'uangbiayaproyek' => CashflowModel::uangBiaya($tgl1, $tgl2, '7'),
             'biaya_admin' => DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
             '$tgl1' and '$tgl2' and a.id_buku = '6' "),
             'tgl_back' => $tgl_back,

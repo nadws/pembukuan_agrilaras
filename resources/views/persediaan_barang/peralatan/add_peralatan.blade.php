@@ -14,22 +14,22 @@
                 <ul class="nav nav-pills float-start">
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'aktiva' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('jurnal.add',['id_buku' => $id_buku, 'kategori' => 'aktiva'])}}">Aktiva</a>
+                            href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'aktiva']) }}">Aktiva</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'peralatan' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('jurnal.add',['id_buku' => $id_buku, 'kategori' => 'peralatan'])}}">Peralatan</a>
+                            href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'peralatan']) }}">Peralatan</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'atk' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('jurnal.add',['id_buku' => $id_buku, 'kategori' => 'atk'])}}">
+                            href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'atk']) }}">
                             ATK & Perlengkapan</a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'umum' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('jurnal.add',['id_buku' => $id_buku, 'kategori' => 'umum'])}}">
+                            href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'umum']) }}">
                             Pembelian Umum</a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
 
@@ -61,12 +61,12 @@
                     <input type="text" class="form-control" name="no_nota" value="JU-{{ $max }}" readonly>
                 </div>
                 @if ($id_buku == '12')
-                <div class="col-lg-3">
-                    <label for="">Proyek</label>
-                    <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
+                    <div class="col-lg-3">
+                        <label for="">Proyek</label>
+                        <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
 
-                    </select>
-                </div>
+                        </select>
+                    </div>
                 @endif
 
                 <div class="col-lg-3">
@@ -74,7 +74,7 @@
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -180,15 +180,16 @@
 
 
     @section('scripts')
-    <script>
-        $(".select2suplier").select2()
+        <script>
+            $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
+
                 function load_menu() {
-                    var kategori = "{{request()->get('kategori')}}"
+                    var kategori = "{{ request()->get('kategori') }}"
                     $.ajax({
                         method: "GET",
-                        url: "{{route('peralatan.load_menu_add_aktiva')}}?kategori="+kategori,
+                        url: "{{ route('peralatan.load_menu_add_aktiva') }}?kategori=" + kategori,
                         dataType: "html",
                         success: function(hasil) {
                             $("#load_menu").html(hasil);
@@ -248,7 +249,7 @@
                 $(document).on("click", ".tbh_baris", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "{{route('peralatan.tambah_baris_aktiva')}}?count=" + count,
+                        url: "{{ route('peralatan.tambah_baris_aktiva') }}?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#tb_baris").append(data);
@@ -399,9 +400,9 @@
 
                 aksiBtn("form");
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -453,9 +454,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".proyek", function() {
                     var tambah = $(this).val();
                     if (tambah == 'tambah_proyek') {
@@ -515,6 +516,6 @@
                     });
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

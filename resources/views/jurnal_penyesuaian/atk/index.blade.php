@@ -111,17 +111,17 @@
                     </select>
                 </div> --}}
                 <div class="col-lg-12">
-                    <table class="table ">
+                    <table class="table table-bordered">
                         <thead>
                             <tr>
                                 <th class="dhead" width="15%">Tanggal Perolehan</th>
                                 <th class="dhead" width="20%">Barang</th>
-                                <th class="dhead" width="8%" style="text-align: center">Stok Sisa</th>
-                                <th class="dhead" width="13%" style="text-align: right">Harga Satuan</th>
-                                <th class="dhead" width="13%" style="text-align: right">Total</th>
+                                <th class="dhead text-end" width="8%">Stok Sisa</th>
+                                <th class="dhead text-end" width="13%">Harga Satuan</th>
+                                <th class="dhead text-end" width="13%">Total</th>
                                 <th class="dhead" width="10%">Stok Aktual</th>
-                                <th class="dhead" width="8%">Selisih</th>
-                                <th class="dhead" width="15%" style="text-align: right">Total Opname</th>
+                                <th class="dhead text-end" width="8%">Selisih</th>
+                                <th class="dhead text-end" width="15%">Total Opname</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -130,7 +130,7 @@
                             @endphp
                             @foreach ($atk as $no => $d)
                                 @php
-                                    
+
                                     $sisa = $d->debit - $d->kredit;
                                     $rp_satuan = $d->rp_satuan;
                                     $ttl = $rp_satuan * $d->debit;
@@ -153,14 +153,14 @@
 
                                     </td>
                                     <td>{{ ucwords($d->nm_produk) }}</td>
-                                    <td align="center">{{ $sisa }}</td>
+                                    <td align="right">{{ $sisa }}</td>
                                     <td align="right">Rp. {{ number_format($rp_satuan, 0) }}</td>
                                     <td align="right">Rp. {{ number_format($ttl, 0) }}</td>
                                     <td>
-                                        <input type="text" class="form-control stok_aktual" name="fisik[]"
-                                            row="{{ $no }}" value="{{ $sisa }}">
+                                        <input type="text" class="form-control stok_aktual text-end"
+                                            name="fisik[]" row="{{ $no }}" value="{{ $sisa }}">
                                     </td>
-                                    <td align="center" class="selisihFisik{{ $no }}">0
+                                    <td align="right" class="selisihFisik{{ $no }}">0
                                     </td>
                                     <td>
                                         <input value="Rp. 0" style="text-align: right" readonly type="text"

@@ -13,15 +13,15 @@
                 <ul class="nav nav-pills float-start">
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'aktiva' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'aktiva'])}}">Aktiva</a>
+                            href="{{ route('add_balik_aktiva', ['id_buku' => $id_buku, 'kategori' => 'aktiva']) }}">Aktiva</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'peralatan' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'peralatan'])}}">Peralatan</a>
+                            href="{{ route('add_balik_aktiva', ['id_buku' => $id_buku, 'kategori' => 'peralatan']) }}">Peralatan</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'atk' ? 'active' : '' }}" aria-current="page"
-                            href="{{route('add_balik_aktiva',['id_buku' => $id_buku, 'kategori' => 'atk'])}}">
+                            href="{{ route('add_balik_aktiva', ['id_buku' => $id_buku, 'kategori' => 'atk']) }}">
                             ATK & Perlengkapan</a>
                     </li>
                     {{-- <li class="nav-item">
@@ -103,17 +103,18 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     @if ($post == 'peralatan')
-                                    <select name="id_akun[]" id="" class="select2_add pilih_akun pilih_akun1" count="1">
-                                        <option value="">-Pilih Akun-</option>
-                                        @foreach ($akun_gantung as $p)
-                                        <option value="{{$p->id_akun}}">{{$p->nm_akun}}</option>
-                                        @endforeach
+                                        <select name="id_akun[]" id=""
+                                            class="select2_add pilih_akun pilih_akun1" count="1">
+                                            <option value="">-Pilih Akun-</option>
+                                            @foreach ($akun_gantung as $p)
+                                                <option value="{{ $p->id_akun }}">{{ $p->nm_akun }}</option>
+                                            @endforeach
 
-                                    </select>
+                                        </select>
                                     @else
-                                    <input type="hidden" name="id_akun[]" value="{{$akun_gantung->id_akun}}">
-                                    <input type="text" class="form-control" value="{{$akun_gantung->nm_akun}} "
-                                        readonly>
+                                        <input type="hidden" name="id_akun[]" value="{{ $akun_gantung->id_akun }}">
+                                        <input type="text" class="form-control"
+                                            value="{{ $akun_gantung->nm_akun }} " readonly>
                                     @endif
 
 
@@ -126,18 +127,19 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     @if ($post == 'peralatan')
-                                    <select name="id_post" id="" class="select2_add post1 post_center post_center1"
-                                        count="1">
+                                        <select name="id_post" id=""
+                                            class="select2_add post1 post_center post_center1" count="1">
 
-                                    </select>
+                                        </select>
                                     @else
-                                    <select name="id_post" id="" class="select2_add post_center post_center1" count="1">
-                                        <option value="">-Pilih Post-</option>
-                                        @foreach ($post as $p)
-                                        <option value="{{$p->id_post_center}}">{{$p->nm_post}}</option>
-                                        @endforeach
+                                        <select name="id_post" id=""
+                                            class="select2_add post_center post_center1" count="1">
+                                            <option value="">-Pilih Post-</option>
+                                            @foreach ($post as $p)
+                                                <option value="{{ $p->id_post_center }}">{{ $p->nm_post }}</option>
+                                            @endforeach
 
-                                    </select>
+                                        </select>
                                     @endif
 
                                 </td>
@@ -148,10 +150,10 @@
 
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="1"
-                                        readonly>
-                                    <input type="hidden" class="form-control debit_biasa debit_biasa1" value="0"
-                                        name="debit[]">
+                                    <input type="text" class="form-control debit_rupiah text-end" value="Rp 0"
+                                        count="1" readonly>
+                                    <input type="hidden" class="form-control debit_biasa debit_biasa1"
+                                        value="0" name="debit[]">
                                     <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah
                                         harap cek kembali !!
                                     </p>
@@ -159,8 +161,8 @@
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control kredit_rupiah kredit_rupiah1 text-end"
                                         value="Rp 0" count="1" readonly>
-                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa1" value="0"
-                                        name="kredit[]">
+                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa1"
+                                        value="0" name="kredit[]">
                                     <input type="hidden" class="form-control id_klasifikasi1" value="0"
                                         name="id_klasifikasi[]">
                                     <p class="peringatan1 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan
@@ -185,8 +187,9 @@
                                     </button> --}}
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <input type="hidden" name="id_akun[]" value="{{$akun_aktiva->id_akun}}">
-                                    <input type="text" class="form-control" value="{{$akun_aktiva->nm_akun}} " readonly>
+                                    <input type="hidden" name="id_akun[]" value="{{ $akun_aktiva->id_akun }}">
+                                    <input type="text" class="form-control" value="{{ $akun_aktiva->nm_akun }} "
+                                        readonly>
                                     <div class="">
                                         <label for="" class="mt-2 ">Urutan Pengeluaran</label>
                                         <input type="text" class="form-control " name="no_urut[]">
@@ -207,8 +210,8 @@
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control debit_rupiah2 debit_rupiah text-end"
                                         value="Rp 0" count="2" readonly>
-                                    <input type="hidden" class="form-control debit_biasa debit_biasa2" value="0"
-                                        name="debit[]">
+                                    <input type="hidden" class="form-control debit_biasa debit_biasa2"
+                                        value="0" name="debit[]">
                                     <p class="peringatan_debit2 mt-2 text-danger" hidden>Data yang dimasukkan salah
                                         harap cek kembali !!
                                     </p>
@@ -217,8 +220,8 @@
                                 <td style="vertical-align: top;">
                                     <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0"
                                         count="2" readonly>
-                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0"
-                                        name="kredit[]">
+                                    <input type="hidden" class="form-control kredit_biasa kredit_biasa2"
+                                        value="0" name="kredit[]">
                                     <input type="hidden" class="form-control id_klasifikasi2" value="0"
                                         name="id_klasifikasi[]">
                                     <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan
@@ -322,8 +325,8 @@
 
 
     @section('scripts')
-    <script>
-        $(".select2suplier").select2()
+        <script>
+            $(".select2suplier").select2()
             $(document).ready(function() {
 
 
@@ -469,9 +472,9 @@
 
                 aksiBtn("form");
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -545,9 +548,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".proyek", function() {
                     var tambah = $(this).val();
                     if (tambah == 'tambah_proyek') {
@@ -607,6 +610,6 @@
                     });
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

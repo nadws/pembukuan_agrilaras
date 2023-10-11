@@ -61,13 +61,12 @@ class JurnalPenyesuaianController extends Controller
             $tgl = date('Y-m-t', strtotime("next month", strtotime($tgl_asli)));
             $tgl1 = date('Y-m-01', strtotime($tgl));
         }
-
-
         if (empty($max)) {
             $nota_t = '1000';
         } else {
             $nota_t = $max->nomor_nota + 1;
         }
+
         $id_user = auth()->user()->id;
         $data =  [
             'title' => 'Jurnal Penyesuaian',

@@ -16,11 +16,12 @@
     openPbi: false,
     openBiaya: false,
     openUangKeluar: false,
+    openUangKeluarProyek: false,
 }">
     <div class="col-lg-6">
         @php
             $total_pi = 0;
-            
+
             foreach ($piutang as $p) {
                 $total_pi += $p->debit - $p->kredit;
             }
@@ -148,7 +149,7 @@
                 </tr>
                 @php
                     $t_uang = 0;
-                    
+
                 @endphp
                 @foreach ($uang as $u)
                     @php
@@ -246,30 +247,53 @@
         </table>
     </div>
     <div class="col-lg-6 mt-2">
+
         @php
             $total_bi = 0;
-        @endphp
-        @foreach ($uangbiaya as $b)
-            @php
+            foreach ($uangbiayacosh as $b) {
                 $total_bi += $b->kredit;
-            @endphp
-        @endforeach
+            }
+            $total_biproyek = 0;
+            foreach ($uangbiayaproyek as $c) {
+                $total_biproyek += $c->kredit;
+            }
+        @endphp
         <table class="table table-bordered">
             <tbody>
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
-                    <th class="dhead2 text-end" style="white-space: nowrap">Rp {{ number_format($total_bi, 1) }}</th>
+                    <th class="dhead2 text-end" style="white-space: nowrap">Rp
+                        {{ number_format($total_bi + $total_biproyek, 1) }}</th>
                 </tr>
                 <tr>
-                    <td colspan="2" class="fw-bold"><a href="#" onclick="event.preventDefault();"
-                            class="tmbhakun_control me-3" kategori='6'>Uang Keluar</a>
+                    <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
+                            class="tmbhakun_control me-3" kategori='6'>Cost</a>
                         <button class="btn btn-primary btn-sm btn-buka float-end"
                             @click="openUangKeluar = ! openUangKeluar"> <i class="fas fa-caret-down"></i></button>
 
                     </td>
+                    <td align="right">{{ number_format($total_bi, 1) }}</td>
                 </tr>
-                @foreach ($uangbiaya as $b)
+                @foreach ($uangbiayacosh as $b)
                     <tr x-show="openUangKeluar">
+                        <td><a target="_blank"
+                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
+                        </td>
+                        <td align="right">Rp {{ number_format($b->kredit, 1) }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
+                            class="tmbhakun_control me-3" kategori='7'>Proyek</a>
+                        <button class="btn btn-primary btn-sm btn-buka float-end"
+                            @click="openUangKeluarProyek = ! openUangKeluarProyek"> <i
+                                class="fas fa-caret-down"></i></button>
+
+                    </td>
+                    <td align="right">{{ number_format($total_biproyek, 1) }}</td>
+                </tr>
+                @foreach ($uangbiayaproyek as $b)
+                    <tr x-show="openUangKeluarProyek">
                         <td><a target="_blank"
                                 href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
                         </td>

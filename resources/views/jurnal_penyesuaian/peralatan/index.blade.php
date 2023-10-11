@@ -68,7 +68,7 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" name="no_nota"
-                                        value="JU-{{ $nota }}">
+                                        value="JU-{{ $nota }}" readonly>
                                     <input type="hidden" class="form-control" name="urutan"
                                         value="{{ $nota }}">
                                 </td>
@@ -102,16 +102,17 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
 
                             <tr>
                                 <th class="dhead" width="15%">Tanggal Perolehan</th>
                                 <th class="dhead" width="20%">Nama Peralatan</th>
-                                <th class="dhead" width="20%">Harga Perolehan</th>
-                                <th class="dhead" width="20%">Nilai Buku</th>
-                                <th class="dhead" width="20%">Beban Penyusutan <br> (<span style="font-size: 13.5px"
-                                        class="text-warning text-sm">Barang rusak/hilang bebankan sesuia nilai
+                                <th class="dhead text-end" width="20%">Harga Perolehan</th>
+                                <th class="dhead text-end" width="20%">Nilai Buku</th>
+                                <th class="dhead text-center" width="20%">Beban Penyusutan <br> (<span
+                                        style="font-size: 13.5px" class="text-warning text-sm">Barang rusak/hilang
+                                        bebankan sesuia nilai
                                         buku</span>)</th>
                             </tr>
                         </thead>
@@ -123,10 +124,11 @@
                                 <tr>
                                     <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
                                     <td>{{ $a->nm_aktiva }}</td>
-                                    <td>{{ number_format($a->h_perolehan, 0) }}</td>
-                                    <td>{{ number_format($a->h_perolehan - $a->beban, 0) }} </td>
+                                    <td class="text-end">{{ number_format($a->h_perolehan, 0) }}</td>
+                                    <td class="text-end">{{ number_format($a->h_perolehan - $a->beban, 0) }} </td>
                                     <td>
-                                        <input type="text" class="form-control beban beban{{ $no + 1 }}"
+                                        <input type="text"
+                                            class="form-control text-end beban beban{{ $no + 1 }}"
                                             count="{{ $no + 1 }}"
                                             value="Rp {{ number_format($a->biaya_depresiasi, 2, ',', '.') }}">
 
