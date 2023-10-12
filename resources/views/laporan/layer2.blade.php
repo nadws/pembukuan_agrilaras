@@ -61,6 +61,12 @@
             background-color: #435EBE !important;
             color: white;
         }
+
+        @media screen and (max-width: 768px) {
+            .elemen-hilang {
+                display: none;
+            }
+        }
     </style>
     <style>
         .table-container {
@@ -126,22 +132,22 @@
 </head>
 
 <body>
-    {{-- <nav class="navbar " style="background: #FFFFFF; border: #435EBE">
+    <nav class="navbar elemen-hilang" style="background: #FFFFFF; border: #435EBE">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="40" height="40">
             </a>
         </div>
-    </nav> --}}
+    </nav>
     <div class="container-fluid mt-2">
 
         <form action="">
             <div class="row ">
-                <div class="col-6 col-lg-9">
+                <div class="col-6 col-lg-9 elemen-hilang">
                     <h6 class="mb-2">Laporan Layer {{ tanggal($tgl) }}</h6>
                 </div>
 
-                <div class="col-6 col-lg-3 float-end d-flex align-items-center">
+                <div class="col-12 col-lg-3 float-end d-flex align-items-center">
 
                     <input type="date" class="form-control" name="tgl" value="{{ $tgl }}">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
@@ -344,7 +350,8 @@
                             @php
                                 $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             @endphp
-                            <td align="center" class="td_layer gr per butir {{ $gr_butir < 58 ? 'text-danger' : '' }}">
+                            <td align="center"
+                                class="td_layer gr per butir {{ $gr_butir < 58 ? 'text-danger' : '' }}">
                                 &nbsp;
                                 <br>
                                 {{ $gr_butir }}
