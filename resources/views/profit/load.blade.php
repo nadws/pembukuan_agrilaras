@@ -377,7 +377,7 @@
                     @php
                         $ttl += $a->debit + $a->debit_saldo;
                     @endphp
-                    <tr x-transition x-show="open22">
+                    <tr x-transition x-show="open22 && open26">
                         <td style="padding-left: 20px"><a target="_blank"
                                 href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                         </td>
@@ -388,7 +388,7 @@
                         <td></td> --}}
                     </tr>
                 @endforeach
-                <tr x-transition x-show="open22">
+                <tr x-transition x-show="open22 && open26">
                     <th style="padding-left: 20px">Total Biaya</th>
                     <th style="text-align: right">Rp. {{ number_format($ttl, 0) }}</th>
                     {{-- <th></th>
@@ -413,7 +413,7 @@
                 @php
                     $ttl2 += $a->debit + $a->debit_saldo;
                 @endphp
-                <tr x-transition x-show="open23">
+                <tr x-transition x-show="open23 && open26">
                     <td style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                     </td>
@@ -424,7 +424,7 @@
                     <td></td> --}}
                 </tr>
             @endforeach
-            <tr x-transition x-show="open23">
+            <tr x-transition x-show="open23 && open26">
                 <th style="padding-left: 20px">Total Uang Keluar</th>
                 <th style="text-align: right">Rp. {{ number_format($ttl2, 0) }}</th>
                 {{-- <th></th>
@@ -462,7 +462,7 @@
                 @php
                     $ttl_bkn_klr += $a->debit;
                 @endphp
-                <tr x-show="open25">
+                <tr x-show="open25 && open26">
                     <td style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                     </td>
@@ -471,7 +471,7 @@
                     <td></td> --}}
                 </tr>
             @endforeach
-            <tr x-show="open25">
+            <tr x-show="open25 && open26">
                 <th style="padding-left: 20px">Total Bukan Uang Keluar </th>
                 <th style="text-align: right">Rp {{ number_format($ttl_bkn_klr, 0) }} (-)</th>
                 {{-- <th></th>
