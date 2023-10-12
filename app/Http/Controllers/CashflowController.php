@@ -95,9 +95,20 @@ class CashflowController extends Controller
             LEFT JOIN akun AS b ON b.id_akun = a.id_akun
             WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.id_akun = 36"),
 
-            'biaya' => DB::select("SELECT a.id_akun, a.nm_akun, b.debit 
-            FROM akun as a 
-            LEFT JOIN ( SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit 
+            // 'biaya' => DB::select("SELECT a.id_akun, a.nm_akun, b.debit 
+            // FROM akun as a 
+            // LEFT JOIN ( SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit 
+            // FROM jurnal as a 
+            // left join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
+            // left join akun as c on c.id_akun = b.id_akun 
+            // where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori in ('6','7')) and b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0 and b.id_buku in(2,10,12) 
+            // GROUP by b.no_nota ) as b on b.no_nota = a.no_nota 
+            // left join akun as c on c.id_akun = a.id_akun 
+            // where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null 
+            // group by a.id_akun ) AS b on b.id_akun = a.id_akun 
+            // where a.id_klasifikasi in('3','6','11','12')"),
+
+            'biaya' => DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit 
             FROM jurnal as a 
             left join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
             left join akun as c on c.id_akun = b.id_akun 
@@ -105,10 +116,7 @@ class CashflowController extends Controller
             GROUP by b.no_nota ) as b on b.no_nota = a.no_nota 
             left join akun as c on c.id_akun = a.id_akun 
             where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null 
-            group by a.id_akun ) AS b on b.id_akun = a.id_akun 
-            where a.id_klasifikasi in('3','6','11','12')"),
-
-
+            group by a.id_akun"),
 
             'uangbiayacosh' => CashflowModel::uangBiaya($tgl1, $tgl2, '6'),
             'uangbiayaproyek' => CashflowModel::uangBiaya($tgl1, $tgl2, '7'),

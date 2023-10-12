@@ -83,6 +83,15 @@ class ControlflowController extends Controller
             'telur_selisih' => $telurSelisih,
             'pakanSelisih' => $pakanSelisih,
             'vitaminSelisih' => $vitaminSelisih,
+            'populasi' => DB::select("SELECT a.nm_kandang, (a.stok_awal - b.mati - b.jual) as populasi
+            FROM kandang as a
+            left join (
+                SELECT sum(b.mati) as mati, sum(b.jual) as jual, b.id_kandang
+                FROM populasi as b 
+                group by b.id_kandang
+            ) as  b on b.id_kandang = a.id_kandang 
+            where a.selesai = 'T';")
+
         ];
         return view('controlflow.dashboard', $data);
     }
