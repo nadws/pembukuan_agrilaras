@@ -350,12 +350,12 @@
                             @php
                                 $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             @endphp
-                            <td align="center"
-                                class="td_layer gr per butir {{ $gr_butir < 58 ? 'text-danger' : '' }}">
+                            <td align="center" class="td_layer {{ $gr_butir < 58 ? 'text-danger' : '' }}">
                                 &nbsp;
                                 <br>
                                 {{ $gr_butir }}
-                                <br>{{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }} <br> &nbsp;
+                                <br>
+                                {{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }}
                             </td>
                             <td align="center" class="td_layer"
                                 class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
