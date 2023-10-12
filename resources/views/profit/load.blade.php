@@ -16,6 +16,7 @@
         $totalperalatan = 0;
         $ttl_penyesuaian = 0;
         $ttl_budget_peny = 0;
+        $ttl_budget_gantung = 0;
 
         function getAkun($id_kategori, $tgl1, $tgl2, $jenis)
         {
@@ -51,7 +52,11 @@
 
         foreach ($biayaGantung as $d) {
             $totalBiaya2 += $d->debit + $d->debit_saldo;
+            $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $d->id_akun");
+
+            $ttl_budget_gantung += empty($budget->rupiah) ? 0 : $budget->rupiah;
         }
+
         foreach ($biaya_bkn_keluar as $d) {
             $totalbkn += $d->debit;
         }
@@ -175,19 +180,21 @@
                     </td>
                     <td></td>
                     <td style="text-align: right">
-                        <input type="hidden" name="id_akun_budget[]" value="{{ $a->id_akun }}">
+                        {{-- <input type="hidden" name="id_akun_budget[]" value="{{ $a->id_akun }}">
                         <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
                             class="form-control budget_uang" style="font-size: 13px"
-                            value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
+                            value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}"> --}}
+
+                        {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}
                     </td>
                 </tr>
             @endforeach
-            <tr x-transition x-show="open2">
+            {{-- <tr x-transition x-show="open2">
                 <td></td>
                 <td></td>
                 <td></td>
                 <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
-            </tr>
+            </tr> --}}
             <tr x-transition x-show="open2">
                 <td class="fw-bold" style="border-bottom: 1px solid black;">Total Biaya-biaya</td>
                 <td class="fw-bold" align="right" style="border-bottom: 1px solid black;">Rp
@@ -199,8 +206,7 @@
 
             <tr>
                 <th><a href="#" class="klikModal" id_kategori="5">Biaya Penyesuaian</a>
-                    <button type="button" class="btn btn-primary btn-sm btn-buka float-end"
-                        @click="open24 = ! open24">
+                    <button type="button" class="btn btn-primary btn-sm btn-buka float-end" @click="open24 = ! open24">
                         <i class="fas fa-caret-down"></i></button>
                 </th>
                 <th class="text-end">
@@ -228,19 +234,15 @@
                     </td>
                     <td align="right">Rp 0</td>
                     <td align="right">
-                        <input type="hidden" name="id_akun_budget[]" value="{{ $d->id_akun }}">
+                        {{-- <input type="hidden" name="id_akun_budget[]" value="{{ $d->id_akun }}">
                         <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
                             class="form-control budget_uang" style="font-size: 13px"
-                            value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
+                            value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}"> --}}
+                        {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}
                     </td>
                 </tr>
             @endforeach
-            <tr x-show="open24">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
-            </tr>
+
             <tr x-show="open24">
                 <td class="fw-bold">TOTAL BIAYA PENYESUAIAN</td>
                 <td class="fw-bold" align="right">Rp {{ number_format($ttlEbdiba, 0) }}</td>
@@ -308,9 +310,12 @@
                 </th>
                 <th class="text-end">Rp {{ number_format($totalBiaya2, 0) }}</th>
                 <th class="text-end">Rp 0</th>
-                <th class="text-end">Rp 0</th>
+                <th class="text-end">Rp {{ number_format($ttl_budget_gantung, 0) }}</th>
             </tr>
             @foreach ($biayaGantung as $a)
+                @php
+                    $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $a->id_akun");
+                @endphp
                 <tr x-transition x-show="open28">
                     <td style="padding-left: 20px"><a target="_blank"
                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
@@ -319,14 +324,14 @@
                         {{ number_format($a->debit + $a->debit_saldo, 1) }}
                     </td>
                     <td></td>
-                    <td></td>
+                    <td>Rp {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}</td>
                 </tr>
             @endforeach
             <tr x-transition x-show="open28">
                 <th style="padding-left: 20px">Total Beli Asset</th>
                 <th style="text-align: right">Rp. {{ number_format($totalBiaya2, 0) }}</th>
                 <th></th>
-                <th></th>
+                <th>Rp {{ number_format($ttl_budget_gantung, 0) }}</th>
             </tr>
 
             <tr>
@@ -336,7 +341,7 @@
                 </td>
                 <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $aktiva->biaya - $totalperalatan - $ttl_budget_peny, 0) }}
+                    {{ number_format($estimasi_telur_bulan->estimasi - $total_budget - $aktiva->biaya - $totalperalatan - $ttl_budget_peny - $ttl_budget_gantung, 0) }}
                 </td>
             </tr>
 
@@ -398,7 +403,7 @@
                         @click="open23 = ! open23"><i class="fas fa-caret-down"></i></button>
 
                 </th>
-                <th class="text-end">Rp {{ number_format($totalBiaya2, 0) }}</th>
+                <th class="text-end">Rp {{ number_format($totalBiaya2, 0) }} </th>
                 <th class="text-end"></th>
                 <th class="text-end"></th>
             </tr>

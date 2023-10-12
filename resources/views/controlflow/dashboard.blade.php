@@ -90,7 +90,7 @@
                                         } else {
                                             $hargaSatuan = 0;
                                         }
-                                        
+
                                         $selisihRupiah = $hargaSatuan * $selisih;
                                     $ttlRp += $selisih < 0 ? $selisihRupiah * -1 : $selisihRupiah; @endphp <tr>
                                         <td>{{ $no + 1 }}</td>
@@ -187,7 +187,7 @@
         <hr>
         <div class="row" x-show="profit">
 
-            <div class="col-lg-6">
+            <div class="col-lg-5">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
@@ -223,7 +223,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-7">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
@@ -1229,6 +1229,7 @@
                     data: formData,
                     success: function(response) {
                         loadTabel()
+                        load_cash_ibu()
                         toast('Data berhasil di simpan')
                     },
                     error: function(xhr, status, error) {
