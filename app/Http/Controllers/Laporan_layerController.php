@@ -22,9 +22,11 @@ class Laporan_layerController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($tgl));
 
-        $harga = DB::selectOne("SELECT sum(a.rp_satuan) as rp_satuan, count(a.id_invoice_telur) as ttl
-        FROM invoice_telur as a 
-        where a.id_produk = '1' and a.tgl BETWEEN '$tgl1' and '$tgl' and `lokasi`!= 'opname';");
+        $tgl_awal_harga = date("Y-m-01", strtotime($tgl . "-1 month"));
+        $harga = DB::selectOne("SELECT b.nm_produk, a.tgl, sum(a.pcs / 1000) as pcs , sum(a.total_rp) as ttl_rupiah, a.admin
+        FROM stok_produk_perencanaan as a 
+        left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+        where a.h_opname = 'T' and a.tgl BETWEEN '$tgl_awal_harga' and '$tgl' and b.kategori = 'pakan' and a.pcs != 0;");
 
 
 

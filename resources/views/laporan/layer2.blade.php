@@ -226,7 +226,8 @@
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
-                        <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br> (7,458)</th>
+                        <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
+                            ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
                         <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam</th>
                         {{-- KUML --}}
                     </tr>
