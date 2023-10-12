@@ -199,7 +199,7 @@ class Laporan_layerController extends Controller
             order by a.nm_kandang ASC
             ")
         ];
-        return view('laporan.layer', $data);
+        return view('laporan.layer2', $data);
     }
 
     public function rumus_layer(Request $r)
