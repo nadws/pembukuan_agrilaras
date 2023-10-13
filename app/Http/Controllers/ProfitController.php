@@ -389,4 +389,154 @@ class ProfitController extends Controller
             DB::table('budget')->insert($data);
         }
     }
+
+
+    function profit_setahun(Request $r)
+    {
+        if (empty($r->tahun)) {
+            $tahun = date('Y');
+        } else {
+            $tahun = $r->tahun;
+        }
+
+
+
+        $pendapatan = ProfitModel::pendapatan_setahun($tahun, '4');
+        $biaya = ProfitModel::pendapatan_setahun($tahun, '3');
+        $biaya_penyesuaian = ProfitModel::biaya_penyesuaian_setahun($tahun);
+        $biaya_disusutkan = ProfitModel::biaya_disusutkan_setahun($tahun);
+        $biaya_ibu = ProfitModel::biaya_ibu($tahun);
+
+        $data = [];
+        foreach ($pendapatan as $transaction) {
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->kredit + $transaction->kredit_saldo; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data[$transaction->nm_akun])) {
+                $data[$transaction->nm_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data[$transaction->nm_akun][$month] = $nominal;
+        }
+
+        $data2 = [];
+        foreach ($biaya as $transaction2) {
+            $month = date('F', strtotime("{$transaction2->tahun}-{$transaction2->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction2->debit + $transaction2->debit_saldo - $transaction2->kredit - $transaction2->kredit_saldo; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data2[$transaction2->nm_akun])) {
+                $data2[$transaction2->nm_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data2[$transaction2->nm_akun][$month] = $nominal;
+        }
+        $data3 = [];
+        foreach ($biaya_penyesuaian as $transaction3) {
+            $month = date('F', strtotime("{$transaction3->tahun}-{$transaction3->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction3->debit + $transaction3->debit_saldo - $transaction3->kredit - $transaction3->kredit_saldo; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data3[$transaction3->nm_akun])) {
+                $data3[$transaction3->nm_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data3[$transaction3->nm_akun][$month] = $nominal;
+        }
+        $data4 = [];
+        foreach ($biaya_disusutkan as $b) {
+            $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $b->debit + $b->debit_saldo; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data4[$b->nm_akun])) {
+                $data4[$b->nm_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data4[$b->nm_akun][$month] = $nominal;
+        }
+        $data5 = [];
+        foreach ($biaya_ibu as $b) {
+            $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $b->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data5[$b->nm_akun])) {
+                $data5[$b->nm_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data5[$b->nm_akun][$month] = $nominal;
+        }
+        $datas = [
+            'title' => 'Profit Setahun'
+        ];
+
+        return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5'), $datas);
+    }
 }

@@ -155,4 +155,86 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function pendapatan_setahun($tahun, $id_klasifikasi)
+    {
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        FROM akun as a
+        left join (
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         FROM jurnal as b
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
+        ) as b on b.id_akun = a.id_akun
+        
+        left JOIN (
+          SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
+           FROM jurnal_saldo as c
+           where Year(c.tgl) = ?
+           group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
+        ) as c on c.id_akun = a.id_akun
+        where a.id_klasifikasi = ?;
+        ", [$tahun, $tahun, $id_klasifikasi]);
+        return $result;
+    }
+    public static function biaya_penyesuaian_setahun($tahun)
+    {
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        FROM akun as a
+        left join (
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         FROM jurnal as b
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
+        ) as b on b.id_akun = a.id_akun
+        
+        left JOIN (
+          SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
+           FROM jurnal_saldo as c
+           where Year(c.tgl) = ?
+           group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
+        ) as c on c.id_akun = a.id_akun
+        where a.id_klasifikasi = '5' and a.id_akun not in(51,58);;
+        ", [$tahun, $tahun]);
+        return $result;
+    }
+    public static function biaya_disusutkan_setahun($tahun)
+    {
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        FROM akun as a
+        left join (
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         FROM jurnal as b
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
+        ) as b on b.id_akun = a.id_akun
+        
+        left JOIN (
+          SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
+           FROM jurnal_saldo as c
+           where Year(c.tgl) = ?
+           group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
+        ) as c on c.id_akun = a.id_akun
+        where a.id_akun in(51,58);
+        ", [$tahun, $tahun]);
+        return $result;
+    }
+    public static function biaya_ibu($tahun)
+    {
+        $result = DB::select("SELECT a.id_akun, a.nm_akun, b.debit , b.bulan, b.tahun
+        FROM akun as a 
+        LEFT JOIN ( SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit , MONTH(a.tgl) as bulan, YEAR(a.tgl) as tahun
+            FROM jurnal as a 
+            left join ( SELECT b.no_nota , b.id_akun, c.nm_akun 
+                FROM jurnal as b 
+                left join akun as c on c.id_akun = b.id_akun 
+                where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori in ('6','7')) and Year(b.tgl) = ? and b.kredit != 0 and b.id_buku in(2,10,12) 
+            GROUP by b.no_nota ) as b on b.no_nota = a.no_nota 
+            left join akun as c on c.id_akun = a.id_akun 
+            where a.id_buku in(2,10,12) and a.debit != 0 and Year(a.tgl) = ? and b.id_akun is not null 
+            group by a.id_akun , MONTH(a.tgl) , YEAR(a.tgl)) AS b on b.id_akun = a.id_akun 
+            where a.id_klasifikasi in('3','6','11','12')
+            order by a.nm_akun Asc
+        ", [$tahun, $tahun]);
+        return $result;
+    }
 }
