@@ -121,12 +121,27 @@
                     </tr>
                     @foreach ($data as $akun => $months)
                         <tr x-show="open_pendapatan">
-                            <td>{{ $akun }}</td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
                             @php
                                 $totalPerAkun = 0;
                             @endphp
                             @foreach ($months as $month => $nominal)
-                                <td class="text-end">{{ number_format($nominal, 0) }}</td>
+                                <td class="text-end">
+
+                                    @php
+                                        $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                        $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                    @endphp
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                </td>
                                 @php
                                     $totalPerAkun += $nominal;
                                 @endphp
@@ -156,12 +171,26 @@
                     </tr>
                     @foreach ($data2 as $akun => $months)
                         <tr x-show="open_biaya">
-                            <td>{{ $akun }}</td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
                             @php
                                 $totalPerAkun2 = 0;
                             @endphp
                             @foreach ($months as $month => $nominal)
-                                <td class="text-end">{{ number_format($nominal, 0) }}</td>
+                                @php
+                                    $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                    $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                @endphp
+                                <td class="text-end">
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                </td>
                                 @php
                                     $totalPerAkun2 += $nominal;
                                 @endphp
@@ -182,12 +211,26 @@
                     </tr>
                     @foreach ($data3 as $akun => $months)
                         <tr x-show="open_biaya_penyesuaian">
-                            <td>{{ $akun }}</td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
                             @php
                                 $totalPerAkun3 = 0;
                             @endphp
                             @foreach ($months as $month => $nominal)
-                                <td class="text-end">{{ number_format($nominal, 0) }}</td>
+                                @php
+                                    $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                    $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                @endphp
+                                <td class="text-end">
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                </td>
                                 @php
                                     $totalPerAkun3 += $nominal;
                                 @endphp
@@ -218,12 +261,26 @@
                     </tr>
                     @foreach ($data4 as $akun => $months)
                         <tr x-show="open_biaya_disusutkan">
-                            <td>{{ $akun }}</td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
                             @php
                                 $totalPerAkun4 = 0;
                             @endphp
                             @foreach ($months as $month => $nominal)
-                                <td class="text-end">{{ number_format($nominal, 0) }}</td>
+                                @php
+                                    $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                    $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                @endphp
+                                <td class="text-end">
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                </td>
                                 @php
                                     $totalPerAkun4 += $nominal;
                                 @endphp
@@ -259,12 +316,27 @@
                     </tr>
                     @foreach ($data5 as $akun => $months)
                         <tr x-show="open_biaya_beli_asset">
-                            <td>{{ $akun }}</td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
                             @php
                                 $totalPerAkun5 = 0;
                             @endphp
                             @foreach ($months as $month => $nominal)
-                                <td class="text-end">{{ number_format($nominal, 0) }}</td>
+                                @php
+                                    $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                    $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                @endphp
+                                <td class="text-end">
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}
+                                    </a>
+                                </td>
                                 @php
                                     $totalPerAkun5 += $nominal;
                                 @endphp

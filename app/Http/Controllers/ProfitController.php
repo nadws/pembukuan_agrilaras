@@ -413,8 +413,8 @@ class ProfitController extends Controller
             $nominal = $transaction->kredit + $transaction->kredit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data[$transaction->nm_akun])) {
-                $data[$transaction->nm_akun] = [
+            if (!isset($data[$transaction->id_akun])) {
+                $data[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
                     'March' => 0,
@@ -430,7 +430,7 @@ class ProfitController extends Controller
                 ];
             }
             // Menambahkan data nominal ke struktur data
-            $data[$transaction->nm_akun][$month] = $nominal;
+            $data[$transaction->id_akun][$month] = $nominal;
         }
 
         $data2 = [];
@@ -439,8 +439,8 @@ class ProfitController extends Controller
             $nominal = $transaction2->debit + $transaction2->debit_saldo - $transaction2->kredit - $transaction2->kredit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data2[$transaction2->nm_akun])) {
-                $data2[$transaction2->nm_akun] = [
+            if (!isset($data2[$transaction2->id_akun])) {
+                $data2[$transaction2->id_akun] = [
                     'January' => 0,
                     'February' => 0,
                     'March' => 0,
@@ -456,7 +456,7 @@ class ProfitController extends Controller
                 ];
             }
             // Menambahkan data nominal ke struktur data
-            $data2[$transaction2->nm_akun][$month] = $nominal;
+            $data2[$transaction2->id_akun][$month] = $nominal;
         }
         $data3 = [];
         foreach ($biaya_penyesuaian as $transaction3) {
@@ -464,8 +464,8 @@ class ProfitController extends Controller
             $nominal = $transaction3->debit + $transaction3->debit_saldo - $transaction3->kredit - $transaction3->kredit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data3[$transaction3->nm_akun])) {
-                $data3[$transaction3->nm_akun] = [
+            if (!isset($data3[$transaction3->id_akun])) {
+                $data3[$transaction3->id_akun] = [
                     'January' => 0,
                     'February' => 0,
                     'March' => 0,
@@ -481,7 +481,7 @@ class ProfitController extends Controller
                 ];
             }
             // Menambahkan data nominal ke struktur data
-            $data3[$transaction3->nm_akun][$month] = $nominal;
+            $data3[$transaction3->id_akun][$month] = $nominal;
         }
         $data4 = [];
         foreach ($biaya_disusutkan as $b) {
@@ -489,8 +489,8 @@ class ProfitController extends Controller
             $nominal = $b->debit + $b->debit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data4[$b->nm_akun])) {
-                $data4[$b->nm_akun] = [
+            if (!isset($data4[$b->id_akun])) {
+                $data4[$b->id_akun] = [
                     'January' => 0,
                     'February' => 0,
                     'March' => 0,
@@ -506,7 +506,7 @@ class ProfitController extends Controller
                 ];
             }
             // Menambahkan data nominal ke struktur data
-            $data4[$b->nm_akun][$month] = $nominal;
+            $data4[$b->id_akun][$month] = $nominal;
         }
         $data5 = [];
         foreach ($biaya_beli_asset as $b) {
@@ -514,8 +514,8 @@ class ProfitController extends Controller
             $nominal = $b->debit + $b->debit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data5[$b->nm_akun])) {
-                $data5[$b->nm_akun] = [
+            if (!isset($data5[$b->id_akun])) {
+                $data5[$b->id_akun] = [
                     'January' => 0,
                     'February' => 0,
                     'March' => 0,
@@ -531,7 +531,7 @@ class ProfitController extends Controller
                 ];
             }
             // Menambahkan data nominal ke struktur data
-            $data5[$b->nm_akun][$month] = $nominal;
+            $data5[$b->id_akun][$month] = $nominal;
         }
         $datas = [
             'title' => 'Profit Setahun',
