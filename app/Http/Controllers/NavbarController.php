@@ -103,6 +103,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
             [
+                'judul' => 'Budget',
+                'route' => 'budget.index',
+                'img' => 'budget.png',
+                'deskripsi' => 'Mencatat budgeting.',
+            ],
+            [
                 'judul' => 'Daftar Akun',
                 'route' => 'akun',
                 'img' => 'accounting.png',

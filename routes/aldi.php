@@ -3,6 +3,7 @@
 use App\Http\Controllers\AksesController;
 use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\BarangDaganganController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardKandangController;
@@ -316,6 +317,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit_pembayaran', 'edit_pembayaran')->name('edit_pembayaran');
             Route::post('/edit_save_pembayaran', 'edit_save_pembayaran')->name('edit_save_pembayaran');
             Route::get('/detail/{no_nota}', 'detail')->name('detail');
+        });
+    Route::controller(BudgetController::class)
+        ->prefix('budget')
+        ->name('budget.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/halaman', 'halaman')->name('halaman');
+            Route::post('/create', 'create')->name('create');
         });
     Route::controller(PenyetoranController::class)
         ->prefix('penyetoran')
