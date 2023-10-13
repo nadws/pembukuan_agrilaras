@@ -51,12 +51,8 @@
                                 x-data="{}">
                                 <thead>
                                     @php
-                                        function getBiayaPerakun($id_akun, $bulanPilih)
+                                        function getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$id_akun, $bulanPilih)
                                         {
-                                            $bulanInput1 = request()->get('bulan1') ?? $tglMundur1;
-                                            $bulanInput2 = request()->get('bulan2') ?? $tglMundur2;
-                                            $tahunInput = request()->get('tahun') ?? $tahun;
-
                                             $biayaPerakun = DB::selectOne("SELECT a.id_akun, a.no_nota, sum(a.debit) as debit FROM jurnal as a
                                                 inner join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
                                                     inner join akun as c on c.id_akun = b.id_akun where b.id_akun in (
@@ -75,11 +71,11 @@
 
                                         // Inisialisasi total debit awal
                                         $totalDebitTotal = 0;
-                                        foreach ($biaya as $d) {
-                                            foreach ($bulanView as $b) {
-                                                $biayaPerakun = getBiayaPerakun($d->id_akun, $b->bulan);
+                                        foreach ($biaya as $b) {
+                                            foreach ($bulanView as $d) {
+                                                $biayaPerakun = getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$b->id_akun, $d->bulan);
                                                 // Tambahkan nilai debit ke total per bulan
-                                                $totalPerBulan[$b->bulan] = ($totalPerBulan[$b->bulan] ?? 0) + ($biayaPerakun->debit ?? 0);
+                                                $totalPerBulan[$d->bulan] = ($totalPerBulan[$d->bulan] ?? 0) + ($biayaPerakun->debit ?? 0);
 
                                                 // Tambahkan nilai debit ke total debit total
                                                 $totalDebitTotal += $biayaPerakun->debit ?? 0;
@@ -116,7 +112,7 @@
                                             @endphp
                                             @foreach ($bulanView as $d)
                                                 @php
-                                                    $biayaPerakun = getBiayaPerakun($b->id_akun, $d->bulan);
+                                                    $biayaPerakun = getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$b->id_akun, $d->bulan);
                                                     $debit = $biayaPerakun->debit ?? 0;
                                                     $ttl = $totalPerBulan[$d->bulan] ?? 0;
                                                     // $persen = $ttl / $debit;
