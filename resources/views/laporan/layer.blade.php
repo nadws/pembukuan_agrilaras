@@ -8,9 +8,9 @@
         }
 
         .td_layer {
-            border: 1px solid #435EBE;
+            border: 1px solid #8c98c4;
             font-size: 10px;
-            padding: 10px;
+            padding: 8px;
 
         }
 
@@ -98,7 +98,7 @@
     <div class="row">
         <div class="col-lg-12">
             <form action="">
-                <div class="row mb-2">
+                <div class="row ">
                     <div class="col-lg-6">
                         <h6 class="mb-2">Laporan Layer {{ tanggal($tgl) }}</h6>
                     </div>
@@ -114,8 +114,6 @@
                 </div>
             </form>
             <div class="table-responsive table-container">
-
-
                 <table style="text-align: center; " class="table_layer">
                     <thead style="border: 1px solid white">
                         <tr>
@@ -141,32 +139,28 @@
                             {{-- Umur --}}
 
                             {{-- Populasi --}}
-                            <th class="dhead table_layer th_atas2">pop <br>awal <br> akhir</th>
                             <th class="dhead table_layer th_atas2">D <br>C <br>Week<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="d_c"
                                     style="cursor: pointer"></i>
                             </th>
+                            <th class="dhead table_layer th_atas2">pop <br>awal <br> akhir</th>
                             {{-- Populasi --}}
 
                             {{-- Data Telur --}}
-                            <th class="dhead table_layer th_atas2">butir <br>kg bersih <br> kg kotor
+                            <th class="dhead table_layer th_atas2">kg bersih <br> butir <br> kg kotor
 
                             </th>
                             <th class="dhead table_layer th_atas2">gr / p <br> (butir) <br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="gr_butir"
                                     style="cursor: pointer"></i>
                             </th>
-                            <th class="dhead table_layer th_atas2">selisih <br> (butir/kg)<br>
+                            <th class="dhead table_layer th_atas2">selisih <br> (kg/butir)<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                     style="cursor: pointer"></i>
                             </th>
                             <th class="dhead table_layer th_atas2">
-                                ttl <br> selisih <br> (butir/kg)<br> 1 minggu
+                                ttl <br> selisih <br> (kg/butir)<br> 1 minggu
                             </th>
-                            {{-- <th class="dhead">kg <br> today - yesterday
-                                <i class="fas text-white fa-question-circle rumus" rumus="kg_today"
-                                    style="cursor: pointer"></i>
-                            </th> --}}
 
                             <th class="dhead table_layer th_atas2">hd <br> p <br> hh (%)<br>
                                 <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
@@ -184,11 +178,6 @@
 
                             {{-- pakan --}}
                             <th class="dhead table_layer th_atas2">kg <br> (gr/ekor) / p <br>(day)</th>
-                            {{-- <th class="dhead"></th> --}}
-                            {{-- <th class="dhead">gr <br>(week)</th>
-                            <th class="dhead">gr <br>(past week)</th> --}}
-                            {{-- pakan --}}
-
                             {{-- KUML --}}
                             <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2 Harga</th>
                             <th class="dhead table_layer th_atas2">Obat/vit</th>
@@ -290,13 +279,6 @@
                                 <!-- umur -->
 
                                 <!-- populasi -->
-                                <td align="center" class="pop awal td_layer">
-                                    {{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
-                                    {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
-                                </td>
-                                {{-- <td align="center"
-                                class="% {{(($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100 <= 85 ? 'text-danger fw-bold' : ''}}">
-                            </td> --}}
                                 @php
                                     $tot_ayam_mati = empty($k->mati) ? '0' : $k->mati;
                                     $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
@@ -308,13 +290,18 @@
                                     <br>
                                     {{ $k->mati_week + $k->jual_week }}
                                 </td>
+                                <td align="center" class="pop awal td_layer">
+                                    {{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
+                                    {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
+                                </td>
+
                                 <!-- populasi -->
 
                                 <!-- data telur -->
                                 <!-- mencari ikat  1 ikat = 1kg  -->
                                 <td align="center" class="kg telur td_layer">
+                                    {{ number_format($k->kg - $k->pcs / 180, 1) }}<br>
                                     {{ number_format($k->pcs, 0) }} <br>
-                                    <dt>{{ number_format($k->kg - $k->pcs / 180, 1) }}</dt>
                                     {{ number_format($k->kg, 1) }}
                                 </td>
                                 @php
@@ -322,13 +309,16 @@
                                 @endphp
                                 <td align="center"
                                     class="td_layer gr per butir {{ $gr_butir < 58 ? 'text-danger' : '' }}">
+                                    &nbsp;
+                                    <br>
                                     {{ $gr_butir }}
                                     <br>{{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }} <br> &nbsp;
                                 </td>
                                 <td align="center" class="td_layer"
                                     class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
-                                    {{ number_format($k->pcs - $k->pcs_past, 0) }} <br>
                                     {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
+                                    <br>
+                                    {{ number_format($k->pcs - $k->pcs_past, 0) }}
                                     <br> &nbsp;
                                 </td>
 
@@ -417,8 +407,8 @@
                                     @php
 
                                     @endphp
-                                    {{-- <br>
-                                    {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
+                                    <br>
+                                    {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }}
 
 
 
@@ -497,27 +487,30 @@
                     <tfoot>
                         <tr>
                             <th class="dhead freeze-cell1_td table_layer" colspan="2">Total</th>
+                            <th class="dhead text-end table_layer">{{ $mati }} <br> {{ $jual }} <br>
+                                {{ $dc_week }}</th>
                             <th class="dhead table_layer">{{ number_format($ayam_awal, 0) }}
                                 <br>{{ number_format($ayam_akhir, 0) }} <br>
                                 {{ number_format(($ayam_akhir / $ayam_awal) * 100, 0) }} %
                             </th>
-                            <th class="dhead text-end table_layer">{{ $mati }} <br> {{ $jual }} <br>
-                                {{ $dc_week }}</th>
+
                             <th class="dhead text-end table_layer">
-                                {{ number_format($pcs, 0) }}
-                                <br>
                                 {{ number_format($kg, 2) }}
+                                <br>
+                                {{ number_format($pcs, 0) }}
                                 <br>
                                 {{ number_format($kg_kotor, 2) }}
                             </th>
                             <th class="dhead table_layer">{{ $gr_butir / 4 }}</th>
                             <th class="dhead text-end table_layer">
-                                {{ number_format($butir, 0) }} <br>
                                 {{ number_format($kg_today, 1) }}
+                                <br>
+                                {{ number_format($butir, 0) }}
                             </th>
                             <th class="dhead text-end table_layer">
-                                {{ number_format($butir_minggu, 0) }} <br>
                                 {{ number_format($kg_minggu, 1) }}
+                                <br>
+                                {{ number_format($butir_minggu, 0) }}
                             </th>
                             {{-- <th class="dhead"></th> --}}
 

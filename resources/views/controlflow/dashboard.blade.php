@@ -192,6 +192,7 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-lg-8">
+
                                 <h6 for="">Profit & Loss {{ tanggal($tgl1) }} ~ {{ tanggal($tgl2) }}</h6>
                             </div>
                             <div class="col-lg-4">
@@ -228,7 +229,14 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-lg-6">
-                                <h6 class="float-strat">Control Uang Ditarik</h6>
+                                @php
+                                    $pop = 0;
+                                    foreach ($populasi as $p) {
+                                        $pop += $p->populasi;
+                                    }
+                                @endphp
+                                <h6 class="float-strat">Control Uang Ditarik <br>
+                                    Populasi : {{ number_format($pop, 0) }} </h6>
                             </div>
                             <div class="col-lg-6">
                                 <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
