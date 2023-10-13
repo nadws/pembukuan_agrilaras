@@ -314,7 +314,7 @@
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
+                                &nbsp; <br>{{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
                                 ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%)
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
@@ -330,12 +330,13 @@
                             @endphp
                             <td align="center"
                                 class="D/C td_layer {{ $tot_ayam_semua_hilang > 3 ? 'text-danger fw-bold' : '' }}">
+                                &nbsp; <br>
                                 {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }}
                                 <br>
                                 {{ $k->mati_week + $k->jual_week }}
                             </td>
                             <td align="center" class="pop awal td_layer">
-                                {{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
+                                &nbsp; <br>{{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
                                 {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
                             </td>
 
@@ -344,6 +345,7 @@
                             <!-- data telur -->
                             <!-- mencari ikat  1 ikat = 1kg  -->
                             <td align="center" class="kg telur td_layer">
+                                &nbsp; <br>
                                 {{ number_format($k->kg - $k->pcs / 180, 1) }}<br>
                                 {{ number_format($k->pcs, 0) }} <br>
                                 {{ number_format($k->kg, 1) }}
@@ -352,6 +354,7 @@
                                 $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             @endphp
                             <td align="center" class="td_layer {{ $gr_butir < 58 ? 'text-danger' : '' }}">
+                                &nbsp; <br>
                                 &nbsp;
                                 <br>
                                 {{ $gr_butir }}
@@ -360,6 +363,7 @@
                             </td>
                             <td align="center" class="td_layer"
                                 class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
+                                &nbsp; <br>
                                 {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
                                 <br>
                                 {{ number_format($k->pcs - $k->pcs_past, 0) }}
@@ -367,6 +371,7 @@
                             </td>
 
                             <td align="center" class="butir td_layer">
+                                &nbsp; <br>
                                 {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }} <br>
                                 {{ number_format(
                                     $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180),
@@ -376,6 +381,7 @@
                             </td>
                             <td align="center" class="hd perday (%) td_layer">
                                 {{-- {{$k->pcs}} --}}
+                                &nbsp; <br>
                                 {{ $k->stok_awal - $k->pop_kurang == 0
                                     ? 0
                                     : number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
@@ -388,6 +394,7 @@
 
                             <td align="center" class="hd week td_layer">
                                 {{-- ({{$k->pcs_telur_week}} {{$k->jlh_hari}}) --}}
+                                &nbsp; <br>
                                 {{ empty($k->pcs_telur_week) ||
                                 empty($k->jlh_hari) ||
                                 empty($k->pop_kurang) ||
@@ -419,6 +426,7 @@
 
                             <td align="center"
                                 class="FCR(week) {{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }} td_layer">
+                                &nbsp; <br>
                                 @if ($k->mgg < 21)
                                     0 <br> 0 <br> 0
                                 @else
@@ -435,6 +443,7 @@
 
                             <!-- pakan -->
                             <td style="text-align: center" class="kg w_pakan td_layer">
+                                &nbsp; <br>
                                 {{ number_format($k->kg_pakan / 1000, 1) }} <br>
                                 {{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}
                                 <br> {{ empty($k->feed) ? 'NA' : $k->feed }}
@@ -445,6 +454,7 @@
 
                             <!-- kuml -->
                             <td align="center" class="pakan(kg) td_layer">
+                                &nbsp; <br>
                                 {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
                                 <br>
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
@@ -453,6 +463,8 @@
                                 @endphp
                                 {{-- <br>
                                 {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
+                                <br>
+                                &nbsp;
 
 
 
@@ -496,7 +508,7 @@
                             </td>
                             {{-- vitamin --}}
                             <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
-
+                                &nbsp; <br>
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
@@ -514,10 +526,12 @@
                                         ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam) / ($k->kuml_kg - $k->kuml_pcs / 180),
                                         1,
                                     ) }}
+                                <br> &nbsp;
                             </td>
 
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit td_layer">
+                                &nbsp; <br>
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} </td>

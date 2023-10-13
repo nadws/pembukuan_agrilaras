@@ -22,7 +22,8 @@ class Laporan_layerController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($tgl));
 
-        $tgl_awal_harga = date("Y-m-01", strtotime($tgl . "-1 month"));
+        $tgl_awal_harga = date("Y-m-d", strtotime($tgl . "-30 days"));
+
         $harga = DB::selectOne("SELECT b.nm_produk, a.tgl, sum(a.pcs / 1000) as pcs , sum(a.total_rp) as ttl_rupiah, a.admin
         FROM stok_produk_perencanaan as a 
         left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
