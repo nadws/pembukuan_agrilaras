@@ -56,7 +56,7 @@ class BudgetController extends Controller
 
         $biaya = DB::select("SELECT a.id_akun, a.nm_akun
         FROM akun as a 
-        where a.id_klasifikasi in('3','6','11','12')");
+        where a.id_klasifikasi in('3','6','11','12') ORDER BY a.nm_akun ASC");
 
         $data = [
             'title' => 'Budgeting',

@@ -39,25 +39,33 @@
                             </div>
                         </div>
                         <div class="card-body">
-
-                            <input type="hidden" name="bulan1" value="{{ request()->get('bulan1') ?? $tglMundur1  }}">
-                            <input type="hidden" name="bulan2" value="{{ request()->get('bulan2') ?? $tglMundur2 }}">
-                            <input type="hidden" name="tahun" value="{{ request()->get('tahun') ?? $tahun }}">
+                            @php
+                                $bulanInput1 = request()->get('bulan1') ?? $tglMundur1;
+                                $bulanInput2 = request()->get('bulan2') ?? $tglMundur2;
+                                $tahunInput = request()->get('tahun') ?? $tahun;
+                            @endphp
+                            <input type="hidden" name="bulan1" value="{{ $bulanInput1 }}">
+                            <input type="hidden" name="bulan2" value="{{ $bulanInput2 }}">
+                            <input type="hidden" name="tahun" value="{{ $tahunInput }}">
                             <table x-show="open" class="table table-sm table-bordered" id="tablealdi2"
                                 x-data="{}">
                                 <thead>
                                     @php
-                                        function getBiayaPerakun($tanggal1, $tanggal2, $id_akun)
+                                        function getBiayaPerakun($id_akun, $bulanPilih)
                                         {
+                                            $bulanInput1 = request()->get('bulan1') ?? $tglMundur1;
+                                            $bulanInput2 = request()->get('bulan2') ?? $tglMundur2;
+                                            $tahunInput = request()->get('tahun') ?? $tahun;
+
                                             $biayaPerakun = DB::selectOne("SELECT a.id_akun, a.no_nota, sum(a.debit) as debit FROM jurnal as a
                                                 inner join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
                                                     inner join akun as c on c.id_akun = b.id_akun where b.id_akun in (
                                                     SELECT t.id_akun FROM akuncash_ibu as t 
-                                                    where t.kategori in ('6','7')) and b.tgl BETWEEN '$tanggal1' and '$tanggal2' and b.kredit != 0 and b.id_buku in(2,10,12) 
+                                                    where t.kategori in ('6','7')) and (YEAR(b.tgl) = '$tahunInput' AND MONTH(b.tgl) BETWEEN '$bulanInput1' AND '$bulanInput2') and b.kredit != 0 and b.id_buku in(2,10,12) 
                                                     GROUP by b.no_nota 
                                                     ) as b on b.no_nota = a.no_nota
                                             where a.id_buku in(2,10,12) and a.debit != 0 
-                                            and a.tgl BETWEEN '$tanggal1' and '$tanggal2' AND a.id_akun = '$id_akun'  
+                                            and (YEAR(a.tgl) = '$tahunInput' AND MONTH(a.tgl) BETWEEN '$bulanInput1' AND '$bulanInput2') AND a.id_akun = '$id_akun' AND MONTH(a.tgl) = '$bulanPilih'  
                                             and b.id_akun is not null group by a.id_akun");
                                             return $biayaPerakun;
                                         }
@@ -69,7 +77,7 @@
                                         $totalDebitTotal = 0;
                                         foreach ($biaya as $d) {
                                             foreach ($bulanView as $b) {
-                                                $biayaPerakun = getBiayaPerakun(date("Y-$b->bulan-01"), date("Y-$b->bulan-t"), $d->id_akun);
+                                                $biayaPerakun = getBiayaPerakun($d->id_akun, $b->bulan);
                                                 // Tambahkan nilai debit ke total per bulan
                                                 $totalPerBulan[$b->bulan] = ($totalPerBulan[$b->bulan] ?? 0) + ($biayaPerakun->debit ?? 0);
 
@@ -108,14 +116,14 @@
                                             @endphp
                                             @foreach ($bulanView as $d)
                                                 @php
-                                                    $biayaPerakun = getBiayaPerakun(date("Y-$d->bulan-01"), date("Y-$d->bulan-t"), $b->id_akun);
+                                                    $biayaPerakun = getBiayaPerakun($b->id_akun, $d->bulan);
                                                     $debit = $biayaPerakun->debit ?? 0;
                                                     $ttl = $totalPerBulan[$d->bulan] ?? 0;
                                                     // $persen = $ttl / $debit;
                                                 @endphp
 
                                                 <td class="text-end">
-                                                    {{ number_format($debit, 1) }} === {{empty($biayaPerakun)}}
+                                                    {{ number_format($debit, 1) }}
                                                 </td>
                                                 <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $budget->rupiah) * 100 : 0) : 0, 0) }}%
                                                 </td>
