@@ -208,6 +208,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/save_persen_pendapatan', 'save_persen_pendapatan')->name('save_persen_pendapatan');
         Route::get('/tambah_baris_budget_persen', 'tambah_baris_budget_persen')->name('tambah_baris_budget_persen');
         Route::post('/save_budget', 'save_budget')->name('save_budget');
+        Route::get('/profit_setahun', 'profit_setahun')->name('profit_setahun');
     });
 
     Route::controller(AktivaController::class)->group(function () {
