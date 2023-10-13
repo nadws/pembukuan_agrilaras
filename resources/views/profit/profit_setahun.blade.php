@@ -7,8 +7,11 @@
                 <br>
                 <br>
             </div>
+            <div class="col-lg-6">
+                <h5 class="float-start mt-1">Profit & Loss</h5>
+            </div>
         </div>
-        <h6 class="float-start mt-1">Profit & Loss : Tahun {{ $thn }}</h6>
+        <h6 class="float-start mt-1">Periode : 1 Januari {{ $thn }} sampai 31 Desember {{ $thn }} </h6>
         <div class="row justify-content-end">
             <div class="col-lg-12">
                 <x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end"
@@ -300,9 +303,9 @@
                         </td>
                     </tr>
 
-                    <tr>
+                    {{-- <tr>
                         <td colspan="14">&nbsp;</td>
-                    </tr>
+                    </tr> --}}
                     <tr>
                         <td class="fw-bold">Biaya Beli Asset <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
