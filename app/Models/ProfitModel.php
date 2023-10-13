@@ -237,4 +237,27 @@ class ProfitModel extends Model
         ", [$tahun, $tahun]);
         return $result;
     }
+
+
+    public static function biaya_beli_asset($tahun)
+    {
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        FROM akun as a
+        left join (
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         FROM jurnal as b
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
+        ) as b on b.id_akun = a.id_akun
+        
+        left JOIN (
+          SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
+           FROM jurnal_saldo as c
+           where Year(c.tgl) = ?
+           group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
+        ) as c on c.id_akun = a.id_akun
+        where a.id_klasifikasi in('6','11','12');
+        ", [$tahun, $tahun]);
+        return $result;
+    }
 }

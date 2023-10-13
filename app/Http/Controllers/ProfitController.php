@@ -405,7 +405,7 @@ class ProfitController extends Controller
         $biaya = ProfitModel::pendapatan_setahun($tahun, '3');
         $biaya_penyesuaian = ProfitModel::biaya_penyesuaian_setahun($tahun);
         $biaya_disusutkan = ProfitModel::biaya_disusutkan_setahun($tahun);
-        $biaya_ibu = ProfitModel::biaya_ibu($tahun);
+        $biaya_beli_asset = ProfitModel::biaya_beli_asset($tahun);
 
         $data = [];
         foreach ($pendapatan as $transaction) {
@@ -509,9 +509,9 @@ class ProfitController extends Controller
             $data4[$b->nm_akun][$month] = $nominal;
         }
         $data5 = [];
-        foreach ($biaya_ibu as $b) {
+        foreach ($biaya_beli_asset as $b) {
             $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $b->debit; // Menghitung nominal
+            $nominal = $b->debit + $b->debit_saldo; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data5[$b->nm_akun])) {
@@ -534,7 +534,9 @@ class ProfitController extends Controller
             $data5[$b->nm_akun][$month] = $nominal;
         }
         $datas = [
-            'title' => 'Profit Setahun'
+            'title' => 'Profit Setahun',
+            'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
+            'thn' => $tahun
         ];
 
         return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5'), $datas);
