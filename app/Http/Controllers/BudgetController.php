@@ -44,7 +44,7 @@ class BudgetController extends Controller
     public function index(Request $r)
     {
 
-        $tahun = $r->tahun;
+        $tahun = $r->tahun ?? date('Y');
         $tglMundur1 = Carbon::now()->subMonths(2)->format('n');
         $tglMundur2 = Carbon::now()->format('n');
 
@@ -54,18 +54,9 @@ class BudgetController extends Controller
         $tgl1 =  date("$tahun-$bulan1-01");
         $tgl2 =  date("$tahun-$bulan2-t");
 
-        $biaya = DB::select("SELECT a.id_akun, a.nm_akun, b.debit 
+        $biaya = DB::select("SELECT a.id_akun, a.nm_akun
         FROM akun as a 
-        LEFT JOIN ( SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit 
-        FROM jurnal as a 
-        left join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
-        left join akun as c on c.id_akun = b.id_akun 
-        where b.id_akun in (SELECT t.id_akun FROM akuncash_ibu as t where t.kategori in ('6','7')) and b.tgl BETWEEN '$tgl1' and '$tgl2' and b.kredit != 0 and b.id_buku in(2,10,12) 
-        GROUP by b.no_nota ) as b on b.no_nota = a.no_nota 
-        left join akun as c on c.id_akun = a.id_akun 
-        where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null 
-        group by a.id_akun ) AS b on b.id_akun = a.id_akun 
-        where a.id_klasifikasi in('3','6','11','12')");
+        where a.id_klasifikasi in('3','6','11','12') ORDER BY a.nm_akun ASC");
 
         $data = [
             'title' => 'Budgeting',
@@ -73,6 +64,7 @@ class BudgetController extends Controller
             'tgl2' => $tgl2,
             'tglMundur1' => $tglMundur1,
             'tglMundur2' => $tglMundur2,
+            'tahun' => $tahun,
             'bulan' => DB::table('bulan')->get(),
             'bulanView' => DB::table('bulan')->whereBetween('bulan', [$bulan1, $bulan2])->get(),
             'biaya' => $biaya,
@@ -94,19 +86,25 @@ class BudgetController extends Controller
 
     public function create(Request $r)
     {
-        dd($r->all());
-        foreach($r->id_akun as $id_akun) {
-            foreach($r->budget_perbulan[$id_akun] as $i => $d) {
-                $budget = str()->remove(',', $d);
+        DB::table('budget')->update([
+            'tgl_hapus' => now()
+        ]);
+        for ($i=0; $i < count($r->id_akun); $i++) { 
+            if(!empty($r->budget[$i])){
+                $budget = str()->remove(',', $r->budget[$i]);
                 DB::table('budget')->insert([
-                    'id_akun' => $id_akun,
-                    'tgl' => "2023-$i-01",
+                    'id_akun' => $r->id_akun[$i],
+                    'tgl' => date('Y-m-01'),
                     'rupiah' => $budget,
                     'admin' => auth()->user()->name
                 ]);
             }
         }
         
-        return redirect()->route('budget.index')->with('sukses', 'Data Berhasil ditambahkan');
+        return redirect()->route('budget.index', [
+            'bulan1'=> $r->bulan1,
+            'bulan2'=> $r->bulan2,
+            'tahun'=> $r->tahun,
+        ])->with('sukses', 'Data Berhasil ditambahkan');
     }
 }
