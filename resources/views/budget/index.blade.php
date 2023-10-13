@@ -5,15 +5,18 @@
 
         <div class="row">
 
-            <div class="col-lg-9">
-                <button type="button" class="btn btn-sm" :class="{ 'btn-primary': !open }"
-                    @click="open = false">hotel</button>
-                <button type="button" class="btn btn-sm" :class="{ 'btn-primary': open }"
-                    @click="open = true">gugel</button>
+            <div class="col-lg-10">
+                
+                
                 <form method="post" action="{{ route('budget.create') }}">
                     @csrf
                     <div class="card">
                         <div class="card-header">
+                            <div class="row mb-3">
+                                <div class="col-lg-12">
+                                    @include('budget.nav')
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-lg-5">
                                     <h6 for="" class="float-start">{{ $title }} {{ tanggal($tgl1) }} ~
@@ -164,6 +167,7 @@
                 </form>
 
             </div>
+            
 
         </div>
 
