@@ -52,7 +52,7 @@ class BudgetController extends Controller
         $bulan2 =  $r->bulan2 ?? $tglMundur2;
 
         $tgl1 =  date("$tahun-$bulan1-01");
-        $tgl2 =  date("$tahun-$bulan2-t");
+        $tgl2 = date('Y-m-t', strtotime($tgl1));
 
         $biaya = DB::select("SELECT a.id_akun, a.nm_akun
         FROM akun as a 
@@ -64,6 +64,8 @@ class BudgetController extends Controller
             'tglMundur1' => $tglMundur1,
             'tglMundur2' => $tglMundur2,
             'tahun' => $tahun,
+            'bulan1' => request()->get('bulan1') ?? $tglMundur1,
+            'bulan2' => request()->get('bulan2') ?? $tglMundur2,
             'bulan' => DB::table('bulan')->get(),
             'bulanView' => DB::table('bulan')->whereBetween('bulan', [$bulan1, $bulan2])->get(),
             'biaya' => $biaya,
@@ -88,8 +90,8 @@ class BudgetController extends Controller
         DB::table('budget')->update([
             'tgl_hapus' => now()
         ]);
-        for ($i=0; $i < count($r->id_akun); $i++) { 
-            if(!empty($r->budget[$i])){
+        for ($i = 0; $i < count($r->id_akun); $i++) {
+            if (!empty($r->budget[$i])) {
                 $budget = str()->remove(',', $r->budget[$i]);
                 DB::table('budget')->insert([
                     'id_akun' => $r->id_akun[$i],
@@ -99,11 +101,11 @@ class BudgetController extends Controller
                 ]);
             }
         }
-        
+
         return redirect()->route('budget.index', [
-            'bulan1'=> $r->bulan1,
-            'bulan2'=> $r->bulan2,
-            'tahun'=> $r->tahun,
+            'bulan1' => $r->bulan1,
+            'bulan2' => $r->bulan2,
+            'tahun' => $r->tahun,
         ])->with('sukses', 'Data Berhasil ditambahkan');
     }
 }

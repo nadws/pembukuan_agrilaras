@@ -2,10 +2,33 @@
     <div class="row" x-data="{
         open: true
     }">
+        <style>
+            .table-container {
+                overflow-x: auto;
+                max-height: 600px;
+            }
 
+            .freeze-cell1_th {
+                position: sticky;
+                z-index: 30;
+                background-color: #F2F7FF;
+                top: 0;
+                left: 0;
+            }
+
+            .freeze-cell2_th {
+                position: sticky;
+                z-index: 29;
+                /* Kurangi z-index agar berada di bawah .freeze-cell1_th */
+                background-color: #F2F7FF;
+                top: 35px;
+                /* Sesuaikan dengan tinggi .freeze-cell1_th */
+                left: 0;
+            }
+        </style>
         <div class="row">
 
-            <div class="col-lg-10">
+            <div class="col-lg-12">
 
 
                 <form method="post" action="{{ route('budget.create') }}">
@@ -19,124 +42,134 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-5">
-                                    <h6 for="" class="float-start">{{ $title }} {{ tanggal($tgl1) }} ~
-                                        {{ tanggal($tgl2) }}</h6>
+                                    @php
+                                        function getNmBulan($bulan)
+                                        {
+                                            return DB::table('bulan')
+                                                ->where('bulan', $bulan)
+                                                ->first()->nm_bulan;
+                                        }
+                                    @endphp
+                                    <h6 for="" class="float-start">{{ $title }} {{ getNmBulan($bulan1) }}
+                                        ~ {{ getNmBulan($bulan2) }} {{ $tahun }}</h6>
                                 </div>
                                 <div class="col-lg-7">
                                     <table class="float-end">
                                         <tr>
-                                            <td>{{ count($biaya) }} Pencarian :</td>
-                                            <td><input autofocus type="text" id="pencarian2"
+                                            <td><input placeholder="Pencarian..." autofocus type="text" id="pencarian2"
                                                     class="form-control float-end">
                                             </td>
                                         </tr>
                                     </table>
+                                    <button type="submit" class="btn btn-primary btn-sm float-end me-2">Simpan</button>
                                     <button type="button" data-bs-toggle="modal" data-bs-target="#view"
                                         class="btn btn-primary btn-sm float-end me-2"><i
-                                            class="fas fa-calendar-week"></i> View</button>
-                                    <button type="submit" class="btn btn-primary btn-sm float-end me-2">Simpan</button>
+                                            class="fas fa-calendar-week"></i> View
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                            @php
-                                $bulanInput1 = request()->get('bulan1') ?? $tglMundur1;
-                                $bulanInput2 = request()->get('bulan2') ?? $tglMundur2;
-                                $tahunInput = request()->get('tahun') ?? $tahun;
-                            @endphp
-                            <input type="hidden" name="bulan1" value="{{ $bulanInput1 }}">
-                            <input type="hidden" name="bulan2" value="{{ $bulanInput2 }}">
-                            <input type="hidden" name="tahun" value="{{ $tahunInput }}">
-                            <table x-show="open" class="table table-sm table-bordered" id="tablealdi2"
-                                x-data="{}">
-                                <thead>
-                                    @php
-                                        function getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$id_akun, $bulanPilih)
-                                        {
-                                            $biayaPerakun = DB::selectOne("SELECT a.id_akun, a.no_nota, sum(a.debit) as debit FROM jurnal as a
+
+                            <input type="hidden" name="bulan1" value="{{ $bulan1 }}">
+                            <input type="hidden" name="bulan2" value="{{ $bulan2 }}">
+                            <input type="hidden" name="tahun" value="{{ $tahun }}">
+                            <div class="table-container">
+                                <table x-show="open" class="table table-bordered" id="tablealdi2"
+                                    x-data="{}">
+                                    <thead>
+                                        @php
+                                            function getBiayaPerakun($bulan1, $bulan2, $tahun, $id_akun, $bulanPilih)
+                                            {
+                                                $biayaPerakun = DB::selectOne("SELECT a.id_akun, a.no_nota, sum(a.debit) as debit FROM jurnal as a
                                                 inner join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
                                                     inner join akun as c on c.id_akun = b.id_akun where b.id_akun in (
                                                     SELECT t.id_akun FROM akuncash_ibu as t 
-                                                    where t.kategori in ('6','7')) and (YEAR(b.tgl) = '$tahunInput' AND MONTH(b.tgl) BETWEEN '$bulanInput1' AND '$bulanInput2') and b.kredit != 0 and b.id_buku in(2,10,12) 
+                                                    where t.kategori in ('6','7')) and (YEAR(b.tgl) = '$tahun' AND MONTH(b.tgl) BETWEEN '$bulan1' AND '$bulan2') and b.kredit != 0 and b.id_buku in(2,10,12) 
                                                     GROUP by b.no_nota 
                                                     ) as b on b.no_nota = a.no_nota
-                                            where a.id_buku in(2,10,12) and a.debit != 0 
-                                            and (YEAR(a.tgl) = '$tahunInput' AND MONTH(a.tgl) BETWEEN '$bulanInput1' AND '$bulanInput2') AND a.id_akun = '$id_akun' AND MONTH(a.tgl) = '$bulanPilih'  
-                                            and b.id_akun is not null group by a.id_akun");
-                                            return $biayaPerakun;
-                                        }
-
-                                        // Inisialisasi array total per bulan
-                                        $totalPerBulan = [];
-
-                                        // Inisialisasi total debit awal
-                                        $totalDebitTotal = 0;
-                                        foreach ($biaya as $b) {
-                                            foreach ($bulanView as $d) {
-                                                $biayaPerakun = getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$b->id_akun, $d->bulan);
-                                                // Tambahkan nilai debit ke total per bulan
-                                                $totalPerBulan[$d->bulan] = ($totalPerBulan[$d->bulan] ?? 0) + ($biayaPerakun->debit ?? 0);
-
-                                                // Tambahkan nilai debit ke total debit total
-                                                $totalDebitTotal += $biayaPerakun->debit ?? 0;
+                                                where a.id_buku in(2,10,12) and a.debit != 0 
+                                                and (YEAR(a.tgl) = '$tahun' AND MONTH(a.tgl) BETWEEN '$bulan1' AND '$bulan2') AND a.id_akun = '$id_akun' AND MONTH(a.tgl) = '$bulanPilih'  
+                                                and b.id_akun is not null group by a.id_akun");
+                                                return $biayaPerakun;
                                             }
-                                        }
 
-                                    @endphp
-                                    <tr>
-                                        <th>Uraian</th>
-                                        @foreach ($bulanView as $d)
-                                            <th>{{ $d->nm_bulan }} {{ date('Y') }}</th>
-                                            <th>%</th>
-                                        @endforeach
-                                        <th width="150">Budget</th>
+                                            // Inisialisasi array total per bulan
+                                            $totalPerBulan = [];
 
-                                    </tr>
-                                    <tr>
-                                        <th>Total</th>
-                                        @foreach ($bulanView as $d)
-                                            <th class="text-end">{{ number_format($totalPerBulan[$d->bulan], 1) }}</th>
-                                            <th></th>
-                                        @endforeach
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($biaya as $b)
+                                            // Inisialisasi total debit awal
+                                            $totalDebitTotal = 0;
+                                            foreach ($biaya as $b) {
+                                                foreach ($bulanView as $d) {
+                                                    $biayaPerakun = getBiayaPerakun($bulan1, $bulan2, $tahun, $b->id_akun, $d->bulan);
+                                                    // Tambahkan nilai debit ke total per bulan
+                                                    $totalPerBulan[$d->bulan] = ($totalPerBulan[$d->bulan] ?? 0) + ($biayaPerakun->debit ?? 0);
+
+                                                    // Tambahkan nilai debit ke total debit total
+                                                    $totalDebitTotal += $biayaPerakun->debit ?? 0;
+                                                }
+                                            }
+                                        @endphp
                                         <tr>
-                                            <td>{{ ucwords(strtolower($b->nm_akun)) }}</td>
-                                            <input type="hidden" name="id_akun[]" value="{{ $b->id_akun }}">
-                                            @php
-                                                $budget = DB::table('budget')
-                                                    ->where([['id_akun', $b->id_akun], ['tgl_hapus', null]])
-                                                    ->first();
-                                            @endphp
+                                            <th class="freeze-cell1_th dhead">Uraian</th>
                                             @foreach ($bulanView as $d)
-                                                @php
-                                                    $biayaPerakun = getBiayaPerakun($bulanInput1,$bulanInput2,$tahunInput,$b->id_akun, $d->bulan);
-                                                    $debit = $biayaPerakun->debit ?? 0;
-                                                    $ttl = $totalPerBulan[$d->bulan] ?? 0;
-                                                    // $persen = $ttl / $debit;
-                                                @endphp
-
-                                                <td class="text-end">
-                                                    {{ number_format($debit, 1) }}
-                                                </td>
-                                                <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $budget->rupiah) * 100 : 0) : 0, 0) }}%
-                                                </td>
+                                                <th class="freeze-cell1_th dhead text-center">{{ $d->nm_bulan }}
+                                                    {{ date('Y') }}</th>
+                                                <th class="freeze-cell1_th dhead"></th>
                                             @endforeach
-
-                                            <td>
-                                                <input type="text" value="{{ $budget->rupiah ?? 0 }}"
-                                                    x-mask:dynamic="$money($input)" class="form-control text-end"
-                                                    name="budget[]">
-                                            </td>
+                                            <th class="freeze-cell1_th dhead text-center" width="150"></th>
 
                                         </tr>
-                                    @endforeach
+                                        <tr>
+                                            <th class="freeze-cell2_th dhead">Total</th>
+                                            @foreach ($bulanView as $d)
+                                                <th class="freeze-cell2_th dhead text-end ">
+                                                    {{ number_format($totalPerBulan[$d->bulan], 1) }}</th>
+                                                <th class="freeze-cell2_th dhead">%</th>
+                                            @endforeach
+                                            <th class="freeze-cell2_th dhead text-center">Budget</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($biaya as $b)
+                                            <tr>
+                                                <td>{{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                                <input type="hidden" name="id_akun[]" value="{{ $b->id_akun }}">
+                                                @php
+                                                    $budget = DB::table('budget')
+                                                        ->where([['id_akun', $b->id_akun], ['tgl_hapus', null]])
+                                                        ->first();
+                                                @endphp
+                                                @foreach ($bulanView as $d)
+                                                    @php
+                                                        $biayaPerakun = getBiayaPerakun($bulan1, $bulan2, $tahun, $b->id_akun, $d->bulan);
+                                                        $debit = $biayaPerakun->debit ?? 0;
+                                                        $ttl = $totalPerBulan[$d->bulan] ?? 0;
+                                                        // $persen = $ttl / $debit;
+                                                    @endphp
 
-                                </tbody>
-                            </table>
+                                                    <td class="text-end">
+                                                        <a target="_blank"
+                                                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => date("$tahun-$d->bulan-01"), 'tgl2' => date('Y-m-t', strtotime("$tahun-$d->bulan-01"))]) }}">
+                                                            {{ number_format($debit, 1) }}
+                                                        </a>
+                                                    </td>
+                                                    <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $budget->rupiah) * 100 : 0) : 0, 0) }}%
+                                                    </td>
+                                                @endforeach
 
+                                                <td>
+                                                    <input type="text" value="{{ $budget->rupiah ?? 0 }}"
+                                                        x-mask:dynamic="$money($input)" class="form-control text-end"
+                                                        name="budget[]">
+                                                </td>
+
+                                            </tr>
+                                        @endforeach
+
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </form>
