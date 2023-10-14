@@ -56,8 +56,8 @@
                                 <div class="col-lg-7">
                                     <table class="float-end">
                                         <tr>
-                                            <td><input placeholder="Pencarian..." autofocus type="text" id="pencarian2"
-                                                    class="form-control float-end">
+                                            <td><input placeholder="Pencarian..." autofocus type="text"
+                                                    id="pencarian2" class="form-control float-end">
                                             </td>
                                         </tr>
                                     </table>
@@ -159,7 +159,8 @@
                                                 @endforeach
 
                                                 <td>
-                                                    <input type="text" value="{{ $budget->rupiah ?? 0 }}"
+                                                    <input type="text" style="width: 120px;"
+                                                        value="{{ $budget->rupiah ?? 0 }}"
                                                         x-mask:dynamic="$money($input)" class="form-control text-end"
                                                         name="budget[]">
                                                 </td>
