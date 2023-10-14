@@ -17,7 +17,7 @@
                 <x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end"
                     teks="View" />
                 <form action="" method="get">
-                    <x-theme.modal title="Filter Tahun" idModal="view">
+                    <x-theme.modal title="Filter Tahun" size="modal-sm" idModal="view">
                         <div class="row">
                             <div class="col-lg-12 mt-2">
                                 <label for="">Tahun</label>
