@@ -156,7 +156,7 @@
                                                             {{ number_format($debit, 1) }}
                                                         </a>
                                                     </td>
-                                                    <td>{{ $debit != 0 ? $debit / $ttl : 'kosong' }}%
+                                                    <td>{{ number_format($debit != 0 ? ($debit / $ttl) * 100 : 0, 0) }}%
                                                     </td>
                                                 @endforeach
 
