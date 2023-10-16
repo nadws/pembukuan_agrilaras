@@ -153,10 +153,10 @@
                                                     <td class="text-end">
                                                         <a target="_blank"
                                                             href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => date("$tahun-$d->bulan-01"), 'tgl2' => date('Y-m-t', strtotime("$tahun-$d->bulan-01"))]) }}">
-                                                            {{ number_format($debit, 1) }} == {{$ttl}}
+                                                            {{ number_format($debit, 1) }}
                                                         </a>
                                                     </td>
-                                                    <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $ttl) * 100 : 0) : 0, 0) }}%
+                                                    <td>{{ number_format($debit / $ttl, 0) }}%
                                                     </td>
                                                 @endforeach
 
