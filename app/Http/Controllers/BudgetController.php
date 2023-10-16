@@ -88,6 +88,7 @@ class BudgetController extends Controller
     public function create(Request $r)
     {
         $cek = DB::table('budget')->where('tgl', date('Y-m-01'))->first();
+        dd($cek);
         if(!empty($cek)){
             DB::table('budget')->where('tgl', date('Y-m-01'))->update([
                 'tgl_hapus' => now()
