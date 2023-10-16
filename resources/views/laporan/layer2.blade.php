@@ -372,11 +372,13 @@
 
                             <td align="center" class="butir td_layer">
                                 &nbsp; <br>
-                                {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }} <br>
+
                                 {{ number_format(
                                     $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180),
                                     1,
                                 ) }}
+                                <br>
+                                {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }}
                                 <br> &nbsp;
                             </td>
                             <td align="center" class="hd perday (%) td_layer">

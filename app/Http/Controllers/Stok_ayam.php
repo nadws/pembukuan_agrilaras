@@ -172,6 +172,22 @@ class Stok_ayam extends Controller
         return redirect()->route('history_ayam')->with('sukses', 'Data Berhasil Ditambahkan');
     }
 
+    function edit_ayam(Request $r)
+    {
+        $invoice =  DB::table('invoice_ayam')->where('no_nota', $r->no_nota)->first();
+        $jurnal = DB::table('jurnal')->where('no_nota', $r->no_nota)->where('id_akun', '!=', '37')->get();
+
+        $data = [
+            'invoice' => $invoice,
+            'jurnal' => $jurnal,
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
+            'customer' => DB::table('customer')->get(),
+            'stok_ayam' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_kandang FROM stok_ayam as a where a.id_gudang = '1' and a.jenis = 'ayam'"),
+            'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
+        ];
+        return view("Stok_ayam.edit", $data);
+    }
+
     public function history_ayam(Request $r)
     {
         $tgl1 =  $this->tgl1;
