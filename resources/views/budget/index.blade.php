@@ -156,7 +156,7 @@
                                                             {{ number_format($debit, 1) }}
                                                         </a>
                                                     </td>
-                                                    <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $budget->rupiah) * 100 : 0) : 0, 0) }}%
+                                                    <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $ttl) * 100 : 0) : 0, 0) }}%
                                                     </td>
                                                 @endforeach
 
