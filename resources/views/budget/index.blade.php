@@ -161,7 +161,8 @@
                                                 @endforeach
 
                                                 <td>
-                                                    <input type="text" value="{{ $budget->rupiah ?? 0 }}"
+                                                    <input type="text" style="width: 120px;"
+                                                        value="{{ $budget->rupiah ?? 0 }}"
                                                         x-mask:dynamic="$money($input)" class="form-control text-end"
                                                         name="budget[]">
                                                 </td>

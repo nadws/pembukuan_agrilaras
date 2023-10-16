@@ -1,5 +1,14 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12" cont="container-fluid">
     <x-slot name="cardHeader">
+        <style>
+            .freeze-cell1_th {
+                position: sticky;
+                z-index: 30;
+                background-color: #F2F7FF;
+                top: 0;
+                left: 0;
+            }
+        </style>
 
         <div class="row">
             <div class="col-lg-12">
@@ -17,7 +26,7 @@
                 <x-theme.button modal="Y" idModal="view" icon="fa-calendar-week" addClass="float-end"
                     teks="View" />
                 <form action="" method="get">
-                    <x-theme.modal title="Filter Tahun" idModal="view">
+                    <x-theme.modal title="Filter Tahun" size="modal-sm" idModal="view">
                         <div class="row">
                             <div class="col-lg-12 mt-2">
                                 <label for="">Tahun</label>
@@ -104,11 +113,11 @@
             }">
                 <thead>
                     <tr>
-                        <th class="dhead">Akun</th>
+                        <th class="dhead freeze-cell1_th">Akun</th>
                         @foreach (array_keys(reset($data)) as $month)
-                            <th class="dhead text-end">{{ $month }}</th>
+                            <th class="dhead text-end freeze-cell1_th">{{ $month }}</th>
                         @endforeach
-                        <th class="dhead text-end">Total</th>
+                        <th class="dhead text-end freeze-cell1_th">Total</th>
                     </tr>
                 </thead>
                 <tbody>
