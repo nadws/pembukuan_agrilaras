@@ -56,8 +56,8 @@
                                 <div class="col-lg-7">
                                     <table class="float-end">
                                         <tr>
-                                            <td><input placeholder="Pencarian..." autofocus type="text" id="pencarian2"
-                                                    class="form-control float-end">
+                                            <td><input placeholder="Pencarian..." autofocus type="text"
+                                                    id="pencarian2" class="form-control float-end">
                                             </td>
                                         </tr>
                                     </table>
@@ -111,13 +111,15 @@
                                             }
                                         @endphp
                                         <tr>
-                                            <th class="freeze-cell1_th dhead">Uraian</th>
+                                            <th class="freeze-cell1_th dhead text-nowrap">Uraian</th>
                                             @foreach ($bulanView as $d)
-                                                <th class="freeze-cell1_th dhead text-center">{{ $d->nm_bulan }}
+                                                <th class="freeze-cell1_th dhead text-nowrap text-center">
+                                                    {{ $d->nm_bulan }}
                                                     {{ date('Y') }}</th>
-                                                <th class="freeze-cell1_th dhead"></th>
+                                                <th class="freeze-cell1_th dhead text-nowrap"></th>
                                             @endforeach
-                                            <th class="freeze-cell1_th dhead text-center" width="150"></th>
+                                            <th class="freeze-cell1_th dhead text-nowrap text-center" width="150">
+                                            </th>
 
                                         </tr>
                                         <tr>
