@@ -168,7 +168,7 @@
                         </th>
                         <th class="dhead freeze-cell_th1 table_layer ">Umur <br> 85 mgg</th>
                         <th class="dhead table_layer th_atas" width="5%" colspan="2">Populasi</th>
-                        <th class="dhead table_layer th_atas" colspan="7">Data Telur</th>
+                        <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
                         <th class="dhead table_layer th_atas" colspan="5">KUML</th>
@@ -201,9 +201,9 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">
+                        {{-- <th class="dhead table_layer th_atas2">
                             ttl <br> selisih <br> (kg/butir)<br> 1 minggu
-                        </th>
+                        </th> --}}
 
                         <th class="dhead table_layer th_atas2">hd <br> p <br> hh (%)<br>
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
@@ -370,7 +370,7 @@
                                 <br> &nbsp;
                             </td>
 
-                            <td align="center" class="butir td_layer">
+                            {{-- <td align="center" class="butir td_layer">
                                 &nbsp; <br>
 
                                 {{ number_format(
@@ -380,7 +380,7 @@
                                 <br>
                                 {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }}
                                 <br> &nbsp;
-                            </td>
+                            </td> --}}
                             <td align="center" class="hd perday (%) td_layer">
                                 {{-- {{$k->pcs}} --}}
                                 &nbsp; <br>
@@ -566,11 +566,11 @@
                             <br>
                             {{ number_format($butir, 0) }}
                         </th>
-                        <th class="dhead text-end table_layer">
+                        {{-- <th class="dhead text-end table_layer">
                             {{ number_format($kg_minggu, 1) }}
                             <br>
                             {{ number_format($butir_minggu, 0) }}
-                        </th>
+                        </th> --}}
                         {{-- <th class="dhead"></th> --}}
 
                         <th class="dhead table_layer"> </th>
