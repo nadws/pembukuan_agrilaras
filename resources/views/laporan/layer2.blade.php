@@ -573,7 +573,7 @@
                         </th> --}}
                         {{-- <th class="dhead"></th> --}}
 
-                        <th class="dhead table_layer"> </th>
+                        <th class="dhead table_layer">{{ number_format(($pcs / $ayam_akhir) * 100, 0) }}</th>
                         <th class="dhead table_layer"></th>
                         {{-- <th class="dhead"></th> --}}
                         <th class="dhead table_layer"></th>
