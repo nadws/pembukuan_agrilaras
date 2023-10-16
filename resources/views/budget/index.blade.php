@@ -111,13 +111,15 @@
                                             }
                                         @endphp
                                         <tr>
-                                            <th class="freeze-cell1_th dhead">Uraian</th>
+                                            <th class="freeze-cell1_th dhead text-nowrap">Uraian</th>
                                             @foreach ($bulanView as $d)
-                                                <th class="freeze-cell1_th dhead text-center">{{ $d->nm_bulan }}
+                                                <th class="freeze-cell1_th dhead text-nowrap text-center">
+                                                    {{ $d->nm_bulan }}
                                                     {{ date('Y') }}</th>
-                                                <th class="freeze-cell1_th dhead"></th>
+                                                <th class="freeze-cell1_th dhead text-nowrap"></th>
                                             @endforeach
-                                            <th class="freeze-cell1_th dhead text-center" width="150"></th>
+                                            <th class="freeze-cell1_th dhead text-nowrap text-center" width="150">
+                                            </th>
 
                                         </tr>
                                         <tr>
@@ -154,7 +156,7 @@
                                                             {{ number_format($debit, 1) }}
                                                         </a>
                                                     </td>
-                                                    <td>{{ number_format(!empty($debit) ? (!empty($budget->rupiah) ? ($debit / $budget->rupiah) * 100 : 0) : 0, 0) }}%
+                                                    <td>{{ number_format($debit != 0 ? ($debit / $ttl) * 100 : 0, 0) }}%
                                                     </td>
                                                 @endforeach
 
