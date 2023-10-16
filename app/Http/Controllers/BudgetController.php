@@ -88,12 +88,11 @@ class BudgetController extends Controller
     public function create(Request $r)
     {
         $cek = DB::table('budget')->where('tgl', date('Y-m-01'))->first();
-        dd($cek);
-        if(!empty($cek)){
-            DB::table('budget')->where('tgl', date('Y-m-01'))->update([
-                'tgl_hapus' => now()
-            ]);
-        }
+        // if(!empty($cek)){
+        //     DB::table('budget')->where('tgl', date('Y-m-01'))->update([
+        //         'tgl_hapus' => now()
+        //     ]);
+        // }
         for ($i = 0; $i < count($r->id_akun); $i++) {
             if (!empty($r->budget[$i])) {
                 $budget = str()->remove(',', $r->budget[$i]);
