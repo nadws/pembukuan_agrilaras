@@ -463,14 +463,10 @@
                                 @php
 
                                 @endphp
-                                {{-- <br>
-                                {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
+                                <br>
+                                {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }}
                                 <br>
                                 &nbsp;
-
-
-
-
                             </td>
                             {{-- vitamin --}}
                             <td class="td_layer">
