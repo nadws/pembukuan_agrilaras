@@ -15,6 +15,7 @@
     openPnjl: false,
     openPbi: false,
     openBiaya: false,
+    openBiayaProyek: false,
     openUangKeluar: false,
     openUangKeluarProyek: false,
 }">
@@ -226,6 +227,15 @@
                 $ttl_budget += empty($budget->rupiah) ? 0 : $budget->rupiah;
             @endphp
         @endforeach
+        @php
+            $total_b_p = 0;
+
+        @endphp
+        @foreach ($biaya_proyek as $b)
+            @php
+                $total_b_p += $b->debit;
+            @endphp
+        @endforeach
         <form id="save_budget">
             <input type="hidden" name="tgl" value="{{ $tgl1 }}">
             <table class="table table-bordered">
@@ -233,13 +243,15 @@
                     <tr>
                         <th class="dhead2">Total Uang Keluar</th>
                         {{-- <th class="dhead2 text-end">Rp {{ number_format($ttl_budget, 0) }}</th> --}}
-                        <th class="dhead2 text-end" style="white-space: nowrap">Rp {{ number_format($total_b, 1) }}
+                        <th class="dhead2 text-end" style="white-space: nowrap">Rp
+                            {{ number_format($total_b + $total_b_p, 1) }}
                         </th>
                     </tr>
                     <tr>
-                        <td class="fw-bold" colspan="2">Biaya <button type="button"
+                        <td class="fw-bold">Biaya Cost <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
                                 <i class="fas fa-caret-down"></i></button></td>
+                        <td class="text-end">{{ number_format($total_b, 0) }}</td>
                         {{-- <td class="fw-bold">Budget </td> --}}
                         {{-- <td class="fw-bold">Biaya <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
@@ -267,6 +279,35 @@
                         <td colspan="2"></td>
                         <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
                     </tr> --}}
+
+                    <tr>
+                        <td class="fw-bold">Biaya Proyek <button type="button"
+                                class="btn btn-primary btn-sm btn-buka float-end"
+                                @click="openBiayaProyek = ! openBiayaProyek">
+                                <i class="fas fa-caret-down"></i></button></td>
+                        <td class=" text-end">{{ number_format($total_b_p, 0) }} </td>
+                        {{-- <td class="fw-bold">Biaya <button type="button"
+                                class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
+                                <i class="fas fa-caret-down"></i></button></td> --}}
+                    </tr>
+                    @foreach ($biaya_proyek as $b)
+                        @php
+                            $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $b->id_akun");
+                        @endphp
+                        <tr x-show="openBiayaProyek">
+                            <td><a target="_blank"
+                                    href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
+                            </td>
+                            {{-- <td>
+                                <input type="hidden" name="id_akun_budget[]" value="{{ $b->id_akun }}">
+                                <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
+                                    class="form-control budget_uang" style="font-size: 13px"
+                                    value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
+                            </td> --}}
+                            <td align="right">Rp {{ number_format($b->debit, 1) }}</td>
+
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </form>
