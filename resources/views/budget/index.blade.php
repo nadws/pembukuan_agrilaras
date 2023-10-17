@@ -34,6 +34,7 @@
                 /* Sesuaikan dengan tinggi .freeze-cell1_th */
                 left: 0px;
             }
+
             .freeze-cell3_td {
                 position: sticky;
                 z-index: 19;
@@ -44,10 +45,8 @@
             }
         </style>
         <div class="row">
-
+            
             <div class="col-lg-10">
-
-
                 <form method="post" action="{{ route('budget.create') }}">
                     @csrf
                     <div class="card">
@@ -134,11 +133,11 @@
                                             </th>
                                             @foreach ($bulanView as $d)
                                                 <th class="freeze-cell1_th dhead text-nowrap text-center">
-                                                    {{ $d->nm_bulan }}
-                                                    {{ date('Y') }}</th>
+                                                    Actual {{ str()->substr($d->nm_bulan,0,3) }}
+                                                    {{ request()->get('tahun') ?? date('Y') }}</th>
                                                 <th class="freeze-cell1_th dhead text-nowrap"></th>
                                             @endforeach
-                                            
+
 
                                         </tr>
                                         <tr>
@@ -154,7 +153,8 @@
                                     <tbody>
                                         @foreach ($biaya as $b)
                                             <tr>
-                                                <td class="freeze-cell2_td" style="background-color: #F2F7FF">{{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                                <td class="freeze-cell2_td" style="background-color: #F2F7FF">
+                                                    {{ ucwords(strtolower($b->nm_akun)) }}</td>
                                                 <td class="freeze-cell3_td" style="background-color: #F2F7FF">
                                                     <input type="text" style="width: 120px;"
                                                         value="{{ $budget->rupiah ?? 0 }}"
@@ -185,7 +185,7 @@
                                                     </td>
                                                 @endforeach
 
-                                                
+
 
                                             </tr>
                                         @endforeach
