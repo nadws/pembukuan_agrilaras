@@ -168,7 +168,7 @@
                         </th>
                         <th class="dhead freeze-cell_th1 table_layer ">Umur <br> 85 mgg</th>
                         <th class="dhead table_layer th_atas" width="5%" colspan="2">Populasi</th>
-                        <th class="dhead table_layer th_atas" colspan="7">Data Telur</th>
+                        <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
                         <th class="dhead table_layer th_atas" colspan="5">KUML</th>
@@ -201,9 +201,9 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">
+                        {{-- <th class="dhead table_layer th_atas2">
                             ttl <br> selisih <br> (kg/butir)<br> 1 minggu
-                        </th>
+                        </th> --}}
 
                         <th class="dhead table_layer th_atas2">hd <br> p <br> hh (%)<br>
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
@@ -222,7 +222,7 @@
                         {{-- pakan --}}
                         <th class="dhead table_layer th_atas2">kg <br> (gr/ekor) / p <br>(day)</th>
                         {{-- KUML --}}
-                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) </th>
+                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2 Harga </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
@@ -370,15 +370,17 @@
                                 <br> &nbsp;
                             </td>
 
-                            <td align="center" class="butir td_layer">
+                            {{-- <td align="center" class="butir td_layer">
                                 &nbsp; <br>
-                                {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }} <br>
+
                                 {{ number_format(
                                     $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180),
                                     1,
                                 ) }}
+                                <br>
+                                {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }}
                                 <br> &nbsp;
-                            </td>
+                            </td> --}}
                             <td align="center" class="hd perday (%) td_layer">
                                 {{-- {{$k->pcs}} --}}
                                 &nbsp; <br>
@@ -458,16 +460,8 @@
                                 {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
                                 <br>
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
-                                @php
-
-                                @endphp
-                                {{-- <br>
-                                {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
                                 <br>
-                                &nbsp;
-
-
-
+                                {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }}
 
                             </td>
                             {{-- vitamin --}}
@@ -564,14 +558,15 @@
                             <br>
                             {{ number_format($butir, 0) }}
                         </th>
-                        <th class="dhead text-end table_layer">
+                        {{-- <th class="dhead text-end table_layer">
                             {{ number_format($kg_minggu, 1) }}
                             <br>
                             {{ number_format($butir_minggu, 0) }}
-                        </th>
+                        </th> --}}
                         {{-- <th class="dhead"></th> --}}
 
-                        <th class="dhead table_layer"> </th>
+                        <th class="dhead table_layer">{{ number_format(($pcs / $ayam_akhir) * 100, 0) }} <br> <br>
+                            {{ number_format(($pcs / $ayam_awal) * 100, 0) }}</th>
                         <th class="dhead table_layer"></th>
                         {{-- <th class="dhead"></th> --}}
                         <th class="dhead table_layer"></th>

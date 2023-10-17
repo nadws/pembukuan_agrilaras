@@ -39,7 +39,9 @@
                             <td class="text-end">Rp. {{ number_format($i->qty * $i->h_satuan, 0) }}</td>
                             <td>{{ $i->total_bayar != '0' ? 'Unpaid' : 'Paid' }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#edit_ayam"
+                                    class="btn btn-sm btn-warning edit" no_nota="{{ $i->no_nota }}"><i
+                                        class="fas fa-edit"></i></a>
                                 <a class="btn btn-sm btn-danger delete_nota" no_nota="{{ $i->no_nota }}"
                                     href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
                                         class="fas fa-trash"></i>
@@ -141,7 +143,7 @@
                                     <input type="text" class="form-control debit debit1" count="1"
                                         style="text-align: right">
                                     <input type="hidden" name="debit[]"
-                                        class="form-control debit_biasa debit_biasa1" value="0">
+                                        class="form-control debit_biasa debit_biasa1" value="" required>
                                 </div>
                                 <div class="col-lg-3 mt-2">
                                     <label for="">Kredit</label>
@@ -189,6 +191,12 @@
                     </div>
                 </x-theme.modal>
             </form>
+            <form action="{{ route('save_penjualan_ayam') }}" method="post">
+                @csrf
+                <x-theme.modal title="Edit Penjualan ayam" size="modal-lg-max_custome" idModal="edit_ayam">
+                    <div id="edit_penjualan"></div>
+                </x-theme.modal>
+            </form>
 
         </section>
         @section('js')
@@ -197,6 +205,22 @@
                     $(document).on('click', '.delete_nota', function() {
                         var no_nota = $(this).attr('no_nota');
                         $('.no_nota').val(no_nota);
+                    });
+                    $(document).on('click', '.edit', function() {
+                        var no_nota = $(this).attr('no_nota');
+                        $.ajax({
+                            type: "get",
+                            url: "{{ route('edit_ayam') }}",
+                            data: {
+                                no_nota: no_nota
+                            },
+                            success: function(r) {
+                                $("#edit_penjualan").html(r);
+                                $('.select2-edit').select2({
+                                    dropdownParent: $('#edit_ayam .modal-content')
+                                });
+                            }
+                        });
                     });
                     $(document).on("keyup", ".ekor", function() {
                         var ekor = $('.ekor').val();
@@ -222,6 +246,29 @@
                         $(".total").text(totalRupiahall);
 
                     });
+                    $(document).on("keyup", ".ekor2", function() {
+                        var ekor = $('.ekor2').val();
+                        var h_satuan = $('.h_satuan2').val();
+                        var ttl_rp = parseFloat(ekor) * parseFloat(h_satuan);
+                        var total_kredit = 0;
+                        $(".kredit_biasa2").each(function() {
+                            total_kredit += parseFloat($(this).val());
+                        });
+                        var total_all_kredit = ttl_rp + total_kredit;
+
+                        var totalRupiahall = ttl_rp.toLocaleString("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                        });
+                        var totalkreditall = total_all_kredit.toLocaleString("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                        });
+                        $('.ttl_rp2').val(ttl_rp);
+                        $(".total_kredit2").text(totalkreditall)
+                        $(".total2").text(totalRupiahall);
+
+                    });
                     $(document).on("keyup", ".h_satuan", function() {
                         var ekor = $('.ekor').val();
                         var h_satuan = $('.h_satuan').val();
@@ -245,6 +292,31 @@
                         $('.ttl_rp').val(ttl_rp);
                         $(".total_kredit").text(totalkreditall)
                         $(".total").text(totalRupiahall);
+
+                    });
+                    $(document).on("keyup", ".h_satuan2", function() {
+                        var ekor = $('.ekor2').val();
+                        var h_satuan = $('.h_satuan2').val();
+                        var ttl_rp = parseFloat(ekor) * parseFloat(h_satuan);
+                        var total_kredit = 0;
+                        $(".kredit_biasa2").each(function() {
+                            total_kredit += parseFloat($(this).val());
+                        });
+                        var total_all_kredit = ttl_rp + total_kredit;
+
+                        var totalRupiahall = ttl_rp.toLocaleString("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                        });
+                        var totalkreditall = total_all_kredit.toLocaleString("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                        });
+
+
+                        $('.ttl_rp2').val(ttl_rp);
+                        $(".total_kredit2").text(totalkreditall)
+                        $(".total2").text(totalRupiahall);
 
                     });
                     var count = 2;
