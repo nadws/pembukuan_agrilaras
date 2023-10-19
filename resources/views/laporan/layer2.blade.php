@@ -222,7 +222,7 @@
                         {{-- pakan --}}
                         <th class="dhead table_layer th_atas2">kg <br> (gr/ekor) / p <br>(day)</th>
                         {{-- KUML --}}
-                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2 Harga </th>
+                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2Rp</th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
