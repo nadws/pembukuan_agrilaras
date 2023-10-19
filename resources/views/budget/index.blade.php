@@ -25,12 +25,28 @@
                 /* Sesuaikan dengan tinggi .freeze-cell1_th */
                 left: 0;
             }
+
+            .freeze-cell2_td {
+                position: sticky;
+                z-index: 20;
+                /* Kurangi z-index agar berada di bawah .freeze-cell1_th */
+                top: 0;
+                /* Sesuaikan dengan tinggi .freeze-cell1_th */
+                left: 0px;
+            }
+
+            .freeze-cell3_td {
+                position: sticky;
+                z-index: 19;
+                /* Kurangi z-index agar berada di bawah .freeze-cell1_th */
+                top: 0;
+                /* Sesuaikan dengan tinggi .freeze-cell1_th */
+                left: 65px;
+            }
         </style>
         <div class="row">
-
-            <div class="col-lg-12">
-
-
+            
+            <div class="col-lg-10">
                 <form method="post" action="{{ route('budget.create') }}">
                     @csrf
                     <div class="card">
@@ -112,30 +128,39 @@
                                         @endphp
                                         <tr>
                                             <th class="freeze-cell1_th dhead text-nowrap">Uraian</th>
-                                            @foreach ($bulanView as $d)
-                                                <th class="freeze-cell1_th dhead text-nowrap text-center">
-                                                    {{ $d->nm_bulan }}
-                                                    {{ date('Y') }}</th>
-                                                <th class="freeze-cell1_th dhead text-nowrap"></th>
-                                            @endforeach
+
                                             <th class="freeze-cell1_th dhead text-nowrap text-center" width="150">
                                             </th>
+                                            @foreach ($bulanView as $d)
+                                                <th class="freeze-cell1_th dhead text-nowrap text-center">
+                                                    Actual {{ str()->substr($d->nm_bulan,0,3) }}
+                                                    {{ request()->get('tahun') ?? date('Y') }}</th>
+                                                <th class="freeze-cell1_th dhead text-nowrap"></th>
+                                            @endforeach
+
 
                                         </tr>
                                         <tr>
-                                            <th class="freeze-cell2_th dhead">Total</th>
+                                            <th class="freeze-cell2_th dhead ">Nama Akun</th>
+                                            <th class="freeze-cell2_th dhead">Budget</th>
                                             @foreach ($bulanView as $d)
                                                 <th class="freeze-cell2_th dhead text-end ">
                                                     {{ number_format($totalPerBulan[$d->bulan], 1) }}</th>
                                                 <th class="freeze-cell2_th dhead">%</th>
                                             @endforeach
-                                            <th class="freeze-cell2_th dhead text-center">Budget</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($biaya as $b)
                                             <tr>
-                                                <td>{{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                                <td class="freeze-cell2_td" style="background-color: #F2F7FF">
+                                                    {{ ucwords(strtolower($b->nm_akun)) }}</td>
+                                                <td class="freeze-cell3_td" style="background-color: #F2F7FF">
+                                                    <input type="text" style="width: 120px;"
+                                                        value="{{ $budget->rupiah ?? 0 }}"
+                                                        x-mask:dynamic="$money($input)" class="form-control text-end"
+                                                        name="budget[]">
+                                                </td>
                                                 <input type="hidden" name="id_akun[]" value="{{ $b->id_akun }}">
                                                 @php
                                                     $budget = DB::table('budget')
@@ -160,12 +185,7 @@
                                                     </td>
                                                 @endforeach
 
-                                                <td>
-                                                    <input type="text" style="width: 120px;"
-                                                        value="{{ $budget->rupiah ?? 0 }}"
-                                                        x-mask:dynamic="$money($input)" class="form-control text-end"
-                                                        name="budget[]">
-                                                </td>
+
 
                                             </tr>
                                         @endforeach
