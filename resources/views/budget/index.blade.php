@@ -45,7 +45,7 @@
             }
         </style>
         <div class="row">
-            
+
             <div class="col-lg-10">
                 <form method="post" action="{{ route('budget.create') }}">
                     @csrf
@@ -133,7 +133,7 @@
                                             </th>
                                             @foreach ($bulanView as $d)
                                                 <th class="freeze-cell1_th dhead text-nowrap text-center">
-                                                    Actual {{ str()->substr($d->nm_bulan,0,3) }}
+                                                    Actual {{ str()->substr($d->nm_bulan, 0, 3) }}
                                                     {{ request()->get('tahun') ?? date('Y') }}</th>
                                                 <th class="freeze-cell1_th dhead text-nowrap"></th>
                                             @endforeach
@@ -152,6 +152,11 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($biaya as $b)
+                                            @php
+                                                $budget = DB::table('budget')
+                                                    ->where([['id_akun', $b->id_akun], ['tgl_hapus', null]])
+                                                    ->first();
+                                            @endphp
                                             <tr>
                                                 <td class="freeze-cell2_td" style="background-color: #F2F7FF">
                                                     {{ ucwords(strtolower($b->nm_akun)) }}</td>
@@ -162,11 +167,7 @@
                                                         name="budget[]">
                                                 </td>
                                                 <input type="hidden" name="id_akun[]" value="{{ $b->id_akun }}">
-                                                @php
-                                                    $budget = DB::table('budget')
-                                                        ->where([['id_akun', $b->id_akun], ['tgl_hapus', null]])
-                                                        ->first();
-                                                @endphp
+
                                                 @foreach ($bulanView as $d)
                                                     @php
                                                         $biayaPerakun = getBiayaPerakun($bulan1, $bulan2, $tahun, $b->id_akun, $d->bulan);
