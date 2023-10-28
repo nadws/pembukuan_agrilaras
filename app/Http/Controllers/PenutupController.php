@@ -230,23 +230,23 @@ class PenutupController extends Controller
 
 
         $hutang = $uang_ditarik->debit - $biaya_admin->debit - $uang_keluar->kredit;
-            dd($hutang);
-        if ($hutang < 0) {
-            $data = [
-                'id_akun' => 19,
-                'kredit' => $hutang * -1,
-                'debit' => 0,
-                'ket' => 'Saldo Penutup',
-                'id_buku' => '5',
-                'no_nota' => "HH-$no_nota",
-                'tgl' => $tgl2,
-                'tgl_dokumen' => $tgl2,
-                'admin' => auth()->user()->name,
+        //     dd($hutang);
+        // if ($hutang < 0) {
+        //     $data = [
+        //         'id_akun' => 19,
+        //         'kredit' => $hutang * -1,
+        //         'debit' => 0,
+        //         'ket' => 'Saldo Penutup',
+        //         'id_buku' => '5',
+        //         'no_nota' => "HH-$no_nota",
+        //         'tgl' => $tgl2,
+        //         'tgl_dokumen' => $tgl2,
+        //         'admin' => auth()->user()->name,
 
-            ];
-            DB::table('jurnal')->insert($data);
-        } else {
-        }
+        //     ];
+        //     DB::table('jurnal')->insert($data);
+        // } else {
+        // }
 
 
 
