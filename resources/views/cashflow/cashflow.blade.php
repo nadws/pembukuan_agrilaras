@@ -190,6 +190,14 @@
                     {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit, 0) }}
                 </td>
             </tr>
+            <tr>
+                <td class="fw-bold"><a target="_blank"
+                        href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
+                </td>
+                <td class="fw-bold" align="right"><a href="">Rp
+                        {{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
+                </td>
+            </tr>
         </table>
     </div>
     <div class="col-lg-6">

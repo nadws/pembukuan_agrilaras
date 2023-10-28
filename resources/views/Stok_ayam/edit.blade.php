@@ -2,9 +2,9 @@
     <div class="col-lg-4">
         <label for="">Tanggal</label>
         <input type="date" class="form-control" value="{{ $invoice->tgl }}" name="tgl">
-        <input type="text" class="form-control" value="{{ $no_nota }}" name="no_nota">
-        <input type="text" class="form-control" value="{{ $invoice->urutan_customer }}" name="urutan_customer">
-        <input type="text" class="form-control" value="{{ $invoice->urutan }}" name="urutan">
+        <input type="hidden" class="form-control" value="{{ $no_nota }}" name="no_nota">
+        <input type="hidden" class="form-control" value="{{ $invoice->urutan_customer }}" name="urutan_customer">
+        <input type="hidden" class="form-control" value="{{ $invoice->urutan }}" name="urutan">
     </div>
     <div class="col-lg-4">
         <label for="">Customer</label>

@@ -131,6 +131,14 @@ class CashflowController extends Controller
             'uangbiayaproyek' => CashflowModel::uangBiaya($tgl1, $tgl2, '7'),
             'biaya_admin' => DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
             '$tgl1' and '$tgl2' and a.id_buku = '6' "),
+            'hutang_herry' => DB::selectOne("SELECT a.id_akun, a.nm_akun, b.debit, b.kredit
+            FROM akun as a 
+            left join (
+            SELECT a.id_akun, sum(a.kredit) as kredit , sum(a.debit) as debit
+            FROM jurnal as a 
+            where a.tgl BETWEEN '2023-10-01' and '2023-10-28' and a.id_akun = '19'
+            ) as b on b.id_akun = a.id_akun
+            where b.id_akun = '19';"),
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2,
             'tgl1' => $tgl1,

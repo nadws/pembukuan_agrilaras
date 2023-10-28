@@ -57,7 +57,8 @@
                 <select name="id_akun[]" id="" class="select pilih_akun pilih_akun1" count="1" required>
                     <option value="">Pilih</option>
                     @foreach ($akun as $a)
-                    <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
+                        <option value="{{ $a->id_akun }}" {{ $id_akun == $a->id_akun ? 'SELECTED' : '' }}>
+                            {{ $a->nm_akun }}</option>
                     @endforeach
                 </select>
                 <div class="">
@@ -115,7 +116,8 @@
                 <select name="id_akun[]" id="" class="select pilih_akun pilih_akun2" count="2" required>
                     <option value="">Pilih</option>
                     @foreach ($akun as $a)
-                    <option value="{{$a->id_akun}}">{{$a->nm_akun}}</option>
+                        <option value="{{ $a->id_akun }}">
+                            {{ $a->nm_akun }}</option>
                     @endforeach
                 </select>
                 <div class="">
@@ -145,10 +147,12 @@
             </td>
             <td style="vertical-align: top;">
                 <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="2">
-                <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0" name="kredit[]">
+                <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0"
+                    name="kredit[]">
                 <input type="hidden" class="form-control id_klasifikasi2" value="0" name="id_klasifikasi[]">
                 <input type="hidden" class="form-control nilai nilai2" value="0">
-                <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah kredit
+                <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah
+                    kredit
                 </p>
             </td>
             {{-- <td style="vertical-align: top;">

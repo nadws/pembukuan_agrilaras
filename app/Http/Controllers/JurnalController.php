@@ -131,6 +131,7 @@ class JurnalController extends Controller
             'proyek' => proyek::where('status', 'berjalan')->get(),
             'suplier' => DB::table('tb_suplier')->get(),
             'id_buku' => $r->id_buku,
+            'id_akun' => $r->id_akun,
             'kategori' => $r->kategori ?? 'aktiva',
             'akun' => DB::select("SELECT * FROM akun as a where a.id_akun in('43','9') and a.nonaktif = 'T'")
 
@@ -160,13 +161,14 @@ class JurnalController extends Controller
         echo '<option value="tambah_proyek">+Proyek</option>';
     }
 
-    public function load_menu()
+    public function load_menu(Request $r)
     {
         $data =  [
             'title' => 'Jurnal Umum',
             'akun' => Akun::where('nonaktif', 'T')->get(),
             'proyek' => proyek::all(),
-            'satuan' => DB::table('tb_satuan')->get()
+            'satuan' => DB::table('tb_satuan')->get(),
+            'id_akun' => $r->id_akun
         ];
         return view('jurnal.load_menu', $data);
     }

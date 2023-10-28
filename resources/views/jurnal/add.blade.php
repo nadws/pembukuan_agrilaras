@@ -37,12 +37,12 @@
                     <input type="text" class="form-control" name="no_nota" value="JU-{{ $max }}" readonly>
                 </div>
                 @if ($id_buku == '12')
-                <div class="col-lg-3">
-                    <label for="">Proyek</label>
-                    <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
+                    <div class="col-lg-3">
+                        <label for="">Proyek</label>
+                        <select name="id_proyek" id="select2" class="proyek proyek_berjalan">
 
-                    </select>
-                </div>
+                        </select>
+                    </div>
                 @endif
 
                 <div class="col-lg-3">
@@ -50,7 +50,7 @@
                     <select name="id_suplier" class="select2suplier form-control">
                         <option value="">- Pilih Suplier -</option>
                         @foreach ($suplier as $p)
-                        <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
+                            <option value="{{ $p->id_suplier }}">{{ $p->nm_suplier }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -156,28 +156,61 @@
 
 
     @section('scripts')
-    <script>
-        $(".select2suplier").select2()
+        <script>
+            $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
 
                 function load_menu() {
-                    $.ajax({
-                        method: "GET",
-                        url: "/load_menu",
-                        dataType: "html",
-                        success: function(hasil) {
-                            $("#load_menu").html(hasil);
-                            $('.select').select2({
-                                language: {
-                                    searching: function() {
-                                        $('.select2-search__field').focus();
-                                    }
-                                }
-                            });
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var id_akun = urlParams.get('id_akun');
 
-                        },
-                    });
+
+                    if (id_akun) {
+                        $.ajax({
+                            method: "GET",
+                            url: "/load_menu",
+                            dataType: "html",
+                            data: {
+                                id_akun: id_akun
+                            },
+                            success: function(hasil) {
+                                $("#load_menu").html(hasil);
+                                $('.select').select2({
+                                    language: {
+                                        searching: function() {
+                                            $('.select2-search__field').focus();
+                                        }
+                                    }
+                                });
+
+                            },
+                        });
+                    } else {
+                        var defaultIdAkun = 'default_value';
+                        $.ajax({
+                            method: "GET",
+                            url: "/load_menu",
+                            dataType: "html",
+                            data: {
+                                id_akun: defaultIdAkun
+                            },
+                            success: function(hasil) {
+                                $("#load_menu").html(hasil);
+                                $('.select').select2({
+                                    language: {
+                                        searching: function() {
+                                            $('.select2-search__field').focus();
+                                        }
+                                    }
+                                });
+
+                            },
+                        });
+                    }
+
+
+
                 }
 
                 $(document).on("click", ".remove_baris", function() {
@@ -375,9 +408,9 @@
 
                 aksiBtn("form");
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".pilih_akun", function() {
                     var count = $(this).attr("count");
                     var id_akun = $(".pilih_akun" + count).val();
@@ -392,7 +425,7 @@
                         success: function(data) {
                             var id_klasifikasi = $(".id_klasifikasi" + count).val(data[
                                 'id_klasifikasi']);
-                                $(".nilai" + count).val(data['nilai'])
+                            $(".nilai" + count).val(data['nilai'])
                             var nilai = data['nilai'];
 
                             // if (nilai == 1) {
@@ -414,10 +447,10 @@
 
                             if (nilai != 1) {
                                 $('.peringatan_akun' + count).attr("hidden", true);
-                               
+
                             } else {
                                 $('.peringatan_akun' + count).attr("hidden", false);
-                                    setTimeout(function() {
+                                setTimeout(function() {
                                     $('.peringatan_akun' + count).removeClass("vibrate");
                                 }, 1000);
                             }
@@ -458,9 +491,9 @@
                     });
                 });
             });
-    </script>
-    <script>
-        $(document).ready(function() {
+        </script>
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".proyek", function() {
                     var tambah = $(this).val();
                     if (tambah == 'tambah_proyek') {
@@ -520,6 +553,6 @@
                     });
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>
