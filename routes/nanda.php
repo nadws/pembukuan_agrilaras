@@ -423,6 +423,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit_ayam', 'edit_ayam')->name('edit_ayam');
         Route::get('/bayar_piutang_ayam', 'bayar_piutang')->name('bayar_piutang_ayam');
         Route::post('/save_penjualan_ayam', 'save_penjualan_ayam')->name('save_penjualan_ayam');
+        Route::post('/edit_save_penjualan_ayam', 'edit_save_penjualan_ayam')->name('edit_save_penjualan_ayam');
         Route::post('/save_bayar_piutang_ayam', 'save_bayar_piutang')->name('save_bayar_piutang_ayam');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {

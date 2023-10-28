@@ -10,7 +10,6 @@
                 <x-theme.btn_filter />
             </div>
         </div>
-
     </x-slot>
 
     <x-slot name="cardBody">
@@ -191,7 +190,7 @@
                     </div>
                 </x-theme.modal>
             </form>
-            <form action="{{ route('save_penjualan_ayam') }}" method="post">
+            <form action="{{ route('edit_save_penjualan_ayam') }}" method="post">
                 @csrf
                 <x-theme.modal title="Edit Penjualan ayam" size="modal-lg-max_custome" idModal="edit_ayam">
                     <div id="edit_penjualan"></div>
