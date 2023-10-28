@@ -194,8 +194,8 @@
                 <td class="fw-bold"><a target="_blank"
                         href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
                 </td>
-                <td class="fw-bold" align="right"><a href="">Rp
-                        {{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
+                <td class="fw-bold" align="right"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp{{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
                 </td>
             </tr>
         </table>
@@ -215,6 +215,14 @@
             <tr>
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp {{ number_format($t_uang - $biaya_admin->debit, 0) }}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold"><a target="_blank"
+                        href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
+                </td>
+                <td class="fw-bold" align="right"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp{{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
                 </td>
             </tr>
         </table>
