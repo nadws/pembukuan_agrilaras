@@ -230,7 +230,7 @@ class PenutupController extends Controller
 
 
         $hutang = $uang_ditarik->debit - $biaya_admin->debit - $uang_keluar->kredit;
-
+            dd($hutang);
         if ($hutang < 0) {
             $data = [
                 'id_akun' => 19,
