@@ -233,7 +233,7 @@ class PenutupController extends Controller
 
         if ($hutang < 0) {
             $data = [
-                'id_akun' => 96,
+                'id_akun' => 19,
                 'kredit' => $hutang * -1,
                 'debit' => 0,
                 'ket' => 'Saldo Penutup',
