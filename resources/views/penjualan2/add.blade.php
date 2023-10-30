@@ -38,7 +38,8 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <input type="date" value="{{ date('Y-m-d') }}" class="form-control" name="tgl">
+                                    <input type="date" value="{{ date('Y-m-d') }}" class="form-control"
+                                        name="tgl">
                                 </td>
                                 <td>
                                     <input readonly value="PUM-{{ $no_nota }}" type="text" required
@@ -48,13 +49,7 @@
                                 </td>
 
                                 <td>
-                                    <select required name="id_customer" class="form-control select2" id="">
-                                        <option value="">- Pilih Customer -</option>
-                                        @foreach ($customer as $d)
-                                        <option value="{{ $d->id_customer }}">
-                                            {{ $d->nm_customer }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div id="loadSelectPelanggan"></div>
                                 </td>
 
                                 <td>
@@ -78,30 +73,23 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <select name="id_produk[]" required class="form-control select2 produk-change"
-                                        id="">
-                                        <option value="">- Pilih Produk -</option>
-                                        @foreach ($produk as $d)
-                                        <option value="{{ $d->id_produk }}">{{ $d->nm_produk }}
-                                            ({{ strtoupper($d->satuan->nm_satuan) }})
-                                        </option>
-                                        @endforeach
-                                    </select>
+                                    <div id="loadSelectProduk"></div>
                                 </td>
                                 <td>
-                                    <input count="1" name="qty[]" value="0" type="text" class="form-control qty qty1">
+                                    <input count="1" name="qty[]" value="0" type="text"
+                                        class="form-control qty qty1">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control dikanan setor-nohide text-end" value="Rp. 0"
-                                        count="1">
-                                    <input type="hidden" class="form-control dikanan setor-hide setor-hide1" value=""
-                                        name="rp_satuan[]">
+                                    <input type="text" class="form-control dikanan setor-nohide text-end"
+                                        value="Rp. 0" count="1">
+                                    <input type="hidden" class="form-control dikanan setor-hide setor-hide1"
+                                        value="" name="rp_satuan[]">
                                 </td>
                                 <td>
                                     <input readonly type="text" class="form-control dikanan ttlrp-nohide1 text-end"
                                         value="Rp. 0" count="1">
-                                    <input type="hidden" class="form-control dikanan ttlrp-hide ttlrp-hide1" value=""
-                                        name="total_rp[]">
+                                    <input type="hidden" class="form-control dikanan ttlrp-hide ttlrp-hide1"
+                                        value="" name="total_rp[]">
                                 </td>
                             </tr>
                         </tbody>
@@ -129,25 +117,29 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <select required name="akun_pembayaran[]" class="form-control select2" id="">
+                                        <select required name="akun_pembayaran[]" class="form-control select2"
+                                            id="">
                                             <option value="">- Pilih Akun -</option>
                                             @foreach ($akun as $d)
-                                            <option value="{{ $d->id_akun }}">{{ $d->nm_akun }}
-                                            </option>
+                                                <option value="{{ $d->id_akun }}">{{ $d->nm_akun }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control dikanan pembayaranDebit-nohide text-end"
-                                            value="Rp. 0" count="1">
+                                        <input type="text"
+                                            class="form-control dikanan pembayaranDebit-nohide text-end" value="Rp. 0"
+                                            count="1">
                                         <input type="hidden" class="form-control dikanan debit pembayaranDebit-hide1"
                                             value="0" name="debit[]">
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control dikanan pembayaranKredit-nohide text-end"
-                                            value="Rp. 0" count="1">
-                                        <input type="hidden" class="form-control dikanan kredit pembayaranKredit-hide1"
-                                            value="0" name="kredit[]">
+                                        <input type="text"
+                                            class="form-control dikanan pembayaranKredit-nohide text-end" value="Rp. 0"
+                                            count="1">
+                                        <input type="hidden"
+                                            class="form-control dikanan kredit pembayaranKredit-hide1" value="0"
+                                            name="kredit[]">
                                     </td>
                                     <td>
                                         <button type="button" class="btn rounded-pill tbh_pembayaran"><i
@@ -175,6 +167,48 @@
 
                 </div>
             </section>
+
+            <x-theme.modal title="tambah customer" idModal="tbhCustomer" btnSave="T">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="form-group">
+                            <label for="">Nama Customer</label>
+                            <input type="text" id="nm_customer" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="">Aksi</label><br>
+                        <button class="btn btn-sm btn-primary" id="btnTbhCustomer" type="button">Simpan</button>
+                    </div>
+                </div>
+            </x-theme.modal>
+            <x-theme.modal title="tambah Produk" idModal="tbhProduk" btnSave="T">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="">Nama Produk</label>
+                            <input type="text" id="nm_produk" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="">Satuan</label>
+                            <select class="form-control select2-satuan" id="id_satuan">
+                                <option value="">- Pilih Satuan -</option>
+                                @foreach ($satuan as $s)
+                                    <option value="{{ $s->id_satuan }}">{{ $s->nm_satuan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="">Aksi</label><br>
+                        <button class="btn btn-sm btn-primary" id="btnTbhProduk" type="button">Simpan</button>
+                    </div>
+
+                </div>
+            </x-theme.modal>
+
     </x-slot>
     <x-slot name="cardFooter">
         <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>
@@ -187,13 +221,115 @@
     </x-slot>
 
 
-
     @section('scripts')
-    <script>
-        $('.select2').select2()
+        <script>
+            $('.select2').select2()
+
+
             var count = 3;
             plusRowProduk(count, 'tbh_baris', 'tbh_add')
             plusRow2(count, 'tbh_pembayaran', 'tbh_pembayaran')
+
+            function loadSelectPelanggan() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('penjualan2.selectPelanggan') }}",
+
+                    success: function(response) {
+                        $("#loadSelectPelanggan").html(response);
+                        $('.select2-pelanggan').select2()
+                    }
+                });
+            }
+            loadSelectPelanggan()
+            $(document).on('change', '.select2-pelanggan', function() {
+
+                var nilai = $(this).val()
+                if (nilai == 'tambah') {
+                    $('#tbhCustomer').modal('show')
+
+                    $(document).on('click', '#btnTbhCustomer', function() {
+                        var nama = $("#nm_customer").val()
+
+                        $.ajax({
+                            type: "GET",
+                            url: "{{ route('penjualan2.tbhCustomer') }}",
+                            data: {
+                                nama: nama
+                            },
+                            dataType: "dataType",
+                            success: function(response) {
+
+                            }
+                        });
+                        Toastify({
+                            text: "Berhasil tambah customer",
+                            duration: 3000,
+                            style: {
+                                background: "#EAF7EE",
+                                color: "#7F8B8B"
+                            },
+                            close: true,
+                            avatar: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+                        }).showToast();
+                        $('#tbhCustomer').modal('hide')
+                        loadSelectPelanggan()
+                    })
+                }
+            })
+
+            function loadSelectProduk() {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('penjualan2.selectProduk') }}",
+
+                    success: function(response) {
+                        $("#loadSelectProduk").html(response);
+                        $('.select2-produk').select2()
+                    }
+                });
+            }
+            loadSelectProduk()
+            $(document).on('change', '.produk-change', function() {
+                var nilai = $(this).val()
+                if (nilai == 'tambah') {
+                    $('#tbhProduk').modal('show')
+                    $('.select2-satuan').select2({
+                        dropdownParent: $('#tbhProduk .modal-content')
+                    });
+                    $(document).on('click', '#btnTbhProduk', function() {
+                        var nama = $("#nm_produk").val()
+                        var id_satuan = $("#id_satuan").val()
+
+                        $.ajax({
+                            type: "GET",
+                            url: "{{ route('penjualan2.tbhProduk') }}",
+                            data: {
+                                nama: nama,
+                                id_satuan: id_satuan,
+
+                            },
+                            dataType: "dataType",
+                            success: function(response) {
+                                
+                            }
+                        });
+                        Toastify({
+                            text: "Berhasil tambah produk",
+                            duration: 3000,
+                            style: {
+                                background: "#EAF7EE",
+                                color: "#7F8B8B"
+                            },
+                            close: true,
+                            avatar: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+                        }).showToast();
+                        $('#tbhProduk').modal('hide')
+                        loadSelectProduk()
+                    })
+                }
+                
+            })
 
             $(document).on("keyup", ".setor-nohide", function() {
                 var count = $(this).attr("count");
@@ -316,6 +452,6 @@
             pbyr('pembayaranDebit-nohide', 'pembayaranDebit-hide', 'pembayaranKredit-hide')
             pbyr('pembayaranKredit-nohide', 'pembayaranKredit-hide', 'pembayaranDebit-hide')
             // convertRpKoma('setor-nohide', 'setor-hide', '', 'total_kredit')
-    </script>
+        </script>
     @endsection
 </x-theme.app>

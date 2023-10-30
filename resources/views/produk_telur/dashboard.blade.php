@@ -397,7 +397,7 @@
                                     <span
                                         class="badge bg-danger">{{ empty($penjualan_umum_blmcek_mtd->jumlah) ? '0' : $penjualan_umum_blmcek_mtd->jumlah }}</span>
                                 </a>
-                                <a href="{{ route('penjualan2.index') }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('penjualan2.add') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-plus"></i>
 
                                 </a>

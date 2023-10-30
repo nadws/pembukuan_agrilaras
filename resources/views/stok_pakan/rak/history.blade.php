@@ -56,7 +56,7 @@
                                 <input type="checkbox" name="" no_nota="{{ $s->id_rak }}"
                                     piutang="{{ $s->total_rp }}" id=""
                                     class="cek_bayar {{ $max_tgl == $s->tgl ? 'checkbox' : '' }}"
-                                    {{ $max_tgl == $s->tgl ? '' : 'disabled' }}>
+                                    >
 
                             </td>
                         </tr>

@@ -274,6 +274,10 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/add', 'add')->name('add');
+            Route::get('/selectPelanggan', 'selectPelanggan')->name('selectPelanggan');
+            Route::get('/tbhCustomer', 'tbhCustomer')->name('tbhCustomer');
+            Route::get('/selectProduk', 'selectProduk')->name('selectProduk');
+            Route::get('/tbhProduk', 'tbhProduk')->name('tbhProduk');
             Route::post('/add', 'store')->name('store');
             Route::get('/tbh_add', 'tbh_add')->name('tbh_add');
             Route::get('/tbh_pembayaran', 'tbh_pembayaran')->name('tbh_pembayaran');
