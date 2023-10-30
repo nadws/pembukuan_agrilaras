@@ -10,6 +10,7 @@
         $totalBiaya = 0;
         $totalBiaya3 = 0;
         $totalBiaya2 = 0;
+        $totalBeliAsset = 0;
         $totalLaba = 0;
         $totalbkn = 0;
         $totaldisusutkan = 0;
@@ -55,6 +56,9 @@
             $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $d->id_akun");
 
             $ttl_budget_gantung += empty($budget->rupiah) ? 0 : $budget->rupiah;
+        }
+        foreach ($biayabeliasset as $d) {
+            $totalBeliAsset += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo;
         }
 
         foreach ($biaya_bkn_keluar as $d) {
@@ -308,20 +312,20 @@
                     <button type="button" class="btn btn-primary btn-sm btn-buka float-end"
                         @click="open28 = ! open28"> <i class="fas fa-caret-down"></i></button>
                 </th>
-                <th class="text-end">Rp {{ number_format($totalBiaya2, 0) }}</th>
+                <th class="text-end">Rp {{ number_format($totalBeliAsset, 0) }}</th>
                 {{-- <th class="text-end">Rp 0</th>
                 <th class="text-end">Rp {{ number_format($ttl_budget_gantung, 0) }}</th> --}}
             </tr>
-            @foreach ($biayaGantung as $a)
+            @foreach ($biayabeliasset as $a)
                 @php
                     $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $a->id_akun");
                 @endphp
                 <tr x-transition x-show="open28">
                     <td style="padding-left: 20px"><a target="_blank"
-                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $a->id_akun, 'tgl1' => '2022-01-01', 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($a->nm_akun)) }}</a>
                     </td>
                     <td style="text-align: right">Rp
-                        {{ number_format($a->debit + $a->debit_saldo, 1) }}
+                        {{ number_format($a->debit + $a->debit_saldo - $a->kredit - $a->kredit_saldo, 1) }}
                     </td>
                     {{-- <td></td>
                     <td>Rp {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}</td> --}}
@@ -329,7 +333,7 @@
             @endforeach
             <tr x-transition x-show="open28">
                 <th style="padding-left: 20px">Total Beli Asset</th>
-                <th style="text-align: right">Rp. {{ number_format($totalBiaya2, 0) }}</th>
+                <th style="text-align: right">Rp. {{ number_format($totalBeliAsset, 0) }}</th>
                 {{-- <th></th>
                 <th>Rp {{ number_format($ttl_budget_gantung, 0) }}</th> --}}
             </tr>
@@ -337,7 +341,7 @@
             <tr>
                 <td class="fw-bold">GRAND TOTAL</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $totaldisusutkan - $totalBiaya2, 0) }}
+                    {{ number_format($totalPendapatan - $totalBiaya - $ttlEbdiba - $totaldisusutkan - $totalBeliAsset, 0) }}
                 </td>
                 {{-- <td class="fw-bold" align="right">Rp 0</td>
                 <td class="fw-bold" align="right">Rp

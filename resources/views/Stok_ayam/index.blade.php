@@ -23,20 +23,21 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
                                 href="#">Penjualan Ayam</a></li>
-                        <li><a class="dropdown-item" href="{{route('piutang_ayam')}}">Piutang Ayam</a></li>
+                        <li><a class="dropdown-item" href="{{ route('piutang_ayam') }}">Piutang Ayam</a></li>
                     </ul>
                 </div>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam" class="btn btn-sm btn-primary">History
+                <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam"
+                    class="btn btn-sm btn-primary">History
                     Stok
                 </a>
-                <a href="{{route('history_ayam')}}" class="btn btn-sm btn-primary">History
+                <a href="{{ route('history_ayam') }}" class="btn btn-sm btn-primary">History
                     Penjualan
                 </a>
             </th>
         </tr>
         <tr>
             <th style="text-align: center; white-space: nowrap;" colspan="2">
-                <a href="{{route('penjualan_ayam.penyetoran')}}" class="btn btn-sm btn-primary">Penyetoran Ayam
+                <a href="{{ route('penjualan_ayam.penyetoran') }}" class="btn btn-sm btn-primary">Penyetoran Ayam
                 </a>
             </th>
         </tr>
@@ -44,7 +45,7 @@
     </table>
 </div>
 
-<form action="{{route('save_penjualan_ayam')}}" method="post">
+<form action="{{ route('save_penjualan_ayam') }}" method="post">
     @csrf
     <x-theme.modal title="Penjualan ayam" size="modal-lg-max_custome" idModal="penjualan_ayam">
         <div class="row">
@@ -57,7 +58,7 @@
                 <select name="customer" class="select2-pakan" required>
                     <option value="">Pilih Customer</option>
                     @foreach ($customer as $s)
-                    <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
+                        <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
                     @endforeach
                 </select>
             </div>
@@ -66,12 +67,13 @@
             </div>
             <div class="col-lg-4">
                 <label for="">Ekor {{ $stok_ayam_bjm->saldo_bjm }}</label>
-                <input type="number" min="0" max="{{ $stok_ayam_bjm->saldo_bjm }}" class="form-control ekor" name="qty"
-                    value="0">
+                <input type="number" min="0" max="{{ $stok_ayam_bjm->saldo_bjm }}" class="form-control ekor"
+                    name="qty" value="0">
             </div>
             <div class="col-lg-4">
                 <label for="">Harga Satuan</label>
-                <input type="text" class="form-control h_satuan" name="h_satuan" value="0" style="text-align: right">
+                <input type="text" class="form-control h_satuan" name="h_satuan" value="0"
+                    style="text-align: right">
             </div>
             <div class="col-lg-4">
                 <label for="">Total Rp</label>
@@ -101,20 +103,24 @@
                         <select name="id_akun[]" id="" class="select2-pakan">
                             <option value="">-Pilih Akun-</option>
                             @foreach ($akun as $a)
-                            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
                             @endforeach
                             <option value="66">Piutang Ayam</option>
                         </select>
                     </div>
                     <div class="col-lg-3 mt-2">
                         <label for="">Debit</label>
-                        <input type="text" class="form-control debit debit1" count="1" style="text-align: right">
-                        <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1" value="0">
+                        <input type="text" class="form-control debit debit1" count="1"
+                            style="text-align: right">
+                        <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                            value="0">
                     </div>
                     <div class="col-lg-3 mt-2">
                         <label for="">Kredit</label>
-                        <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
-                        <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1" value="0">
+                        <input type="text" class="form-control kredit kredit1" count="1"
+                            style="text-align: right">
+                        <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
+                            value="0">
                     </div>
                     <div class="col-lg-1 mt-2">
                         <label for="">aksi</label> <br>
@@ -170,21 +176,21 @@
                 </thead>
                 <tbody>
                     @php
-                    $saldo = 0;
+                        $saldo = 0;
                     @endphp
                     @foreach ($history_ayam as $no => $h)
-                    @php
-                    $saldo += $h->debit - $h->kredit;
-                    @endphp
-                    <tr>
-                        <td>{{ $no + 1 }}</td>
-                        <td style="white-space: nowrap">{{ tanggal($h->tgl) }}</td>
-                        <td align="right">{{ $h->debit }}</td>
-                        <td align="right">{{ $h->kredit }}</td>
-                        <td align="right">{{ $saldo }}</td>
-                        <td>{{ $h->kredit == 0 ? 'Ayam Masuk' : ($h->no_nota != '' ? 'Penjualan' : 'Transfer') }}
-                        </td>
-                    </tr>
+                        @php
+                            $saldo += $h->debit - $h->kredit;
+                        @endphp
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td style="white-space: nowrap">{{ tanggal($h->tgl) }}</td>
+                            <td align="right">{{ $h->debit }}</td>
+                            <td align="right">{{ $h->kredit }}</td>
+                            <td align="right">{{ $saldo }}</td>
+                            <td>{{ $h->kredit == 0 ? 'Ayam Masuk' : ($h->no_nota != '' ? 'Penjualan' : 'Transfer') }}
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>

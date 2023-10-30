@@ -484,6 +484,13 @@
                         }
                         $(".selisih").text(selisih_total);
 
+                        $("form").on("keypress", function(e) {
+                            if (e.which === 13) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+
 
                     });
                 });

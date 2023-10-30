@@ -40,7 +40,7 @@ class SaldoController extends Controller
                 'kredit' => $r->kredit[$i],
                 'ket' => 'Saldo Awal',
                 'id_buku' => '1',
-                'tgl' => date('Y-01-01'),
+                'tgl' => date('Y-12-31'),
                 'admin' => Auth::user()->name,
                 'saldo' => 'Y'
             ];

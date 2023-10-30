@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashflowModel;
+use App\Models\ProfitModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -128,6 +129,8 @@ class CashflowController extends Controller
             group by a.id_akun"),
 
             'uangbiayacosh' => CashflowModel::uangBiaya($tgl1, $tgl2, '6'),
+            'uangbiayacoshbalance' => CashflowModel::uangBiayabalance($tgl2, '6'),
+            'uangbiayaproyekbalance' => CashflowModel::uangBiayabalance($tgl2, '7'),
             'uangbiayaproyek' => CashflowModel::uangBiaya($tgl1, $tgl2, '7'),
             'biaya_admin' => DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
             '$tgl1' and '$tgl2' and a.id_buku = '6' "),
@@ -136,9 +139,9 @@ class CashflowController extends Controller
             left join (
             SELECT a.id_akun, sum(a.kredit) as kredit , sum(a.debit) as debit
             FROM jurnal as a 
-            where a.tgl BETWEEN '2023-10-01' and '2023-10-28' and a.id_akun = '19'
+            where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_akun = '19'
             ) as b on b.id_akun = a.id_akun
-            where b.id_akun = '19';"),
+            where a.id_akun = '19';"),
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2,
             'tgl1' => $tgl1,
@@ -202,5 +205,140 @@ class CashflowController extends Controller
             DB::table('akun')->where('id_akun', $r->id_akun[$x])->update($data);
         }
         return redirect()->route('controlflow')->with('sukses', 'Berhasil input akun');
+    }
+
+    function cashflowsetahun(Request $r)
+    {
+        if (empty($r->tahun)) {
+            $tahun = date('Y');
+        } else {
+            $tahun = $r->tahun;
+        }
+
+        $pendapatan = CashflowModel::cashflow_pendapatan_setahun($tahun);
+        $hutang = CashflowModel::cashflow_hutang_setahun($tahun);
+        $uang_cost = CashflowModel::cashflow_uang_cost($tahun, '6');
+        $uang_proyek = CashflowModel::cashflow_uang_cost($tahun, '7');
+
+        $data = [];
+        foreach ($pendapatan as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data[$transaction->id_akun])) {
+                $data[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data[$transaction->id_akun][$month] = $nominal;
+        }
+        $data2 = [];
+        foreach ($hutang as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->kredit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data2[$transaction->id_akun])) {
+                $data2[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data2[$transaction->id_akun][$month] = $nominal;
+        }
+        $data3 = [];
+        foreach ($uang_cost as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data3[$transaction->id_akun])) {
+                $data3[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data3[$transaction->id_akun][$month] = $nominal;
+        }
+        $data4 = [];
+        foreach ($uang_proyek as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data4[$transaction->id_akun])) {
+                $data4[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data4[$transaction->id_akun][$month] = $nominal;
+        }
+
+        $datas = [
+            'title' => 'Profit Setahun',
+            'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
+            'thn' => $tahun
+        ];
+
+        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4'), $datas);
     }
 }

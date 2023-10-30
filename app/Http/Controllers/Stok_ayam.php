@@ -337,7 +337,7 @@ class Stok_ayam extends Controller
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
         ];
         return view("Stok_ayam.history", $data);
     }

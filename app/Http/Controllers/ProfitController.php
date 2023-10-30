@@ -59,6 +59,7 @@ class ProfitController extends Controller
 
         $biaya_murni = ProfitModel::getData($tgl1, $tgl2);
         $biayaGantung = ProfitModel::getData2($tgl1, $tgl2);
+        $biayabeliasset = ProfitModel::beliasset($tgl2);
         $biaya_penyesuaian = ProfitModel::getData3($tgl1, $tgl2);
         $biaya_disusutkan = ProfitModel::getData4($tgl1, $tgl2);
         $aktiva = ProfitModel::aktiva($tgl2);
@@ -121,6 +122,7 @@ class ProfitController extends Controller
             'estimasi_telur' => $estimasi_telur,
             'estimasi_telur_bulan' => $estimasi_telur_bulan,
             'biaya_disusutkan' => $biaya_disusutkan,
+            'biayabeliasset' => $biayabeliasset,
             'aktiva' => $aktiva,
             'peralatan' => $peralatan,
 
@@ -409,8 +411,11 @@ class ProfitController extends Controller
 
         $data = [];
         foreach ($pendapatan as $transaction) {
-            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $transaction->kredit + $transaction->kredit_saldo; // Menghitung nominal
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->kredit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data[$transaction->id_akun])) {
@@ -435,8 +440,9 @@ class ProfitController extends Controller
 
         $data2 = [];
         foreach ($biaya as $transaction2) {
+
             $month = date('F', strtotime("{$transaction2->tahun}-{$transaction2->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $transaction2->debit + $transaction2->debit_saldo - $transaction2->kredit - $transaction2->kredit_saldo; // Menghitung nominal
+            $nominal = $transaction2->debit  - $transaction2->kredit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data2[$transaction2->id_akun])) {
@@ -461,7 +467,7 @@ class ProfitController extends Controller
         $data3 = [];
         foreach ($biaya_penyesuaian as $transaction3) {
             $month = date('F', strtotime("{$transaction3->tahun}-{$transaction3->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $transaction3->debit + $transaction3->debit_saldo - $transaction3->kredit - $transaction3->kredit_saldo; // Menghitung nominal
+            $nominal = $transaction3->debit  - $transaction3->kredit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data3[$transaction3->id_akun])) {
@@ -486,7 +492,7 @@ class ProfitController extends Controller
         $data4 = [];
         foreach ($biaya_disusutkan as $b) {
             $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $b->debit + $b->debit_saldo; // Menghitung nominal
+            $nominal = $b->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data4[$b->id_akun])) {

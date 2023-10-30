@@ -51,6 +51,27 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function beliasset($tgl)
+    {
+        $result = DB::select("SELECT a.id_akun, a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo, c.kredit as kredit_saldo
+            FROM akun as a
+            LEFT JOIN (
+                SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
+                FROM jurnal as b
+                WHERE b.id_buku NOT IN (5, 13) AND  b.tgl BETWEEN '2022-01-01' AND ? AND b.penutup = 'T'
+                GROUP BY b.id_akun
+            ) as b ON b.id_akun = a.id_akun
+            LEFT JOIN (
+                SELECT c.id_akun, SUM(c.debit) as debit, SUM(c.kredit) as kredit
+                FROM jurnal_saldo_sebelum_penutup as c
+                WHERE c.tgl BETWEEN '2022-01-01' AND ?
+                GROUP BY c.id_akun
+            ) as c ON c.id_akun = a.id_akun
+            WHERE a.id_klasifikasi in('6','11','12');
+        ", [$tgl, $tgl]);
+
+        return $result;
+    }
     public static function getData3($tgl1, $tgl2)
     {
         $result = DB::select("SELECT a.id_akun, a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo, c.kredit as kredit_saldo
@@ -157,63 +178,64 @@ class ProfitModel extends Model
     }
     public static function pendapatan_setahun($tahun, $id_klasifikasi)
     {
-        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, if(b.penutup = 'Y',c.kredit,b.kredit) as kredit, if(b.penutup = 'Y',c.debit,b.debit) as debit,
+        b.bulan, b.tahun
         FROM akun as a
         left join (
-         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun,b.penutup
          FROM jurnal as b
-         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  
          group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
         ) as b on b.id_akun = a.id_akun
         
         left JOIN (
           SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
-           FROM jurnal_saldo as c
+           FROM jurnal_saldo_sebelum_penutup as c
            where Year(c.tgl) = ?
            group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
-        ) as c on c.id_akun = a.id_akun
+        ) as c on c.id_akun = a.id_akun and b.tahun = c.tahun2 and b.bulan = c.bulan2
         where a.id_klasifikasi = ?;
         ", [$tahun, $tahun, $id_klasifikasi]);
         return $result;
     }
     public static function biaya_penyesuaian_setahun($tahun)
     {
-        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, if(b.penutup = 'Y',c.kredit,b.kredit) as kredit, if(b.penutup = 'Y',c.debit,b.debit) as debit, b.bulan, b.tahun, c.bulan2, c.tahun2
         FROM akun as a
         left join (
-         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun, b.penutup
          FROM jurnal as b
-         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  
          group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
         ) as b on b.id_akun = a.id_akun
         
         left JOIN (
           SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
-           FROM jurnal_saldo as c
+           FROM jurnal_saldo_sebelum_penutup as c
            where Year(c.tgl) = ?
            group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
-        ) as c on c.id_akun = a.id_akun
-        where a.id_klasifikasi = '5' and a.id_akun not in(51,58);;
+        ) as c on c.id_akun = a.id_akun and b.tahun = c.tahun2 and b.bulan = c.bulan2
+        where a.id_klasifikasi = '5' and a.id_akun not in(51,58);
         ", [$tahun, $tahun]);
         return $result;
     }
     public static function biaya_disusutkan_setahun($tahun)
     {
-        $result = DB::select("SELECT a.id_akun,a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo , c.kredit as kredit_saldo, b.bulan, b.tahun, c.bulan2, c.tahun2
+        $result = DB::select("SELECT a.id_akun,a.nm_akun, if(b.penutup = 'Y',c.kredit,b.kredit) as kredit, if(b.penutup = 'Y',c.debit,b.debit) as debit, b.bulan, b.tahun, c.bulan2, c.tahun2
         FROM akun as a
         left join (
-         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun
+         SELECT b.id_akun, sum(b.debit) as debit, sum(b.kredit) as kredit, MONTH(b.tgl) as bulan, YEAR(b.tgl) as tahun,b.penutup
          FROM jurnal as b
-         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  and b.penutup = 'T'
+         WHERE b.id_buku not in(5,13)  and Year(b.tgl) = ?  
          group by b.id_akun , MONTH(b.tgl), YEAR(b.tgl)
         ) as b on b.id_akun = a.id_akun
         
         left JOIN (
           SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit , MONTH(c.tgl) as bulan2, YEAR(c.tgl) as tahun2
-           FROM jurnal_saldo as c
+           FROM jurnal_saldo_sebelum_penutup as c
            where Year(c.tgl) = ?
            group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
-        ) as c on c.id_akun = a.id_akun
+        ) as c on c.id_akun = a.id_akun and b.tahun = c.tahun2 and b.bulan = c.bulan2
         where a.id_akun in(51,58);
         ", [$tahun, $tahun]);
         return $result;

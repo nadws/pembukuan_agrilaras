@@ -97,7 +97,7 @@
                                 <input type="hidden" class="total_biasa" name="debit_kredit"
                                     value="{{ round($total, 2) }}">
                                 <td>
-                                    {{ ucwords($akunDebit->nm_akun) }}
+                                    {{ ucwords($akunKredit->nm_akun) }}
 
                                     <input type="hidden" name="id_akun_kredit" value="52">
                                     {{-- <select name="" id="" class="select2_add" disabled>

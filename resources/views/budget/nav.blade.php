@@ -12,4 +12,8 @@
         <a class="nav-link  {{ $rot == 'profit_setahun' ? 'active' : '' }}" aria-current="page"
             href="{{ route('profit_setahun') }}">Profit</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link  {{ $rot == 'cashflow_setahun' ? 'active' : '' }}" aria-current="page"
+            href="{{ route('cashflow_setahun') }}">CashFlow</a>
+    </li>
 </ul>

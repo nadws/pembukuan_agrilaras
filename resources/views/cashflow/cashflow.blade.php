@@ -18,6 +18,8 @@
     openBiayaProyek: false,
     openUangKeluar: false,
     openUangKeluarProyek: false,
+    openUangcostbalance: false,
+    openUangproyekbalance: false,
 }">
     <div class="col-lg-6">
         @php
@@ -34,6 +36,15 @@
             foreach ($piutang2 as $u) {
                 $ttl_piut += $u->debit - $u->kredit;
             }
+
+            $ttl_cost_balance = 0;
+            foreach ($uangbiayacoshbalance as $u) {
+                $ttl_cost_balance += $u->debit - $u->kredit;
+            }
+            $ttl_proyek_balance = 0;
+            foreach ($uangbiayaproyekbalance as $u) {
+                $ttl_proyek_balance += $u->debit - $u->kredit;
+            }
         @endphp
         <table class="table table-bordered">
             <tbody>
@@ -41,6 +52,15 @@
                     <th class="dhead2">Akun</th>
                     <th class="dhead2">Rupiah</th>
                 </tr>
+                {{-- <tr>
+                    <td class="fw-bold"><a target="_blank"
+                            href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
+                    </td>
+                    <td class="fw-bold" align="right"><a target="_blank"
+                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp
+                            {{ number_format($hutang_herry->kredit, 0) }}</a>
+                    </td>
+                </tr> --}}
                 <tr>
                     <td class="fw-bold"><a href="#" onclick="event.preventDefault();" class="tmbhakun_control me-3"
                             kategori='1'>Piutang Bulan Lalu</a>
@@ -190,14 +210,17 @@
                     {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit, 0) }}
                 </td>
             </tr>
-            <tr>
-                <td class="fw-bold"><a target="_blank"
-                        href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
-                </td>
-                <td class="fw-bold" align="right"><a target="_blank"
-                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp{{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
-                </td>
+            {{-- <tr>
+                <td class="fw-bold">&nbsp;</td>
+                <td class="fw-bold">&nbsp;</td>
             </tr>
+            <tr>
+                <td class="fw-bold">Grand Total + Hutang</td>
+                <td class="fw-bold" align="right">Rp
+                    {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit + $hutang_herry->kredit, 0) }}
+                </td>
+            </tr> --}}
+
         </table>
     </div>
     <div class="col-lg-6">
@@ -215,14 +238,6 @@
             <tr>
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp {{ number_format($t_uang - $biaya_admin->debit, 0) }}
-                </td>
-            </tr>
-            <tr>
-                <td class="fw-bold"><a target="_blank"
-                        href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
-                </td>
-                <td class="fw-bold" align="right"><a target="_blank"
-                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp{{ number_format($hutang_herry->kredit - $hutang_herry->debit, 0) }}</a>
                 </td>
             </tr>
         </table>
@@ -256,6 +271,7 @@
             <input type="hidden" name="tgl" value="{{ $tgl1 }}">
             <table class="table table-bordered">
                 <tbody>
+
                     <tr>
                         <th class="dhead2">Total Uang Keluar</th>
                         {{-- <th class="dhead2 text-end">Rp {{ number_format($ttl_budget, 0) }}</th> --}}
@@ -268,10 +284,6 @@
                                 class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
                                 <i class="fas fa-caret-down"></i></button></td>
                         <td class="text-end">{{ number_format($total_b, 0) }}</td>
-                        {{-- <td class="fw-bold">Budget </td> --}}
-                        {{-- <td class="fw-bold">Biaya <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
-                                <i class="fas fa-caret-down"></i></button></td> --}}
                     </tr>
                     @foreach ($biaya as $b)
                         @php
@@ -281,30 +293,16 @@
                             <td><a target="_blank"
                                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
                             </td>
-                            {{-- <td>
-                                <input type="hidden" name="id_akun_budget[]" value="{{ $b->id_akun }}">
-                                <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
-                                    class="form-control budget_uang" style="font-size: 13px"
-                                    value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
-                            </td> --}}
                             <td align="right">Rp {{ number_format($b->debit, 1) }}</td>
 
                         </tr>
                     @endforeach
-                    {{-- <tr x-show="openBiaya">
-                        <td colspan="2"></td>
-                        <td><button type="submit" class="btn btn-sm btn-primary float-end">Save budget</button></td>
-                    </tr> --}}
-
                     <tr>
                         <td class="fw-bold">Biaya Proyek <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
                                 @click="openBiayaProyek = ! openBiayaProyek">
                                 <i class="fas fa-caret-down"></i></button></td>
                         <td class=" text-end">{{ number_format($total_b_p, 0) }} </td>
-                        {{-- <td class="fw-bold">Biaya <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end" @click="openBiaya = ! openBiaya">
-                                <i class="fas fa-caret-down"></i></button></td> --}}
                     </tr>
                     @foreach ($biaya_proyek as $b)
                         @php
@@ -314,16 +312,37 @@
                             <td><a target="_blank"
                                     href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
                             </td>
-                            {{-- <td>
-                                <input type="hidden" name="id_akun_budget[]" value="{{ $b->id_akun }}">
-                                <input x-mask:dynamic="$money($input)" name="rupiah_budget[]" type="text"
-                                    class="form-control budget_uang" style="font-size: 13px"
-                                    value="{{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}">
-                            </td> --}}
                             <td align="right">Rp {{ number_format($b->debit, 1) }}</td>
-
                         </tr>
                     @endforeach
+                    {{-- <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold"><a target="_blank"
+                                href="{{ route('jurnal.add', ['id_buku' => '7', 'id_akun' => $hutang_herry->id_akun]) }}">{{ $hutang_herry->nm_akun }}</a>
+                        </td>
+                        <td class="fw-bold" align="right"><a target="_blank"
+                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $hutang_herry->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">Rp
+                                {{ number_format($hutang_herry->debit, 0) }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">&nbsp;</td>
+                        <td class="fw-bold">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold"></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Total Uang Keluar + Hutang</a>
+                        </td>
+                        <td class="fw-bold" align="right">Rp
+                            {{ number_format($hutang_herry->debit + $total_b + $total_b_p, 0) }}</a>
+                        </td>
+                    </tr> --}}
                 </tbody>
             </table>
         </form>
@@ -342,6 +361,7 @@
         @endphp
         <table class="table table-bordered">
             <tbody>
+
                 <tr>
                     <th class="dhead2">Total Uang Keluar</th>
                     <th class="dhead2 text-end" style="white-space: nowrap">Rp
@@ -382,6 +402,55 @@
                         <td align="right">Rp {{ number_format($b->kredit, 1) }}</td>
                     </tr>
                 @endforeach
+                {{-- <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
+                            class="tmbhakun_control me-3" kategori='6'>Cost Balance</a>
+                        <button class="btn btn-primary btn-sm btn-buka float-end"
+                            @click="openUangcostbalance = ! openUangcostbalance"> <i
+                                class="fas fa-caret-down"></i></button>
+
+                    </td>
+                    <td align="right">Rp {{ number_format($ttl_cost_balance, 1) }}</td>
+                </tr>
+
+                @foreach ($uangbiayacoshbalance as $b)
+                    <tr x-show="openUangcostbalance">
+                        <td><a target="_blank"
+                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => '2022-12-31', 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
+                        </td>
+                        <td align="right">Rp {{ number_format($b->debit - $b->kredit, 1) }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
+                            class="tmbhakun_control me-3" kategori='6'>Proyek Balance</a>
+                        <button class="btn btn-primary btn-sm btn-buka float-end"
+                            @click="openUangproyekbalance = ! openUangproyekbalance"> <i
+                                class="fas fa-caret-down"></i></button>
+
+                    </td>
+                    <td align="right">Rp {{ number_format($ttl_proyek_balance, 1) }}</td>
+                </tr>
+
+                @foreach ($uangbiayaproyekbalance as $b)
+                    <tr x-show="openUangproyekbalance">
+                        <td><a target="_blank"
+                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => '2022-12-31', 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
+                        </td>
+                        <td align="right">Rp {{ number_format($b->debit - $b->kredit, 1) }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td class="fw-bold">Total Uang Keluar + Balance </a>
+                    </td>
+                    <td class="fw-bold" align="right">Rp
+                        {{ number_format($total_bi + $total_biproyek + $ttl_cost_balance + $ttl_proyek_balance, 1) }}
+                    </td>
+                </tr> --}}
             </tbody>
         </table>
     </div>
