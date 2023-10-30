@@ -92,9 +92,67 @@ class PenjualanUmumController extends Controller
             'customer' => DB::table('customer')->get(),
             'produk' => $this->produk,
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
+            'satuan' => DB::table('tb_satuan')->get(),
             'no_nota' => $nota
         ];
         return view('penjualan2.add', $data);
+    }
+
+    public function selectPelanggan()
+    {
+        $selectOptions = "<select required name='id_customer' class='form-control select2-pelanggan' id=''>";
+        $selectOptions .= "
+        <option value=''>- Pilih Customer -</option>
+        <option value='tambah'>+ Customer</option>
+        ";
+
+        $customer = DB::table('customer')->get(); // Ganti dengan model dan cara mengambil data customer yang sesuai
+        foreach ($customer as $d) {
+            $selectOptions .= "<option value='{$d->id_customer}'>{$d->nm_customer}</option>";
+        }
+
+        $selectOptions .= "</select>";
+
+        return $selectOptions;
+    }
+
+    public function tbhCustomer(Request $r)
+    {
+        DB::table('customer')->insert([
+            'nm_customer' => $r->nama
+        ]);
+        return 'berhasil';
+    }
+
+    public function selectProduk()
+    {
+        $selectOptions = "<select required name='id_produk[]' class='form-control select2 produk-change' id=''>";
+        $selectOptions .= "
+        <option value=''>- Pilih Produk -</option>
+        <option value='tambah'>+ Produk</option>
+        ";
+
+        $produk = $this->produk; // Ganti dengan model dan cara mengambil data produk yang sesuai
+        foreach ($produk as $d) {
+            $selectOptions .= "<option value='{$d->id_produk}'>{$d->nm_produk} (".strtoupper($d->satuan->nm_satuan).")</option>";
+        }
+
+        $selectOptions .= "</select>";
+
+        return $selectOptions;
+    }
+
+    public function tbhProduk(Request $r)
+    {
+        DB::table('tb_produk')->insert([
+            'kd_produk' => 1,
+            'nm_produk' => $r->nama,
+            'satuan_id' => $r->id_satuan,
+            'kontrol_stok' => 'Y',
+            'departemen_id' => 1,
+            'kategori_id' => 3,
+            'tgl' => date('Y-m-d')
+        ]);
     }
 
     public function tbh_add(Request $r)
