@@ -74,7 +74,6 @@
                             <tr>
                                 <td>
                                     <div id="loadSelectProduk"></div>
-
                                 </td>
                                 <td>
                                     <input count="1" name="qty[]" value="0" type="text"
@@ -275,8 +274,6 @@
                         }).showToast();
                         $('#tbhCustomer').modal('hide')
                         loadSelectPelanggan()
-
-
                     })
                 }
             })
@@ -288,7 +285,7 @@
 
                     success: function(response) {
                         $("#loadSelectProduk").html(response);
-                        $('.select2').select2()
+                        $('.select2-produk').select2()
                     }
                 });
             }
@@ -314,7 +311,7 @@
                             },
                             dataType: "dataType",
                             success: function(response) {
-
+                                
                             }
                         });
                         Toastify({
@@ -329,10 +326,9 @@
                         }).showToast();
                         $('#tbhProduk').modal('hide')
                         loadSelectProduk()
-
-
                     })
                 }
+                
             })
 
             $(document).on("keyup", ".setor-nohide", function() {

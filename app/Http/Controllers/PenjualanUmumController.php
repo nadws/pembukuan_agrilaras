@@ -126,7 +126,7 @@ class PenjualanUmumController extends Controller
 
     public function selectProduk()
     {
-        $selectOptions = "<select required name='id_produk[]' class='form-control select2 produk-change' id=''>";
+        $selectOptions = "<select required name='id_produk[]' class='form-control select2-produk produk-change' id=''>";
         $selectOptions .= "
         <option value=''>- Pilih Produk -</option>
         <option value='tambah'>+ Produk</option>
@@ -151,6 +151,7 @@ class PenjualanUmumController extends Controller
             'kontrol_stok' => 'Y',
             'departemen_id' => 1,
             'kategori_id' => 3,
+            'admin' => auth()->user()->name,
             'tgl' => date('Y-m-d')
         ]);
     }
