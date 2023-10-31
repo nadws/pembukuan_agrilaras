@@ -74,6 +74,26 @@ class CashflowModel extends Model
         ", [$tahun]);
         return $result;
     }
+    public static function cashflow_uangmasuk_setahun($id_akun1, $id_akun2, $tahun, $id_buku)
+    {
+        $id_akun1_values = implode(",", $id_akun1);
+        $id_akun2_values = implode(",", $id_akun2);
+
+        $result = DB::select("SELECT a.id_jurnal, a.id_akun, a.tgl, c.nm_akun, sum(a.debit) as debit, b.no_nota, MONTH(a.tgl) as bulan , YEAR(a.tgl) as tahun
+        FROM jurnal as a 
+        left join akun as c on c.id_akun = a.id_akun
+        LEFT JOIN (
+        SELECT b.tgl, b.id_akun, b.no_nota
+            FROM jurnal as b 
+            left join akun as c on c.id_akun = b.id_akun
+            where b.kredit != 0 and b.id_akun in( {$id_akun2_values} )
+            GROUP by b.no_nota
+        ) as b on b.no_nota = a.no_nota
+        where Year(a.tgl) = ?  and a.id_akun not in({$id_akun1_values}) and a.debit != 0 and a.id_buku = ? and b.no_nota is not null
+        group by a.id_akun, MONTH(a.tgl), YEAR(a.tgl);
+        ", [$tahun, $id_buku]);
+        return $result;
+    }
     public static function cashflow_hutang_setahun($tahun)
     {
         $result = DB::select("SELECT a.id_akun, a.nm_akun, b.debit, b.kredit, b.bulan, b.tahun

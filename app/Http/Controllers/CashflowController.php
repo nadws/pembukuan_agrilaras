@@ -215,8 +215,19 @@ class CashflowController extends Controller
             $tahun = $r->tahun;
         }
 
-        $pendapatan = CashflowModel::cashflow_pendapatan_setahun($tahun);
-        $hutang = CashflowModel::cashflow_hutang_setahun($tahun);
+        $id_akun1 = ['23', '66', '99', '36'];
+        $id_akun2 = ['26', '37', '38', '39', '81', '83', '84'];
+        $pendapatan = CashflowModel::cashflow_uangmasuk_setahun($id_akun1, $id_akun2, $tahun, '6');
+
+        $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
+        $id_akun4 = ['23', '66', '99'];
+        $piutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, '6');
+
+        $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
+        $id_akun4 = ['19'];
+        $hutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, '7');
+
+
         $uang_cost = CashflowModel::cashflow_uang_cost($tahun, '6');
         $uang_proyek = CashflowModel::cashflow_uang_cost($tahun, '7');
 
@@ -254,7 +265,7 @@ class CashflowController extends Controller
             $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
 
             // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $transaction->kredit; // Menghitung nominal
+            $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
             if (!isset($data2[$transaction->id_akun])) {
@@ -332,13 +343,41 @@ class CashflowController extends Controller
             // Menambahkan data nominal ke struktur data
             $data4[$transaction->id_akun][$month] = $nominal;
         }
+        $data5 = [];
+        foreach ($piutang as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data5[$transaction->id_akun])) {
+                $data5[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data5[$transaction->id_akun][$month] = $nominal;
+        }
 
         $datas = [
-            'title' => 'Profit Setahun',
+            'title' => 'Cashflow Setahun',
             'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
             'thn' => $tahun
         ];
 
-        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4'), $datas);
+        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5'), $datas);
     }
 }
