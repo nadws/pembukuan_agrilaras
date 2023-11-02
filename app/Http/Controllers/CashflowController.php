@@ -380,4 +380,31 @@ class CashflowController extends Controller
 
         return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5'), $datas);
     }
+
+    public function cashflowUangMasukSetahun(Request $r)
+    {
+        if (empty($r->tahun)) {
+            $tahun = date('Y');
+        } else {
+            $tahun = $r->tahun;
+        }
+
+        $id_akun1 = ['23', '66', '99', '36'];
+        $id_akun2 = ['26', '37', '38', '39', '81', '83', '84'];
+        $pendapatan = CashflowModel::cashflow_uangmasuk_setahun($id_akun1, $id_akun2, $tahun, '6');
+
+        $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
+        $id_akun4 = ['23', '66', '99'];
+        $piutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, '6');
+        $response = [
+            'status' => 'success',
+            'message' => 'Data Cashflow berhasil diambil',
+            'data' => [
+                'pendapatan' => $pendapatan,
+                'piutang' => $piutang,
+            ],
+
+        ];
+        return response()->json($response);
+    }
 }

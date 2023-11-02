@@ -361,7 +361,7 @@ class Stok_ayam extends Controller
                 FROM bayar_ayam as c 
                 group by c.no_nota
             ) as c on c.no_nota = a.no_nota
-            where a.lokasi in('alpa','mtd') and a.tgl between '$tgl1' and '$tgl2' and c.total_bayar != 0
+            where a.lokasi in('alpa','mtd')  and c.total_bayar != 0
             order by a.no_nota DESC
             "),
             'customer' => DB::table('customer')->get(),
