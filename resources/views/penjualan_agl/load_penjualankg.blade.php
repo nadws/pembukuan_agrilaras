@@ -19,7 +19,7 @@
                 <select name="id_produk[]" class="select" required>
                     <option value="">-Pilih Produk-</option>
                     @foreach ($produk as $p)
-                    <option value="{{$p->id_produk_telur}}">{{$p->nm_telur}}</option>
+                        <option value="{{ $p->id_produk_telur }}">{{ $p->nm_telur }}</option>
                     @endforeach
                 </select>
             </td>
@@ -29,7 +29,8 @@
             </td>
             <td align="right">
                 <input type="text" class="form-control kg kg1" count="1" style="text-align: right" required>
-                <input type="hidden" class="form-control kgbiasa kgbiasa1" name="kg[]" count="1" value="0">
+                <input type="hidden" class="form-control kgbiasa kgbiasa1" name="kg[]" count="1"
+                    value="0">
             </td>
             <td align="right">
                 <input type="text" class="ikat1 form-control" name="ikat[]" value="0">
