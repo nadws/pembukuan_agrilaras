@@ -257,6 +257,16 @@
                             <td class="text-end">{{ number_format($totalPerAkun2, 0) }}</td>
                         </tr>
                     @endforeach
+                    <tr x-show="open_pendapatan">
+                        <td class="fw-bold">&nbsp; &nbsp;Bunga Bank <button type="button"
+                                class="btn btn-primary btn-sm btn-buka float-end"
+                                @click="open_hutang = ! open_hutang"><i class="fas fa-caret-down"></i></button>
+                        </td>
+                        @foreach (array_keys(reset($data2)) as $month)
+                            <td class=" text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
+                        @endforeach
+                        <td class=" text-end">{{ number_format($total_seluruh2, 0) }}</td>
+                    </tr>
                     <tr>
                         <td class="fw-bold dhead">Total Pemasukan</td>
                         @foreach (array_keys(reset($data)) as $month)

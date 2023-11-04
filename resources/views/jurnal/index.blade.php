@@ -72,7 +72,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ $id_buku == '10' ? 'active' : '' }}"
                         href="{{ route('jurnal', ['id_buku' => '10', 'kategori' => 'peralatan', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'period' => 'costume']) }}">Pembelian
-                        Asset</a>
+                        Umum</a>
                 </li>
             </ul>
         </div>

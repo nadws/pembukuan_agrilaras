@@ -121,4 +121,17 @@ class CashflowModel extends Model
         group by a.id_akun,MONTH(a.tgl), YEAR(a.tgl);", [$id_kategori, $tahun, $tahun]);
         return $result;
     }
+    public static function cashflow_uang_masuk($tahun, $id_akun1, $id_buku)
+    {
+        $id_akun1_values = implode(",", $id_akun1);
+        $id_buku = implode(",", $id_buku);
+
+        $result = DB::select("SELECT a.id_akun, b.nm_akun, sum(a.debit) as debit, month(a.tgl) as bulan, YEAR(a.tgl) as tahun
+        FROM jurnal as a 
+        left join akun as b on b.id_akun = a.id_akun
+        where a.id_akun in ({$id_akun1_values}) and a.id_buku in ({$id_buku}) and YEAR(a.tgl) = ?
+        GROUP by a.id_akun, Month(a.tgl), YEAR(a.tgl);
+        ", [$tahun]);
+        return $result;
+    }
 }

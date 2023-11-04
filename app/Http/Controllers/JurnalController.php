@@ -193,6 +193,7 @@ class JurnalController extends Controller
         $kredit = $r->kredit;
         $id_proyek = $r->id_proyek;
         $id_suplier = $r->id_suplier;
+        $tipe_jurnal = $r->tipe_jurnal;
         $no_urut = $r->no_urut;
         $id_post = $r->id_post;
         $id_buku = $r->id_buku;
@@ -214,6 +215,10 @@ class JurnalController extends Controller
             $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
+            if ($tipe_jurnal == 'Ayat silang') {
+                $tp_jur = $tipe_jurnal . ' ';
+            }
+
 
             $data = [
                 'tgl' => $tgl,
@@ -221,11 +226,12 @@ class JurnalController extends Controller
                 'id_akun' => $id_akun[$i],
                 'no_dokumen' => $no_urut[$i],
                 'id_buku' => $id_buku,
-                'ket' => $keterangan[$i],
+                'ket' => $tp_jur . $keterangan[$i],
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
                 'admin' => Auth::user()->name,
                 // 'no_dokumen' => $r->no_dokumen,
+                'tipe_jurnal' => $tipe_jurnal,
                 'tgl_dokumen' => $r->tgl_dokumen,
                 'id_proyek' => $id_proyek,
                 'id_suplier' => $id_suplier,
