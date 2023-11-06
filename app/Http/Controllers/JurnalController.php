@@ -123,6 +123,7 @@ class JurnalController extends Controller
             6 => 'penjualan',
             7 => 'kas & bank',
             10 => 'pemeblian asset',
+            14 => 'Hutang',
         ];
 
         $data =  [

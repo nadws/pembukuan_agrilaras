@@ -78,6 +78,7 @@ class CashflowModel extends Model
     {
         $id_akun1_values = implode(",", $id_akun1);
         $id_akun2_values = implode(",", $id_akun2);
+        $id_buku_values = implode(",", $id_buku);
 
         $result = DB::select("SELECT a.id_jurnal, a.id_akun, a.tgl, c.nm_akun, sum(a.debit) as debit, b.no_nota, MONTH(a.tgl) as bulan , YEAR(a.tgl) as tahun
         FROM jurnal as a 
@@ -89,9 +90,9 @@ class CashflowModel extends Model
             where b.kredit != 0 and b.id_akun in( {$id_akun2_values} )
             GROUP by b.no_nota
         ) as b on b.no_nota = a.no_nota
-        where Year(a.tgl) = ?  and a.id_akun not in({$id_akun1_values}) and a.debit != 0 and a.id_buku = ? and b.no_nota is not null
+        where Year(a.tgl) = ?  and a.id_akun not in({$id_akun1_values}) and a.debit != 0 and a.id_buku in({$id_buku_values}) and b.no_nota is not null
         group by a.id_akun, MONTH(a.tgl), YEAR(a.tgl);
-        ", [$tahun, $id_buku]);
+        ", [$tahun]);
         return $result;
     }
     public static function cashflow_hutang_setahun($tahun)
