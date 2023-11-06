@@ -388,7 +388,7 @@
                                     ? 0
                                     : number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
                                 <br>
-                                {{ empty($k->p_hd) ? 'NA' : $k->p_hd }} ssda
+                                {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
                                 <br>
                                 {{ number_format(($k->pcs / $k->stok_awal) * 100, 0) }}
                             </td>
