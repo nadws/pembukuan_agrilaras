@@ -194,7 +194,7 @@ class JurnalController extends Controller
         $kredit = $r->kredit;
         $id_proyek = $r->id_proyek;
         $id_suplier = $r->id_suplier;
-        $tipe_jurnal = $r->tipe_jurnal;
+        // $tipe_jurnal = $r->tipe_jurnal;
         $no_urut = $r->no_urut;
         $id_post = $r->id_post;
         $id_buku = $r->id_buku;
@@ -232,7 +232,7 @@ class JurnalController extends Controller
                 'kredit' => $kredit[$i],
                 'admin' => Auth::user()->name,
                 // 'no_dokumen' => $r->no_dokumen,
-                'tipe_jurnal' => $tipe_jurnal,
+                // 'tipe_jurnal' => $tipe_jurnal,
                 'tgl_dokumen' => $r->tgl_dokumen,
                 'id_proyek' => $id_proyek,
                 'id_suplier' => $id_suplier,

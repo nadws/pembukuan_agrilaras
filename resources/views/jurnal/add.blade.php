@@ -54,16 +54,7 @@
                         @endforeach
                     </select>
                 </div>
-                @if ($id_buku == '7')
-                    <div class="col-lg-3">
-                        <label for="">Tipe Jurnal</label>
-                        <select name="tipe_jurnal" class="select2suplier form-control">
-                            <option value="">- Pilih tipe jurnal -</option>
-                            <option value="jurnal_umum">Jurnal Umum</option>
-                            <option value="Ayat silang">Ayat silang</option>
-                        </select>
-                    </div>
-                @endif
+
 
                 <div class="col-lg-12">
                     <hr style="border: 1px solid black">
