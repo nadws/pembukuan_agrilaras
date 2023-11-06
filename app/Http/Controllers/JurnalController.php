@@ -216,9 +216,7 @@ class JurnalController extends Controller
             $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
 
-            if ($tipe_jurnal == 'Ayat silang') {
-                $tp_jur = $tipe_jurnal . ' ';
-            }
+
 
 
             $data = [
@@ -227,7 +225,7 @@ class JurnalController extends Controller
                 'id_akun' => $id_akun[$i],
                 'no_dokumen' => $no_urut[$i],
                 'id_buku' => $id_buku,
-                'ket' => $tp_jur . $keterangan[$i],
+                'ket' => $keterangan[$i],
                 'debit' => $debit[$i],
                 'kredit' => $kredit[$i],
                 'admin' => Auth::user()->name,
