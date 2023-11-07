@@ -24,18 +24,18 @@ class StokMasukController extends Controller
     {
         $id_user = auth()->user()->id;
         $getStok = Stok::select('no_nota', 'tgl', 'jenis', DB::raw('SUM(debit) as debit'))
-        ->when($gudang_id, function ($q, $gudang_id) {
-            return $q->where('gudang_id', $gudang_id);
-        })
-        ->where([['status', '!=', 'opname'], ['kategori_id', '1']])
-        ->groupBy('no_nota')
-        ->orderBy('id_stok_produk', 'DESC')
-        ->get();
+            ->when($gudang_id, function ($q, $gudang_id) {
+                return $q->where('gudang_id', $gudang_id);
+            })
+            ->where([['status', '!=', 'opname'], ['kategori_id', '1']])
+            ->groupBy('no_nota')
+            ->orderBy('id_stok_produk', 'DESC')
+            ->get();
 
         $data = [
             'title' => 'Stok Masuk',
             'produk' => $this->produk,
-            'gudang' => Gudang::where('kategori_id',1)->get(),
+            'gudang' => Gudang::where('kategori_id', 1)->get(),
             'stok' => $getStok,
 
             'user' => User::where('posisi_id', 1)->get(),
@@ -99,39 +99,46 @@ class StokMasukController extends Controller
 
     public function store(Request $r)
     {
-        if (empty($r->id_produk)) {
-            return redirect()->route('stok_masuk.index')->with('error', 'Data Tidak ada');
-        }
-        for ($i = 0; $i < count($r->id_produk); $i++) {
-            $jml_sebelumnya = $r->jml_sebelumnya[$i];
-            $debit = $r->debit[$i];
-
-            $data = [
-                'id_produk' => $r->id_produk[$i],
-                'tgl' => $r->tgl,
-                'urutan' => $r->urutan,
-                'no_nota' => $r->no_nota,
-                'departemen_id' => '1',
-                'kategori_id' => '1',
-                'status' => 'masuk',
-                'jenis' => $r->simpan == 'simpan' ? 'selesai' : 'draft',
-                'gudang_id' => $r->gudang_id,
-                'jml_sebelumnya' => $jml_sebelumnya,
-                'jml_sesudahnya' => $jml_sebelumnya + $debit,
-                'debit' => $debit,
-                'ket' => $r->ket,
-                'rp_satuan' => $r->rp_satuan[$i],
-                'admin' => auth()->user()->name,
-            ];
-
-            if (!empty($r->jenis)) {
-                Stok::where([['urutan', $r->urutan], ['id_produk', $r->id_produk[$i]]])->update($data);
-            } else {
-                Stok::create($data);
+        
+        try {
+            DB::beginTransaction();
+            if (empty($r->id_produk)) {
+                return redirect()->route('stok_masuk.index')->with('error', 'Data Tidak ada');
             }
-        }
+            for ($i = 0; $i < count($r->id_produk); $i++) {
+                $jml_sebelumnya = $r->jml_sebelumnya[$i];
+                $debit = $r->debit[$i];
 
-        return redirect()->route('stok_masuk.index')->with('sukses', 'Data Berhasil Ditambahkan');
+                $data = [
+                    'id_produk' => $r->id_produk[$i],
+                    'tgl' => $r->tgl,
+                    'urutan' => $r->urutan,
+                    'no_nota' => $r->no_nota,
+                    'departemen_id' => '1',
+                    'kategori_id' => '1',
+                    'status' => 'masuk',
+                    'jenis' => $r->simpan == 'simpan' ? 'selesai' : 'draft',
+                    'gudang_id' => $r->gudang_id,
+                    'jml_sebelumnya' => $jml_sebelumnya,
+                    'jml_sesudahnya' => $jml_sebelumnya + $debit,
+                    'debit' => $debit,
+                    'ket' => $r->ket,
+                    'rp_satuan' => $r->rp_satuan[$i],
+                    'admin' => auth()->user()->name,
+                ];
+
+                if (!empty($r->jenis)) {
+                    Stok::where([['urutan', $r->urutan], ['id_produk', $r->id_produk[$i]]])->update($data);
+                } else {
+                    Stok::create($data);
+                }
+            }
+            DB::commit();
+            return redirect()->route('stok_masuk.index')->with('sukses', 'Data Berhasil Ditambahkan');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->route('stok_masuk.index')->with('error', $e);
+        }
     }
 
     public function edit($no_nota)
