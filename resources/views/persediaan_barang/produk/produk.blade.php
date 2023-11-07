@@ -224,15 +224,7 @@
     @section('js')
     <script>
         $(document).ready(function() {
-                $('.select2').change(function(e) {
-                    e.preventDefault()
-                    var gudang_id = $(this).val()
-                    if (gudang_id == 'tambahGudang') {
-                        $("#tambah2").modal('show')
-                    } else {
-                        document.location.href = `/produk/${gudang_id}`
-                    }
-                })
+                
                 $(".select-gudang").change(function(e) {
                     e.preventDefault();
                     var gudang_id = $(this).val()
