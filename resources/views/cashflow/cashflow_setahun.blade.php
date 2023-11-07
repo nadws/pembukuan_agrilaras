@@ -113,6 +113,17 @@
                 $total_seluruh6 += $totalPerAkun6;
             }
 
+            $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data7))), 0);
+            $total_seluruh7 = 0;
+            foreach ($data7 as $akun => $months) {
+                $totalPerAkun7 = 0;
+                foreach ($months as $month => $nominal) {
+                    $totalPerAkun7 += $nominal;
+                    $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
+                }
+                $total_seluruh7 += $totalPerAkun7;
+            }
+
         @endphp
         <div class="row">
             <table class="table table-bordered" x-data="{
@@ -124,6 +135,7 @@
                 open_penjualan: false,
                 open_piutang: false,
                 open_bank: false,
+                open_bayar: false,
             }">
                 <thead>
                     <tr>
@@ -320,6 +332,48 @@
                             {{ number_format($total_seluruh + $total_seluruh2 + $total_seluruh5 + $total_seluruh6, 0) }}
                         </td>
                     </tr>
+
+                    <tr>
+                        <td class="fw-bold">Bayar Hutang <button type="button"
+                                class="btn btn-primary btn-sm btn-buka float-end"
+                                @click="open_bayar = ! open_bayar"><i class="fas fa-caret-down"></i></button>
+                        </td>
+                        @foreach (array_keys(reset($data7)) as $month)
+                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth7[$month], 0) }}</td>
+                        @endforeach
+                        <td class="fw-bold text-end">{{ number_format($total_seluruh7, 0) }}</td>
+                    </tr>
+                    @foreach ($data7 as $akun => $months)
+                        <tr x-show="open_bayar">
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')
+                                        ->where('id_akun', $akun)
+                                        ->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
+                            @php
+                                $totalPerAkun3 = 0;
+                            @endphp
+                            @foreach ($months as $month => $nominal)
+                                <td class="text-end">
+
+                                    @php
+                                        $tgl1 = $thn . '-' . $loop->iteration . '-01';
+                                        $tgl2 = date('Y-m-t', strtotime($tgl1));
+                                    @endphp
+                                    <a target="_blank"
+                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                </td>
+                                @php
+                                    $totalPerAkun7 += $nominal;
+                                @endphp
+                            @endforeach
+                            <td class="text-end">{{ number_format($totalPerAkun7, 0) }}</td>
+                        </tr>
+                    @endforeach
+
                     <tr>
                         <td class="fw-bold">Pengeluaran Cost <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
@@ -406,11 +460,11 @@
                         <td class="fw-bold dhead">Total Pengeluaran</td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
-                                {{ number_format($totalsPerMonth3[$month] + $totalsPerMonth4[$month], 0) }}
+                                {{ number_format($totalsPerMonth3[$month] + $totalsPerMonth4[$month] + $totalsPerMonth7[$month], 0) }}
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
-                            {{ number_format($total_seluruh3 + $total_seluruh4, 0) }}</td>
+                            {{ number_format($total_seluruh3 + $total_seluruh4 + $total_seluruh7, 0) }}</td>
                     </tr>
                     {{-- <tr>
                         <td class="fw-bold dhead">Net Cashflow</td>
@@ -433,14 +487,14 @@
                         @endphp
                         @foreach (array_keys(reset($data)) as $month)
                             @php
-                                $net_cashflow += $totalsPerMonth[$month] + $totalsPerMonth2[$month] + $totalsPerMonth5[$month] - $totalsPerMonth3[$month] + $totalsPerMonth6[$month] - $totalsPerMonth4[$month];
+                                $net_cashflow += $totalsPerMonth[$month] + $totalsPerMonth2[$month] + $totalsPerMonth5[$month] - $totalsPerMonth3[$month] + $totalsPerMonth6[$month] - $totalsPerMonth4[$month] - $totalsPerMonth7[$month];
                             @endphp
                             <td class="fw-bold text-end dhead">
                                 {{ number_format($net_cashflow, 0) }}
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
-                            {{ number_format($total_seluruh + $total_seluruh2 + $total_seluruh5 + $total_seluruh6 - ($total_seluruh3 + $total_seluruh4), 0) }}
+                            {{ number_format($total_seluruh + $total_seluruh2 + $total_seluruh5 + $total_seluruh6 - ($total_seluruh3 + $total_seluruh4 + $total_seluruh7), 0) }}
                         </td>
                     </tr>
 

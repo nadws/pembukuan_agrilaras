@@ -235,6 +235,13 @@ class CashflowController extends Controller
         $id_buku = ['6', '12', '7'];
         $bunga_bank = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
 
+        $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
+        $id_akun4 = ['19'];
+        $id_buku = ['7'];
+        $bayar_hutang = CashflowModel::cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+
+
+
 
         $uang_cost = CashflowModel::cashflow_uang_cost($tahun, '6');
         $uang_proyek = CashflowModel::cashflow_uang_cost($tahun, '7');
@@ -407,6 +414,34 @@ class CashflowController extends Controller
             // Menambahkan data nominal ke struktur data
             $data6[$transaction->id_akun][$month] = $nominal;
         }
+        $data7 = [];
+        foreach ($bayar_hutang as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->kredit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data7[$transaction->id_akun])) {
+                $data7[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data7[$transaction->id_akun][$month] = $nominal;
+        }
 
         $datas = [
             'title' => 'Cashflow Setahun',
@@ -414,7 +449,7 @@ class CashflowController extends Controller
             'thn' => $tahun
         ];
 
-        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6'), $datas);
+        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'), $datas);
     }
 
     public function cashflowUangMasukSetahun(Request $r)
