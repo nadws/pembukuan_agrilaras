@@ -176,6 +176,8 @@ class PenjualanUmumController extends Controller
 
     public function store(Request $r)
     {
+        $produkNames = DB::table('tb_produk')->whereIn('id_produk', $r->id_produk)->pluck('nm_produk');
+        $produkNames = implode(', ', $produkNames->toArray());
         $nm_customer = DB::table('customer')->where('id_customer', $r->id_customer)->first()->nm_customer;
         $ttlDebit = 0;
 
@@ -192,7 +194,7 @@ class PenjualanUmumController extends Controller
             'no_nota' => 'PUM-' . $r->no_nota,
             'id_akun' => $this->akunPenjualan,
             'id_buku' => '6',
-            'ket' => 'Penjualan Umum Alpa',
+            'ket' => 'Penjualan Umum Alpa : '.$produkNames,
             'no_urut' => $akun2->inisial . '-' . $urutan2,
             'urutan' => $urutan2,
             'kredit' => $ttlDebit,
@@ -213,7 +215,7 @@ class PenjualanUmumController extends Controller
                 'id_akun' => $id_akun,
                 'id_buku' => 6,
                 'no_nota' => 'PUM-' . $r->no_nota,
-                'ket' => "Penjualan $nm_customer",
+                'ket' => "Penjualan $nm_customer $produkNames",
                 'debit' => $r->debit[$i] ?? 0,
                 'kredit' => $r->kredit[$i] ?? 0,
                 'no_urut' => $akun->inisial . '-' . $urutan,

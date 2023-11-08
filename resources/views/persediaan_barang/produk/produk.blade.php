@@ -100,8 +100,8 @@
                                     @endif
 
                                     @if (!empty($detail))
-                                    <a class="dropdown-item text-info" href="#"><i class="me-2 fas fa-search"></i>
-                                        Detail</a>
+                                    {{-- <a class="dropdown-item text-info" href="#"><i class="me-2 fas fa-search"></i>
+                                        Detail</a> --}}
                                     @endif
                                 </div>
                             </div>

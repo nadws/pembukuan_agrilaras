@@ -153,7 +153,7 @@
                         <th width="20%">Produk (Satuan)</th>
                         <th width="4%">Stok Sebelumnya</th>
                         <th width="6%">Stok Masuk</th>
-                        <th width="10%">Harga Beli</th>
+                        <th width="10%">Total Rp</th>
                         <th width="5%">Aksi</th>
                     </tr>
                 </thead>

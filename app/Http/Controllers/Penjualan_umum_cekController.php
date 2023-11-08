@@ -85,6 +85,9 @@ class Penjualan_umum_cekController extends Controller
 
     public function save_cek_umum_invoice(Request $r)
     {
+        $produkNames = DB::table('tb_produk')->whereIn('id_produk', $r->id_produk)->pluck('nm_produk');
+        $produkNames = implode(', ', $produkNames->toArray());
+
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '6')->first();
         if (empty($max)) {
             $nota_t = '1000';
@@ -103,7 +106,7 @@ class Penjualan_umum_cekController extends Controller
                 'no_nota' => 'PMLD-' . $nota_t,
                 'id_akun' => '84',
                 'id_buku' => '6',
-                'ket' => $r->no_nota[$x] . ':' . $r->nm_customer[$x],
+                'ket' => $r->no_nota[$x] . ':' . $r->nm_customer[$x] . ' ' .$produkNames,
                 'debit' => '0',
                 'kredit' => $r->pembayaran[$x],
                 'admin' => Auth::user()->name,
@@ -138,7 +141,7 @@ class Penjualan_umum_cekController extends Controller
                 'no_nota' => 'PMLD-' . $nota_t,
                 'id_akun' => $r->id_akun[$x],
                 'id_buku' => '6',
-                'ket' => 'Penjualan lain-lain di Martadah',
+                'ket' => 'Penjualan lain-lain di Martadah : ' .$produkNames,
                 'debit' => $r->debit[$x],
                 'kredit' => $r->kredit[$x],
                 'admin' => Auth::user()->name,
