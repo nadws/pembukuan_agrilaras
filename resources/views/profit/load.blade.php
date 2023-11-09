@@ -308,7 +308,7 @@
                 <td colspan="2">&nbsp;</td>
             </tr>
             <tr>
-                <th><a href="#" class="klikModal" id_kategori="5">Biaya Beli Asset</a>
+                <th><a href="#" class="klikModal" id_kategori="5">Biaya sisa asset</a>
                     <button type="button" class="btn btn-primary btn-sm btn-buka float-end"
                         @click="open28 = ! open28"> <i class="fas fa-caret-down"></i></button>
                 </th>
