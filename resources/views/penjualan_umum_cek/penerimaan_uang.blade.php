@@ -45,6 +45,7 @@
                             ->get();
                             @endphp
                             @foreach ($produk as $no => $a)
+                            <input type="hidden" name="id_produk[]" value="{{ $a->id_produk }}">
                             <tr>
                                 <td>{{ $no + 1 }}</td>
                                 <td>{{ $a->nm_produk }}</td>

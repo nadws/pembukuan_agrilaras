@@ -109,7 +109,7 @@ class ProdukController extends Controller
             $cek = in_array($file->getClientOriginalExtension(), $fileDiterima);
             if ($cek) {
                 $path = public_path('upload/' . $r->imgLama);
-                if (file_exists($path)) {
+                if (file_exists($path) && is_file($path)) {
                     unlink($path);
                 }
                 $fileName = "P-$r->kd_produk" . $file->getClientOriginalName();
