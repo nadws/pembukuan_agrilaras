@@ -58,7 +58,7 @@
             $ttl_budget_gantung += empty($budget->rupiah) ? 0 : $budget->rupiah;
         }
         foreach ($biayabeliasset as $d) {
-            $totalBeliAsset += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo;
+            $totalBeliAsset += $d->debit + $d->debit_saldo - $d->kredit - $d->kredit_saldo + $aktiva_depresiasi->debit - $biaya_aktiva_depresiasi->kredit + $peralatan_depresiasi->debit - $biaya_peralatan_depresiasi->kredit;
         }
 
         foreach ($biaya_bkn_keluar as $d) {
@@ -331,6 +331,26 @@
                     <td>Rp {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}</td> --}}
                 </tr>
             @endforeach
+            <tr x-transition x-show="open28">
+                <td style="padding-left: 20px"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $aktiva_depresiasi->id_akun, 'tgl1' => '2022-01-01', 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($aktiva_depresiasi->nm_akun)) }}</a>
+                </td>
+                <td style="text-align: right">Rp
+                    {{ number_format($aktiva_depresiasi->debit - $biaya_aktiva_depresiasi->kredit, 1) }}
+                </td>
+                {{-- <td></td>
+                    <td>Rp {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}</td> --}}
+            </tr>
+            <tr x-transition x-show="open28">
+                <td style="padding-left: 20px"><a target="_blank"
+                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $peralatan_depresiasi->id_akun, 'tgl1' => '2022-01-01', 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($peralatan_depresiasi->nm_akun)) }}</a>
+                </td>
+                <td style="text-align: right">Rp
+                    {{ number_format($peralatan_depresiasi->debit - $biaya_peralatan_depresiasi->kredit, 1) }}
+                </td>
+                {{-- <td></td>
+                    <td>Rp {{ empty($budget->rupiah) ? 0 : number_format($budget->rupiah, 0) }}</td> --}}
+            </tr>
             <tr x-transition x-show="open28">
                 <th style="padding-left: 20px">Total Beli Asset</th>
                 <th style="text-align: right">Rp. {{ number_format($totalBeliAsset, 0) }}</th>

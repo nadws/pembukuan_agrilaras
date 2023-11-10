@@ -72,6 +72,18 @@ class ProfitModel extends Model
 
         return $result;
     }
+    public static function asset_depresiasi($tgl, $id_akun)
+    {
+        $result = DB::selectOne("SELECT a.id_akun, b.nm_akun, sum(a.debit) as debit, sum(a.kredit) as kredit
+        FROM jurnal as a
+        left join akun as b on b.id_akun = a.id_akun
+        where a.tgl between '2022-12-01' and ? and a.id_akun = ? and a.id_buku != '5'
+        ;", [$tgl, $id_akun]);
+
+        return $result;
+    }
+
+
     public static function getData3($tgl1, $tgl2)
     {
         $result = DB::select("SELECT a.id_akun, a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo, c.kredit as kredit_saldo

@@ -64,6 +64,10 @@ class ProfitController extends Controller
         $biaya_disusutkan = ProfitModel::getData4($tgl1, $tgl2);
         $aktiva = ProfitModel::aktiva($tgl2);
         $peralatan = ProfitModel::peralatan($tgl2);
+        $aktiva_depresiasi = ProfitModel::asset_depresiasi($tgl2, '9');
+        $biaya_aktiva_depresiasi = ProfitModel::asset_depresiasi($tgl2, '52');
+        $peralatan_depresiasi = ProfitModel::asset_depresiasi($tgl2, '16');
+        $biaya_peralatan_depresiasi = ProfitModel::asset_depresiasi($tgl2, '59');
         $kg_butir = DB::table('rules_budget')->where('id_rules_budget', '1')->first();
         $rp_kg = DB::table('rules_budget')->where('id_rules_budget', '2')->first();
 
@@ -125,6 +129,10 @@ class ProfitController extends Controller
             'biayabeliasset' => $biayabeliasset,
             'aktiva' => $aktiva,
             'peralatan' => $peralatan,
+            'aktiva_depresiasi' => $aktiva_depresiasi,
+            'biaya_aktiva_depresiasi' => $biaya_aktiva_depresiasi,
+            'peralatan_depresiasi' => $peralatan_depresiasi,
+            'biaya_peralatan_depresiasi' => $biaya_peralatan_depresiasi,
 
             'subKategori1' => DB::table('sub_kategori_cashflow')
                 ->where('jenis', 1)
