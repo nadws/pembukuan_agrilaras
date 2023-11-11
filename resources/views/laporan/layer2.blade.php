@@ -197,7 +197,7 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="gr_butir"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">selisih <br> (kg/butir)<br>
+                        <th class="dhead table_layer th_atas2">selisih <br> kg <br> butir<br>
                             <i class="fas text-white fa-question-circle rumus" rumus="butir"
                                 style="cursor: pointer"></i>
                         </th>
@@ -361,7 +361,7 @@
                                 <br>
                                 {{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }}
                             </td>
-                            <td align="center" class="td_layer"
+                            <td align="center"
                                 class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
                                 &nbsp; <br>
                                 {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
