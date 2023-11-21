@@ -162,7 +162,7 @@ class PenjualanAyamController extends Controller
             'title' => 'Penyetoran Ayam',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.id_jurnal, a.tgl, a.no_nota, b.nm_akun, a.ket, a.debit, c.id_akun
+            'invoice' => DB::select("SELECT a.id_jurnal, a.tgl, a.no_nota, b.nm_akun, a.ket, sum(a.debit) as debit, c.id_akun
             FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             LEFT JOIN (
@@ -293,7 +293,7 @@ class PenjualanAyamController extends Controller
             where a.nota_setor = '$r->no_nota'
             group by a.no_nota_jurnal;
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice,
             'title' => 'Print Setoran'
