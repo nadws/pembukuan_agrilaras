@@ -34,8 +34,9 @@ class Laporan_layerController extends Controller
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
+            'tgl_sebelum' => $tgl_sebelumnya,
             'harga' => $harga,
-            'kandang' => DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg - (y.pcs_y / 180)) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan / y.ttl)) as rp_satuan_y
+            'kandang' => DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , FLOOR(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, c.jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, FLOOR(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg - (y.pcs_y / 180)) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan / y.ttl)) as rp_satuan_y, z.rp_vitamin_week
             FROM kandang as a 
             -- Populasi --
             left join(SELECT b.id_kandang, sum(b.mati+b.jual) as pop_kurang 
@@ -101,6 +102,14 @@ class Laporan_layerController extends Controller
                 where d.tgl = '$tgl' and e.kategori in('obat_pakan','obat_air') and d.pcs_kredit != '0'
                 group by d.id_kandang
             ) as m on m.id_kandang = a.id_kandang
+
+            left join (
+                SELECT d.id_kandang, sum(d.total_rp) as rp_vitamin_week
+                FROM stok_produk_perencanaan as d 
+                left join tb_produk_perencanaan as e on e.id_produk = d.id_pakan
+                where d.tgl between '$tgl_sebelumnya' and '$tgl' and e.kategori in('obat_pakan','obat_air') and d.pcs_kredit != '0'
+                group by d.id_kandang
+            ) as z on z.id_kandang = a.id_kandang
 
             left join (
                 SELECT d.id_kandang, sum(d.total_rp) as kuml_rp_vitamin

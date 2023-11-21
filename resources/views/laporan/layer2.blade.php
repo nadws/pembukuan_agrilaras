@@ -213,7 +213,7 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">FCR <br> D / W / + <br>(week)
+                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ / W / W+ <br>(week)
                             <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                 style="cursor: pointer"></i>
                         </th>
@@ -421,19 +421,22 @@
                                 $vitamin = empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                                 $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
 
-                                $fcr_plus = empty($k->kg_p_week) || empty($k->kg_telur_week) ? '0' : number_format(($k->kg_p_week / 1000 + $vitamin + $vaksin) / ($k->kg_telur_week - $k->pcs_telur_week / 180), 1);
+                                $vitamin_week = empty($k->rp_vitamin_week) ? '0' : $k->rp_vitamin_week / 7000;
+
+                                $fcr_plus_week = empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ? '0' : ($k->kg_p_week / 1000 + $vitamin_week) / ($k->kg_telur_week - $k->pcs_telur_week / 180);
+
+                                $fcr_plus = empty($k->kg_pakan) || empty($k->kg) ? '0' : number_format(($k->kg_pakan / 1000 + $vitamin + $vaksin) / ($k->kg - $k->pcs / 180), 1);
 
                                 $fcr_day = empty($k->kg_pakan) || empty($k->pcs) ? '0' : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
                             @endphp
 
                             <td align="center"
                                 class="FCR(week) {{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }} td_layer">
-                                &nbsp; <br>
                                 @if ($k->mgg < 21)
-                                    0 <br> 0 <br> 0
+                                    0 <br> 0 <br> 0 <br> 0
                                 @else
                                     {{ $fcr_day }} <br> {{ $fcr_plus }} <br>
-                                    {{ number_format($fcr, 2) }}
+                                    {{ number_format($fcr, 1) }} <br> {{ number_format($fcr_plus_week, 1) }}
                                 @endif
 
                             </td>
