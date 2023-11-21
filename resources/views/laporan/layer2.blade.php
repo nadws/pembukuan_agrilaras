@@ -213,7 +213,7 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ / W / W+ <br>(week)
+                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ <br> W / W+
                             <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                 style="cursor: pointer"></i>
                         </th>
@@ -433,10 +433,10 @@
                             <td align="center"
                                 class="FCR(week) {{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }} td_layer">
                                 @if ($k->mgg < 21)
-                                    0 <br> 0 <br> 0 <br> 0
+                                    0 / 0 <br> 0 / 0
                                 @else
-                                    {{ $fcr_day }} <br> {{ $fcr_plus }} <br>
-                                    {{ number_format($fcr, 1) }} <br> {{ number_format($fcr_plus_week, 1) }}
+                                    {{ $fcr_day }} / {{ $fcr_plus }} <br>
+                                    {{ number_format($fcr, 1) }} / {{ number_format($fcr_plus_week, 1) }}
                                 @endif
 
                             </td>
