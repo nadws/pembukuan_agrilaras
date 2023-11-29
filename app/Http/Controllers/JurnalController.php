@@ -345,9 +345,11 @@ class JurnalController extends Controller
 
     public function detail_jurnal(Request $r)
     {
+
         $data =  [
             'title' => 'Jurnal Umum',
             'jurnal' => Jurnal::where('no_nota', $r->no_nota)->get(),
+
             'no_nota' => $r->no_nota,
             'head_jurnal' => DB::selectOne("SELECT c.nm_suplier, a.tgl, b.nm_proyek, a.id_proyek, a.no_dokumen,a.tgl_dokumen, a.no_nota, sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a 
             left join proyek as b on b.id_proyek = a.id_proyek

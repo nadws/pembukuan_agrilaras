@@ -46,7 +46,7 @@
             <tr>
                 <td>{{ $no + 1 }}</td>
                 <td>{{ $a->akun->nm_akun }}</td>
-                <td>{{ $a->postCenter->nm_post }}</td>
+                <td>{{ $a->postCenter->nm_post ?? '-' }}</td>
                 <td>{{ $a->ket }}</td>
                 <td align="right">{{ number_format($a->debit, 0) }}</td>
                 <td align="right">{{ number_format($a->kredit, 0) }}</td>
