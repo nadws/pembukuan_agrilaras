@@ -175,15 +175,16 @@ class BukuBesarController extends Controller
                     ->setCellValue('A1', 'Akun : ' . strtoupper($r->nm_akun));
                 $s
                     ->setCellValue('A2', '#')
-                    ->setCellValue('B2', 'No Urut Akun')
-                    ->setCellValue('C2', 'Tanggal ' . $tgl1)
-                    ->setCellValue('D2', 'Nama Akun Lawan')
-                    ->setCellValue('E2', 'Sub Akun')
-                    ->setCellValue('F2', 'Keterangan')
-                    ->setCellValue('G2', 'Debit')
-                    ->setCellValue('H2', 'Kredit')
-                    ->setCellValue('I2', 'Saldo');
-                $s->getStyle('A2:I2')->applyFromArray($style);
+                    ->setCellValue('B2', 'No Urut Jurnal')
+                    ->setCellValue('C2', 'No Urut Akun')
+                    ->setCellValue('D2', 'Tanggal ' . $tgl1)
+                    ->setCellValue('E2', 'Nama Akun Lawan')
+                    ->setCellValue('F2', 'Sub Akun')
+                    ->setCellValue('G2', 'Keterangan')
+                    ->setCellValue('H2', 'Debit')
+                    ->setCellValue('I2', 'Kredit')
+                    ->setCellValue('J2', 'Saldo');
+                $s->getStyle('A2:J2')->applyFromArray($style);
                 $s->getStyle("A1")->getFont()->setBold(true);
             } else {
                 $kolom = 3;
@@ -191,14 +192,15 @@ class BukuBesarController extends Controller
                     ->setCellValue('A1', 'Akun : ' . strtoupper($r->nm_akun));
                 $s
                     ->setCellValue('A2', '#')
-                    ->setCellValue('B2', 'No Urut Akun')
-                    ->setCellValue('C2', 'Tanggal')
-                    ->setCellValue('D2', 'Nama Akun Lawan')
-                    ->setCellValue('E2', 'Sub Akun')
-                    ->setCellValue('F2', 'Keterangan')
-                    ->setCellValue('G2', 'Debit')
-                    ->setCellValue('H2', 'Kredit')
-                    ->setCellValue('I2', 'Saldo');
+                    ->setCellValue('B2', 'No Urut Jurnal')
+                    ->setCellValue('C2', 'No Urut Akun')
+                    ->setCellValue('D2', 'Tanggal')
+                    ->setCellValue('E2', 'Nama Akun Lawan')
+                    ->setCellValue('F2', 'Sub Akun')
+                    ->setCellValue('G2', 'Keterangan')
+                    ->setCellValue('H2', 'Debit')
+                    ->setCellValue('I2', 'Kredit')
+                    ->setCellValue('J2', 'Saldo');
 
                 $saldo = 0;
 
@@ -206,19 +208,20 @@ class BukuBesarController extends Controller
                     $saldo += $d->debit - $d->kredit;
                     $s
                         ->setCellValue("A$kolom", $no + 1)
-                        ->setCellValue("B$kolom", $d->no_cfm)
-                        ->setCellValue("C$kolom", $d->tgl)
-                        ->setCellValue("D$kolom", $d->saldo == 'Y' ? 'Saldo Awal' : ucwords(strtolower($d->nm_akun)))
-                        ->setCellValue("E$kolom", ucwords($d->nm_post))
-                        ->setCellValue("F$kolom", ucwords($d->ket))
-                        ->setCellValue("G$kolom", $d->debit)
-                        ->setCellValue("H$kolom", $d->kredit)
-                        ->setCellValue("I$kolom", $saldo);
+                        ->setCellValue("B$kolom", $d->no_nota)
+                        ->setCellValue("C$kolom", $d->no_cfm)
+                        ->setCellValue("D$kolom", $d->tgl)
+                        ->setCellValue("E$kolom", $d->saldo == 'Y' ? 'Saldo Awal' : ucwords(strtolower($d->nm_akun)))
+                        ->setCellValue("F$kolom", ucwords($d->nm_post))
+                        ->setCellValue("G$kolom", ucwords($d->ket))
+                        ->setCellValue("H$kolom", $d->debit)
+                        ->setCellValue("I$kolom", $d->kredit)
+                        ->setCellValue("J$kolom", $saldo);
                     $kolom++;
                 }
 
                 $bataskun = $kolom - 1;
-                $s->getStyle('A2:I' . $bataskun)->applyFromArray($style);
+                $s->getStyle('A2:J' . $bataskun)->applyFromArray($style);
                 $s->getStyle("A1")->getFont()->setBold(true);
             }
         }
