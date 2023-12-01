@@ -237,14 +237,14 @@ class PiutangtelurController extends Controller
             ];
             DB::table('bayar_telur')->insert($data);
         }
-        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '518')->first();
-        $akun = DB::table('akun')->where('id_akun', '518')->first();
+        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', '23')->first();
+        $akun = DB::table('akun')->where('id_akun', '23')->first();
 
         $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
         $data = [
             'tgl' => $r->tgl,
             'no_nota' => $r->no_nota_piutang,
-            'id_akun' => '518',
+            'id_akun' => '23',
             'id_buku' => '6',
             'ket' => 'Pelunasan piutang ' . $r->ket,
             'debit' => 0,
