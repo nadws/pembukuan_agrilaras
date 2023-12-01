@@ -212,7 +212,7 @@ class PiutangtelurController extends Controller
                 group by d.no_nota
             ) as d on d.no_nota = a.no_nota
             where a.no_nota_piutang = '$r->no_nota';"),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '4'])->get(),
             'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '23'"),
             'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '23'"),
         ];
