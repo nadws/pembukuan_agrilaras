@@ -213,8 +213,8 @@ class PiutangtelurController extends Controller
             ) as d on d.no_nota = a.no_nota
             where a.no_nota_piutang = '$r->no_nota';"),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
-            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '518'"),
-            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '518'"),
+            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '23'"),
+            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '23'"),
         ];
         return view('piutang_agl.edit_get_bayar', $data);
     }
