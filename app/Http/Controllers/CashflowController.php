@@ -118,7 +118,7 @@ class CashflowController extends Controller
             left join akun as c on c.id_akun = a.id_akun 
             where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null 
             group by a.id_akun"),
-            'biaya_proyek' => DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit 
+            'biaya_proyek' => DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit , c.id_klasifikasi
             FROM jurnal as a 
             left join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
             left join akun as c on c.id_akun = b.id_akun 
@@ -477,5 +477,24 @@ class CashflowController extends Controller
 
         ];
         return response()->json($response);
+    }
+
+    function detail_proyek(Request $r)
+    {
+        $tgl1 =  $r->tgl1;
+        $tgl2 =  $r->tgl2;
+        $data = [
+            'title' => 'Detail ',
+            'detail' => DB::select("SELECT a.tgl, a.ket, a.no_nota, a.no_urut, a.no_dokumen, a.ket, a.debit
+            FROM `jurnal` as a
+            left join tb_post_center as b on b.id_post_center = a.id_post_center
+            WHERE a.id_post_center = '$r->id_post' and a.id_akun = '$r->id_akun' and a.tgl between '$tgl1' and '$tgl2' and a.debit != '0'
+            order by a.saldo DESC, a.tgl ASC
+            "),
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'nm_post' => DB::table('tb_post_center')->where('id_post_center', $r->id_post)->first()
+        ];
+        return view('cashflow.detail', $data);
     }
 }
