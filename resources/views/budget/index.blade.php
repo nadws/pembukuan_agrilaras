@@ -249,6 +249,7 @@
                 </div>
             </x-theme.modal>
         </form>
+        
         @section('scripts')
             <script>
                 pencarian('pencarian2', 'tablealdi2')
