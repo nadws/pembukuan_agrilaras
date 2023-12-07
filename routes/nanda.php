@@ -284,6 +284,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit_akun_ibu', 'edit_akun_ibu')->name('edit_akun_ibu');
         Route::post('/seleksi_akun_control_ditarik', 'seleksi_akun_control_ditarik')->name('seleksi_akun_control_ditarik');
         Route::get('/cashflow_setahun', 'cashflowsetahun')->name('cashflow_setahun');
+        Route::get('/detail_proyek', 'detail_proyek')->name('detail_proyek');
     });
     Route::controller(NeracaController::class)->group(function () {
         Route::get('/neraca', 'index')->name('neraca');

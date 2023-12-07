@@ -269,7 +269,10 @@
         @endforeach
         <form id="save_budget">
             <input type="hidden" name="tgl" value="{{ $tgl1 }}">
-            <table class="table table-bordered">
+            <table class="table table-bordered" x-data="{
+                @foreach ($biaya_proyek as $b)
+            open_proyek{{ $b->id_akun }}: false, @endforeach
+            }">
                 <tbody>
 
                     <tr>
@@ -305,15 +308,37 @@
                         <td class=" text-end">{{ number_format($total_b_p, 0) }} </td>
                     </tr>
                     @foreach ($biaya_proyek as $b)
-                        @php
-                            $budget = DB::selectOne("SELECT a.rupiah FROM budget as a where a.id_akun = $b->id_akun");
-                        @endphp
                         <tr x-show="openBiayaProyek">
-                            <td><a target="_blank"
-                                    href="{{ route('summary_buku_besar.detail', ['id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ ucwords(strtolower($b->nm_akun)) }}</a>
+                            <td>{{ ucwords(strtolower($b->nm_akun)) }}
+                                @php
+                                    $button_proyek = 'open_proyek' . $b->id_akun;
+                                    // dd($button_proyek);
+                                @endphp
+                                @if ($b->id_klasifikasi == '12')
+                                    <a href="javascript:void(0);" class="float-end"
+                                        @click=" {{ $button_proyek }} = !{{ $button_proyek }}"><i
+                                            class=" fas fa-caret-down"></i></a>
+                                @endif
+
                             </td>
                             <td align="right">Rp {{ number_format($b->debit, 1) }}</td>
                         </tr>
+                        @php
+                            $detail = DB::select("SELECT a.id_post_center, b.nm_post, sum(a.debit) as debit
+                                FROM jurnal as a 
+                                left join tb_post_center as b on b.id_post_center = a.id_post_center
+                                where a.id_akun ='$b->id_akun' and a.tgl BETWEEN '$tgl1' and '$tgl2' and a.debit != '0'
+                                group by a.id_post_center;
+                            ");
+                        @endphp
+                        @foreach ($detail as $d)
+                            <tr x-show="open_proyek{{ $b->id_akun }}">
+                                <td style="padding-left: 20px"><a target="_blank"
+                                        href="{{ route('detail_proyek', ['id_post' => $d->id_post_center, 'id_akun' => $b->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ $d->nm_post }}</a>
+                                </td>
+                                <td class="text-end">{{ number_format($d->debit, 0) }}</td>
+                            </tr>
+                        @endforeach
                     @endforeach
                     {{-- <tr>
                         <td>&nbsp;</td>
