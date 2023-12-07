@@ -13,8 +13,6 @@
                         <td>Search :</td>
                         <td><input type="text" id="pencarian" class="form-control float-end"></td>
                     </table>
-
-
                 </div>
                 <table class="table table-hover" id="tablealdi">
                     <thead>
@@ -128,9 +126,10 @@
     </x-slot>
     @section('scripts')
         <script>
-            convertRpKoma('rp-nohide', 'rp-hide', 'rp-hides', 'totalDebit')
-            convertRpKoma('rp-nohides', 'rp-hides', 'rp-hide', 'totalKredit')
-            // convertRp('rp-nohides', 'rp-hides','totalKredit','totalKredithide')
+            // convertRpKoma('rp-nohide', 'rp-hide', 'rp-hides', 'totalDebit')
+            // convertRpKoma('rp-nohides', 'rp-hides', 'rp-hide', 'totalKredit')
+            convertRp('rp-nohides', 'rp-hides', 'totalKredit', 'totalKredithide')
+            convertRp('rp-nohide', 'rp-hide', 'totalDebit', 'totalDebithide')
 
             $(document).ready(function() {
                 pencarian('pencarian', 'tablealdi')
@@ -141,21 +140,33 @@
                     var kredit = $(".totalKredithide").val();
                     var total = parseFloat(debit) - parseFloat(kredit);
                     var save = $("#tambah_saldo").serialize();
-                    // if (debit == kredit) {
-                    $.ajax({
-                        url: "/saveSaldo?" + save,
-                        type: 'get',
-                        success: function(data) {
-                            window.location = "/saldo_awal";
-                        }
-                    });
-                    window.location = "/saldo_awal";
-                    // } else {
-                    //     var number_total = total.toFixed(0).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                    //     var rupiah_total = "Rp. " + number_total;
-                    //     $('.selisih').text(rupiah_total);
-                    //     $('#myModal').modal('show')
-                    // }
+                    if (debit == kredit) {
+                        $.ajax({
+                            url: "/saveSaldo?" + save,
+                            type: 'get',
+                            success: function(data) {
+                                window.location.reload();
+                                Toastify({
+                                    text: "Data berhasil disimpan",
+                                    duration: 3000,
+                                    style: {
+                                        background: "#EAF7EE",
+                                        color: "#7F8B8B"
+                                    },
+                                    close: true,
+                                    avatar: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+                                }).showToast();
+
+                            }
+                        });
+
+
+                    } else {
+                        var number_total = total.toFixed(0).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                        var rupiah_total = "Rp. " + number_total;
+                        $('.selisih').text(rupiah_total);
+                        $('#myModal').modal('show')
+                    }
 
 
 

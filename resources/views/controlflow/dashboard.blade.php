@@ -261,7 +261,7 @@
         </h5>
         <hr>
         <div class="row" x-show="neraca">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
@@ -269,7 +269,8 @@
                                 <h6 for="">Laporan Neraca</h6>
                             </div>
                             <div class="col-lg-8">
-                                <x-theme.button modal="T" icon="fa-print" href="#" addClass="float-end"
+                                <x-theme.button modal="T" icon="fa-print" target="_blank"
+                                    href="{{ route('print_neraca', ['tgl2' => $tgl2]) }}" addClass="float-end"
                                     teks="Print" />
                                 {{-- <button data-bs-toggle="modal" data-bs-target="#daftarakun" type="button"
                                     class="btn btn-sm  icon icon-left me-2 float-end btn-primary view_akun">

@@ -33,10 +33,10 @@
 
 <script>
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-            
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
     $(document).on('click', '.akses_h', function() {
         var id_user = $(this).attr('id_user');
         if ($('.akses_h' + id_user).prop("checked") == true) {
@@ -246,6 +246,8 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
             }
 
+
+
             var total_debit = 0;
             $("." + classHide).each(function() {
                 total_debit += parseFloat($(this).val());
@@ -278,7 +280,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     function plusRowProduk(count, classPlus, url) {
         $(document).on("click", "." + classPlus, function() {
             count = count + 1;
-           
+
             $.ajax({
                 url: `${url}?count=` + count,
                 type: "GET",
@@ -295,6 +297,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
         })
     }
+
     function plusRow(count, classPlus, url) {
         $(document).on("click", "." + classPlus, function() {
             count = count + 1;
@@ -304,7 +307,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 success: function(data) {
                     $("#" + classPlus).append(data);
                     $(".select2").select2();
-                    
+
                 },
             });
         });
@@ -421,7 +424,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             });
         })
     }
-    
+
 
     function inputChecked(allId, itemClass) {
         $(document).on('click', '#' + allId, function() {
@@ -482,8 +485,8 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     });
 </script>
 @if (session()->has('sukses'))
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             Toastify({
                 text: "{{ session()->get('sukses') }}",
                 duration: 3000,
@@ -495,11 +498,11 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 avatar: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
             }).showToast();
         });
-</script>
+    </script>
 @endif
 @if (session()->has('error'))
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             Toastify({
                 text: "{{ session()->get('error') }}",
                 duration: 3000,
@@ -513,7 +516,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 
         });
-</script>
+    </script>
 @endif
 @yield('scripts')
 @yield('js')

@@ -58,18 +58,23 @@ class NeracaController extends Controller
         $tgl1 =  '2020-01-01';
         $tgl2 = $r->tgl2;
 
+        $tgl_1 = date('Y-m-01', strtotime($r->tgl2));;
+
         $kas  = NeracaModel::GetKas($tgl1, $tgl2, 1);
         $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
         $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
         $hutang  = NeracaModel::GetKas($tgl1, $tgl2, 9);
         $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
         $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
-
+        $ekuitas2  = NeracaModel::GetKas3($tgl1, $tgl2);
+        $laba_berjalan = NeracaModel::laba_berjalan_pendapatan($tgl1, $tgl2);
+        $laba_berjalan2 = NeracaModel::laba_berjalan_biaya($tgl1, $tgl2);
 
         $peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 16);
         $aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 9);
         $aktiva_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 43);
         $peralatan_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 61);
+        $pullet_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 76);
 
         $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
         $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);
@@ -80,17 +85,73 @@ class NeracaController extends Controller
             'piutang' => $piutang,
             'peralatan' => $peralatan,
             'peralatan_gantung' => $peralatan_gantung,
+            'pullet_gantung' => $pullet_gantung,
             'akumulasi' => $akumulasi_aktiva,
             'akumulasi_peralatan' => $akumulasi_peralatan,
             'aktiva' => $aktiva,
             'aktiva_gantung' => $aktiva_gantung,
             'hutang' => $hutang,
             'ekuitas' => $ekuitas,
+            'ekuitas2' => $ekuitas2,
             'persediaan' => $persediaan,
             'tgl1' => $tgl1,
-            'tgl2' => $tgl2
+            'tgl2' => $tgl2,
+            'laba_pendapatan' => $laba_berjalan,
+            'laba_biaya' => $laba_berjalan2,
+
         ];
         return view('neraca.load', $data);
+    }
+
+    function print_neraca(Request $r)
+    {
+        $tgl1 =  '2020-01-01';
+        $tgl2 = $r->tgl2;
+
+        $tgl_1 = date('Y-m-01', strtotime($r->tgl2));
+
+        $kas  = NeracaModel::GetKas($tgl1, $tgl2, 1);
+        $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
+        $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
+        $hutang  = NeracaModel::GetKas($tgl1, $tgl2, 9);
+        $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
+
+        $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
+        $ekuitas2  = NeracaModel::GetKas3($tgl1, $tgl2);
+        $laba_berjalan = NeracaModel::laba_berjalan_pendapatan($tgl1, $tgl2);
+        $laba_berjalan2 = NeracaModel::laba_berjalan_biaya($tgl1, $tgl2);
+
+        $peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 16);
+        $aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 9);
+        $aktiva_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 43);
+        $peralatan_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 61);
+        $pullet_gantung  = NeracaModel::Getakumulasi($tgl1, $tgl2, 76);
+
+        $akumulasi_aktiva  = NeracaModel::Getakumulasi($tgl1, $tgl2, 52);
+        $akumulasi_peralatan  = NeracaModel::Getakumulasi($tgl1, $tgl2, 59);
+
+        $data = [
+            'kas' => $kas,
+            'bank' => $bank,
+            'piutang' => $piutang,
+            'peralatan' => $peralatan,
+            'peralatan_gantung' => $peralatan_gantung,
+            'pullet_gantung' => $pullet_gantung,
+            'akumulasi' => $akumulasi_aktiva,
+            'akumulasi_peralatan' => $akumulasi_peralatan,
+            'aktiva' => $aktiva,
+            'aktiva_gantung' => $aktiva_gantung,
+            'hutang' => $hutang,
+            'ekuitas' => $ekuitas,
+            'ekuitas2' => $ekuitas2,
+            'persediaan' => $persediaan,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'laba_pendapatan' => $laba_berjalan,
+            'laba_biaya' => $laba_berjalan2,
+
+        ];
+        return view('neraca.print', $data);
     }
 
     public function loadinputSub_neraca(Request $r)

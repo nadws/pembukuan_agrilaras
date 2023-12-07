@@ -102,7 +102,9 @@ class BukuBesarController extends Controller
         $tgl2 =  $r->tgl2;
         $data = [
             'title' => 'Detail ',
-            'detail' => DB::select("SELECT d.no_cfm, d.ket as ket2, a.ket, a.tgl,a.id_akun, d.nm_akun, a.no_nota, a.debit, a.kredit, a.saldo FROM `jurnal` as a
+            'detail' => DB::select("SELECT d.no_cfm, d.ket as ket2, a.ket, a.tgl,a.id_akun, d.nm_akun, a.no_nota, a.debit, a.kredit, a.saldo , b.nm_post
+            FROM `jurnal` as a
+            left join tb_post_center as b on b.id_post_center = a.id_post_center
                         LEFT JOIN (
                             SELECT j.no_nota, j.id_akun, GROUP_CONCAT(DISTINCT j.no_urut SEPARATOR ', ') as no_cfm, GROUP_CONCAT(DISTINCT j.ket SEPARATOR ', ') as ket, GROUP_CONCAT(DISTINCT b.nm_akun SEPARATOR ', ') as nm_akun 
                             FROM jurnal as j
@@ -152,7 +154,9 @@ class BukuBesarController extends Controller
         $spreadsheet = new Spreadsheet();
         foreach ($akun as $i => $r) {
 
-            $detail = DB::select("SELECT d.nm_post, d.no_cfm, d.ket as ket2, a.ket, a.tgl,a.id_akun, d.nm_akun, a.no_nota, a.debit, a.kredit, a.saldo FROM `jurnal` as a
+            $detail = DB::select("SELECT b.nm_post, d.no_cfm, d.ket as ket2, a.ket, a.tgl,a.id_akun, d.nm_akun, a.no_nota, a.debit, a.kredit, a.saldo 
+            FROM `jurnal` as a
+            left join tb_post_center as b on b.id_post_center = a.id_post_center
                     LEFT JOIN (
                         SELECT c.nm_post,j.no_nota, j.id_akun,  GROUP_CONCAT(DISTINCT j.ket SEPARATOR ', ') as ket, GROUP_CONCAT(DISTINCT j.no_urut SEPARATOR ', ') as no_cfm, GROUP_CONCAT(DISTINCT b.nm_akun SEPARATOR ', ') as nm_akun 
                         FROM jurnal as j
