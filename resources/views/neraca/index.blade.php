@@ -125,6 +125,9 @@
                     <th class="text-end">{{ number_format($ttlKas, 0) }}</th>
                 </tr>
                 <tr>
+                    
+                </tr>
+                <tr>
 
                     <th class="ps-4">
                         <div style="cursor: pointer" @click="open2 = ! open2"><i class=" fas fa-caret-down"></i>
