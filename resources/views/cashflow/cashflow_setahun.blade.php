@@ -176,7 +176,7 @@
                                         ->where('id_akun', $akun)
                                         ->first();
                                 @endphp
-                                &nbsp; &nbsp;&nbsp;{{ $nm_akun->nm_akun }}
+                                {{ $nm_akun->nm_akun }}
                             </td>
                             @php
                                 $totalPerAkun = 0;

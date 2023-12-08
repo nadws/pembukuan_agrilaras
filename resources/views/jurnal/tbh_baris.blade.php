@@ -5,10 +5,11 @@
         </button> --}}
     </td>
     <td style="vertical-align: top;">
-        <select name="id_akun[]" id="" class="select pilih_akun pilih_akun{{ $count }}" count="{{ $count }}" required>
+        <select name="id_akun[]" id="" class="select pilih_akun pilih_akun{{ $count }}"
+            count="{{ $count }}" required>
             <option value="">Pilih</option>
             @foreach ($akun as $a)
-            <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
             @endforeach
         </select>
         <div class="">
@@ -28,19 +29,26 @@
 
     </td>
     <td style="vertical-align: top;">
-        <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="{{ $count }}">
-        <input type="hidden" class="form-control debit_biasa debit_biasa{{ $count }}" value="0" name="debit[]">
-        <p class="peringatan_debit{{ $count }} mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
+        <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="{{ $count }}"
+            onclick="selectAllText(this)">
+        <input type="hidden" class="form-control debit_biasa debit_biasa{{ $count }}" value="0"
+            name="debit[]">
+        <p class="peringatan_debit{{ $count }} mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek
+            kembali !!
         </p>
     </td>
     <td style="vertical-align: top;">
-        <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="{{ $count }}">
-        <input type="hidden" class="form-control kredit_biasa kredit_biasa{{ $count }}" value="0" name="kredit[]">
-        <input type="hidden" class="form-control id_klasifikasi{{ $count }}" value="0" name="id_klasifikasi[]">
+        <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="{{ $count }}"
+            onclick="selectAllText(this)">
+        <input type="hidden" class="form-control kredit_biasa kredit_biasa{{ $count }}" value="0"
+            name="kredit[]">
+        <input type="hidden" class="form-control id_klasifikasi{{ $count }}" value="0"
+            name="id_klasifikasi[]">
         <input type="hidden" class="form-control nilai nilai{{ $count }}" value="0">
-        <p class="peringatan{{ $count }} mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah
-            kredit
-        </p>
+        <input type="hidden" class="form-control saldo saldo{{ $count }}" value="0">
+        <p class="peringatan{{ $count }} mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya
+            disebelah kredit</p>
+        <p class="peringatan_saldo{{ $count }} mt-2 text-danger" hidden></p>
     </td>
     {{-- <td style="vertical-align: top;">
         <p class="saldo_akun{{$count}} text-end" style="font-size: 12px"></p>

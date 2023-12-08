@@ -169,7 +169,8 @@ class JurnalController extends Controller
             'akun' => Akun::where('nonaktif', 'T')->get(),
             'proyek' => proyek::all(),
             'satuan' => DB::table('tb_satuan')->get(),
-            'id_akun' => $r->id_akun
+            'id_akun' => $r->id_akun,
+            'id_buku' => $r->id_buku
         ];
         return view('jurnal.load_menu', $data);
     }
@@ -369,14 +370,31 @@ class JurnalController extends Controller
     public function saldo_akun(Request $r)
     {
         $id_akun = $r->id_akun;
-        // $jurnal =  DB::selectOne("SELECT sum(a.debit) as debit , sum(a.kredit) as kredit FROM jurnal as a where a.id_akun = '$id_akun'");
-        // $saldo = $jurnal->debit - $jurnal->kredit;
 
-        // if (empty($saldo)) {
-        //     $saldo = 'Rp. 0';
-        // } else {
-        //     $saldo = 'Rp. ' . number_format($saldo, 0, '.', '.');
-        // }
+        $jurnal =  DB::selectOne("SELECT a.id_akun, a.nm_akun, b.debit, b.kredit,  c.debit as debit_saldo, c.kredit as kredit_saldo
+        FROM akun as a
+        LEFT JOIN (
+            SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
+            FROM jurnal as b
+            WHERE b.id_akun = $id_akun AND b.penutup = 'T'
+            GROUP BY b.id_akun
+        ) as b ON b.id_akun = a.id_akun
+        LEFT JOIN (
+         SELECT c.id_akun, SUM(c.debit) as debit, SUM(c.kredit) as kredit
+         FROM jurnal_saldo as c
+          WHERE c.id_akun = $id_akun
+          GROUP BY c.id_akun
+           ) as c ON c.id_akun = a.id_akun
+        WHERE a.id_akun = $id_akun;
+        ");
+
+        $saldo = $jurnal->debit + $jurnal->debit_saldo - $jurnal->kredit - $jurnal->kredit_saldo;
+
+        if (empty($saldo)) {
+            $saldo_input = 0;
+        } else {
+            $saldo_input = $saldo;
+        }
 
         $akun = DB::table('akun')->where('id_akun', $id_akun)->first();
 
@@ -396,6 +414,7 @@ class JurnalController extends Controller
         $data = [
             'id_klasifikasi' => $id_klasifikasi,
             'nilai' => $nilai,
+            'saldo' => $saldo_input
         ];
         echo json_encode($data);
     }

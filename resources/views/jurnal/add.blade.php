@@ -60,6 +60,7 @@
                     <hr style="border: 1px solid black">
                 </div>
                 <div class="col-lg-12">
+                    <input type="hidden" id_buku="{{ $id_buku }}">
                     <div id="load_menu"></div>
                 </div>
                 <div class="col-lg-6">
@@ -98,7 +99,9 @@
 
     </x-slot>
     <x-slot name="cardFooter">
-        <button type="submit" class="float-end btn btn-primary button-save" hidden>Simpan</button>
+        <div class="alert_saldo" hidden>
+            <button type="submit" class="float-end btn btn-primary button-save" hidden>Simpan</button>
+        </div>
         <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
@@ -150,6 +153,11 @@
                 </div> --}}
             </div>
         </x-theme.modal>
+        <x-theme.modal title="Saldo" idModal="tambah">
+            <div class="row">
+
+            </div>
+        </x-theme.modal>
 
     </x-slot>
 
@@ -159,6 +167,10 @@
 
     @section('scripts')
         <script>
+            function selectAllText(input) {
+                input.focus();
+                input.select();
+            }
             $(".select2suplier").select2()
             $(document).ready(function() {
                 load_menu();
@@ -166,15 +178,15 @@
                 function load_menu() {
                     var urlParams = new URLSearchParams(window.location.search);
                     var id_akun = urlParams.get('id_akun');
-
-
+                    var id_buku = urlParams.get('id_buku');
                     if (id_akun) {
                         $.ajax({
                             method: "GET",
                             url: "/load_menu",
                             dataType: "html",
                             data: {
-                                id_akun: id_akun
+                                id_akun: id_akun,
+                                id_buku: id_buku
                             },
                             success: function(hasil) {
                                 $("#load_menu").html(hasil);
@@ -195,7 +207,8 @@
                             url: "/load_menu",
                             dataType: "html",
                             data: {
-                                id_akun: defaultIdAkun
+                                id_akun: defaultIdAkun,
+                                id_buku: id_buku
                             },
                             success: function(hasil) {
                                 $("#load_menu").html(hasil);
@@ -210,9 +223,6 @@
                             },
                         });
                     }
-
-
-
                 }
 
                 $(document).on("click", ".remove_baris", function() {
@@ -272,6 +282,8 @@
                 $(document).on("keyup", ".debit_rupiah", function() {
                     var count = $(this).attr("count");
                     var id_klasifikasi = $('.id_klasifikasi' + count).val();
+                    var saldo = $('.saldo' + count).val();
+
                     var input = $(this).val();
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
@@ -288,12 +300,14 @@
                         $('.debit_biasa' + count).val(input2)
 
                     }
-                    if (id_klasifikasi === '1') {
-                        $('.peringatan_debit1' + count).attr("hidden", false);
-                    } else {
-                        $('.peringatan_debit1' + count).attr("hidden", true);
-                    }
 
+                    if (id_klasifikasi === '1' || id_klasifikasi === '2') {
+                        $('.peringatan_debit' + count).attr("hidden", false);
+
+                    } else {
+                        $('.peringatan_debit' + count).attr("hidden", true);
+
+                    }
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -329,21 +343,14 @@
 
                 });
 
-
+                function number_format(number) {
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
 
                 $(document).on("keyup", ".kredit_rupiah", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
                     var id_klasifikasi = $('.id_klasifikasi' + count).val();
-
-
-
-                    if (id_klasifikasi === '3') {
-                        $('.peringatan' + count).attr("hidden", false);
-                    } else {
-                        $('.peringatan' + count).attr("hidden", true);
-                    }
-
                     input = input.replace(/[^\d\,]/g, "");
                     input = input.replace(".", ",");
                     input = input.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
@@ -358,6 +365,23 @@
                         $('.kredit_biasa' + count).val(input2)
 
                     }
+                    var saldo = $('.saldo' + count).val();
+
+                    if (id_klasifikasi === '3') {
+                        $('.peringatan' + count).attr("hidden", false);
+                    } else {
+                        $('.peringatan' + count).attr("hidden", true);
+                        if (parseFloat(saldo) - input2 < 0) {
+                            $('.alert_saldo').attr('hidden', true);
+                            $('.peringatan_saldo' + count).removeAttr("hidden").text('Saldo saat ini = ' +
+                                number_format(saldo));
+                        } else {
+                            $('.alert_saldo').attr('hidden', false);
+                            $('.peringatan_saldo' + count).attr("hidden", true)
+                        }
+                    }
+
+
 
                     var total_kredit = 0;
                     $(".kredit_biasa").each(function() {
@@ -427,8 +451,11 @@
                         success: function(data) {
                             var id_klasifikasi = $(".id_klasifikasi" + count).val(data[
                                 'id_klasifikasi']);
-                            $(".nilai" + count).val(data['nilai'])
+
+                            $(".nilai" + count).val(data['nilai']);
+                            $(".saldo" + count).val(data['saldo']);
                             var nilai = data['nilai'];
+
 
                             // if (nilai == 1) {
                             //     $('.peringatan_akun' + count).attr("hidden", false);
@@ -441,10 +468,13 @@
                                 total_nilai += parseFloat($(this).val());
                             });
 
+
                             if (total_nilai > 0) {
                                 $('.button-save').prop('disabled', true);
+
                             } else {
                                 $('.button-save').prop('disabled', false);
+
                             }
 
                             if (nilai != 1) {
@@ -463,7 +493,6 @@
                                 } else {
                                     $('.peringatan' + count).attr("hidden", true);
                                 }
-
                             } else {
                                 $('.peringatan' + count).attr("hidden", true);
                             }

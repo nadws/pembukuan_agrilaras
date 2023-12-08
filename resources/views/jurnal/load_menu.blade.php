@@ -82,18 +82,26 @@
 
             </td>
             <td style="vertical-align: top;">
-                <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="1">
+                <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="1"
+                    onclick="selectAllText(this)">
                 <input type="hidden" class="form-control debit_biasa debit_biasa1" value="0" name="debit[]">
-                <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
-                </p>
+
+                @if ($id_buku != 7)
+                    <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
+                    </p>
+                @endif
+
             </td>
             <td style="vertical-align: top;">
-                <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="1">
+                <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="1"
+                    onclick="selectAllText(this)">
                 <input type="hidden" class="form-control kredit_biasa kredit_biasa1" value="0" name="kredit[]">
                 <input type="hidden" class="form-control id_klasifikasi1" value="0" name="id_klasifikasi[]">
                 <input type="hidden" class="form-control nilai nilai1" value="0">
+                <input type="hidden" class="form-control saldo saldo1" value="0">
                 <p class="peringatan1 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah kredit
                 </p>
+                <p class="peringatan_saldo1 mt-2 text-danger" hidden></p>
             </td>
             {{-- <td style="vertical-align: top;">
                 <p class="saldo_akun1 text-end" style="font-size: 12px"></p>
@@ -139,21 +147,26 @@
                 </p>
             </td>
             <td style="vertical-align: top;">
-                <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="2">
+                <input type="text" class="form-control debit_rupiah text-end" value="Rp 0" count="2"
+                    onclick="selectAllText(this)">
                 <input type="hidden" class="form-control debit_biasa debit_biasa2" value="0" name="debit[]">
+
                 <p class="peringatan_debit2 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
                 </p>
 
             </td>
             <td style="vertical-align: top;">
-                <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="2">
+                <input type="text" class="form-control kredit_rupiah text-end" value="Rp 0" count="2"
+                    onclick="selectAllText(this)">
                 <input type="hidden" class="form-control kredit_biasa kredit_biasa2" value="0"
                     name="kredit[]">
                 <input type="hidden" class="form-control id_klasifikasi2" value="0" name="id_klasifikasi[]">
                 <input type="hidden" class="form-control nilai nilai2" value="0">
+                <input type="hidden" class="form-control saldo saldo2" value="0">
                 <p class="peringatan2 mt-2 text-danger" hidden>Apakah anda yakin ingin memasukkan biaya disebelah
                     kredit
                 </p>
+                <p class="peringatan_saldo2 mt-2 text-danger" hidden></p>
             </td>
             {{-- <td style="vertical-align: top;">
                 <p class="saldo_akun2 text-end" style="font-size: 12px"></p>
