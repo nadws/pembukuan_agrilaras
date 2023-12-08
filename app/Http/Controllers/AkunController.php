@@ -100,11 +100,20 @@ class AkunController extends Controller
 
     public function load_sub_akun($id_akun)
     {
+        $non = 'T';
         $data = [
-            'detail' => PostCenter::where('id_akun', $id_akun)->get(),
+            'detail' => DB::select("SELECT * FROM tb_post_center as a  where a.id_akun = $id_akun and a.nonaktif = 'T'"),
             'id_akun' => $id_akun,
         ];
         return view('Akun.sub_akun', $data);
+    }
+    public function get_edit_sub($id_sub_akun)
+    {
+        $data = [
+            'detail' => PostCenter::where('id_post_center', $id_sub_akun)->first(),
+            'id_post_center' => $id_sub_akun,
+        ];
+        return view('Akun.edit_sub_akun', $data);
     }
 
     public function add_sub(Request $r)
@@ -114,10 +123,20 @@ class AkunController extends Controller
             'nm_post' => $r->nm_post,
         ]);
     }
+    public function edit_sub(Request $r)
+    {
+        PostCenter::where('id_post_center', $r->id_post_center)->update([
+            'nm_post' => $r->nm_post,
+        ]);
+    }
 
     public function remove_sub(Request $r)
     {
-        PostCenter::where('id_post_center', $r->id)->update(['nonaktif', 'T']);
+        DB::table('tb_post_center')
+            ->where('id_post_center', $r->id)
+            ->update([
+                'nonaktif' => 'Y'
+            ]);
     }
 
     public function export_akun(Request $r)

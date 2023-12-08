@@ -114,6 +114,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/importAkun', 'importAkun')->name('importAkun');
         Route::get('/get_edit_akun/{id_akun}', 'get_edit_akun')->name('get_edit_akun');
         Route::get('/load_sub_akun/{id_akun}', 'load_sub_akun')->name('load_sub_akun');
+        Route::get('/get_edit_sub/{id_akun}', 'get_edit_sub')->name('get_edit_sub');
+        Route::get('/edit_sub', 'edit_sub')->name('edit_sub');
     });
     Route::controller(SaldoController::class)->group(function () {
         Route::get('/saldo_awal', 'index')->name('saldo_awal');
