@@ -34,6 +34,7 @@ class NeracaController extends Controller
         $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
         $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
         $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
+        
         $hutang  = NeracaModel::GetKas($tgl1, $tgl2, 9);
         $ekuitas  = NeracaModel::GetKas2($tgl1, $tgl2);
         $ekuitas2  = NeracaModel::GetKas3($tgl1, $tgl2);
