@@ -45,46 +45,27 @@
         </div>
     </x-slot>
     <x-slot name="cardBody">
-        {{-- @php
-            $ttl_kas = 0;
-            $ttl_bank = 0;
-            $ttl_piutang = 0;
-            $ttl_persediaan = 0;
-
-            foreach ($kas as $k) {
-                $ttl_kas += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
-            }
-            foreach ($bank as $k) {
-                $ttl_bank += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
-            }
-
-            foreach ($piutang as $k) {
-                $ttl_piutang += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
-            }
-            foreach ($persediaan as $k) {
-                $ttl_persediaan += $k->debit + $k->debit_saldo - ($k->kredit + $k->kredit_saldo);
-            }
-        @endphp --}}
+        {{-- ini koding sum kalsifikasi --}}
         @php
-            function getKas($tgl1, $tgl2, $klasifikasi)
-            {
-                $kas = \App\Models\NeracaAldi::GetKas($tgl1, $tgl2, $klasifikasi);
-                $debit_kas = $kas->debit ?? 0;
-                $kredit_kas = $kas->kredit ?? 0;
-                return $debit_kas - $kredit_kas;
-            }
+            $klasifkasi = [
+                1 => 'kas',
+                2 => 'bank',
+                7 => 'piutang',
+                6 => 'persediaan',
+            ];
 
             $total_per_bulan = [];
             foreach ($bulans as $d) {
                 $bln = $d->bulan;
                 $tgl1 = '2020-01-01';
                 $tgl2 = date('Y-m-t', strtotime("$thn-$bln-1"));
+                foreach ($klasifkasi as $k => $i) {
+                    $kas = \App\Models\NeracaAldi::GetKas($tgl1, $tgl2, $k);
+                    $debit_kas = $kas->debit ?? 0;
+                    $kredit_kas = $kas->kredit ?? 0;
 
-                // Hitung total per bulan untuk KAS dan BANK
-                $total_per_bulan[$bln]['kas'] = getKas($tgl1, $tgl2,1);
-                $total_per_bulan[$bln]['bank'] = getKas($tgl1, $tgl2,2);
-                $total_per_bulan[$bln]['piutang'] = getKas($tgl1, $tgl2,7);
-                $total_per_bulan[$bln]['persediaan'] = getKas($tgl1, $tgl2,6);
+                    $total_per_bulan[$bln][$i] = $debit_kas - $kredit_kas;
+                }
             }
 
             // Menambahkan total keseluruhan untuk KAS dan BANK
@@ -92,7 +73,38 @@
             $ttlBank = array_sum(array_column($total_per_bulan, 'bank'));
             $ttlPiutang = array_sum(array_column($total_per_bulan, 'piutang'));
             $ttlPersediaan = array_sum(array_column($total_per_bulan, 'persediaan'));
+            $totalPerBulan = [];
+            foreach ($bulans as $d) {
+                $bln = $d->bulan;
+                $totalPerBulan[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
+            }
+
+            // Hitung total per bulan
+            foreach ($total_per_bulan as $bulan => $nilai) {
+                $totalPerBulan[$bulan] += $nilai['kas'] + $nilai['bank'] + $nilai['piutang'] + $nilai['persediaan'];
+            }
+            $totalSemua = $ttlKas + $ttlBank + $ttlPiutang + $ttlPersediaan;
+
         @endphp
+
+        {{-- ini koding per akun nya --}}
+        @php
+            $totalPerAkun = [];
+            foreach ($bulans as $d) {
+                $bln = $d->bulan;
+                $tgl1 = '2020-01-01';
+                $tgl2 = date('Y-m-t', strtotime("$thn-$bln-1"));
+
+                foreach ($klasifkasi as $k => $i) {
+                    $akun = \App\Models\NeracaAldi::getAkun($tgl1, $tgl2, $k);
+                    foreach ($akun as $a) {
+                        $totalPerAkun[$bln][$i][$a->nm_akun] = $a->debit - $a->kredit;
+                    }
+                }
+            }
+
+        @endphp
+
         <table class="table table-bordered" x-data="{
             open1: false,
             open2: false,
@@ -115,8 +127,9 @@
                 <tr>
 
                     <th class="ps-4">
-                        <div style="cursor: pointer" @click="open1 = ! open1"><i class=" fas fa-caret-down"></i>
+                        <div style="cursor: pointer" @click="open1 = ! open1">
                             KAS
+                            <i class=" fas fa-caret-down float-end"></i>
                         </div>
                     </th>
                     @foreach ($bulans as $d)
@@ -124,14 +137,35 @@
                     @endforeach
                     <th class="text-end">{{ number_format($ttlKas, 0) }}</th>
                 </tr>
-                <tr>
 
-                </tr>
+                @foreach ($totalPerAkun[1]['kas'] as $d => $i)
+                    <tr x-show="open1">
+                        <td class="ps-4">{{ $d }}</td>
+                        @php
+                            $total = 0;
+                        @endphp
+                        @foreach ($bulans as $b)
+                            <td class="ps-4 text-end">
+                                @php
+                                    $duit = $totalPerAkun[$b->bulan]['kas'][$d];
+                                    $total += $duit;
+                                @endphp
+                                {{ number_format($duit, 0) }}
+                            </td>
+                        @endforeach
+                        <td class="text-end">
+                            {{ number_format($total, 0) }}
+                        </td>
+                    </tr>
+                @endforeach
+
                 <tr>
 
                     <th class="ps-4">
-                        <div style="cursor: pointer" @click="open2 = ! open2"><i class=" fas fa-caret-down"></i>
+                        <div style="cursor: pointer" @click="open2 = ! open2">
                             BANK
+                            <i class=" fas fa-caret-down float-end"></i>
+
                         </div>
                     </th>
                     @foreach ($bulans as $d)
@@ -139,11 +173,31 @@
                     @endforeach
                     <th class="text-end">{{ number_format($ttlBank, 0) }}</th>
                 </tr>
+                @foreach ($totalPerAkun[1]['bank'] as $d => $i)
+                    <tr x-show="open2">
+                        @php
+                            $total = 0;
+                        @endphp
+                        <td class="ps-4">{{ $d }}</td>
+                        @foreach ($bulans as $b)
+                            @php
+                                $total += $totalPerAkun[$b->bulan]['bank'][$d];
+                            @endphp
+                            <td class="ps-4 text-end">
+                                {{ number_format($totalPerAkun[$b->bulan]['bank'][$d], 0) }}
+                            </td>
+                        @endforeach
+                        <td class="text-end">
+                            {{ number_format($total, 0) }}
+                        </td>
+                    </tr>
+                @endforeach
                 <tr>
 
                     <th class="ps-4">
-                        <div style="cursor: pointer" @click="open3 = ! open3"><i class=" fas fa-caret-down"></i>
+                        <div style="cursor: pointer" @click="open3 = ! open3">
                             PIUTANG DAGANG
+                            <i class=" fas fa-caret-down float-end"></i>
                         </div>
                     </th>
                     @foreach ($bulans as $d)
@@ -151,11 +205,31 @@
                     @endforeach
                     <th class="text-end">{{ number_format($ttlPiutang, 0) }}</th>
                 </tr>
+                @foreach ($totalPerAkun[1]['piutang'] as $d => $i)
+                    <tr x-show="open3">
+                        @php
+                            $total = 0;
+                        @endphp
+                        <td class="ps-4">{{ $d }}</td>
+                        @foreach ($bulans as $b)
+                            @php
+                                $total += $totalPerAkun[$b->bulan]['piutang'][$d];
+                            @endphp
+                            <td class="ps-4 text-end">
+                                {{ number_format($totalPerAkun[$b->bulan]['piutang'][$d], 0) }}
+                            </td>
+                        @endforeach
+                        <td class="text-end">
+                            {{ number_format($total, 0) }}
+                        </td>
+                    </tr>
+                @endforeach
                 <tr>
 
                     <th class="ps-4">
-                        <div style="cursor: pointer" @click="open4 = ! open4"><i class=" fas fa-caret-down"></i>
+                        <div style="cursor: pointer" @click="open4 = ! open4">
                             PERSEDIAAN
+                            <i class=" fas fa-caret-down float-end"></i>
                         </div>
                     </th>
                     @foreach ($bulans as $d)
@@ -163,7 +237,32 @@
                     @endforeach
                     <th class="text-end">{{ number_format($ttlPersediaan, 0) }}</th>
                 </tr>
-
+                @foreach ($totalPerAkun[1]['persediaan'] as $d => $i)
+                    <tr x-show="open4">
+                        <td class="ps-4">{{ $d }}</td>
+                        @php
+                            $total = 0;
+                        @endphp
+                        @foreach ($bulans as $b)
+                            @php
+                                $total += $totalPerAkun[$b->bulan]['persediaan'][$d];
+                            @endphp
+                            <td class="ps-4 text-end">
+                                {{ number_format($totalPerAkun[$b->bulan]['persediaan'][$d], 0) }}
+                            </td>
+                        @endforeach
+                        <td class="text-end">
+                            {{ number_format($total, 0) }}
+                        </td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <th class="dhead ps-3">Total Aktiva Lancar</th>
+                    @foreach ($bulans as $d)
+                        <th class="text-end dhead">{{ number_format($totalPerBulan[$d->bulan], 0) }}</th>
+                    @endforeach
+                    <th class="text-end dhead">{{ number_format($totalSemua, 0) }}</th>
+                </tr>
             </thead>
 
         </table>

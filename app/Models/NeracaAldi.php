@@ -33,9 +33,13 @@ class NeracaAldi extends Model
 
         return $result;
     }
-    public static function GetKas2($tgl1, $tgl2)
+
+    public static function GetAkun($tgl1, $tgl2, $id_klasifikasi)
     {
-        $result = DB::select("SELECT a.id_akun, a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo, c.kredit as kredit_saldo
+        $result = DB::select("SELECT 
+        a.id_akun, a.nm_akun, 
+        (COALESCE(b.kredit, 0) + COALESCE(c.kredit, 0)) as kredit,
+        (COALESCE(b.debit,0) + COALESCE(c.debit,0)) as debit
             FROM akun as a
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
@@ -49,8 +53,8 @@ class NeracaAldi extends Model
                 WHERE c.tgl BETWEEN ? AND ?
                 GROUP BY c.id_akun
             ) as c ON c.id_akun = a.id_akun
-            WHERE a.id_klasifikasi in(8,10) and a.id_akun != '95';
-        ", [$tgl1, $tgl2, $tgl1, $tgl2]);
+            WHERE a.id_klasifikasi = ?;
+        ", [$tgl1, $tgl2, $tgl1, $tgl2, $id_klasifikasi]);
 
         return $result;
     }
