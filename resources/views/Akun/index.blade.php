@@ -214,11 +214,21 @@
         {{-- end edit --}}
 
         {{-- sub akun --}}
-        <x-theme.modal title="Edit Akun" idModal="sub-akun" size="modal-lg">
+        <x-theme.modal title="Sub Akun" idModal="sub-akun" size="modal-lg">
             <div id="load-sub-akun">
             </div>
         </x-theme.modal>
+
+        <form id="save_edit_sub">
+            <x-theme.modal title="Edit Sub Akun" idModal="edit_sub_akun">
+                <div id="get_edit_sub">
+
+                </div>
+            </x-theme.modal>
+        </form>
         {{-- end sub akun --}}
+
+
 
         <form action="{{ route('akun.delete') }}" method="get">
             <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -295,7 +305,38 @@
                 $(document).on('click', `.sub-akun`, function() {
                     var id = $(this).attr('id_akun')
                     loadSubAkun(id)
-                })
+                });
+                $(document).on('click', '.edit-sub', function() {
+                    var id_sub = $(this).attr('id_sub');
+                    $.ajax({
+                        type: "get",
+                        url: `/get_edit_sub/${id_sub}`,
+                        success: function(response) {
+                            $('#get_edit_sub').html(response);
+                            $('#edit_sub_akun').modal('show');
+                        }
+                    });
+
+                });
+                $(document).on('submit', '#save_edit_sub', function(e) {
+                    e.preventDefault();
+                    var nm_post = $('#nm_post').val()
+                    var id_post_center = $('#id_post_center').val()
+                    var id_akun = $('#id_akun').val()
+                    $.ajax({
+                        type: "get",
+                        url: "edit_sub",
+                        data: {
+                            nm_post: nm_post,
+                            id_post_center: id_post_center,
+                        },
+                        success: function(response) {
+                            toast('Berhasil edit sub akun')
+                            $('#edit_sub_akun').modal('hide');
+                            loadSubAkun(id_akun)
+                        }
+                    });
+                });
 
                 // edit('sub-akun', 'id_akun', 'load_sub_akun', 'load-sub-akun')
 
