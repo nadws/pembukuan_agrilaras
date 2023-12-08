@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NeracaAldi;
 use App\Models\NeracaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,27 +12,14 @@ class NeracaController extends Controller
 {
     public function index(Request $r)
     {
-        $bulan =  $r->bulan ?? date('m');
         $tahun =  $r->tahun ?? date('Y');
-        $tgl1 =  '2020-01-01';
-        $tgl2 = date("$tahun-$bulan-t");
-
-        $kas  = NeracaModel::GetKas($tgl1, $tgl2, 1);
-        $bank  = NeracaModel::GetKas($tgl1, $tgl2, 2);
-        $piutang  = NeracaModel::GetKas($tgl1, $tgl2, 7);
-        $persediaan  = NeracaModel::GetKas($tgl1, $tgl2, 6);
 
         $data = [
             'title' => 'Laporan Neraca',
-            'bulan' => $bulan,
+            'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
+            'thn' => $tahun,
             'bulans' => DB::table('bulan')->get(),
-            'tahun' => $tahun,
-            'kas' => $kas,
-            'bank' => $bank,
-            'piutang' => $piutang,
-            'persediaan' => $persediaan,
-            'tgl1' => $tgl1,
-            'tgl2' => $tgl2,
+
         ];
         return view('neraca.index', $data);
     }

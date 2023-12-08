@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class NeracaModel extends Model
+class NeracaAldi extends Model
 {
     use HasFactory;
-
+    
     public static function GetKas($tgl1, $tgl2, $id_klasifikasi)
     {
-        $result = DB::select("SELECT a.id_akun, a.nm_akun, b.kredit, b.debit, c.debit as debit_saldo, c.kredit as kredit_saldo
+        $result = DB::selectOne("SELECT sum(b.debit + c.debit) as debit,sum(b.kredit - c.kredit) as kredit
             FROM akun as a
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
