@@ -71,7 +71,7 @@
                 $kas = \App\Models\NeracaAldi::GetKas($tgl1, $tgl2, $klasifikasi);
                 $debit_kas = $kas->debit ?? 0;
                 $kredit_kas = $kas->kredit ?? 0;
-                return $debit_kas + $kredit_kas;
+                return $debit_kas - $kredit_kas;
             }
 
             $total_per_bulan = [];
@@ -125,7 +125,7 @@
                     <th class="text-end">{{ number_format($ttlKas, 0) }}</th>
                 </tr>
                 <tr>
-                    
+
                 </tr>
                 <tr>
 
