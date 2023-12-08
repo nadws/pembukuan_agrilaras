@@ -148,9 +148,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="fw-bold">Uang Masuk <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_pendapatan = ! open_pendapatan"><i class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">Uang Masuk <a type="button" class="float-end"
+                                @click="open_pendapatan = ! open_pendapatan"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end">
@@ -161,9 +160,8 @@
                             {{ number_format($total_seluruh + $total_seluruh2 + $total_seluruh5, 0) }}</td>
                     </tr>
                     <tr x-show="open_pendapatan">
-                        <td class="fw-bold">&nbsp; &nbsp;Penjualan <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_penjualan = ! open_penjualan"><i class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">&nbsp; &nbsp;Penjualan <a type="button" class="float-end"
+                                @click="open_penjualan = ! open_penjualan"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class=" text-end">{{ number_format($totalsPerMonth[$month], 0) }}</td>
@@ -201,9 +199,8 @@
                         </tr>
                     @endforeach
                     <tr x-show="open_pendapatan">
-                        <td class="fw-bold">&nbsp; &nbsp;Piutang <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_piutang = ! open_piutang"><i class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">&nbsp; &nbsp;Piutang <a type="button" class="float-end"
+                                @click="open_piutang = ! open_piutang"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data5)) as $month)
                             <td class=" text-end">{{ number_format($totalsPerMonth5[$month], 0) }}</td>
@@ -242,9 +239,8 @@
                     @endforeach
 
                     <tr x-show="open_pendapatan">
-                        <td class="fw-bold">&nbsp; &nbsp;Bunga Bank <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end" @click="open_bank = ! open_bank"><i
-                                    class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">&nbsp; &nbsp;Bunga Bank <a type="button" class="float-end"
+                                @click="open_bank = ! open_bank"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data6)) as $month)
                             <td class=" text-end">{{ number_format($totalsPerMonth6[$month], 0) }}</td>
@@ -281,18 +277,17 @@
                             <td class="text-end">{{ number_format($totalPerAkun6, 0) }}</td>
                         </tr>
                     @endforeach
-                    <tr x-show="open_pendapatan">
-                        <td class="fw-bold">&nbsp; &nbsp;Hutang <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_hutang = ! open_hutang"><i class="fas fa-caret-down"></i></button>
+                    <tr>
+                        <td class="fw-bold">Hutang <a type="button" class=" float-end"
+                                @click="open_hutang = ! open_hutang"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data2)) as $month)
-                            <td class=" text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
+                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
                         @endforeach
-                        <td class=" text-end">{{ number_format($total_seluruh2, 0) }}</td>
+                        <td class="fw-bold text-end">{{ number_format($total_seluruh2, 0) }}</td>
                     </tr>
                     @foreach ($data2 as $akun => $months)
-                        <tr x-show="open_hutang && open_pendapatan">
+                        <tr x-show="open_hutang ">
                             <td>
                                 @php
                                     $nm_akun = DB::table('akun')
@@ -334,9 +329,8 @@
                     </tr>
 
                     <tr>
-                        <td class="fw-bold">Bayar Hutang <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_bayar = ! open_bayar"><i class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">Bayar Hutang <a type="button" class="float-end"
+                                @click="open_bayar = ! open_bayar"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data7)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth7[$month], 0) }}</td>
@@ -375,10 +369,8 @@
                     @endforeach
 
                     <tr>
-                        <td class="fw-bold">Pengeluaran Cost <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_biaya_cost = ! open_biaya_cost"><i
-                                    class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">Cost <a type="button" class="float-end"
+                                @click="open_biaya_cost = ! open_biaya_cost"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data3)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth3[$month], 0) }}</td>
@@ -416,10 +408,8 @@
                         </tr>
                     @endforeach
                     <tr>
-                        <td class="fw-bold">Pengeluaran Proyek <button type="button"
-                                class="btn btn-primary btn-sm btn-buka float-end"
-                                @click="open_biaya_proyek = ! open_biaya_proyek"><i
-                                    class="fas fa-caret-down"></i></button>
+                        <td class="fw-bold">Proyek <a class="float-end"
+                                @click="open_biaya_proyek = ! open_biaya_proyek"><i class="fas fa-caret-down"></i></a>
                         </td>
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth4[$month], 0) }}</td>
