@@ -317,7 +317,7 @@
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                &nbsp; <br>{{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
+                                {{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
                                 ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>
                                 {{ number_format($k->ttl_gjl / 7) }}
                             </td>

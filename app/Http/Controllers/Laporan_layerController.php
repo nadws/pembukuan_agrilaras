@@ -91,7 +91,8 @@ class Laporan_layerController extends Controller
             left join (
                 SELECT d.id_kandang, sum(d.pcs_kredit) as kg_pakan_kuml
                 FROM stok_produk_perencanaan as d 
-                where d.tgl between '2020-01-01' and '$tgl'
+                left join tb_produk_perencanaan as b on b.id_produk = d.id_pakan
+                where d.tgl between '2020-01-01' and '$tgl' and b.kategori = 'pakan'
                 group by d.id_kandang
             ) as l on l.id_kandang = a.id_kandang
 
