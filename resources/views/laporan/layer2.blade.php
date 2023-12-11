@@ -259,6 +259,8 @@
 
                         $dc_week = 0;
                         $rp_ayam = 0;
+
+                        $gjl_ttl = 0;
                     @endphp
                     @foreach ($kandang as $k)
                         @php
@@ -287,6 +289,7 @@
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
+                            $gjl_ttl += $k->ttl_gjl * 435000;
 
                         @endphp
                         <tr>
@@ -315,7 +318,8 @@
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
                                 &nbsp; <br>{{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
-                                ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%)
+                                ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>
+                                {{ number_format($k->ttl_gjl / 7) }}
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
@@ -591,8 +595,11 @@
                             @endphp
                             {{ number_format($pakan_kuml + $plus / $telur_kuml, 1) }}
                         </th>
-                        <th class="dhead table_layer">{{ number_format($obat_kuml, 0) }} <br>
-                            {{ number_format($vaksin_kuml, 0) }} <br> {{ number_format($rp_ayam, 0) }}</th>
+                        <th class="dhead table_layer">
+                            {{ number_format($obat_kuml, 0) }} <br>
+                            {{ number_format($vaksin_kuml, 0) }} <br> {{ number_format($rp_ayam, 0) }}
+                            <br>{{ number_format($gjl_ttl, 0) }}
+                        </th>
                     </tr>
                 </tfoot>
 
