@@ -187,6 +187,8 @@ class JurnalController extends Controller
 
     public function save_jurnal(Request $r)
     {
+
+
         $tgl = $r->tgl;
         // $no_nota = $r->no_nota;
         $id_akun = $r->id_akun;
@@ -216,10 +218,6 @@ class JurnalController extends Controller
             $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun[$i])->first();
             $akun = DB::table('akun')->where('id_akun', $id_akun[$i])->first();
             $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
-
-
-
-
             $data = [
                 'tgl' => $tgl,
                 'no_nota' => 'JU-' . $nota_t,

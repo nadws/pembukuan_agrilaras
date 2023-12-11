@@ -228,7 +228,7 @@
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
-                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam</th>
+                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>GjL</th>
                         {{-- KUML --}}
                     </tr>
                 </thead>
@@ -516,11 +516,12 @@
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
+                                    $gjl = ($k->ttl_gjl * 435000) / 7000;
                                 @endphp
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format(
-                                        ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam) / ($k->kuml_kg - $k->kuml_pcs / 180),
+                                        ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam + $gjl) / ($k->kuml_kg - $k->kuml_pcs / 180),
                                         1,
                                     ) }}
                                 <br> &nbsp;
@@ -531,7 +532,9 @@
                                 &nbsp; <br>
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
-                                {{ number_format($k->rupiah, 0) }} </td>
+                                {{ number_format($k->rupiah, 0) }} <br>
+                                {{ number_format($k->ttl_gjl * 435000) }}
+                            </td>
                             <!-- kuml -->
                             <!-- listrik -->
 
