@@ -369,7 +369,7 @@
 
                     if (id_klasifikasi === '3') {
                         $('.peringatan' + count).attr("hidden", false);
-                    } else {
+                    } else if (id_klasifikasi === '1' || id_klasifikasi === '2') {
                         $('.peringatan' + count).attr("hidden", true);
                         if (parseFloat(saldo) - input2 < 0) {
                             $('.alert_saldo').attr('hidden', true);
@@ -379,6 +379,9 @@
                             $('.alert_saldo').attr('hidden', false);
                             $('.peringatan_saldo' + count).attr("hidden", true)
                         }
+                    } else {
+                        $('.peringatan' + count).attr("hidden", true);
+
                     }
 
 

@@ -16,6 +16,8 @@ class PenutupController extends Controller
         $tgl1 =  $r->tgl1 ?? '2023-01-01';
         $tgl2 =  $r->tgl2 ?? date('Y-m-t');
 
+
+
         $tgl = DB::selectOne("SELECT min(a.tgl) as tgl, a.penutup FROM jurnal as a WHERE a.penutup = 'T' and a.id_buku not in ('5','1')");
         $tgl1Tutup = date('Y-m-01', strtotime($tgl->tgl));
         $tgl2Tutup = date('Y-m-t', strtotime($tgl->tgl));

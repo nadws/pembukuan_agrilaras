@@ -14,10 +14,11 @@
     <tbody>
         <tr class="baris1">
             <td>
-                <select name="id_kelompok[]" id="" class="select pilih_kelompok pilih_kelompok1" count='1'>
+                <select name="id_kelompok[]" id="" class="select pilih_kelompok pilih_kelompok1"
+                    count='1'>
                     <option value="">Pilih Kelompok</option>
                     @foreach ($kelompok as $k)
-                    <option value="{{$k->id_kelompok}}">{{$k->nm_kelompok}}</option>
+                        <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
                     @endforeach
                 </select>
             </td>
@@ -45,10 +46,11 @@
         </tr>
         <tr class="baris2">
             <td>
-                <select name="id_kelompok[]" id="" class="select pilih_kelompok pilih_kelompok2" count='2'>
+                <select name="id_kelompok[]" id="" class="select pilih_kelompok pilih_kelompok2"
+                    count='2'>
                     <option value="">Pilih Kelompok</option>
                     @foreach ($kelompok as $k)
-                    <option value="{{$k->id_kelompok}}">{{$k->nm_kelompok}}</option>
+                        <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
                     @endforeach
                 </select>
             </td>
