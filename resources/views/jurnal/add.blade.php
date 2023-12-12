@@ -301,13 +301,13 @@
 
                     }
 
-                    // if (id_klasifikasi === '1' || id_klasifikasi === '2') {
-                    //     $('.peringatan_debit' + count).attr("hidden", false);
+                    if (id_klasifikasi === '1' || id_klasifikasi === '2') {
+                        $('.peringatan_debit' + count).attr("hidden", false);
 
-                    // } else {
-                    //     $('.peringatan_debit' + count).attr("hidden", true);
+                    } else {
+                        $('.peringatan_debit' + count).attr("hidden", true);
 
-                    // }
+                    }
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -369,17 +369,19 @@
 
                     if (id_klasifikasi === '3') {
                         $('.peringatan' + count).attr("hidden", false);
-                    } else if (id_klasifikasi === '1' || id_klasifikasi === '2') {
-                        $('.peringatan' + count).attr("hidden", true);
-                        if (parseFloat(saldo) - input2 < 0) {
-                            $('.alert_saldo').attr('hidden', true);
-                            $('.peringatan_saldo' + count).removeAttr("hidden").text('Saldo saat ini = ' +
-                                number_format(saldo));
-                        } else {
-                            $('.alert_saldo').attr('hidden', false);
-                            $('.peringatan_saldo' + count).attr("hidden", true)
-                        }
-                    } else {
+                    }
+                    // else if (id_klasifikasi === '1' || id_klasifikasi === '2') {
+                    //     $('.peringatan' + count).attr("hidden", true);
+                    //     if (parseFloat(saldo) - input2 < 0) {
+                    //         $('.alert_saldo').attr('hidden', true);
+                    //         $('.peringatan_saldo' + count).removeAttr("hidden").text('Saldo saat ini = ' +
+                    //             number_format(saldo));
+                    //     } else {
+                    //         $('.alert_saldo').attr('hidden', false);
+                    //         $('.peringatan_saldo' + count).attr("hidden", true)
+                    //     }
+                    // } 
+                    else {
                         $('.peringatan' + count).attr("hidden", true);
 
                     }
