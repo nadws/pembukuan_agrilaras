@@ -301,13 +301,13 @@
 
                     }
 
-                    if (id_klasifikasi === '1' || id_klasifikasi === '2') {
-                        $('.peringatan_debit' + count).attr("hidden", false);
+                    // if (id_klasifikasi === '1' || id_klasifikasi === '2') {
+                    //     $('.peringatan_debit' + count).attr("hidden", false);
 
-                    } else {
-                        $('.peringatan_debit' + count).attr("hidden", true);
+                    // } else {
+                    //     $('.peringatan_debit' + count).attr("hidden", true);
 
-                    }
+                    // }
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
