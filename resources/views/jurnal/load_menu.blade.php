@@ -86,7 +86,7 @@
                     onclick="selectAllText(this)">
                 <input type="hidden" class="form-control debit_biasa debit_biasa1" value="0" name="debit[]">
 
-                @if ($id_buku != 7)
+                @if ($id_buku != 7 && $id_buku != 14)
                     <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
                     </p>
                 @endif
@@ -151,8 +151,12 @@
                     onclick="selectAllText(this)">
                 <input type="hidden" class="form-control debit_biasa debit_biasa2" value="0" name="debit[]">
 
-                <p class="peringatan_debit2 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali !!
-                </p>
+                @if ($id_buku != 14)
+                    <p class="peringatan_debit2 mt-2 text-danger" hidden>Data yang dimasukkan salah harap cek kembali
+                        !!
+                    </p>
+                @endif
+
 
             </td>
             <td style="vertical-align: top;">
