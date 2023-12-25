@@ -6,7 +6,7 @@
     <x-slot name="cardBody">
         <section class="row">
 
-            
+
             <table class="table" id="table1">
                 <thead>
                     <tr>
@@ -22,37 +22,38 @@
                 </thead>
                 <tbody>
                     @foreach ($suplier as $no => $d)
-                    <tr>
-                        <td>{{ $no+1 }}</td>
-                        <td>
-                            <img width="90" height="90" src="{{ asset('upload/suplier/' . $d->dokumen) }}" alt="">
-                        </td>
-                        <td>{{ $d->npwp }}</td>
-                        <td>{{ ucwords($d->nm_suplier) }}</td>
-                        <td>{{ ucwords($d->alamat) }}</td>
-                        <td>{{ $d->email }}</td>
-                        <td>{{ $d->telepon }}</td>
-                        <td align="center">
-                            <div class="btn-group dropstart mb-1">
-                                <span class="btn btn-lg" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v text-primary"></i>
-                                </span>
-                                <div class="dropdown-menu">
-                                    <a id_suplier="{{ $d->id_suplier }}" data-bs-toggle="modal" data-bs-target="#edit"
-                                        class="dropdown-item text-primary edit" href="#"><i
-                                            class="me-2 fas fa-pen"></i>
-                                        Edit</a>
-                                    <a class="dropdown-item text-danger" onclick="return confirm('Yakin dihapus ?')"
-                                        href="{{ route('suplier.delete', $d->id_suplier) }}"><i
-                                            class="me-2 fas fa-trash"></i> Delete</a>
-                                    <a class="dropdown-item text-info" href="#"><i
-                                            class="me-2 fas fa-search"></i>
-                                        Detail</a>
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>
+                                <img width="90" height="90" src="{{ asset('upload/suplier/' . $d->dokumen) }}"
+                                    alt="">
+                            </td>
+                            <td>{{ $d->npwp }}</td>
+                            <td>{{ ucwords($d->nm_suplier) }}</td>
+                            <td>{{ ucwords($d->alamat) }}</td>
+                            <td>{{ $d->email }}</td>
+                            <td>{{ $d->telepon }}</td>
+                            <td align="center">
+                                <div class="btn-group dropstart mb-1">
+                                    <span class="btn btn-lg" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v text-primary"></i>
+                                    </span>
+                                    <div class="dropdown-menu">
+                                        <a id_suplier="{{ $d->id_suplier }}" data-bs-toggle="modal"
+                                            data-bs-target="#edit" class="dropdown-item text-primary edit"
+                                            href="#"><i class="me-2 fas fa-pen"></i>
+                                            Edit</a>
+                                        <a class="dropdown-item text-danger" onclick="return confirm('Yakin dihapus ?')"
+                                            href="{{ route('suplier.delete', $d->id_suplier) }}"><i
+                                                class="me-2 fas fa-trash"></i> Delete</a>
+                                        <a class="dropdown-item text-info" href="#"><i
+                                                class="me-2 fas fa-search"></i>
+                                            Detail</a>
+                                    </div>
                                 </div>
-                            </div>
 
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
                     @endforeach
 
                 </tbody>

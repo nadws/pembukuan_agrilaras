@@ -135,4 +135,3 @@ class NeracaModel extends Model
         return $result;
     }
 }
-
