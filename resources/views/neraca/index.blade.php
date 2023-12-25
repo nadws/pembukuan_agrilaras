@@ -287,7 +287,7 @@
                             $debit_saldo_kas = $kas->debit_saldo ?? 0;
                             $kredit_saldo_kas = $kas->kredit_saldo ?? 0;
 
-                            $total_per_bulan[$bln][$i] = $debit_kas + $debit_saldo_kas - $kredit_kas + $kredit_saldo_kas;
+                            $total_per_bulan[$bln][$i] = $debit_kas + $debit_saldo_kas - $kredit_kas - $kredit_saldo_kas;
                         }
                     }
 
