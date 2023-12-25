@@ -284,8 +284,10 @@
                             $kas = \App\Models\NeracaAldi::Getakumulasi($tgl1, $tgl2, $k);
                             $debit_kas = $kas->debit ?? 0;
                             $kredit_kas = $kas->kredit ?? 0;
+                            $debit_saldo_kas = $kas->debit_saldo ?? 0;
+                            $kredit_saldo_kas = $kas->kredit_saldo ?? 0;
 
-                            $total_per_bulan[$bln][$i] = $debit_kas - $kredit_kas;
+                            $total_per_bulan[$bln][$i] = $debit_kas + $debit_saldo_kas - $kredit_kas + $kredit_saldo_kas;
                         }
                     }
 
