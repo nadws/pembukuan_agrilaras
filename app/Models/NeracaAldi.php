@@ -14,7 +14,7 @@ class NeracaAldi extends Model
     {
         $result = DB::selectOne("SELECT 
         SUM(COALESCE(b.debit, 0) + COALESCE(c.debit, 0)) as debit,
-        SUM(COALESCE(b.kredit, 0) - COALESCE(c.kredit, 0)) as kredit
+        SUM(COALESCE(b.kredit, 0) + COALESCE(c.kredit, 0)) as kredit
             FROM akun as a
             LEFT JOIN (
                 SELECT b.id_akun, SUM(b.debit) as debit, SUM(b.kredit) as kredit
