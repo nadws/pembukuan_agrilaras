@@ -122,7 +122,7 @@
                     {{-- <th class="dhead text-center freeze-cell1_th">Total</th> --}}
                 </tr>
                 <tr>
-                    <th class="dhead ps-3" colspan="14">Aktiva Lancar</th>
+                    <th class="dhead ps-3" colspan="13">Aktiva Lancar</th>
                 </tr>
                 <tr>
                     <th class="ps-4">
@@ -315,7 +315,7 @@
                 @endphp
 
                 <tr>
-                    <th class="dhead ps-3" colspan="14">Aktiva Tetap</th>
+                    <th class="dhead ps-3" colspan="13">Aktiva Tetap</th>
                 </tr>
                 @foreach ($klasifkasi as $i => $k)
                     <tr>
@@ -352,16 +352,16 @@
                     {{-- <th class="text-end dhead">{{ number_format($totalSemuaAktiva, 0) }}</th> --}}
                 </tr>
                 <tr>
-                    <th colspan="14"></th>
+                    <th colspan="13"></th>
                 </tr>
                 {{-- pasiva --}}
 
                 <tr>
-                    <th class="dhead" colspan="14"><b>Passiva</b></th>
+                    <th class="dhead" colspan="13"><b>Passiva</b></th>
 
                 </tr>
                 <tr>
-                    <th class="dhead ps-3" colspan="14">Hutang</th>
+                    <th class="dhead ps-3" colspan="13">Hutang</th>
                 </tr>
                 @php
 
@@ -417,13 +417,13 @@
                         @php
                             $totalSemuaHutang += $totalPerBulanHutang[$d->bulan];
                         @endphp
-                        {{-- <th class="text-end dhead">
-                            {{ number_format($totalPerBulanHutang[$d->bulan], 0) }}</th> --}}
+                        <th class="text-end dhead">
+                            {{ number_format($totalPerBulanHutang[$d->bulan], 0) }}</th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemuaHutang, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaHutang, 0) }}</th> --}}
                 </tr>
                 <tr>
-                    <th class="dhead ps-3" colspan="14">Ekuitas</th>
+                    <th class="dhead ps-3" colspan="13">Ekuitas</th>
                 </tr>
 
                 @php
