@@ -119,7 +119,7 @@
                     @foreach ($bulans as $d)
                         <th class="dhead text-center freeze-cell1_th">{{ $d->nm_bulan }}</th>
                     @endforeach
-                    <th class="dhead text-center freeze-cell1_th">Total</th>
+                    {{-- <th class="dhead text-center freeze-cell1_th">Total</th> --}}
                 </tr>
                 <tr>
                     <th class="dhead ps-3" colspan="14">Aktiva Lancar</th>
@@ -134,7 +134,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end">{{ number_format($total_per_bulan[$d->bulan]['kas'], 0) }}</th>
                     @endforeach
-                    <th class="text-end">{{ number_format($ttlKas, 0) }}</th>
+                    {{-- <th class="text-end">{{ number_format($ttlKas, 0) }}</th> --}}
                 </tr>
 
                 @foreach ($totalPerAkun[1]['kas'] as $d => $i)
@@ -152,9 +152,9 @@
                                 {{ number_format($duit, 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
 
@@ -170,7 +170,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end">{{ number_format($total_per_bulan[$d->bulan]['bank'], 0) }}</th>
                     @endforeach
-                    <th class="text-end">{{ number_format($ttlBank, 0) }}</th>
+                    {{-- <th class="text-end">{{ number_format($ttlBank, 0) }}</th> --}}
                 </tr>
                 @foreach ($totalPerAkun[1]['bank'] as $d => $i)
                     <tr x-show="open2">
@@ -186,9 +186,9 @@
                                 {{ number_format($totalPerAkun[$b->bulan]['bank'][$d], 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -202,7 +202,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end">{{ number_format($total_per_bulan[$d->bulan]['piutang'], 0) }}</th>
                     @endforeach
-                    <th class="text-end">{{ number_format($ttlPiutang, 0) }}</th>
+                    {{-- <th class="text-end">{{ number_format($ttlPiutang, 0) }}</th> --}}
                 </tr>
                 @foreach ($totalPerAkun[1]['piutang'] as $d => $i)
                     <tr x-show="open3">
@@ -218,9 +218,9 @@
                                 {{ number_format($totalPerAkun[$b->bulan]['piutang'][$d], 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -234,7 +234,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end">{{ number_format($total_per_bulan[$d->bulan]['persediaan'], 0) }}</th>
                     @endforeach
-                    <th class="text-end">{{ number_format($ttlPersediaan, 0) }}</th>
+                    {{-- <th class="text-end">{{ number_format($ttlPersediaan, 0) }}</th> --}}
                 </tr>
                 @foreach ($totalPerAkun[1]['persediaan'] as $d => $i)
                     <tr x-show="open4">
@@ -250,9 +250,9 @@
                                 {{ number_format($totalPerAkun[$b->bulan]['persediaan'][$d], 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -260,7 +260,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end dhead">{{ number_format($totalPerBulan[$d->bulan], 0) }}</th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemuaLancar, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaLancar, 0) }}</th> --}}
                 </tr>
 
                 {{-- aktiva tetap --}}
@@ -327,7 +327,7 @@
                         @foreach ($bulans as $d)
                             <th class="text-end">{{ number_format($total_per_bulan[$d->bulan][$k], 0) }}</th>
                         @endforeach
-                        <th class="text-end">{{ number_format(${'ttl' . ucwords($k)}, 0) }}</th>
+                        {{-- <th class="text-end">{{ number_format(${'ttl' . ucwords($k)}, 0) }}</th> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -335,7 +335,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end dhead">{{ number_format($totalPerBulanTetap[$d->bulan], 0) }}</th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemua, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemua, 0) }}</th> --}}
                 </tr>
                 <tr>
                     <th class="dhead"><b>Jumlah Aktiva</b></th>
@@ -349,7 +349,7 @@
                         <th class="text-end dhead">
                             {{ number_format($totalPerBulanTetap[$d->bulan] + $totalPerBulan[$d->bulan], 0) }}</th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemuaAktiva, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaAktiva, 0) }}</th> --}}
                 </tr>
                 <tr>
                     <th colspan="14"></th>
@@ -403,9 +403,9 @@
                                 {{ number_format($totalPerAkun[$b->bulan]['59'][$d], 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -417,8 +417,8 @@
                         @php
                             $totalSemuaHutang += $totalPerBulanHutang[$d->bulan];
                         @endphp
-                        <th class="text-end dhead">
-                            {{ number_format($totalPerBulanHutang[$d->bulan], 0) }}</th>
+                        {{-- <th class="text-end dhead">
+                            {{ number_format($totalPerBulanHutang[$d->bulan], 0) }}</th> --}}
                     @endforeach
                     <th class="text-end dhead">{{ number_format($totalSemuaHutang, 0) }}</th>
                 </tr>
@@ -457,9 +457,9 @@
                                 {{ number_format($totalPerAkun[$b->bulan]['0'][$d], 0) }}
                             </td>
                         @endforeach
-                        <td class="text-end">
+                        {{-- <td class="text-end">
                             {{ number_format($total, 0) }}
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
 
@@ -503,9 +503,9 @@
                             {{ number_format($totalPerAkunEkuitas2[$b->bulan]['total'], 0) }}
                         </td>
                     @endforeach
-                    <td class="text-end">
+                    {{-- <td class="text-end">
                         {{ number_format($total, 0) }}
-                    </td>
+                    </td> --}}
                 </tr>
 
                 <tr>
@@ -521,7 +521,7 @@
                             {{ number_format($totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan], 0) }}
                         </th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemuaEkuitas, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaEkuitas, 0) }}</th> --}}
                 </tr>
 
                 <tr>
@@ -537,7 +537,7 @@
                             {{ number_format($totalPerBulanHutang[$b->bulan] + $totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan], 0) }}
                         </th>
                     @endforeach
-                    <th class="text-end dhead">{{ number_format($totalSemuaPassiva, 0) }}</th>
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaPassiva, 0) }}</th> --}}
                 </tr>
 
             </thead>
