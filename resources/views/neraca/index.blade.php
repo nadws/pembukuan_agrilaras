@@ -475,7 +475,7 @@
                         $laba_biaya = \App\Models\NeracaAldi::laba_berjalan_biaya($tgl1, $tgl2);
 
                         $laba_berjalan_sebelum_penutup = $laba_pendapatan->pendapatan - $laba_biaya->biaya;
-                        $totalPerAkunEkuitas2[$bln]['total'] = $ekuitas2->kredit - $ekuitas2->debit + $laba_berjalan_sebelum_penutup;
+                        $totalPerAkunEkuitas2[$bln]['total'] = $ekuitas2->kredit + $ekuitas2->kredit_saldo - $ekuitas2->debit - $ekuitas2->debit_saldo + $laba_berjalan_sebelum_penutup;
                         // $totalPerAkun[$bln]['labaBerjalan'] = $ekuitas2->kredit - $ekuitas2->debit + $laba_berjalan_sebelum_penutup;
                     }
 
