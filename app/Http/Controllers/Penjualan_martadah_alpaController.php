@@ -10,10 +10,18 @@ class Penjualan_martadah_alpaController extends Controller
 {
     public function index(Request $r)
     {
+        if (empty($r->tgl1)) {
+            $tgl1 = date('Y-m-01');
+            $tgl2 = date('Y-m-t');
+        } else {
+            $tgl1 = $r->tgl1;
+            $tgl2 = $r->tgl2;
+        }
+
         $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, a.customer, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, a.cek, a.urutan_customer, a.admin
         FROM invoice_telur as a 
         left join customer as b on b.id_customer = a.id_customer
-          where a.lokasi = 'mtd'
+          where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'
         group by a.no_nota
         order by a.cek ASC 
         ");
@@ -67,7 +75,7 @@ class Penjualan_martadah_alpaController extends Controller
         $data = [
             'title' => 'Penerimaan Uang Martadah',
             'nota' => $r->no_nota,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
             'jurnal' => DB::select("SELECT *
             FROM jurnal as a
             WHERE a.no_nota = '$r->no_nota' and a.id_akun != '26'; "),
