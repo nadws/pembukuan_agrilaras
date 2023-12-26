@@ -290,6 +290,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::controller(NeracaController::class)->group(function () {
         Route::get('/neraca', 'index')->name('neraca');
+        Route::get('/load_pasiva', 'load_pasiva')->name('load_pasiva');
         Route::get('/loadNeraca', 'loadneraca')->name('loadNeraca');
         Route::get('/loadinputSub_neraca', 'loadinputSub_neraca')->name('loadinputSub_neraca');
         Route::get('/view_akun_neraca', 'view_akun_neraca')->name('view_akun_neraca');
