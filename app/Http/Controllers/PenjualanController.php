@@ -54,9 +54,10 @@ class PenjualanController extends Controller
             'title' => 'Penjualan Agrilaras',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor
+            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor, e.nm_customer as customer2
             FROM invoice_telur as a 
             left join customer as b on b.id_customer = a.id_customer
+            left join customer as e on e.id_customer = a.id_customer2
             left join (
                 SELECT c.no_nota, sum(c.debit) as debit_bayar, sum(c.kredit) as kredit_bayar, c.setor
                 FROM bayar_telur as c
@@ -191,6 +192,7 @@ class PenjualanController extends Controller
                 $data = [
                     'tgl' => $r->tgl,
                     'id_customer' => $r->customer,
+                    'id_customer2' => $r->id_customer2,
                     'tipe' => $r->tipe,
                     'no_nota' => 'T' . $nota_t,
                     'id_produk' => $r->id_produk[$x],
@@ -210,6 +212,7 @@ class PenjualanController extends Controller
                 $data = [
                     'tgl' => $r->tgl,
                     'id_customer' => $r->customer,
+                    'id_customer2' => $r->id_customer2,
                     'tipe' => $r->tipe,
                     'no_nota' => 'T' . $nota_t,
                     'id_produk' => $r->id_produk[$x],
@@ -351,7 +354,7 @@ class PenjualanController extends Controller
             // 'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
             'akun' => DB::table('akun')->get(),
             'nota' => $r->no_nota,
-            'invoice2' => DB::selectOne("SELECT a.urutan, a.urutan_customer, a.tgl, a.id_customer, a.id_produk, a.tipe, a.driver, sum(a.total_rp) as total_rp FROM invoice_telur as a where a.no_nota='$r->no_nota'"),
+            'invoice2' => DB::selectOne("SELECT a.urutan, a.urutan_customer, a.tgl, a.id_customer, a.id_produk, a.tipe, a.driver, sum(a.total_rp) as total_rp , a.id_customer2 FROM invoice_telur as a where a.no_nota='$r->no_nota'"),
             'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '26'"),
             'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '26'"),
         ];
@@ -409,6 +412,7 @@ class PenjualanController extends Controller
                 $data = [
                     'tgl' => $r->tgl,
                     'id_customer' => $r->customer,
+                    'id_customer2' => $r->id_customer2,
                     'tipe' => $r->tipe,
                     'no_nota' => $r->no_nota,
                     'id_produk' => $r->id_produk[$x],
@@ -428,6 +432,7 @@ class PenjualanController extends Controller
                 $data = [
                     'tgl' => $r->tgl,
                     'id_customer' => $r->customer,
+                    'id_customer2' => $r->id_customer2,
                     'tipe' => $r->tipe,
                     'no_nota' => $r->no_nota,
                     'id_produk' => $r->id_produk[$x],
