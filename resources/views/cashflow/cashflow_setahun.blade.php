@@ -153,7 +153,7 @@
                         </td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end">
-                                {{ number_format($totalsPerMonth[$month] + $totalsPerMonth5[$month] + $totalsPerMonth2[$month] + $totalsPerMonth6[$month], 0) }}
+                                {{ number_format($totalsPerMonth[$month] + $totalsPerMonth5[$month] + $totalsPerMonth6[$month], 0) }}
                             </td>
                         @endforeach
                         <td class="fw-bold text-end">

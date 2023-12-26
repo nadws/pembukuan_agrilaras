@@ -34,6 +34,15 @@
                     </select>
                 </div>
                 <div class="col-lg-2 col-6">
+                    <label for="">Customer2</label>
+                    <select name="id_customer2" class="select2_add" required>
+                        <option value="">Pilih Customer</option>
+                        @foreach ($customer as $s)
+                            <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-6">
                     <label for="">Tipe Penjualan</label>
                     <select name="tipe" class="select2_add pilih_tipe" required>
                         <option value="">Pilih Tipe Penjualan</option>
