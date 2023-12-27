@@ -70,7 +70,10 @@
             }
 
             // Menambahkan total keseluruhan untuk KAS dan BANK
-
+            $ttlKas = array_sum(array_column($total_per_bulan, 'kas'));
+            $ttlBank = array_sum(array_column($total_per_bulan, 'bank'));
+            $ttlPiutang = array_sum(array_column($total_per_bulan, 'piutang'));
+            $ttlPersediaan = array_sum(array_column($total_per_bulan, 'persediaan'));
             $totalPerBulan = [];
             foreach ($bulans as $d) {
                 $bln = $d->bulan;
@@ -81,6 +84,7 @@
             foreach ($total_per_bulan as $bulan => $nilai) {
                 $totalPerBulan[$bulan] += $nilai['kas'] + $nilai['bank'] + $nilai['piutang'] + $nilai['persediaan'];
             }
+            $totalSemuaLancar = $ttlKas + $ttlBank + $ttlPiutang + $ttlPersediaan;
         @endphp
 
         {{-- ini koding per akun nya --}}
@@ -149,8 +153,8 @@
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
 
@@ -183,8 +187,8 @@
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -215,8 +219,8 @@
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -247,8 +251,8 @@
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -256,6 +260,7 @@
                     @foreach ($bulans as $d)
                         <th class="text-end dhead">{{ number_format($totalPerBulan[$d->bulan], 0) }}</th>
                     @endforeach
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaLancar, 0) }}</th> --}}
                 </tr>
 
                 {{-- aktiva tetap --}}
@@ -287,6 +292,13 @@
                     }
 
                     // Menambahkan total keseluruhan untuk KAS dan BANK
+                    $ttlPeralatan = array_sum(array_column($total_per_bulan, 'peralatan'));
+                    $ttlAktiva = array_sum(array_column($total_per_bulan, 'aktiva'));
+                    $ttlAktivaGantung = array_sum(array_column($total_per_bulan, 'aktivaGantung'));
+                    $ttlPeralatanGantung = array_sum(array_column($total_per_bulan, 'peralatanGantung'));
+                    $ttlPulletGantung = array_sum(array_column($total_per_bulan, 'pulletGantung'));
+                    $ttlAkumulasiAktiva = array_sum(array_column($total_per_bulan, 'akumulasiAktiva'));
+                    $ttlAkumulasiPeralatan = array_sum(array_column($total_per_bulan, 'akumulasiPeralatan'));
 
                     $totalPerBulanTetap = [];
                     foreach ($bulans as $d) {
@@ -299,6 +311,7 @@
                         $totalPerBulanTetap[$bulan] += $nilai['peralatan'] + $nilai['aktiva'] + $nilai['aktivaGantung'] + $nilai['peralatanGantung'] + $nilai['pulletGantung'] + ($nilai['akumulasiAktiva'] + $nilai['akumulasiPeralatan']);
                     }
 
+                    $totalSemua = $ttlPeralatan + $ttlAktiva + $ttlAktivaGantung + $ttlPeralatanGantung + $ttlPulletGantung + ($ttlAkumulasiAktiva + $ttlAkumulasiPeralatan);
                 @endphp
 
                 <tr>
@@ -341,93 +354,8 @@
                 <tr>
                     <th colspan="13"></th>
                 </tr>
-
-                {{-- ================================================== --}}
-                <tr>
-                    <th class="dhead"><b>Total Passiva</b></th>
-                    @php
-
-                        $totalPerAkunHutang = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $tgl1 = '2020-01-01';
-                            $tgl2 = date('Y-m-t', strtotime("$thn-$bln-1"));
-
-                            $akun = \App\Models\NeracaAldi::GetAkun($tgl1, $tgl2, 9);
-                            foreach ($akun as $a) {
-                                $totalPerAkunHutang[$bln][59][$a->nm_akun] = $a->kredit - $a->debit;
-                            }
-                        }
-
-                        $totalPerBulanHutang = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $totalPerBulanHutang[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
-                        }
-                        foreach ($totalPerAkunHutang as $bulan => $nilai) {
-                            $totalPerBulanHutang[$bulan] += array_sum($nilai[59]);
-                        }
-
-                        $totalPerAkunEkuitas2 = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $tgl1 = '2020-01-01';
-                            $tgl2 = date('Y-m-t', strtotime("$thn-$bln-1"));
-
-                            $ekuitas2 = \App\Models\NeracaAldi::GetKas3($tgl1, $tgl2);
-                            $laba_pendapatan = \App\Models\NeracaAldi::laba_berjalan_pendapatan($tgl1, $tgl2);
-                            $laba_biaya = \App\Models\NeracaAldi::laba_berjalan_biaya($tgl1, $tgl2);
-
-                            $laba_berjalan_sebelum_penutup = $laba_pendapatan->pendapatan - $laba_biaya->biaya;
-                            $totalPerAkunEkuitas2[$bln]['total'] = $ekuitas2->kredit + $ekuitas2->kredit_saldo - $ekuitas2->debit - $ekuitas2->debit_saldo + $laba_berjalan_sebelum_penutup;
-                            // $totalPerAkun[$bln]['labaBerjalan'] = $ekuitas2->kredit - $ekuitas2->debit +
-                            $laba_berjalan_sebelum_penutup;
-                        }
-
-                        $totalPerBulanEkuitas = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
-                        }
-
-
-                        $totalPerAkun = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $tgl1 = '2020-01-01';
-                            $tgl2 = date('Y-m-t', strtotime("$thn-$bln-1"));
-
-                            $akun = \App\Models\NeracaAldi::GetKas2($tgl1, $tgl2);
-                            foreach ($akun as $a) {
-                                $totalPerAkun[$bln][$i][$a->nm_akun] = $a->kredit - $a->debit;
-                            }
-                        }
-                        $totalPerBulanEkuitas = [];
-                        foreach ($bulans as $d) {
-                            $bln = $d->bulan;
-                            $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
-                        }
-                        foreach ($totalPerAkun as $bulan => $nilai) {
-                            $totalPerBulanEkuitas[$bulan] += array_sum($nilai[59]);
-                        }
-                        $totalSemuaPassiva = 0;
-                    @endphp
-                    @foreach ($bulans as $b)
-                        @php
-                            $totalPerBulan = $totalPerBulanHutang[$b->bulan] + $totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan];
-                            $totalSemuaPassiva += $totalPerBulan;
-                        @endphp
-                        <th class="text-end dhead">
-                            {{ number_format($totalPerBulan, 0) }}
-                        </th>
-                    @endforeach
-                </tr>
-                {{-- ================================================== --}}
-
-
-
-
                 {{-- pasiva --}}
+
                 <tr>
                     <th class="dhead" colspan="13"><b>Passiva</b></th>
 
@@ -437,7 +365,7 @@
                 </tr>
                 @php
 
-                    $totalPerAkunHutang = [];
+                    $totalPerAkun = [];
                     foreach ($bulans as $d) {
                         $bln = $d->bulan;
                         $tgl1 = '2020-01-01';
@@ -445,7 +373,7 @@
 
                         $akun = \App\Models\NeracaAldi::GetAkun($tgl1, $tgl2, 9);
                         foreach ($akun as $a) {
-                            $totalPerAkunHutang[$bln][$i][$a->nm_akun] = $a->kredit - $a->debit;
+                            $totalPerAkun[$bln][$i][$a->nm_akun] = $a->kredit - $a->debit;
                         }
                     }
 
@@ -454,12 +382,12 @@
                         $bln = $d->bulan;
                         $totalPerBulanHutang[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
                     }
-                    foreach ($totalPerAkunHutang as $bulan => $nilai) {
+                    foreach ($totalPerAkun as $bulan => $nilai) {
                         $totalPerBulanHutang[$bulan] += array_sum($nilai[59]);
                     }
 
                 @endphp
-                @foreach ($totalPerAkunHutang[1]['59'] as $d => $i)
+                @foreach ($totalPerAkun[1]['59'] as $d => $i)
                     <tr>
 
                         <th class="ps-4">{{ $d }}</th>
@@ -469,15 +397,15 @@
                         @endphp
                         @foreach ($bulans as $b)
                             @php
-                                $total += $totalPerAkunHutang[$b->bulan]['59'][$d];
+                                $total += $totalPerAkun[$b->bulan]['59'][$d];
                             @endphp
                             <td class="ps-4 text-end">
-                                {{ number_format($totalPerAkunHutang[$b->bulan]['59'][$d], 0) }}
+                                {{ number_format($totalPerAkun[$b->bulan]['59'][$d], 0) }}
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
                 <tr>
@@ -510,14 +438,7 @@
                             $totalPerAkun[$bln][$i][$a->nm_akun] = $a->kredit - $a->debit;
                         }
                     }
-                    $totalPerBulanEkuitas = [];
-                    foreach ($bulans as $d) {
-                        $bln = $d->bulan;
-                        $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
-                    }
-                    foreach ($totalPerAkun as $bulan => $nilai) {
-                        $totalPerBulanEkuitas[$bulan] += array_sum($nilai[0]);
-                    }
+
                 @endphp
 
                 @foreach ($totalPerAkun[1]['0'] as $d => $i)
@@ -537,8 +458,8 @@
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
-                        {{ number_format($total, 0) }}
-                    </td> --}}
+                            {{ number_format($total, 0) }}
+                        </td> --}}
                     </tr>
                 @endforeach
 
@@ -555,10 +476,17 @@
 
                         $laba_berjalan_sebelum_penutup = $laba_pendapatan->pendapatan - $laba_biaya->biaya;
                         $totalPerAkunEkuitas2[$bln]['total'] = $ekuitas2->kredit + $ekuitas2->kredit_saldo - $ekuitas2->debit - $ekuitas2->debit_saldo + $laba_berjalan_sebelum_penutup;
-                        // $totalPerAkun[$bln]['labaBerjalan'] = $ekuitas2->kredit - $ekuitas2->debit +
-                        $laba_berjalan_sebelum_penutup;
+                        // $totalPerAkun[$bln]['labaBerjalan'] = $ekuitas2->kredit - $ekuitas2->debit + $laba_berjalan_sebelum_penutup;
                     }
 
+                    $totalPerBulanEkuitas = [];
+                    foreach ($bulans as $d) {
+                        $bln = $d->bulan;
+                        $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
+                    }
+                    foreach ($totalPerAkun as $bulan => $nilai) {
+                        $totalPerBulanEkuitas[$bulan] += array_sum($nilai[0]);
+                    }
                 @endphp
                 <tr>
 
@@ -596,7 +524,7 @@
                     {{-- <th class="text-end dhead">{{ number_format($totalSemuaEkuitas, 0) }}</th> --}}
                 </tr>
 
-                {{-- <tr>
+                <tr>
                     <th class="dhead"><b>Total Passiva</b></th>
                     @php
                         $totalSemuaPassiva = 0;
@@ -606,14 +534,11 @@
                             $totalSemuaPassiva += $totalPerBulanHutang[$b->bulan] + $totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan];
                         @endphp
                         <th class="text-end dhead">
-                            {{ number_format(
-                                $totalPerBulanHutang[$b->bulan] + $totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan],
-                                0,
-                            ) }}
+                            {{ number_format($totalPerBulanHutang[$b->bulan] + $totalPerAkunEkuitas2[$b->bulan]['total'] + $totalPerBulanEkuitas[$b->bulan], 0) }}
                         </th>
                     @endforeach
-                     <th class="text-end dhead">{{ number_format($totalSemuaPassiva, 0) }}</th> 
-                </tr> --}}
+                    {{-- <th class="text-end dhead">{{ number_format($totalSemuaPassiva, 0) }}</th> --}}
+                </tr>
 
             </thead>
         </table>
@@ -621,14 +546,5 @@
 
 
     @section('scripts')
-        <script>
-            $.ajax({
-                type: "GET",
-                url: "{{ route('load_pasiva') }}",
-                success: function(r) {
-                    $("#tb_baris").html(r);
-                }
-            });
-        </script>
     @endsection
 </x-theme.app>
