@@ -90,6 +90,15 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-lg-4">
+                            <label for="">Customer2</label>
+                            <select name="id_customer2" class="select_ayam" required>
+                                <option value="">Pilih Customer</option>
+                                @foreach ($customer as $s)
+                                    <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-lg-12">
                             <hr>
                         </div>

@@ -357,21 +357,27 @@
                             @php
                                 $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             @endphp
-                            <td align="center" class="td_layer {{ $gr_butir < 58 ? 'text-danger' : '' }}">
-                                &nbsp; <br>
-                                &nbsp;
-                                <br>
-                                {{ $gr_butir }}
-                                <br>
-                                {{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }}
+                            <td align="center" class="td_layer ">
+                                <p style="margin: 0; padding: 0;">&nbsp;</p>
+                                <p style="margin: 0; padding: 0;">&nbsp;</p>
+                                <p style="margin: 0; padding: 0;"
+                                    class="{{ $gr_butir < 58 ? 'text-danger fw-bold' : '' }}">
+                                    {{ $gr_butir }}</p>
+                                <p style="margin: 0; padding: 0;">{{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }}
+                                </p>
                             </td>
-                            <td align="center"
-                                class="butir {{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }} ">
-                                &nbsp; <br>
-                                {{ number_format($k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180), 1) }}
-                                <br>
-                                {{ number_format($k->pcs - $k->pcs_past, 0) }}
-                                <br> &nbsp;
+                            <td align="center" class="butir td_layer">
+                                @php
+                                    $kg = $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180);
+                                @endphp
+                                <p style="margin: 0; padding: 0;">&nbsp;</p>
+                                <p style="margin: 0; padding: 0;" class="{{ $kg < 0 ? 'text-danger fw-bold' : '' }}">
+                                    {{ number_format($kg, 1) }}
+                                </p>
+                                <p style="margin: 0; padding: 0;"
+                                    class="{{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }}">
+                                    {{ number_format($k->pcs - $k->pcs_past, 0) }}</p>
+                                <p style="margin: 0; padding: 0;">&nbsp;</p>
                             </td>
 
                             {{-- <td align="center" class="butir td_layer">
@@ -434,13 +440,19 @@
                                 $fcr_day = empty($k->kg_pakan) || empty($k->pcs) ? '0' : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
                             @endphp
 
-                            <td align="center"
-                                class="FCR(week) {{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }} td_layer">
+                            <td align="center" class="FCR(week)  td_layer">
                                 @if ($k->mgg < 21)
                                     0 / 0 <br> 0 / 0
                                 @else
-                                    {{ $fcr_day }} / {{ $fcr_plus }} <br>
-                                    {{ number_format($fcr, 1) }} / {{ number_format($fcr_plus_week, 1) }}
+                                    <span
+                                        class="{{ $fcr_day >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ $fcr_day }}</span>
+                                    / <span class="{{ $fcr_plus >= 2.2 ? 'text-danger fw-bold' : '' }}">
+                                        {{ $fcr_plus }}</span> <br>
+                                    <span
+                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 1) }}</span>
+                                    /
+                                    <span
+                                        class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 1) }}</span>
                                 @endif
 
                             </td>

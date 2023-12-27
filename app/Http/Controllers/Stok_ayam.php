@@ -92,6 +92,7 @@ class Stok_ayam extends Controller
             'tgl' => $r->tgl,
             'no_nota' => 'PA-' . $nota_t,
             'id_customer' => $r->customer,
+            'id_customer2' => $r->id_customer2,
             'qty' => $r->qty,
             'h_satuan' => $r->h_satuan,
             'admin' =>  auth()->user()->name,
@@ -171,6 +172,7 @@ class Stok_ayam extends Controller
         }
         return redirect()->route('history_ayam')->with('sukses', 'Data Berhasil Ditambahkan');
     }
+
     public function edit_save_penjualan_ayam(Request $r)
     {
 
@@ -218,6 +220,7 @@ class Stok_ayam extends Controller
             'tgl' => $r->tgl,
             'no_nota' => $r->no_nota,
             'id_customer' => $r->customer,
+            'id_customer2' => $r->id_customer2,
             'qty' => $r->qty,
             'h_satuan' => $r->h_satuan,
             'admin' =>  auth()->user()->name,

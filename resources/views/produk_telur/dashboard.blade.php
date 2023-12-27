@@ -5,8 +5,8 @@
                 <h6 class="float-start mt-1">{{ $title }} </h6>
             </div>
             <div class="col-lg-6">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#view" class="btn btn-sm btn-primary float-end"><i
-                        class="fas fa-calendar-week"></i></a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#view"
+                    class="btn btn-sm btn-primary float-end"><i class="fas fa-calendar-week"></i></a>
             </div>
         </div>
     </x-slot>
@@ -235,7 +235,7 @@
 
                 </table>
                 @php
-                    
+
                 @endphp
 
                 @if (!empty($cekTransfer))
