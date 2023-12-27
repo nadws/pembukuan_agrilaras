@@ -132,6 +132,8 @@ class CashflowController extends Controller
             'uangbiayacoshbalance' => CashflowModel::uangBiayabalance($tgl2, '6'),
             'uangbiayaproyekbalance' => CashflowModel::uangBiayabalance($tgl2, '7'),
             'uangbiayaproyek' => CashflowModel::uangBiaya($tgl1, $tgl2, '7'),
+
+
             'biaya_admin' => DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal as a where a.id_akun = '8' and a.tgl between
             '$tgl1' and '$tgl2' and a.id_buku = '6' "),
             'hutang_herry' => DB::selectOne("SELECT a.id_akun, a.nm_akun, b.debit, b.kredit
@@ -142,6 +144,13 @@ class CashflowController extends Controller
             where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.id_akun = '19'
             ) as b on b.id_akun = a.id_akun
             where a.id_akun = '19';"),
+
+            'bunga_bank' => DB::selectOne("SELECT b.tgl, b.id_akun, b.no_nota, b.debit, sum(b.kredit) as kredit
+            FROM jurnal as b 
+            left join akun as c on c.id_akun = b.id_akun
+            where b.kredit != 0 and b.id_akun ='8' and b.id_buku in ('6', '12', '7') 
+            and b.tgl BETWEEN '$tgl1' and '$tgl2'
+           "),
             'tgl_back' => $tgl_back,
             'tgl2' => $tgl2,
             'tgl1' => $tgl1,
@@ -226,7 +235,7 @@ class CashflowController extends Controller
         $piutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
-        $id_akun4 = ['19'];
+        $id_akun4 = ['19', '103'];
         $id_buku = ['7', '14'];
         $hutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
 
@@ -239,6 +248,15 @@ class CashflowController extends Controller
         $id_akun4 = ['19'];
         $id_buku = ['7'];
         $bayar_hutang = CashflowModel::cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+
+        $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
+        $id_akun4 = ['8'];
+        $id_buku = ['6'];
+        $biaya_admin_pen = CashflowModel::cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+
+
+
+
 
 
 
@@ -442,6 +460,34 @@ class CashflowController extends Controller
             // Menambahkan data nominal ke struktur data
             $data7[$transaction->id_akun][$month] = $nominal;
         }
+        $data8 = [];
+        foreach ($biaya_admin_pen as $transaction) {
+
+            $month = date('F', strtotime("{$transaction->tahun}-{$transaction->bulan}-01"));
+
+            // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $transaction->kredit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data8[$transaction->id_akun])) {
+                $data8[$transaction->id_akun] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data8[$transaction->id_akun][$month] = $nominal;
+        }
 
         $datas = [
             'title' => 'Cashflow Setahun',
@@ -449,7 +495,7 @@ class CashflowController extends Controller
             'thn' => $tahun
         ];
 
-        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'), $datas);
+        return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data8'), $datas);
     }
 
     public function cashflowUangMasukSetahun(Request $r)
