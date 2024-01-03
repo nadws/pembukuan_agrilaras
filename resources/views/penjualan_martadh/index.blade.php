@@ -8,6 +8,7 @@
             <div class="col-lg-6">
                 {{-- <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Setor" /> --}}
                 <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
+                <x-theme.btn_filter />
             </div>
         </div>
     </x-slot>
