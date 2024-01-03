@@ -245,7 +245,8 @@ class Penjualan_martadah_alpaController extends Controller
 
 
 
-
-        return redirect()->route('penjualan_martadah_cek')->with('sukses', 'Data berhasil ditambahkan');
+        $tgl1 = date('Y-m-01', strtotime($r->tgl));
+        $tgl2 = date('Y-m-t', strtotime($r->tgl));
+        return redirect()->route('penjualan_martadah_cek', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2])->with('sukses', 'Data berhasil ditambahkan');
     }
 }
