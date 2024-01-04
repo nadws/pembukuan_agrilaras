@@ -240,7 +240,7 @@ class CashflowController extends Controller
         $hutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
-        $id_akun4 = ['8'];
+        $id_akun4 = ['8', '101'];
         $id_buku = ['6', '12', '7'];
         $bunga_bank = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
 
