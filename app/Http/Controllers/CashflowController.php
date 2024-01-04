@@ -148,7 +148,7 @@ class CashflowController extends Controller
             'bunga_bank' => DB::selectOne("SELECT b.tgl, b.id_akun, b.no_nota, b.debit, sum(b.kredit) as kredit
             FROM jurnal as b 
             left join akun as c on c.id_akun = b.id_akun
-            where b.kredit != 0 and b.id_akun ='8' and b.id_buku in ('6', '12', '7') 
+            where b.kredit != 0 and b.id_akun in('8','101') and b.id_buku in ('6', '12', '7') 
             and b.tgl BETWEEN '$tgl1' and '$tgl2'
            "),
             'tgl_back' => $tgl_back,
