@@ -530,10 +530,10 @@
                         @endphp
                         @foreach ($bulans as $b)
                             @php
-                                $total += $totalPerAkun[$b->bulan]['0'][$d];
+                                $total += $totalPerAkun[$b->bulan][$d];
                             @endphp
                             <td class="ps-4 text-end">
-                                {{ number_format($totalPerAkun[$b->bulan]['0'][$d], 0) }}
+                                {{ number_format($totalPerAkun[$b->bulan][$d], 0) }}
                             </td>
                         @endforeach
                         {{-- <td class="text-end">
