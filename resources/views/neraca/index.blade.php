@@ -518,6 +518,7 @@
                     foreach ($totalPerAkun as $bulan => $nilai) {
                         $totalPerBulanEkuitas[$bulan] += array_sum($nilai);
                     }
+                    dd($totalPerAkun);
                 @endphp
 
                 @foreach ($totalPerAkun['0'] as $d => $i)
