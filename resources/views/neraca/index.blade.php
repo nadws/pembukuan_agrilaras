@@ -515,8 +515,8 @@
                         $bln = $d->bulan;
                         $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
                     }
-                    dd($totalPerAkun);
                     foreach ($totalPerAkun as $bulan => $nilai) {
+                        dd($nilai);
                         $totalPerBulanEkuitas[$bulan] += array_sum($nilai[0]);
                     }
                 @endphp
