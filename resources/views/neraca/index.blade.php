@@ -507,7 +507,7 @@
 
                         $akun = \App\Models\NeracaAldi::GetKas2($tgl1, $tgl2);
                         foreach ($akun as $a) {
-                            $totalPerAkun[$bln][$i][$a->nm_akun] = $a->kredit - $a->debit;
+                            $totalPerAkun[$bln][$a->nm_akun] = $a->kredit - $a->debit;
                         }
                     }
                     $totalPerBulanEkuitas = [];
@@ -515,8 +515,8 @@
                         $bln = $d->bulan;
                         $totalPerBulanEkuitas[$bln] = 0; // Setiap bulan diinisialisasi dengan nilai 0
                     }
+                    dd($totalPerAkun);
                     foreach ($totalPerAkun as $bulan => $nilai) {
-                        dd(array_sum($nilai));
                         $totalPerBulanEkuitas[$bulan] += array_sum($nilai[0]);
                     }
                 @endphp
