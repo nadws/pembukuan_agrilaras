@@ -273,7 +273,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data[$transaction->id_akun])) {
+            if (!isset($data[$transaction->id_akun]) && empty($data[$transaction->id_akun])) {
                 $data[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -292,6 +292,7 @@ class CashflowController extends Controller
             // Menambahkan data nominal ke struktur data
             $data[$transaction->id_akun][$month] = $nominal;
         }
+
         $data2 = [];
         foreach ($hutang as $transaction) {
 
@@ -301,7 +302,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data2[$transaction->id_akun])) {
+            if (!isset($data2[$transaction->id_akun]) && empty($data2[$transaction->id_akun])) {
                 $data2[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -329,7 +330,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data3[$transaction->id_akun])) {
+            if (!isset($data3[$transaction->id_akun]) && empty($data3[$transaction->id_akun])) {
                 $data3[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -357,7 +358,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data4[$transaction->id_akun])) {
+            if (!isset($data4[$transaction->id_akun]) && empty($data4[$transaction->id_akun])) {
                 $data4[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -385,7 +386,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data5[$transaction->id_akun])) {
+            if (!isset($data5[$transaction->id_akun]) && empty($data5[$transaction->id_akun])) {
                 $data5[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -413,7 +414,7 @@ class CashflowController extends Controller
             $nominal = $transaction->debit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data6[$transaction->id_akun])) {
+            if (!isset($data6[$transaction->id_akun]) && empty($data6[$transaction->id_akun])) {
                 $data6[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -441,7 +442,7 @@ class CashflowController extends Controller
             $nominal = $transaction->kredit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data7[$transaction->id_akun])) {
+            if (!isset($data7[$transaction->id_akun]) && empty($data7[$transaction->id_akun])) {
                 $data7[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,
@@ -460,6 +461,7 @@ class CashflowController extends Controller
             // Menambahkan data nominal ke struktur data
             $data7[$transaction->id_akun][$month] = $nominal;
         }
+
         $data8 = [];
         foreach ($biaya_admin_pen as $transaction) {
 
@@ -469,7 +471,7 @@ class CashflowController extends Controller
             $nominal = $transaction->kredit; // Menghitung nominal
 
             // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data8[$transaction->id_akun])) {
+            if (!isset($data8[$transaction->id_akun]) && empty($data8[$transaction->id_akun])) {
                 $data8[$transaction->id_akun] = [
                     'January' => 0,
                     'February' => 0,

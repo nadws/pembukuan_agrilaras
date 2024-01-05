@@ -46,92 +46,149 @@
     </x-slot>
     <x-slot name="cardBody">
         @php
-            $totalsPerMonth = array_fill(0, count(array_keys(reset($data))), 0);
-            $total_seluruh = 0;
 
-            foreach ($data as $akun => $months) {
-                $totalPerAkun = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun += $nominal;
-                    $totalsPerMonth[$month] = ($totalsPerMonth[$month] ?? 0) + $nominal;
+            if (is_array($data) && !empty($data)) {
+                $totalsPerMonth = array_fill(0, count(array_keys(reset($data))), 0);
+                $total_seluruh = 0;
+
+                foreach ($data as $akun => $months) {
+                    $totalPerAkun = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun += $nominal;
+                        $totalsPerMonth[$month] = ($totalsPerMonth[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh += $totalPerAkun;
                 }
-                $total_seluruh += $totalPerAkun;
+
+                // Lanjutan kode Anda...
+            } else {
+                // Handle kasus di mana $data bukan array atau array kosong
+                $total_seluruh = 0;
             }
 
-            $totalsPerMonth2 = array_fill(0, count(array_keys(reset($data2))), 0);
-            $total_seluruh2 = 0;
+            if (is_array($data2) && !empty($data2)) {
+                $totalsPerMonth2 = array_fill(0, count(array_keys(reset($data2))), 0);
+                $total_seluruh2 = 0;
 
-            foreach ($data2 as $akun => $months) {
-                $totalPerAkun2 = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun2 += $nominal;
-                    $totalsPerMonth2[$month] = ($totalsPerMonth2[$month] ?? 0) + $nominal;
+                foreach ($data2 as $akun => $months) {
+                    $totalPerAkun2 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun2 += $nominal;
+                        $totalsPerMonth2[$month] = ($totalsPerMonth2[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh2 += $totalPerAkun2;
                 }
-                $total_seluruh2 += $totalPerAkun2;
-            }
-            $totalsPerMonth3 = array_fill(0, count(array_keys(reset($data3))), 0);
-            $total_seluruh3 = 0;
-
-            foreach ($data3 as $akun => $months) {
-                $totalPerAkun3 = 0;
+            } else {
                 foreach ($months as $month => $nominal) {
-                    $totalPerAkun3 += $nominal;
-                    $totalsPerMonth3[$month] = ($totalsPerMonth3[$month] ?? 0) + $nominal;
+                    $totalsPerMonth2[$month] = 0;
                 }
-                $total_seluruh3 += $totalPerAkun3;
+                $total_seluruh2 = 0;
             }
 
-            $totalsPerMonth4 = array_fill(0, count(array_keys(reset($data3))), 0);
-            $total_seluruh4 = 0;
-            foreach ($data4 as $akun => $months) {
-                $totalPerAkun4 = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun4 += $nominal;
-                    $totalsPerMonth4[$month] = ($totalsPerMonth4[$month] ?? 0) + $nominal;
+            if (is_array($data3) && !empty($data3)) {
+                $totalsPerMonth3 = array_fill(0, count(array_keys(reset($data3))), 0);
+                $total_seluruh3 = 0;
+
+                foreach ($data3 as $akun => $months) {
+                    $totalPerAkun3 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun3 += $nominal;
+                        $totalsPerMonth3[$month] = ($totalsPerMonth3[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh3 += $totalPerAkun3;
                 }
-                $total_seluruh4 += $totalPerAkun3;
+            } else {
+                foreach ($months as $month => $nominal) {
+                    $totalsPerMonth3[$month] = 0;
+                }
+                $total_seluruh3 = 0;
             }
 
-            $totalsPerMonth5 = array_fill(0, count(array_keys(reset($data3))), 0);
-            $total_seluruh5 = 0;
-            foreach ($data5 as $akun => $months) {
-                $totalPerAkun5 = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun5 += $nominal;
-                    $totalsPerMonth5[$month] = ($totalsPerMonth5[$month] ?? 0) + $nominal;
+            if (is_array($data4) && !empty($data4)) {
+                $totalsPerMonth4 = array_fill(0, count(array_keys(reset($data4))), 0);
+                $total_seluruh4 = 0;
+                foreach ($data4 as $akun => $months) {
+                    $totalPerAkun4 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun4 += $nominal;
+                        $totalsPerMonth4[$month] = ($totalsPerMonth4[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh4 += $totalPerAkun4;
                 }
-                $total_seluruh5 += $totalPerAkun5;
-            }
-            $totalsPerMonth6 = array_fill(0, count(array_keys(reset($data6))), 0);
-            $total_seluruh6 = 0;
-            foreach ($data6 as $akun => $months) {
-                $totalPerAkun6 = 0;
+            } else {
                 foreach ($months as $month => $nominal) {
-                    $totalPerAkun6 += $nominal;
-                    $totalsPerMonth6[$month] = ($totalsPerMonth6[$month] ?? 0) + $nominal;
+                    $totalsPerMonth4[$month] = 0;
                 }
-                $total_seluruh6 += $totalPerAkun6;
+                $total_seluruh4 = 0;
             }
 
-            $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data7))), 0);
-            $total_seluruh7 = 0;
-            foreach ($data7 as $akun => $months) {
-                $totalPerAkun7 = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun7 += $nominal;
-                    $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
+            if (is_array($data5) && !empty($data5)) {
+                $totalsPerMonth5 = array_fill(0, count(array_keys(reset($data5))), 0);
+                $total_seluruh5 = 0;
+                foreach ($data5 as $akun => $months) {
+                    $totalPerAkun5 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun5 += $nominal;
+                        $totalsPerMonth5[$month] = ($totalsPerMonth5[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh5 += $totalPerAkun5;
                 }
-                $total_seluruh7 += $totalPerAkun7;
+            } else {
+                $total_seluruh5 = 0;
             }
-            $totalsPerMonth8 = array_fill(0, count(array_keys(reset($data8))), 0);
-            $total_seluruh8 = 0;
-            foreach ($data8 as $akun => $months) {
-                $totalPerAkun8 = 0;
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun8 += $nominal;
-                    $totalsPerMonth8[$month] = ($totalsPerMonth8[$month] ?? 0) + $nominal;
+
+            if (is_array($data6) && !empty($data6)) {
+                $totalsPerMonth6 = array_fill(0, count(array_keys(reset($data6))), 0);
+                $total_seluruh6 = 0;
+                foreach ($data6 as $akun => $months) {
+                    $totalPerAkun6 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun6 += $nominal;
+                        $totalsPerMonth6[$month] = ($totalsPerMonth6[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh6 += $totalPerAkun6;
                 }
-                $total_seluruh8 += $totalPerAkun8;
+            } else {
+                foreach ($months as $month => $nominal) {
+                    $totalsPerMonth6[$month] = 0;
+                }
+                $total_seluruh6 = 0;
+            }
+
+            if (is_array($data7) && !empty($data7)) {
+                $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data7))), 0);
+                $total_seluruh7 = 0;
+                foreach ($data7 as $akun => $months) {
+                    $totalPerAkun7 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun7 += $nominal;
+                        $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh7 += $totalPerAkun7;
+                }
+            } else {
+                foreach ($months as $month => $nominal) {
+                    $totalsPerMonth7[$month] = 0;
+                }
+                $total_seluruh7 = 0;
+            }
+
+            if (is_array($data8) && !empty($data8)) {
+                $totalsPerMonth8 = array_fill(0, count(array_keys(reset($data8))), 0);
+                $total_seluruh8 = 0;
+                foreach ($data8 as $akun => $months) {
+                    $totalPerAkun8 = 0;
+                    foreach ($months as $month => $nominal) {
+                        $totalPerAkun8 += $nominal;
+                        $totalsPerMonth8[$month] = ($totalsPerMonth8[$month] ?? 0) + $nominal;
+                    }
+                    $total_seluruh8 += $totalPerAkun8;
+                }
+            } else {
+                foreach ($months as $month => $nominal) {
+                    $totalsPerMonth8[$month] = 0;
+                }
+                $total_seluruh8 = 0;
             }
 
         @endphp
@@ -253,9 +310,15 @@
                         <td class="fw-bold">&nbsp; &nbsp;Bunga Bank <a type="button" class="float-end"
                                 @click="open_bank = ! open_bank"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data6)) as $month)
-                            <td class=" text-end">{{ number_format($totalsPerMonth6[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data6) && !empty($data6))
+                            @foreach (array_keys(reset($data6)) as $month)
+                                <td class="text-end">{{ number_format($totalsPerMonth6[$month] ?? 0, 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+                        @endif
                         <td class=" text-end">{{ number_format($total_seluruh6, 0) }}</td>
                     </tr>
                     @foreach ($data6 as $akun => $months)
@@ -293,9 +356,16 @@
                         <td class="fw-bold">&nbsp; &nbsp;Biaya Admin <a type="button" class="float-end"
                                 @click="open_admin = ! open_admin"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data8)) as $month)
-                            <td class=" text-end">{{ number_format($totalsPerMonth8[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data8) && !empty($data8))
+                            @foreach (array_keys(reset($data8)) as $month)
+                                <td class=" text-end">{{ number_format($totalsPerMonth8[$month], 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+
+                        @endif
                         <td class=" text-end">{{ number_format($total_seluruh8, 0) }}</td>
                     </tr>
                     @foreach ($data8 as $akun => $months)
@@ -333,9 +403,15 @@
                         <td class="fw-bold">Hutang <a type="button" class=" float-end"
                                 @click="open_hutang = ! open_hutang"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data2)) as $month)
-                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data2) && !empty($data2))
+                            @foreach (array_keys(reset($data2)) as $month)
+                                <td class="fw-bold text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+                        @endif
                         <td class="fw-bold text-end">{{ number_format($total_seluruh2, 0) }}</td>
                     </tr>
                     @foreach ($data2 as $akun => $months)
@@ -386,9 +462,16 @@
                         <td class="fw-bold">Bayar Hutang <a type="button" class="float-end"
                                 @click="open_bayar = ! open_bayar"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data7)) as $month)
-                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth7[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data7) && !empty($data7))
+                            @foreach (array_keys(reset($data7)) as $month)
+                                <td class="fw-bold text-end">{{ number_format($totalsPerMonth7[$month], 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+                        @endif
+
                         <td class="fw-bold text-end">{{ number_format($total_seluruh7, 0) }}</td>
                     </tr>
                     @foreach ($data7 as $akun => $months)
@@ -426,9 +509,16 @@
                         <td class="fw-bold">Cost <a type="button" class="float-end"
                                 @click="open_biaya_cost = ! open_biaya_cost"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data3)) as $month)
-                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth3[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data3) && !empty($data3))
+                            @foreach (array_keys(reset($data3)) as $month)
+                                <td class="fw-bold text-end">{{ number_format($totalsPerMonth3[$month], 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+                        @endif
+
                         <td class="fw-bold text-end">{{ number_format($total_seluruh3, 0) }}</td>
                     </tr>
                     @foreach ($data3 as $akun => $months)
@@ -465,9 +555,16 @@
                         <td class="fw-bold">Proyek <a class="float-end"
                                 @click="open_biaya_proyek = ! open_biaya_proyek"><i class="fas fa-caret-down"></i></a>
                         </td>
-                        @foreach (array_keys(reset($data4)) as $month)
-                            <td class="fw-bold text-end">{{ number_format($totalsPerMonth4[$month], 0) }}</td>
-                        @endforeach
+                        @if (is_array($data4) && !empty($data4))
+                            @foreach (array_keys(reset($data4)) as $month)
+                                <td class="fw-bold text-end">{{ number_format($totalsPerMonth4[$month], 0) }}</td>
+                            @endforeach
+                        @else
+                            @foreach (array_keys(reset($data)) as $month)
+                                <td class="text-end">0</td>
+                            @endforeach
+                        @endif
+
                         <td class="fw-bold text-end">{{ number_format($total_seluruh4, 0) }}</td>
                     </tr>
                     @foreach ($data4 as $akun => $months)

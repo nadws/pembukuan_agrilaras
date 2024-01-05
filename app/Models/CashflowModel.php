@@ -81,8 +81,8 @@ class CashflowModel extends Model
         $id_buku_values = implode(",", $id_buku);
 
         $result = DB::select("SELECT a.id_jurnal, a.id_akun, a.tgl, c.nm_akun, sum(a.debit) as debit, b.no_nota, MONTH(a.tgl) as bulan , YEAR(a.tgl) as tahun
-        FROM jurnal as a 
-        left join akun as c on c.id_akun = a.id_akun
+        FROM akun as c 
+        left join jurnal as a on a.id_akun = c.id_akun
         LEFT JOIN (
         SELECT b.tgl, b.id_akun, b.no_nota
             FROM jurnal as b 
