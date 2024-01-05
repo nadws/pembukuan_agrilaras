@@ -520,7 +520,7 @@
                     }
                 @endphp
 
-                @foreach ($totalPerAkun[1]['0'] as $d => $i)
+                @foreach ($totalPerAkun['0'] as $d => $i)
                     <tr>
 
                         <th class="ps-4">{{ ucwords($d) }}</th>
