@@ -294,4 +294,38 @@ class ProfitModel extends Model
         ", [$tahun, $tahun]);
         return $result;
     }
+
+    public static function saldo_t_lalu($tahun1, $tahun2, $id_akun)
+    {
+        $result = DB::selectOne("SELECT a.id_akun, 
+        COALESCE(b.debit, 0) + COALESCE(c.debit, 0) as d_saldo, 
+        COALESCE(c.kredit, 0) + COALESCE(b.kredit, 0) as k_saldo
+ FROM akun as a 
+ LEFT JOIN (
+    SELECT c.id_akun, 
+           SUM(COALESCE(c.debit, 0)) as debit, 
+           SUM(COALESCE(c.kredit, 0)) as kredit, 
+           MONTH(c.tgl) as bulan2, 
+           YEAR(c.tgl) as tahun2
+    FROM jurnal_saldo_sebelum_penutup as c
+    WHERE YEAR(c.tgl) BETWEEN ? and ? and c.id_akun= ?
+    GROUP BY c.id_akun
+ ) as b ON b.id_akun = a.id_akun
+ 
+ LEFT JOIN (
+     SELECT b.id_akun, 
+            SUM(COALESCE(b.debit, 0)) as debit, 
+            SUM(COALESCE(b.kredit, 0)) as kredit, 
+            MONTH(b.tgl) as bulan, 
+            YEAR(b.tgl) as tahun, 
+            b.penutup
+     FROM jurnal as b
+     WHERE b.id_buku NOT IN (5, 13) AND YEAR(b.tgl) BETWEEN ? and ? and b.penutup ='T'
+     GROUP BY b.id_akun
+ ) as c ON c.id_akun = a.id_akun
+ 
+ WHERE a.id_akun = ?;
+        ", [$tahun1, $tahun2, $id_akun, $tahun1, $tahun2, $id_akun]);
+        return $result;
+    }
 }
