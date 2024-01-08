@@ -551,9 +551,10 @@ class PenjualanController extends Controller
     {
         $tgl1 = $r->tgl1;
         $tgl2 = $r->tgl2;
-        $nota =  DB::select("SELECT a.no_nota, max(a.tgl) as tgl, b.nm_customer, b.npwp, a.customer, sum(a.total_rp) as total_rp , a.tipe, a.lokasi
+        $nota =  DB::select("SELECT a.no_nota, max(a.tgl) as tgl,  c.npwp, a.customer, sum(a.total_rp) as total_rp , a.tipe, a.lokasi, c.ktp, c.nm_customer, c.alamat
         FROM invoice_telur as a 
         left JOIN customer as b on b.id_customer = a.id_customer
+        left JOIN customer as c on c.id_customer = a.id_customer2
         WHERE a.tgl between '$tgl1' and '$tgl2' and a.lokasi != 'opname'
         GROUP by a.no_nota, b.nm_customer, b.npwp, a.customer, a.tipe;");
 

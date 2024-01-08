@@ -85,7 +85,7 @@
             ?>
         <tr>
             @php
-                $nama = $f->lokasi == 'alpa' ? $f->nm_customer : $f->customer;
+                $nama = $f->nm_customer;
             @endphp
             <td><?= $no + 1 ?></td>
             <td>FK </td>
@@ -96,8 +96,9 @@
             <td><?= date('Y', strtotime($f->tgl)) ?></td>
             <td><?= $f->tgl ?></td>
             <td><?= empty($f->npwp) || $f->npwp == 'Null' ? "'000000000000000" : "$f->npwp" ?></td>
-            <td><?= empty($f->npwp) || $f->npwp == 'Null' ? "0#NIK#NAMA#$nama" : "$nama" ?></td>
-            <td>Banjarmasin</td>
+            <td>{{ empty($f->npwp) || $f->npwp == 'Null' ? (empty($f->ktp) ? "0#NIK#NAMA#$nama" : "$f->ktp#NIK#NAMA#$nama") : "$nama" }}
+            </td>
+            <td>{{ $f->alamat }}</td>
             <td><?= $f->total_rp ?></td>
             <td><?= floor($f->total_rp * 0.11) ?></td>
             <td>0</td>
