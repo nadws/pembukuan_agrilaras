@@ -12,6 +12,7 @@
                     <tr>
                         <th width="5">#</th>
                         <th>NPWP</th>
+                        <th>KTP</th>
                         <th>Nama</th>
                         <th>Alamat</th>
                         <th>Telepon</th>
@@ -24,6 +25,7 @@
                             <td>{{ $no + 1 }}</td>
 
                             <td>{{ $d->npwp }}</td>
+                            <td>{{ $d->ktp }}</td>
                             <td>{{ ucwords($d->nm_customer) }}</td>
                             <td>{{ ucwords($d->alamat) }}</td>
                             <td>{{ $d->no_telp }}</td>
@@ -57,29 +59,35 @@
             @csrf
             <x-theme.modal title="Tambah Baru" idModal="tambah">
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="form-group">
                             <label for="">Nama</label>
                             <input type="text" name="nm_customer" class="form-control">
                         </div>
                     </div>
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="form-group">
                             <label for="">Alamat</label>
                             <input type="text" name="alamat" class="form-control">
                         </div>
                     </div>
 
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="form-group">
                             <label for="">Telepon</label>
                             <input type="text" name="telepon" class="form-control">
                         </div>
                     </div>
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="form-group">
                             <label for="">Npwp</label>
                             <input type="text" name="npwp" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="">KTP</label>
+                            <input type="text" name="ktp" class="form-control">
                         </div>
                     </div>
                 </div>

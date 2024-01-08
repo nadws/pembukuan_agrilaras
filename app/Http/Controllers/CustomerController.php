@@ -23,6 +23,7 @@ class CustomerController extends Controller
             'alamat' => $r->alamat,
             'no_telp' => $r->telepon,
             'npwp' => $r->npwp,
+            'ktp' => $r->ktp,
         ]);
 
         return redirect()->route('customer.index')->with('sukses', 'Data Berhasil Ditambahkan');
@@ -44,6 +45,7 @@ class CustomerController extends Controller
             'alamat' => $r->alamat,
             'no_telp' => $r->telepon,
             'npwp' => $r->npwp,
+            'ktp' => $r->ktp,
         ];
         DB::table('customer')->where('id_customer', $r->id_customer)->update($data);
 

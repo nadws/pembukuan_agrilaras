@@ -25,4 +25,10 @@
             <input value="{{ $customer->npwp }}" type="text" name="npwp" class="form-control">
         </div>
     </div>
+    <div class="col-lg-12">
+        <div class="form-group">
+            <label for="">KTP</label>
+            <input value="{{ $customer->ktp }}" type="text" name="ktp" class="form-control">
+        </div>
+    </div>
 </div>

@@ -36,7 +36,7 @@ class NavbarController extends Controller
             [
                 'judul' => 'Data Customer',
                 'route' => 'customer.index',
-                'img' => 'customer.png',
+                'img' => 'customer-feedback.png',
                 'deskripsi' => 'membuat dan menyunting data rekening',
             ],
             [
