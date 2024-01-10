@@ -34,6 +34,7 @@ use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\Jurnal_aktivaController;
+use App\Http\Controllers\MedionController;
 use App\Http\Controllers\PenjualanAyamController;
 use App\Http\Controllers\Saldo_penutup;
 use App\Http\Controllers\Stok_ayam;
@@ -462,6 +463,9 @@ Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
     Route::get('/get_history_produk', 'get_history_produk')->name('get_history_produk');
+});
+Route::controller(MedionController::class)->group(function () {
+    Route::get('/record_pullet', 'index')->name('record_pullet');
 });
 Route::controller(ExportRecordingController::class)->group(function () {
     Route::get('/commercial_layer', 'commercial_layer')->name('commercial_layer');
