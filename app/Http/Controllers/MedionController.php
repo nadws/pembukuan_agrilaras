@@ -21,11 +21,11 @@ class MedionController extends Controller
        a.tgl, c.mati, c.jual, 
        (b.stok_awal - (populasi.mati + populasi.jual)) as hidup,
        round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual))) * 100),2) as deplesi,
-       (a.gr/1000) as kg_pakan,
+       sum(a.gr/1000) as kg_pakan,
        (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual))) as gr_perekor,
        normal.normalPcs, normal.normalKg, abnormal.abnormalPcs , abnormal.abnormalKg,
        f.feed,f.berat,f.berat_telur, f.telur as hd, g.nama_obat
-       
+
                FROM tb_pakan_perencanaan as a
                LEFT JOIN kandang as b ON a.id_kandang = b.id_kandang
                LEFT JOIN populasi as c ON c.id_kandang = a.id_kandang AND c.tgl = a.tgl
