@@ -307,7 +307,7 @@
                         <tr>
                             <td class="td_layer">{{ $m->umur_minggu }}</td>
                             <td class="td_layer">{{ $m->umur_hari }}</td>
-                            <td class="td_layer">{{ date('d-M-Y', strtotime($m->tgl)) }}</td>
+                            <td class="td_layer">{{ date('d-M-y', strtotime($m->tgl)) }}</td>
                             <td class="td_layer bg_diisi_td">{{ $m->mati }}</td>
                             <td class="td_layer bg_diisi_td">{{ $m->jual }}</td>
                             <td class="td_layer bg_diisi_td">0</td>
