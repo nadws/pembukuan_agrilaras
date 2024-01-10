@@ -34,11 +34,11 @@
 
             <td colspan="3">Strain</td>
             <td wid>:</td>
-            <td colspan="3" style="background-color: #ED7D31">{{ $kandang->nm_strain }}</td>
+            <td colspan="3" style="background-color: #ED7D31; font-weight: bold">{{ $kandang->nm_strain }}</td>
 
             <td colspan="3">Umur (minggu)</td>
             <td wid>:</td>
-            <td colspan="2" style="background-color: #ED7D31">13</td>
+            <td colspan="2" style="background-color: #ED7D31; font-weight: bold">13</td>
         </tr>
         <tr>
             <th colspan="26" style="font-size: 20px; font-weight: bold; padding: 5px">&nbsp;</th>
@@ -115,7 +115,7 @@
                     {{ number_format($m->kg_pakan, 2) }}
                 </td>
                 <td>{{ number_format($m->gr_perekor, 1) }}</td>
-                <td>{{ empty($m->feed) ? 'NA' : $m->feed }}</td>
+                <td>{{ empty($m->feed) ? '#N/A' : $m->feed }}</td>
                 <td>0</td>
                 <td>0</td>
                 <td style="background: #FFEA93; color: black">
@@ -139,10 +139,10 @@
                 <td>
                     {{ $ttl_pcs == 0 || $m->hidup == 0 ? 0 : number_format($ttl_pcs / $m->hidup, 2) }}
                 </td>
-                <td>{{ empty($m->hd) ? 'NA' : $m->hd }}</td>
+                <td>{{ empty($m->hd) ? '#N/A' : $m->hd }}</td>
                 <td>{{ $ttl_pcs == 0 ? 0 : number_format($ttl_kg / $ttl_pcs, 2) }}
                 </td>
-                <td>{{ empty($m->berat_telur) ? 'NA' : $m->berat_telur }}</td>
+                <td>{{ empty($m->berat_telur) ? '#N/A' : $m->berat_telur }}</td>
                 <td>{{ $ttl_kg == 0 ? 0 : number_format($m->kg_pakan / $ttl_kg, 1) }}
                 </td>
                 <td width="450px">{{ $m->nama_obat }}</td>

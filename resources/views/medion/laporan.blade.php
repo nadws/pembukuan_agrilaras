@@ -317,7 +317,7 @@
                             <td class="td_layer "></td>
                             <td class="td_layer bg_diisi_td">{{ number_format($m->kg_pakan, 2) }}</td>
                             <td class="td_layer">{{ number_format($m->gr_perekor, 1) }}</td>
-                            <td class="td_layer">{{ empty($m->feed) ? 'NA' : $m->feed }}</td>
+                            <td class="td_layer">{{ empty($m->feed) ? '#N/A' : $m->feed }}</td>
                             <td class="td_layer">0</td>
                             <td class="td_layer">0</td>
                             <td class="td_layer bg_diisi_td">{{ empty($m->normalPcs) ? 0 : $m->normalPcs }}</td>
@@ -338,10 +338,10 @@
                             <td class="td_layer ">
                                 {{ $ttl_pcs == 0 || $m->hidup == 0 ? 0 : number_format($ttl_pcs / $m->hidup, 2) }}
                             </td>
-                            <td class="td_layer ">{{ empty($m->hd) ? 'NA' : $m->hd }}</td>
+                            <td class="td_layer ">{{ empty($m->hd) ? '#N/A' : $m->hd }}</td>
                             <td class="td_layer ">{{ $ttl_pcs == 0 ? 0 : number_format($ttl_kg / $ttl_pcs, 2) }}
                             </td>
-                            <td class="td_layer ">{{ empty($m->berat_telur) ? 'NA' : $m->berat_telur }}</td>
+                            <td class="td_layer ">{{ empty($m->berat_telur) ? '#N/A' : $m->berat_telur }}</td>
                             <td class="td_layer ">{{ $ttl_kg == 0 ? 0 : number_format($m->kg_pakan / $ttl_kg, 1) }}
                             </td>
                             <td class="td_layer ">{{ $m->nama_obat }}</td>
