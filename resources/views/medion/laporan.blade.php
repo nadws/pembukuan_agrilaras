@@ -172,15 +172,15 @@
     </nav>
     <div class="container-fluid mt-2">
         <div class="row ">
-            <div class="col-2 mb-4">
+            <div class="col-2 mb-4 elemen-hilang">
                 <a class="navbar-brand mb-2" href="#">
                     <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="60" height="60">
                 </a>
             </div>
-            <div class="col-10  elemen-hilang">
+            <div class="col-12  ">
                 <h3 class="text-center fw-bold">CATATAN HARIAN PEMELIHARAAN LAYER PRODUKSI</h3>
             </div>
-            <div class="col-3">
+            <div class="col-6 col-lg-3">
                 <table class="table_judul">
                     <tr>
                         <td>Farm</td>
@@ -194,7 +194,7 @@
                     </tr>
                 </table>
             </div>
-            <div class="col-3">
+            <div class="col-6 col-l3">
                 <table class="table_judul">
                     <tr>
                         <td>Nama Operator</td>
@@ -208,7 +208,7 @@
                     </tr>
                 </table>
             </div>
-            <div class="col-3">
+            <div class="col-6 col-lg-3">
                 <table class="table_judul">
                     <tr>
                         <td>Jumlah ayam</td>
@@ -222,7 +222,7 @@
                     </tr>
                 </table>
             </div>
-            <div class="col-3">
+            <div class="col-6 col-lg-3">
                 <table class="table_judul">
                     <tr>
                         <td>Tgl. chick in</td>
