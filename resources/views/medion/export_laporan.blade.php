@@ -25,7 +25,8 @@
 
             <td colspan="3">Tgl. chickin</td>
             <td wid>:</td>
-            <td style="background-color: #FFE699;">{{ date('d-M-Y', strtotime($kandang->chick_in)) }}</td>
+            <td style="background-color: #FFE699;">
+                {{ date('d-M-y', strtotime('+ 1 days', strtotime($kandang->chick_in))) }}</td>
         </tr>
         <tr>
             <td colspan="3">Owner</td>
@@ -38,7 +39,7 @@
 
             <td colspan="3">Umur (minggu)</td>
             <td wid>:</td>
-            <td colspan="2" style="background-color: #ED7D31; font-weight: bold">13</td>
+            <td colspan="2" style="background-color: #ED7D31; font-weight: bold">1</td>
         </tr>
         <tr>
             <th colspan="26" style="font-size: 20px; font-weight: bold; padding: 5px">&nbsp;</th>

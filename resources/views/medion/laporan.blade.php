@@ -227,7 +227,7 @@
                     <tr>
                         <td>Umur (minggu)</td>
                         <td>:</td>
-                        <td class="bg_diisi2"></td>
+                        <td class="bg_diisi2">1</td>
                     </tr>
                 </table>
             </div>
@@ -236,7 +236,7 @@
                     <tr>
                         <td>Tgl. chick in</td>
                         <td>:</td>
-                        <td class="bg_diisi">{{ date('d-M-Y', strtotime('+ 1 days', strtotime($kandang->chick_in))) }}
+                        <td class="bg_diisi">{{ date('d-M-y', strtotime('+ 1 days', strtotime($kandang->chick_in))) }}
                         </td>
                     </tr>
 
