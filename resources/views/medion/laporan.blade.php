@@ -306,7 +306,7 @@
                             <td class="td_layer ">{{ empty($m->deplesi) ? 0 : $m->deplesi }}</td>
                             <td class="td_layer ">{{ $deplesi_kum }}</td>
                             <td class="td_layer "></td>
-                            <td class="td_layer bg_diisi_td">{{ number_format($m->kg_pakan, 2) }}</td>
+                            <td class="td_layer bg_diisi_td">{{ number_format($m->kg_pakan, 2) }} dsa</td>
                             <td class="td_layer">{{ number_format($m->gr_perekor, 1) }}</td>
                             <td class="td_layer">{{ empty($m->feed) ? 'NA' : $m->feed }}</td>
                             <td class="td_layer">0</td>
