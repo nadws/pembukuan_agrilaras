@@ -103,7 +103,7 @@
             <tr>
                 <td>{{ $m->umur_minggu }}</td>
                 <td>{{ $m->umur_hari }}</td>
-                <td>{{ date('d-M-Y', strtotime($m->tgl)) }}</td>
+                <td>{{ date('d-M-y', strtotime($m->tgl)) }}</td>
                 <td style="background: #FFEA93; color: black">{{ $m->mati }}</td>
                 <td style="background: #FFEA93; color: black">{{ $m->jual }}</td>
                 <td style="background: #FFEA93; color: black">0</td>
