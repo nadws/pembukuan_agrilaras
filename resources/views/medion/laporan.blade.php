@@ -194,7 +194,7 @@
                     </tr>
                 </table>
             </div>
-            <div class="col-6 col-l3">
+            <div class="col-6 col-lg-3">
                 <table class="table_judul">
                     <tr>
                         <td>Nama Operator</td>
