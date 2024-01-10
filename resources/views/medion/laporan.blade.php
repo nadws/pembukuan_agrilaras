@@ -17,6 +17,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -172,12 +173,20 @@
     </nav>
     <div class="container-fluid mt-2">
         <div class="row ">
+            <div class="col-lg-2">
+                <a href="{{ route('export_pullet_medion', ['id_kandang' => 8]) }}" class="btn btn-success"><i
+                        class="fas fa-file-excel"></i>
+                    Export</a>
+            </div>
+            <div class="col-lg-12">
+                <hr>
+            </div>
             <div class="col-2 mb-4 elemen-hilang">
                 <a class="navbar-brand mb-2" href="#">
                     <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="60" height="60">
                 </a>
             </div>
-            <div class="col-12  ">
+            <div class="col-12 col-lg-10 ">
                 <h3 class="text-center fw-bold">CATATAN HARIAN PEMELIHARAAN LAYER PRODUKSI</h3>
             </div>
             <div class="col-6 col-lg-3">

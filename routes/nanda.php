@@ -466,6 +466,7 @@ Route::controller(Laporan_layerController::class)->group(function () {
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');
+    Route::get('/export_pullet_medion', 'export')->name('export_pullet_medion');
 });
 Route::controller(ExportRecordingController::class)->group(function () {
     Route::get('/commercial_layer', 'commercial_layer')->name('commercial_layer');

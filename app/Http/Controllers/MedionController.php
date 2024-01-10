@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MedionExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MedionlExport;
 
 class MedionController extends Controller
 {
@@ -83,5 +86,17 @@ class MedionController extends Controller
             'kandang' => DB::table('kandang')->join('strain', 'kandang.id_strain', 'strain.id_strain')->where('id_kandang', $id_kandang)->first()
         ];
         return view('medion.laporan', $data);
+    }
+    function export(Request $r)
+    {
+        $id_kandang = $r->id_kandang;
+
+
+        $total = DB::selectOne("SELECT count(a.tgl) as jumlah FROM tb_pakan_perencanaan as a WHERE a.id_kandang = '$id_kandang'
+        ");
+
+        $totalrow = $total->jumlah;
+
+        return Excel::download(new MedionExport($id_kandang, $totalrow), 'pullet.xlsx');
     }
 }
