@@ -145,7 +145,7 @@
                 <td>{{ empty($m->berat_telur) ? '#N/A' : $m->berat_telur }}</td>
                 <td>{{ $ttl_kg == 0 ? 0 : number_format($m->kg_pakan / $ttl_kg, 1) }}
                 </td>
-                <td width="450px">{{ $m->nama_obat }}</td>
+                <td width="450px" style="background: #FFEA93; color: black">{{ $m->nama_obat }}</td>
 
             </tr>
         @endforeach

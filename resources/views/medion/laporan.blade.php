@@ -344,7 +344,7 @@
                             <td class="td_layer ">{{ empty($m->berat_telur) ? '#N/A' : $m->berat_telur }}</td>
                             <td class="td_layer ">{{ $ttl_kg == 0 ? 0 : number_format($m->kg_pakan / $ttl_kg, 1) }}
                             </td>
-                            <td class="td_layer ">{{ $m->nama_obat }}</td>
+                            <td class="td_layer bg_diisi_td">{{ $m->nama_obat }}</td>
 
                         </tr>
                     @endforeach
