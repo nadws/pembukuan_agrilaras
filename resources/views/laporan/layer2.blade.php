@@ -312,6 +312,9 @@
                                 <span class="{{ $tgl_hari_ini >= $ckin2 ? 'text-danger fw-bold' : '' }}">
                                     {{ date('d/m/y', strtotime($k->tgl_masuk)) }}
                                 </span>
+                                <br>
+                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }}
+
 
                             </td>
                             <!-- Umur -->
