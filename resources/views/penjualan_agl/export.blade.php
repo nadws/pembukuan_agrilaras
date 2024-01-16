@@ -23,7 +23,7 @@
         @foreach ($invoice as $no => $i)
             <tr>
                 <td>{{ $no + 1 }}</td>
-                <td>{{ tanggal($i->tgl) }}</td>
+                <td>{{ $i->tgl }}</td>
                 <td>{{ $i->no_nota }}</td>
                 <td>
                     @if ($i->lokasi == 'alpa')
@@ -41,11 +41,7 @@
                 <td>{{ number_format($i->total_rp, 0) }}</td>
                 <td>{{ $i->lokasi == 'mtd' ? '' : $i->tipe }}</td>
                 <td>{{ $i->kredit - $i->debit == 0 ? 'Paid' : 'Unpaid' }}</td>
-                <td>{{ empty($i->nota_setor)
-                    ? '-'
-                    : (empty($i->akun_setor)
-                        ? tanggal($i->tgl_stor_kosong)
-                        : tanggal($i->tgl_setor)) }}
+                <td>{{ empty($i->nota_setor) ? '-' : (empty($i->akun_setor) ? $i->tgl_stor_kosong : $i->tgl_setor) }}
                 </td>
                 <td>{{ empty($i->nota_setor) ? '-' : $i->nota_setor }}</td>
                 <td>{{ empty($i->nota_setor) ? '-' : (empty($i->akun_setor) ? 'BCA' : $i->akun_setor) }}</td>
