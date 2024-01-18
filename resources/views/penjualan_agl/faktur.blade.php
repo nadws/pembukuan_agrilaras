@@ -107,7 +107,7 @@
             <td>0</td>
             <td>0</td>
             <td>0</td>
-            <td>0</td>
+            <td>{{$f->ktp ?? 0}}</td>
             <td>0</td>
         </tr>
         <?php foreach($faktur as $g): ?>
