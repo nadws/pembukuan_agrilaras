@@ -26,7 +26,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-12">
                 <h4 class="text-center fw-bold">DAFTAR PENYUSUTAN AKTIVA TETAP</h4>
-                <table class="table table-bordered">
+                <table class="table table-bordered" border="1">
                     <thead>
                         <tr>
                             <th rowspan="2" class="tengah">NO</th>
