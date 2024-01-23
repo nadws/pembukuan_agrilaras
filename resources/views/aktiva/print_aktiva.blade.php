@@ -1,3 +1,8 @@
+@php
+    $file = 'Aktiva.xls';
+    header('Content-Type: application/vnd.ms-excel');
+    header("Content-Disposition: attachment; filename=$file");
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -37,10 +42,10 @@
                         <tr>
                             <th class="tengah">PEROLEHAN</th>
                             <th class="tengah">PEROLEHAN</th>
-                            <th class="tengah">PENYUSUTAN {{date('Y',strtotime($tahun2))}}</th>
-                            <th class="tengah">{{date('Y',strtotime($tahun2))}}</th>
-                            <th class="tengah">PENYUSUTAN {{date('Y',strtotime($tahun1))}}</th>
-                            <th class="tengah">{{date('Y',strtotime($tahun1))}}</th>
+                            <th class="tengah">PENYUSUTAN {{ date('Y', strtotime($tahun2)) }}</th>
+                            <th class="tengah">{{ date('Y', strtotime($tahun2)) }}</th>
+                            <th class="tengah">PENYUSUTAN {{ date('Y', strtotime($tahun1)) }}</th>
+                            <th class="tengah">{{ date('Y', strtotime($tahun1)) }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,8 +61,8 @@
                             <td></td>
                         </tr>
                         @foreach ($kelompok as $no => $k)
-                        @php
-                        $aktiva = DB::select("SELECT a.*, b.beban1, c.beban2, d.nilai1, e.nilai2
+                            @php
+                                $aktiva = DB::select("SELECT a.*, b.beban1, c.beban2, d.nilai1, e.nilai2
                         FROM aktiva as a
                         left join(
                         SELECT sum(c.b_penyusutan) as beban1 , c.id_aktiva
@@ -89,36 +94,38 @@
 
                         where a.id_kelompok = '$k->id_kelompok'
                         ");
-                        @endphp
-                        <tr>
-                            <td>{{$no+1}}</td>
-                            <td>{{$k->nm_kelompok}} :</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        @foreach ($aktiva as $a)
-                        <tr>
-                            <td></td>
-                            <td>{{$a->nm_aktiva}} </td>
-                            <td align="center">{{date('Y-m',strtotime($a->tgl))}}</td>
-                            <td align="right">{{number_format($a->h_perolehan,0)}}</td>
-                            <td align="right" style="white-space: nowrap">{{$k->tarif * 100}}%</td>
-                            <td align="right">{{empty($a->beban1) ? '0' : number_format($a->beban1,0)}} </td>
-                            @php
-                            $tgl = date('Y',strtotime($a->tgl));
-                            $tgl2 = date('Y',strtotime($tahun2_1));
                             @endphp
-                            <td align="right">{{$tgl > $tgl2 ? '0' : number_format($a->h_perolehan - $a->nilai1,0) }}
-                            </td>
-                            <td align="right">{{number_format($a->beban2,0)}}</td>
-                            <td align="right">{{number_format($a->h_perolehan - $a->nilai2 ,0)}}</td>
-                        </tr>
-                        @endforeach
+                            <tr>
+                                <td>{{ $no + 1 }}</td>
+                                <td>{{ $k->nm_kelompok }} :</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            @foreach ($aktiva as $a)
+                                <tr>
+                                    <td></td>
+                                    <td>{{ $a->nm_aktiva }} </td>
+                                    <td align="center">{{ date('Y-m', strtotime($a->tgl)) }}</td>
+                                    <td align="right">{{ number_format($a->h_perolehan, 0) }}</td>
+                                    <td align="right" style="white-space: nowrap">{{ $k->tarif * 100 }}%</td>
+                                    <td align="right">{{ empty($a->beban1) ? '0' : number_format($a->beban1, 0) }}
+                                    </td>
+                                    @php
+                                        $tgl = date('Y', strtotime($a->tgl));
+                                        $tgl2 = date('Y', strtotime($tahun2_1));
+                                    @endphp
+                                    <td align="right">
+                                        {{ $tgl > $tgl2 ? '0' : number_format($a->h_perolehan - $a->nilai1, 0) }}
+                                    </td>
+                                    <td align="right">{{ number_format($a->beban2, 0) }}</td>
+                                    <td align="right">{{ number_format($a->h_perolehan - $a->nilai2, 0) }}</td>
+                                </tr>
+                            @endforeach
                         @endforeach
                     </tbody>
                 </table>
