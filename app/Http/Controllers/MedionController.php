@@ -83,6 +83,7 @@ class MedionController extends Controller
         $data = [
             'title' => 'Laporan Daily Layer',
             'medion' => $medion,
+            'id_kandang' => $id_kandang,
             'kandang' => DB::table('kandang')->join('strain', 'kandang.id_strain', 'strain.id_strain')->where('id_kandang', $id_kandang)->first()
         ];
         return view('medion.laporan', $data);
