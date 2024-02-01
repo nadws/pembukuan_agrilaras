@@ -174,7 +174,7 @@
     <div class="container-fluid mt-2">
         <div class="row ">
             <div class="col-lg-2">
-                <a href="{{ route('export_pullet_medion', ['id_kandang' => 8]) }}" class="btn btn-success"><i
+                <a href="{{ route('export_pullet_medion', ['id_kandang' => $id_kandang]) }}" class="btn btn-success"><i
                         class="fas fa-file-excel"></i>
                     Export</a>
             </div>
