@@ -524,12 +524,6 @@
                             </td>
                             {{-- vitamin --}}
                             <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
-                                &nbsp; <br>
-                                {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
-                                    ? '0'
-                                    : number_format($k->kg_pakan_kuml / 1000 / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
-                                <br>
-
                                 @php
                                     $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
@@ -537,6 +531,14 @@
                                     $ayam = $k->rupiah / 7000;
                                     $gjl = ($k->ttl_gjl * 435000) / 7000;
                                 @endphp
+
+                                &nbsp; <br>
+                                {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
+                                    ? '0'
+                                    : number_format($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
+                                <br>
+
+
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format(
@@ -544,6 +546,8 @@
                                         1,
                                     ) }}
                                 <br> &nbsp;
+                                {{-- {{ number_format($kg_pakan_kuml, 0) }} /
+                                {{ number_format($k->kuml_kg - $k->kuml_pcs / 180) }} --}}
                             </td>
 
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
