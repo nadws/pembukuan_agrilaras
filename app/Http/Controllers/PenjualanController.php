@@ -54,7 +54,7 @@ class PenjualanController extends Controller
             'title' => 'Penjualan Agrilaras',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.total_rp )) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor, e.nm_customer as customer2
+            'invoice' => DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor, e.nm_customer as customer2
             FROM invoice_telur as a 
             left join customer as b on b.id_customer = a.id_customer
             left join customer as e on e.id_customer = a.id_customer2
@@ -75,8 +75,8 @@ class PenjualanController extends Controller
             group by a.no_nota
             order by a.urutan DESC;
             "),
-            'total_alpa' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.total_rp )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
-            'total_mtd' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.total_rp )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")
+            'total_alpa' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
+            'total_mtd' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")
 
         ];
         return view('penjualan_agl.index', $data);
