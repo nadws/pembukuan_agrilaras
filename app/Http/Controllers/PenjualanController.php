@@ -75,8 +75,8 @@ class PenjualanController extends Controller
             group by a.no_nota
             order by a.urutan DESC;
             "),
-            'total_alpa' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
-            'total_mtd' => DB::selectOne("SELECT sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")
+            'total_alpa' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'"),
+            'total_mtd' => DB::selectOne("SELECT sum(a.total_rp) as ttl_rp FROM invoice_telur as a where a.lokasi = 'mtd' and a.tgl between '$tgl1' and '$tgl2'")
 
         ];
         return view('penjualan_agl.index', $data);
