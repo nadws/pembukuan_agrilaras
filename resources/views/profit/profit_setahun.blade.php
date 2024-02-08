@@ -132,8 +132,9 @@
             }">
                 <thead>
                     <tr>
-                        <th class="dhead freeze-cell1_th">Akun</th>
                         <th class="dhead freeze-cell1_th text-end">Saldo Tahun lalu</th>
+                        <th class="dhead freeze-cell1_th text-end">Saldo Rata2</th>
+                        <th class="dhead freeze-cell1_th">Akun</th>
                         @foreach (array_keys(reset($data)) as $month)
                             <th class="dhead text-end freeze-cell1_th">{{ $month }}</th>
                         @endforeach
@@ -142,11 +143,13 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_p, 0) }}</td>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_p / 12, 0) }}</td>
                         <td class="fw-bold">Pendapatan <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
                                 @click="open_pendapatan = ! open_pendapatan"><i class="fas fa-caret-down"></i></button>
                         </td>
-                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_p, 0) }}</td>
+
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth[$month], 0) }}</td>
                         @endforeach
@@ -154,11 +157,15 @@
                     </tr>
                     @foreach ($data as $akun => $months)
                         <tr x-show="open_pendapatan">
+                            <td class="text-end">
+                                {{ number_format($saldo_thn_pen->k_saldo, 0) }}
+                            </td>
+                            <td class="text-end">
+                                {{ number_format($saldo_thn_pen->k_saldo / 12, 0) }}
+                            </td>
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
@@ -167,8 +174,7 @@
 
                                 $saldo_thn_pen = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
                             @endphp
-                            <td class="text-end">
-                                {{ number_format($saldo_thn_pen->k_saldo, 0) }}</td>
+
                             @foreach ($months as $month => $nominal)
                                 <td class="text-end">
                                     @php
@@ -196,11 +202,13 @@
                         <td colspan="14">&nbsp;</td>
                     </tr> --}}
                     <tr>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_b, 0) }}</td>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_b / 12, 0) }}</td>
                         <td class="fw-bold">Biaya <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end" @click="open_biaya = ! open_biaya"><i
                                     class="fas fa-caret-down"></i></button>
                         </td>
-                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_b, 0) }}</td>
+
                         @foreach (array_keys(reset($data2)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
                         @endforeach
@@ -208,14 +216,6 @@
                     </tr>
                     @foreach ($data2 as $akun => $months)
                         <tr x-show="open_biaya">
-                            <td>
-                                @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
-                                @endphp
-                                {{ $nm_akun->nm_akun }}
-                            </td>
                             @php
                                 $totalPerAkun2 = 0;
                                 $saldo_thn_biy = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
@@ -223,6 +223,16 @@
                             <td class="text-end">
                                 {{ number_format($saldo_thn_biy->d_saldo - $saldo_thn_biy->k_saldo, 0) }}
                             </td>
+                            <td class="text-end">
+                                {{ number_format(($saldo_thn_biy->d_saldo - $saldo_thn_biy->k_saldo) / 12, 0) }}
+                            </td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
+
                             @foreach ($months as $month => $nominal)
                                 @php
                                     $tgl1 = $thn . '-' . $loop->iteration . '-01';
@@ -242,12 +252,14 @@
                         </tr>
                     @endforeach
                     <tr>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bp, 0) }}</td>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bp / 12, 0) }}</td>
                         <td class="fw-bold">Biaya Penyesuaian <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
                                 @click="open_biaya_penyesuaian = ! open_biaya_penyesuaian"><i
                                     class="fas fa-caret-down"></i></button>
                         </td>
-                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bp, 0) }}</td>
+
                         @foreach (array_keys(reset($data3)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth3[$month], 0) }}</td>
                         @endforeach
@@ -255,14 +267,6 @@
                     </tr>
                     @foreach ($data3 as $akun => $months)
                         <tr x-show="open_biaya_penyesuaian">
-                            <td>
-                                @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
-                                @endphp
-                                {{ $nm_akun->nm_akun }}
-                            </td>
                             @php
                                 $totalPerAkun3 = 0;
                                 $saldo_thn_bip = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
@@ -270,6 +274,16 @@
                             <td class="text-end">
                                 {{ number_format($saldo_thn_bip->d_saldo - $saldo_thn_bip->k_saldo, 0) }}
                             </td>
+                            <td class="text-end">
+                                {{ number_format(($saldo_thn_bip->d_saldo - $saldo_thn_bip->k_saldo) / 12, 0) }}
+                            </td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
+
                             @foreach ($months as $month => $nominal)
                                 @php
                                     $tgl1 = $thn . '-' . $loop->iteration . '-01';
@@ -289,10 +303,13 @@
                         </tr>
                     @endforeach
                     <tr>
-                        <td class="fw-bold dhead">LABA KOTOR</td>
                         <td class="fw-bold text-end dhead">
                             {{ number_format($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp, 0) }}
                         </td>
+                        <td class="fw-bold text-end dhead">
+                            {{ number_format(($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp) / 12, 0) }}
+                        </td>
+                        <td class="fw-bold dhead">LABA KOTOR</td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
                                 {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month], 0) }}
@@ -303,12 +320,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bpa, 0) }}</td>
+                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bpa / 12, 0) }}</td>
                         <td class="fw-bold">Biaya Disusutkan <button type="button"
                                 class="btn btn-primary btn-sm btn-buka float-end"
                                 @click="open_biaya_disusutkan = ! open_biaya_disusutkan"><i
                                     class="fas fa-caret-down"></i></button>
                         </td>
-                        <td class="fw-bold text-end">{{ number_format($ttl_saldo_bpa, 0) }}</td>
+
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth4[$month], 0) }}</td>
                         @endforeach
@@ -317,14 +336,6 @@
                     </tr>
                     @foreach ($data4 as $akun => $months)
                         <tr x-show="open_biaya_disusutkan">
-                            <td>
-                                @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
-                                @endphp
-                                {{ $nm_akun->nm_akun }}
-                            </td>
                             @php
                                 $totalPerAkun4 = 0;
                                 $saldo_thn_bpa = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
@@ -332,6 +343,16 @@
                             <td class="text-end">
                                 {{ number_format($saldo_thn_bpa->d_saldo, 0) }}
                             </td>
+                            <td class="text-end">
+                                {{ number_format($saldo_thn_bpa->d_saldo / 12, 0) }}
+                            </td>
+                            <td>
+                                @php
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
+                                @endphp
+                                {{ $nm_akun->nm_akun }}
+                            </td>
+
                             @foreach ($months as $month => $nominal)
                                 @php
                                     $tgl1 = $thn . '-' . $loop->iteration . '-01';
@@ -349,10 +370,13 @@
                         </tr>
                     @endforeach
                     <tr>
-                        <td class="fw-bold dhead">LABA BERSIH</td>
                         <td class="fw-bold text-end dhead">
                             {{ number_format($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $ttl_saldo_bpa, 0) }}
                         </td>
+                        <td class="fw-bold text-end dhead">
+                            {{ number_format(($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $ttl_saldo_bpa) / 12, 0) }}
+                        </td>
+                        <td class="fw-bold dhead">LABA BERSIH</td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
                                 {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth4[$month], 0) }}
@@ -362,9 +386,6 @@
                             {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4 + ($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $ttl_saldo_bpa), 0) }}
                         </td>
                     </tr>
-
-
-
                 </tbody>
             </table>
 

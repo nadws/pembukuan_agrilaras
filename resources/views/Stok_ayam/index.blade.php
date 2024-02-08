@@ -16,28 +16,30 @@
         <tr>
             <th style="text-align: center; white-space: nowrap;" colspan="2">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">
+                    <button type="button" style="width: 150px" class="btn btn-sm btn-primary dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         Transaksi Ayam
                     </button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#penjualan_ayam"
                                 href="#">Penjualan Ayam</a></li>
-                        <li><a class="dropdown-item" href="{{ route('piutang_ayam') }}">Piutang Ayam</a></li>
+                        <li><a class="dropdown-item" href="{{ route('piutang_ayam') }}">Database Piutang Ayam</a></li>
                     </ul>
                 </div>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#history_ayam"
+                <a href="#" style="width: 150px" data-bs-toggle="modal" data-bs-target="#history_ayam"
                     class="btn btn-sm btn-primary">History
                     Stok
                 </a>
-                <a href="{{ route('history_ayam') }}" class="btn btn-sm btn-primary">History
-                    Penjualan
-                </a>
+
             </th>
         </tr>
         <tr>
             <th style="text-align: center; white-space: nowrap;" colspan="2">
-                <a href="{{ route('penjualan_ayam.penyetoran') }}" class="btn btn-sm btn-primary">Penyetoran Ayam
+                <a style="width: 150px" href="{{ route('history_ayam') }}" class="btn btn-sm btn-primary">History
+                    Penjualan
+                </a>
+                <a style="width: 150px" href="{{ route('penjualan_ayam.penyetoran') }}"
+                    class="btn btn-sm btn-primary">Penyetoran Ayam
                 </a>
             </th>
         </tr>
