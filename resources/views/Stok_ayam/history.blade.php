@@ -115,7 +115,7 @@
                         <div class="col-lg-4">
                             <label for="">Total Rp</label>
                             <input type="text" class="form-control ttl_rp" name="ttl_rp" readonly
-                                style="text-align: right">
+                                style="text-align: right" value="0">
                         </div>
                         <div class="col-lg-12">
 
@@ -151,7 +151,7 @@
                                     <input type="text" class="form-control debit debit1" count="1"
                                         style="text-align: right">
                                     <input type="hidden" name="debit[]"
-                                        class="form-control debit_biasa debit_biasa1" value="" required>
+                                        class="form-control debit_biasa debit_biasa1" value="0" required>
                                 </div>
                                 <div class="col-lg-3 mt-2">
                                     <label for="">Kredit</label>
@@ -398,12 +398,19 @@
                             $('.debit_biasa' + count).val(input2)
                         }
 
-                        var total_all = $('.ttl_rp').val();
+
+
+                        var total_all = 0;
+                        $(".ttl_rp2").each(function() {
+                            total_all += parseFloat($(this).val());
+                        });
+
 
                         var total_debit = 0;
                         $(".debit_biasa").each(function() {
                             total_debit += parseFloat($(this).val());
                         });
+
 
                         var totalDebitall = total_debit.toLocaleString("id-ID", {
                             style: "currency",
@@ -423,7 +430,10 @@
                         });
                         $(".total_kredit").text(totalKreditall);
 
-                        var selisih = Math.round(parseFloat(total_all) + total_kredit) - total_debit;
+                        var selisih = Math.round(parseFloat(total_all) + parseFloat(total_kredit)) - parseFloat(
+                            total_debit);
+
+                        console.log(total_all);
                         var selisih_total = selisih.toLocaleString("id-ID", {
                             style: "currency",
                             currency: "IDR",

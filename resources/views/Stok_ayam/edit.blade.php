@@ -68,6 +68,9 @@
             <div class="col-lg-1 mt-2">
                 <label for="">aksi</label>
             </div>
+            @php
+                $debit = 0;
+            @endphp
             @foreach ($jurnal as $n => $j)
                 <div class="col-lg-5 mt-2">
                     <select name="id_akun[]" id="" class="select2-edit">
@@ -84,19 +87,24 @@
                     <input type="text" class="form-control debit debit{{ $n }}"
                         count="{{ $n }}" style="text-align: right"
                         value="Rp {{ number_format($j->debit, 0, '.', ',') }}">
-                    <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1" value="0">
+                    <input type="hidden" name="debit[]"
+                        class="form-control  debit_biasa debit_biasa{{ $n }}" value="{{ $j->debit }}">
                 </div>
                 <div class="col-lg-3 mt-2">
 
-                    <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
-                    <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
-                        value="0">
+                    <input type="text" class="form-control kredit kredit1" count="{{ $n }}"
+                        style="text-align: right">
+                    <input type="hidden" name="kredit[]"
+                        class="form-control kredit_biasa kredit_biasa{{ $n }}" value="0">
                 </div>
                 <div class="col-lg-1 mt-2">
-                    <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
+                    <button type="button" class="btn rounded-pill tbh_pembayaran" count="{{ $n }}">
                         <i class="fas fa-plus text-success"></i>
                     </button>
                 </div>
+                @php
+                    $debit += $j->debit;
+                @endphp
             @endforeach
         </div>
         <div id="load_pembayaran"></div>
@@ -109,7 +117,7 @@
                 <h6>Total Pembayaran</h6>
             </div>
             <div class="col-lg-3">
-                <h6 class="total_debit float-end">Rp 0</h6>
+                <h6 class="total_debit float-end">Rp {{ number_format($debit, 0) }}</h6>
             </div>
             <div class="col-lg-3">
                 <h6 class="total_kredit2 float-end">Rp {{ number_format($invoice->qty * $invoice->h_satuan, 0) }}</h6>

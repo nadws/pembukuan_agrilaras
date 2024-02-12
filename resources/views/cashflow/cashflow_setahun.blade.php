@@ -46,7 +46,6 @@
     </x-slot>
     <x-slot name="cardBody">
         @php
-
             if (is_array($data) && !empty($data)) {
                 $totalsPerMonth = array_fill(0, count(array_keys(reset($data))), 0);
                 $total_seluruh = 0;
@@ -240,9 +239,7 @@
                         <tr x-show="open_penjualan && open_pendapatan">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
@@ -279,9 +276,7 @@
                         <tr x-show="open_piutang && open_pendapatan">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 &nbsp; &nbsp;&nbsp;{{ $nm_akun->nm_akun }}
                             </td>
@@ -325,9 +320,7 @@
                         <tr x-show="open_bank && open_pendapatan">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 &nbsp; &nbsp;&nbsp;{{ $nm_akun->nm_akun }}
                             </td>
@@ -372,9 +365,7 @@
                         <tr x-show="open_admin && open_pendapatan">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 &nbsp; &nbsp;&nbsp;{{ $nm_akun->nm_akun }}
                             </td>
@@ -418,9 +409,7 @@
                         <tr x-show="open_hutang ">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 &nbsp; &nbsp;&nbsp;{{ $nm_akun->nm_akun }}
                             </td>
@@ -478,9 +467,7 @@
                         <tr x-show="open_bayar">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
@@ -525,9 +512,7 @@
                         <tr x-show="open_biaya_cost">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
@@ -571,9 +556,7 @@
                         <tr x-show="open_biaya_proyek">
                             <td>
                                 @php
-                                    $nm_akun = DB::table('akun')
-                                        ->where('id_akun', $akun)
-                                        ->first();
+                                    $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
