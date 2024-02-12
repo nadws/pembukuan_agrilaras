@@ -47,6 +47,7 @@ class Stok_ayam extends Controller
             'customer' => DB::table('customer')->get(),
             'history_ayam' => DB::table('stok_ayam')->where('jenis', 'ayam')->where('id_gudang', '2')->get(),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '7'])->get(),
+            'kandang' => DB::table('kandang')->where('selesai', 'T')->orderBy('nm_kandang', 'ASC')->get()
         ];
         return view("Stok_ayam.index", $data);
     }
@@ -98,7 +99,8 @@ class Stok_ayam extends Controller
             'admin' =>  auth()->user()->name,
             'urutan' =>  $nota_t,
             'urutan_customer' => $urutan_cus,
-            'lokasi' => 'alpa'
+            'lokasi' => 'alpa',
+            'id_kandang' => $r->id_kandang
         ];
         DB::table('invoice_ayam')->insert($data);
         $nota =  'PA-' . $nota_t;

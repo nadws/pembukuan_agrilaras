@@ -51,11 +51,11 @@
     @csrf
     <x-theme.modal title="Penjualan ayam" size="modal-lg-max_custome" idModal="penjualan_ayam">
         <div class="row">
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <label for="">Tanggal</label>
                 <input type="date" class="form-control" value="{{ date('Y-m-d') }}" name="tgl">
             </div>
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <label for="">Customer</label>
                 <select name="customer" class="select2-pakan" required>
                     <option value="">Pilih Customer</option>
@@ -64,12 +64,21 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <label for="">Customer2</label>
                 <select name="id_customer2" class="select2-pakan" required>
                     <option value="">Pilih Customer</option>
                     @foreach ($customer as $s)
                         <option value="{{ $s->id_customer }}">{{ $s->nm_customer }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label for="">Kandang</label>
+                <select name="id_kandang" class="select2-pakan" required>
+                    <option value="">Pilih Kandang</option>
+                    @foreach ($kandang as $s)
+                        <option value="{{ $s->id_kandang }}">{{ $s->nm_kandang }}</option>
                     @endforeach
                 </select>
             </div>
