@@ -16,6 +16,16 @@
             @endforeach
         </select>
     </div>
+    <div class="col-lg-4">
+        <label for="">Customer2</label>
+        <select name="id_customer2" class="select2-edit" required>
+            <option value="">Pilih Customer</option>
+            @foreach ($customer as $s)
+                <option value="{{ $s->id_customer }}" {{ $invoice->id_customer == $s->id_customer ? 'selected' : '' }}>
+                    {{ $s->nm_customer }}</option>
+            @endforeach
+        </select>
+    </div>
     <div class="col-lg-12">
         <hr>
     </div>
