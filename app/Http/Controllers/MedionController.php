@@ -23,7 +23,7 @@ class MedionController extends Controller
        DATEDIFF(a.tgl, b.chick_in) AS umur_hari,
        a.tgl, c.mati, c.jual,  c.afkir,
        (b.stok_awal - (populasi.mati + populasi.jual)) as hidup,
-       round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual))) * 100),2) as deplesi,
+       round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual + e.afkir ))) * 100),2) as deplesi,
        (a.gr/1000) as kg_pakan,
        (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual))) as gr_perekor,
        normal.normalPcs, normal.normalKg, abnormal.abnormalPcs , abnormal.abnormalKg,
@@ -62,7 +62,7 @@ class MedionController extends Controller
                ) as populasi ON populasi.id_kandang = a.id_kandang and populasi.tgl = a.tgl
                
                LEFT JOIN (
-                   SELECT tgl, id_kandang,sum(mati) as mati, sum(jual) as jual FROM `populasi` WHERE id_kandang = '$id_kandang' GROUP BY tgl
+                   SELECT tgl, id_kandang,sum(mati) as mati, sum(jual) as jual, sum(afkir) as afkir FROM `populasi` WHERE id_kandang = '$id_kandang' GROUP BY tgl
                ) as e ON e.id_kandang = a.id_kandang and e.tgl = (a.tgl - INTERVAL 1 DAY)
 
                left join peformance as f on f.umur = CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) and f.id_strain = b.id_strain
