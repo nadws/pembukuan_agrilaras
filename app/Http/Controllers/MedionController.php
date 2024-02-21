@@ -25,7 +25,7 @@ class MedionController extends Controller
        (b.stok_awal - (populasi.mati + populasi.jual)) as hidup,
        round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual + e.afkir ))) * 100),2) as deplesi,
        (a.gr/1000) as kg_pakan,
-       (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual))) as gr_perekor,
+       (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir))) as gr_perekor,
        normal.normalPcs, normal.normalKg, abnormal.abnormalPcs , abnormal.abnormalKg,
        f.feed,f.berat,f.berat_telur, f.telur as hd, g.nama_obat
 
@@ -53,7 +53,8 @@ class MedionController extends Controller
                     a.tgl, 
                     a.id_kandang, 
                     SUM(a.mati) OVER (ORDER BY a.tgl) AS mati, 
-                    SUM(a.jual) OVER (ORDER BY a.tgl) AS jual
+                    SUM(a.jual) OVER (ORDER BY a.tgl) AS jual,
+                    SUM(a.afkir) OVER (ORDER BY a.tgl) AS afkir
                     FROM populasi as a
                     WHERE 
                     a.id_kandang = '$id_kandang' AND 
