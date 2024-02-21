@@ -311,7 +311,7 @@
                             <td class="td_layer">{{ date('d-M-y', strtotime($m->tgl)) }}</td>
                             <td class="td_layer bg_diisi_td">{{ $m->mati }}</td>
                             <td class="td_layer bg_diisi_td">{{ $m->jual }}</td>
-                            <td class="td_layer bg_diisi_td">0</td>
+                            <td class="td_layer bg_diisi_td">{{ $m->afkir }}</td>
                             <td class="td_layer ">{{ $m->hidup }}</td>
                             <td class="td_layer ">{{ empty($m->deplesi) ? 0 : $m->deplesi }}</td>
                             <td class="td_layer ">{{ $deplesi_kum }}</td>

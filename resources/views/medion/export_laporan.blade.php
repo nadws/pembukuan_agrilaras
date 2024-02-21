@@ -107,7 +107,7 @@
                 <td>{{ date('d-M-y', strtotime($m->tgl)) }}</td>
                 <td style="background: #FFEA93; color: black">{{ $m->mati }}</td>
                 <td style="background: #FFEA93; color: black">{{ $m->jual }}</td>
-                <td style="background: #FFEA93; color: black">0</td>
+                <td style="background: #FFEA93; color: black">{{ $m->afkir }}</td>
                 <td class="td_layer ">{{ $m->hidup }}</td>
                 <td class="td_layer ">{{ empty($m->deplesi) ? 0 : $m->deplesi }}</td>
                 <td class="td_layer ">{{ $deplesi_kum }}</td>
