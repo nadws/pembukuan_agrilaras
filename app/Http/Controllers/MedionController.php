@@ -22,7 +22,7 @@ class MedionController extends Controller
        CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) AS umur_minggu, 
        DATEDIFF(a.tgl, b.chick_in) AS umur_hari,
        a.tgl, c.mati, c.jual,  c.afkir,
-       (b.stok_awal - (populasi.mati + populasi.jual)) as hidup,
+       (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir)) as hidup,
        round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual + e.afkir ))) * 100),2) as deplesi,
        (a.gr/1000) as kg_pakan,
        (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir))) as gr_perekor,
