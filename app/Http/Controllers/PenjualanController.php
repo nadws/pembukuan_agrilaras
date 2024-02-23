@@ -84,7 +84,7 @@ class PenjualanController extends Controller
 
     public function export_penjualan_telur($tgl1, $tgl2)
     {
-        $tbl = DB::select("SELECT a.tgl, a.no_nota, b.nota_setor , sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp, c.nm_akun as akun_setor, d.nm_customer, a.urutan_customer, a.driver, sum(a.pcs) as pcs , sum(a.kg) as kg , sum(a.kg_jual) as kg_jual, a.tipe, a.admin, c.tgl as tgl_setor, e.debit, e.kredit, a.lokasi, a.customer, f.tgl_stor_kosong
+        $tbl = DB::select("SELECT a.tgl, a.no_nota, b.nota_setor , sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as total_rp, c.nm_akun as akun_setor, d.nm_customer, a.urutan_customer, a.driver, sum(a.pcs) as pcs , sum(a.kg) as kg , sum(a.kg_jual) as kg_jual, a.tipe, a.admin, c.tgl as tgl_setor, e.debit, e.kredit, a.lokasi, a.customer, f.tgl_stor_kosong
         FROM invoice_telur as a
         left join (
             SELECT b.no_nota , b.no_nota_piutang, b.nota_setor
