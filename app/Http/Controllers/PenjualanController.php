@@ -84,26 +84,34 @@ class PenjualanController extends Controller
 
     public function export_penjualan_telur($tgl1, $tgl2)
     {
-        $tbl = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(if(a.tipe = 'pcs', a.pcs * a.rp_satuan,a.kg_jual * a.rp_satuan )) as ttl_rp, a.status, c.debit_bayar , c.kredit_bayar, a.urutan_customer, a.driver, a.lokasi, d.setor, e.nm_customer as customer2
-        FROM invoice_telur as a 
-        left join customer as b on b.id_customer = a.id_customer
-        left join customer as e on e.id_customer = a.id_customer2
+        $tbl = DB::select("SELECT a.tgl, a.no_nota, b.nota_setor , sum(a.total_rp) as total_rp, c.nm_akun as akun_setor, d.nm_customer, a.urutan_customer, a.driver, sum(a.pcs) as pcs , sum(a.kg) as kg , sum(a.kg_jual) as kg_jual, a.tipe, a.admin, c.tgl as tgl_setor, e.debit, e.kredit, a.lokasi, a.customer, f.tgl_stor_kosong
+        FROM invoice_telur as a
         left join (
-            SELECT c.no_nota, sum(c.debit) as debit_bayar, sum(c.kredit) as kredit_bayar, c.setor
-            FROM bayar_telur as c
-            group by c.no_nota
-        ) as c on c.no_nota = a.no_nota
-        
+            SELECT b.no_nota , b.no_nota_piutang, b.nota_setor
+            FROM bayar_telur as b 
+            WHERE b.debit != 0 GROUP BY b.no_nota
+        ) as b on b.no_nota = a.no_nota
+        left JOIN (
+        SELECT c.no_nota, d.nm_akun, c.tgl
+            FROM jurnal as c 
+            left join akun as d on d.id_akun = c.id_akun
+            WHERE c.debit != '0' and c.id_buku = '7' GROUP BY c.no_nota
+        ) as c on c.no_nota = b.nota_setor
+        left JOIN customer as d on d.id_customer = a.id_customer
+        LEFT join (
+        SELECT sum(e.debit) as debit , sum(e.kredit) as kredit, e.no_nota
+            FROM bayar_telur as e 
+            group by e.no_nota
+        ) as e on e.no_nota = a.no_nota
+
         left join (
-            SELECT d.no_nota, d.setor
-            FROM bayar_telur as d
-            where d.debit != 0
-            group by d.no_nota
-        ) as d on d.no_nota = a.no_nota
-        
-        where a.tgl between '$tgl1' and '$tgl2' and a.lokasi ='alpa'
+            SELECT f.nota_setor, f.tgl as tgl_stor_kosong
+            FROM setoran_telur as f 
+            group by f.nota_setor
+        ) as f on f.nota_setor = b.nota_setor
+        WHERE a.tgl BETWEEN '$tgl1' and '$tgl2' and a.lokasi != 'opname'
         group by a.no_nota
-        order by a.urutan DESC");
+        ORDER BY a.no_nota ASC;");
 
         $totalrow = count($tbl) + 1;
 
