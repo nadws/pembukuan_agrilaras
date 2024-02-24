@@ -7,7 +7,9 @@
                     <x-theme.button modal="T" href="{{ route('peralatan.add') }}" icon="fa-plus" addClass="float-end"
                         teks="Buat Baru" />
                 @endif
-                {{-- <x-theme.button modal="Y" idModal="view" icon="fa-print" addClass="float-end" teks="Print" /> --}}
+                <a href="{{ route('peralatan.export') }}" class="btn me-2 btn-primary float-end"><i
+                        class="fas fa-print"></i>
+                    Print</a>
                 <x-theme.akses :halaman="$halaman" route="peralatan.index" />
 
             </div>

@@ -295,4 +295,20 @@ class PeralatanController extends Controller
         $view = empty($print) ? 'nota_jurnal' : 'print';
         return view('persediaan_barang.peralatan.' . $view, $data);
     }
+
+    public function export()
+    {
+        $data = [
+            'peralatan' => DB::select("SELECT a.nm_aktiva, a.tgl, c.nm_kelompok, c.umur, c.periode, a.h_perolehan , a.biaya_depresiasi, round(b.biaya_penyusutan,0) as ttl_depresiasi
+            FROM peralatan as a 
+            left join (
+                SELECT b.id_aktiva , sum(b.b_penyusutan) as biaya_penyusutan
+                FROM depresiasi_peralatan as b 
+                group by b.id_aktiva
+            ) as b on b.id_aktiva = a.id_aktiva
+            left join kelompok_peralatan as c on c.id_kelompok = a.id_kelompok;")
+        ];
+
+        return view('persediaan_barang.peralatan.export', $data);
+    }
 }

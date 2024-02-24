@@ -256,6 +256,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/save_jurnal', 'save_jurnal')->name('save_jurnal');
             Route::get('/load_aktiva', 'load_aktiva')->name('load_aktiva');
             Route::get('/get_data_kelompok', 'get_data_kelompok')->name('get_data_kelompok');
+            Route::get('/export', 'export')->name('export');
             Route::post('/save_aktiva', 'save_aktiva')->name('save_aktiva');
         });
 
