@@ -223,46 +223,48 @@ class CashflowController extends Controller
         } else {
             $tahun = $r->tahun;
         }
+        $tahun2 = $tahun - 1;
 
         $id_akun1 = ['23', '66', '99', '36'];
         $id_akun2 = ['26', '37', '38', '39', '81', '83', '84'];
         $id_buku = ['6'];
         $pendapatan = CashflowModel::cashflow_uangmasuk_setahun($id_akun1, $id_akun2, $tahun, $id_buku);
+        $ttl_pendapatan = CashflowModel::ttl_cashflow_uangmasuk_setahun($id_akun1, $id_akun2, $tahun2, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
         $id_akun4 = ['23', '66', '99'];
         $id_buku = ['6'];
         $piutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+        $ttl_piutang = CashflowModel::ttl_cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun2, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
         $id_akun4 = ['19', '103'];
         $id_buku = ['7', '14'];
         $hutang = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+        $ttl_hutang = CashflowModel::ttl_cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun2, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
         $id_akun4 = ['8', '101'];
         $id_buku = ['6', '12', '7'];
         $bunga_bank = CashflowModel::cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+        $ttl_bunga_bank = CashflowModel::ttl_cashflow_uangmasuk_setahun($id_akun3, $id_akun4, $tahun2, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
         $id_akun4 = ['19'];
         $id_buku = ['7'];
         $bayar_hutang = CashflowModel::cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
+        $ttl_bayar_hutang = CashflowModel::ttl_cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun2, $id_buku);
 
         $id_akun3 = ['26', '37', '38', '39', '81', '83', '84', '36'];
         $id_akun4 = ['8'];
         $id_buku = ['6'];
         $biaya_admin_pen = CashflowModel::cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun, $id_buku);
-
-
-
-
-
-
-
+        $ttl_biaya_admin_pen = CashflowModel::ttl_cashflow_bayar_uangmasuk_setahun($id_akun3, $id_akun4, $tahun2, $id_buku);
 
         $uang_cost = CashflowModel::cashflow_uang_cost($tahun, '6');
+        $ttl_uang_cost = CashflowModel::ttl_cashflow_uang_cost($tahun2, '6');
         $uang_proyek = CashflowModel::cashflow_uang_cost($tahun, '7');
+        $ttl_uang_proyek = CashflowModel::ttl_cashflow_uang_cost($tahun2, '7');
 
         $data = [];
         foreach ($pendapatan as $transaction) {
@@ -494,7 +496,15 @@ class CashflowController extends Controller
         $datas = [
             'title' => 'Cashflow Setahun',
             'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
-            'thn' => $tahun
+            'thn' => $tahun,
+            'ttl1' => $ttl_pendapatan->debit,
+            'ttl2' => $ttl_piutang->debit,
+            'ttl3' => $ttl_bunga_bank->debit,
+            'ttl4' => $ttl_biaya_admin_pen->kredit,
+            'ttl5' => $ttl_hutang->debit,
+            'ttl6' => $ttl_bayar_hutang->kredit,
+            'ttl7' => $ttl_uang_cost->debit,
+            'ttl8' => $ttl_uang_proyek->debit
         ];
 
         return view('cashflow.cashflow_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data8'), $datas);
@@ -541,7 +551,8 @@ class CashflowController extends Controller
             "),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'nm_post' => DB::table('tb_post_center')->where('id_post_center', $r->id_post)->first()
+            'nm_post' => DB::table('tb_post_center')->where('id_post_center', $r->id_post)->first(),
+
         ];
         return view('cashflow.detail', $data);
     }
