@@ -237,7 +237,7 @@
                         $ayam_awal = 0;
                         $ayam_akhir = 0;
 
-                        $kg = 0;
+                        $kg_total = 0;
                         $kg_kotor = 0;
                         $gr_butir = 0;
                         $pakan = 0;
@@ -265,9 +265,11 @@
                     @foreach ($kandang as $k)
                         @php
                             $dc_week += $k->mati_week + $k->jual_week;
-                            $kg += empty($k->pcs) ? '0' : $k->kg - $k->pcs / 180;
+                            $kg_total += empty($k->pcs) ? '0' : $k->kg - $k->pcs / 180;
                             $kg_kotor += empty($k->pcs) ? '0' : $k->kg;
-                            $gr_butir += empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
+                            $gr_butir += empty($k->pcs)
+                                ? '0'
+                                : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             $pakan += empty($k->kg_pakan) ? '0' : $k->kg_pakan / 1000;
                             $butir += $k->pcs - $k->pcs_past;
                             $kg_today += $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180);
@@ -285,12 +287,14 @@
                             $jual += empty($k->jual) ? '0' : $k->jual;
 
                             $butir_minggu += $k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya;
-                            $kg_minggu += $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180);
+                            $kg_minggu +=
+                                $k->kg_satu_minggu -
+                                $k->pcs_satu_minggu / 180 -
+                                ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180);
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
                             $gjl_ttl += $k->ttl_gjl * 435000;
-
                         @endphp
                         <tr>
                             <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }} <br>
@@ -358,7 +362,9 @@
                                 {{ number_format($k->kg, 1) }}
                             </td>
                             @php
-                                $gr_butir = empty($k->pcs) ? '0' : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
+                                $gr_butir = empty($k->pcs)
+                                    ? '0'
+                                    : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
                             @endphp
                             <td align="center" class="td_layer ">
                                 <p style="margin: 0; padding: 0;">&nbsp;</p>
@@ -429,18 +435,34 @@
 
                             <!-- (12777) / (3) / (2296) -->
                             @php
-                                $fcr = empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ? '0' : $k->kg_p_week / 1000 / ($k->kg_telur_week - $k->pcs_telur_week / 180);
+                                $fcr =
+                                    empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week)
+                                        ? '0'
+                                        : $k->kg_p_week / 1000 / ($k->kg_telur_week - $k->pcs_telur_week / 180);
 
                                 $vitamin = empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                                 $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
 
                                 $vitamin_week = empty($k->rp_vitamin_week) ? '0' : $k->rp_vitamin_week / 7000;
 
-                                $fcr_plus_week = empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week) ? '0' : ($k->kg_p_week / 1000 + $vitamin_week) / ($k->kg_telur_week - $k->pcs_telur_week / 180);
+                                $fcr_plus_week =
+                                    empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week)
+                                        ? '0'
+                                        : ($k->kg_p_week / 1000 + $vitamin_week) /
+                                            ($k->kg_telur_week - $k->pcs_telur_week / 180);
 
-                                $fcr_plus = empty($k->kg_pakan) || empty($k->kg) ? '0' : number_format(($k->kg_pakan / 1000 + $vitamin + $vaksin) / ($k->kg - $k->pcs / 180), 1);
+                                $fcr_plus =
+                                    empty($k->kg_pakan) || empty($k->kg)
+                                        ? '0'
+                                        : number_format(
+                                            ($k->kg_pakan / 1000 + $vitamin + $vaksin) / ($k->kg - $k->pcs / 180),
+                                            1,
+                                        );
 
-                                $fcr_day = empty($k->kg_pakan) || empty($k->pcs) ? '0' : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
+                                $fcr_day =
+                                    empty($k->kg_pakan) || empty($k->pcs)
+                                        ? '0'
+                                        : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
                             @endphp
 
                             <td align="center" class="FCR(week)  td_layer">
@@ -575,7 +597,7 @@
                         </th>
 
                         <th class="dhead text-end table_layer">
-                            {{ number_format($kg, 2) }}
+                            {{ number_format($kg_total, 2) }}
                             <br>
                             {{ number_format($pcs, 0) }}
                             <br>
