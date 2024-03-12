@@ -126,6 +126,8 @@ class JurnalController extends Controller
             14 => 'Hutang',
         ];
 
+
+
         $data =  [
             'title' => "Tambah Jurnal " . ucwords($kategori[$r->id_buku]),
             'max' => $nota_t,
