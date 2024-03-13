@@ -335,6 +335,7 @@ class BukuBesarController extends Controller
             $sheet1->setCellValue('J' . $kolom, $saldo);
             $kolom++;
         }
+        $sheet1->getStyle('A2:J' . $kolom - 1)->applyFromArray($style);
 
 
         $namafile = "Detail buku besar $akun->nm_akun.xlsx";
