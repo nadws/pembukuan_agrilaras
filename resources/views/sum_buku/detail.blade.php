@@ -8,6 +8,8 @@
             <div class="col-lg-6">
                 <a href="{{ route('summary_buku_besar.export_detail', ['id_akun' => $id_akun, 'id_klasifikasi' => $id_klasifikasi, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
                     class="float-end btn   btn-success me-2"><i class="fas fa-file-excel"></i> Export</a>
+                <a href="{{ route('summary_buku_besar.export_detail_format', ['id_akun' => $id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
+                    class="float-end btn   btn-success me-2"><i class="fas fa-file-excel"></i> Export format baru</a>
             </div>
         </div>
     </x-slot>

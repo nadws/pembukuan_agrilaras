@@ -268,8 +268,10 @@
                 var count = 3;
                 $(document).on("click", ".tbh_baris", function() {
                     count = count + 1;
+                    var id_buku = $(this).attr('id_buku');
+
                     $.ajax({
-                        url: "/tambah_baris_jurnal?count=" + count,
+                        url: "/tambah_baris_jurnal?count=" + count + "&id_buku=" + id_buku,
                         type: "Get",
                         success: function(data) {
                             $("#tb_baris").append(data);

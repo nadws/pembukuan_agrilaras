@@ -166,9 +166,15 @@ class JurnalController extends Controller
 
     public function load_menu(Request $r)
     {
+        if ($r->id_buku == '7') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } else {
+            $akun = Akun::where('nonaktif', 'T')->get();
+        }
+
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::where('nonaktif', 'T')->get(),
+            'akun' => $akun,
             'proyek' => proyek::all(),
             'satuan' => DB::table('tb_satuan')->get(),
             'id_akun' => $r->id_akun,
@@ -178,9 +184,14 @@ class JurnalController extends Controller
     }
     public function tambah_baris_jurnal(Request $r)
     {
+        if ($r->id_buku == '7') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } else {
+            $akun = Akun::where('nonaktif', 'T')->get();
+        }
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::where('nonaktif', 'T')->get(),
+            'akun' => $akun,
             'count' => $r->count
 
         ];

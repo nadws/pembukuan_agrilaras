@@ -189,12 +189,12 @@ class NeracaController extends Controller
     {
         $tahun =  $r->tahun ?? date('Y');
 
-        $data =[
+        $data = [
             'title' => 'asd',
             'bulans' => DB::table('bulan')->get(),
             'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
             'thn' => $tahun,
         ];
-        return view('neraca.load_pasiva',$data);
+        return view('neraca.load_pasiva', $data);
     }
 }

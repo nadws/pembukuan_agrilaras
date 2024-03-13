@@ -242,4 +242,111 @@ class BukuBesarController extends Controller
         $writer->save('php://output');
         exit();
     }
+
+    public function export_detail_format(Request $r)
+    {
+        $style_atas = array(
+            'font' => [
+                'bold' => true, // Mengatur teks menjadi tebal
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+                ]
+            ],
+        );
+        $style_bawah = array(
+            'font' => [
+                'bold' => true, // Mengatur teks menjadi tebal
+            ],
+            'borders' => [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+                ],
+            ],
+        );
+
+        $style = [
+            'borders' => [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+                ],
+            ],
+        ];
+        $spreadsheet = new Spreadsheet();
+        $akun = DB::table('akun')->where('id_akun', $r->id_akun)->first();
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle($akun->nm_akun);
+
+
+        $sheet1->getStyle("A1:J1")->applyFromArray($style_atas);
+
+        $sheet1->setCellValue('A1', 'ID');
+        $sheet1->setCellValue('B1', 'AGRIKA GATYA ARUM PT');
+        $sheet1->setCellValue('C1', 'Cfm');
+        $sheet1->setCellValue('D1', 'Tanggal');
+        $sheet1->setCellValue('E1', 'Post Center');
+        $sheet1->setCellValue('F1', 'Keterangan');
+        $sheet1->setCellValue('G1', 'Keterangan2');
+        $sheet1->setCellValue('H1', 'Debit');
+        $sheet1->setCellValue('I1', 'Kredit');
+        $sheet1->setCellValue('J1', 'Balance');
+
+        $kolom = 2;
+
+        $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo 
+        FROM jurnal as a 
+        left join akun as b on b.id_akun = a.id_akun 
+        left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun 
+        FROM jurnal as c left join akun as d on d.id_akun = c.id_akun where c.id_akun != '$r->id_akun' 
+        group by c.no_nota ) as c on c.no_nota = a.no_nota AND c.id_akun != a.id_akun 
+        WHERE a.id_akun = '$r->id_akun' and a.tgl BETWEEN '$r->tgl1' and '$r->tgl2' 
+        order by a.saldo DESC, a.tgl ASC");
+
+        $saldo = 0;
+        foreach ($detail as $no => $g) {
+            $saldo += $g->debit - $g->kredit;
+            $sheet1->setCellValue('A' . $kolom, $no + 1);
+            $sheet1->setCellValue('B' . $kolom, $g->nm_akun);
+            $sheet1->setCellValue('C' . $kolom, $g->no_nota);
+
+            $sheet1->setCellValue('D' . $kolom, $g->tgl);
+            $sheet1->setCellValue('E' . $kolom, $g->saldo == 'Y' ? 'Saldo Awal' : $g->nm_akun2);
+
+            $sheet1->setCellValue('F' . $kolom, $g->ket);
+            $sheet1->setCellValue('G' . $kolom, '');
+
+            $sheet1->setCellValue('H' . $kolom, $g->debit);
+            $sheet1->setCellValue('I' . $kolom, $g->kredit);
+            $sheet1->setCellValue('J' . $kolom, $saldo);
+            $kolom++;
+        }
+
+
+        $namafile = "Detail buku besar $akun->nm_akun.xlsx";
+
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=' . $namafile);
+        header('Cache-Control: max-age=0');
+
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit();
+    }
 }

@@ -9,6 +9,9 @@
                     class="btn btn-sm btn-primary float-end">Penjualan Ayam</a>
                 <x-theme.btn_filter />
             </div>
+            <div class="col-lg-6">
+                <h5>Total Penjualan Alpa</h5>
+            </div>
         </div>
     </x-slot>
 
