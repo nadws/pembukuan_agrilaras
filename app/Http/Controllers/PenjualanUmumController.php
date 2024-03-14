@@ -25,7 +25,7 @@ class PenjualanUmumController extends Controller
 
         if (empty($r->period)) {
             $this->tgl1 = date('Y-m-01');
-            $this->tgl2 = date('Y-m-t');
+            $this->tgl2 = date('Y-m-d');
         } elseif ($r->period == 'daily') {
             $this->tgl1 = date('Y-m-d');
             $this->tgl2 = date('Y-m-d');
@@ -39,7 +39,7 @@ class PenjualanUmumController extends Controller
             $tglakhir = "$tahun" . "-" . "$bulan" . "-" . "01";
 
             $this->tgl1 = date('Y-m-01', strtotime($tglawal));
-            $this->tgl2 = date('Y-m-t', strtotime($tglakhir));
+            $this->tgl2 = date('Y-m-d', strtotime($tglakhir));
         } elseif ($r->period == 'costume') {
             $this->tgl1 = $r->tgl1;
             $this->tgl2 = $r->tgl2;
@@ -49,7 +49,7 @@ class PenjualanUmumController extends Controller
             $tgl_akhir = "$tahun" . "-" . "12" . "-" . "01";
 
             $this->tgl1 = date('Y-m-01', strtotime($tgl_awal));
-            $this->tgl2 = date('Y-m-t', strtotime($tgl_akhir));
+            $this->tgl2 = date('Y-m-d', strtotime($tgl_akhir));
         }
 
         $this->id_proyek = $r->id_proyek ?? 0;
@@ -66,12 +66,23 @@ class PenjualanUmumController extends Controller
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa' 
         GROUP BY a.urutan ORDER BY a.urutan DESC");
 
-
-
+        $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
+        WHERE a.tgl BETWEEN '2024-03-01' AND '2024-03-13'
+        GROUP BY a.lokasi;");
+        foreach($ttlPnjl as $d)
+        {
+            $ttl[] = [
+                $d->lokasi == 'alpa' ? $d->total : 0,
+                $d->lokasi == 'mtd' ? $d->total : 0
+            ];
+        }
+     
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
             'tgl1' => $tgl1,
+            'pnjlAlpa' => $ttl[0][0],
+            'pnjlMtd' => $ttl[1][0] ?? 0,
             'tgl2' => $tgl2,
 
             'user' => User::where('posisi_id', 1)->get(),
@@ -134,7 +145,7 @@ class PenjualanUmumController extends Controller
 
         $produk = $this->produk; // Ganti dengan model dan cara mengambil data produk yang sesuai
         foreach ($produk as $d) {
-            $selectOptions .= "<option value='{$d->id_produk}'>{$d->nm_produk} (".strtoupper($d->satuan->nm_satuan).")</option>";
+            $selectOptions .= "<option value='{$d->id_produk}'>{$d->nm_produk} (" . strtoupper($d->satuan->nm_satuan) . ")</option>";
         }
 
         $selectOptions .= "</select>";
@@ -194,7 +205,7 @@ class PenjualanUmumController extends Controller
             'no_nota' => 'PUM-' . $r->no_nota,
             'id_akun' => $this->akunPenjualan,
             'id_buku' => '6',
-            'ket' => 'Penjualan Umum Alpa : '.$produkNames,
+            'ket' => 'Penjualan Umum Alpa : ' . $produkNames,
             'no_urut' => $akun2->inisial . '-' . $urutan2,
             'urutan' => $urutan2,
             'kredit' => $ttlDebit,

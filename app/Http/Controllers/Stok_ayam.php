@@ -325,22 +325,39 @@ class Stok_ayam extends Controller
         $tgl1 =  $this->tgl1;
         $tgl2 =  $this->tgl2;
 
+        $inv = DB::select("SELECT a.*, b.* , c.total_bayar
+        FROM invoice_ayam as a 
+        left join customer as b on b.id_customer = a.id_customer 
+        left join (
+            SELECT c.no_nota, sum(c.kredit - c.debit) as total_bayar
+            FROM bayar_ayam as c 
+            group by c.no_nota
+        ) as c on c.no_nota = a.no_nota
+        where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'
+        order by a.no_nota DESC
+        ");
+
+        $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.qty * a.h_satuan) as total
+        FROM invoice_ayam as a 
+        where a.tgl between '$tgl1' and '$tgl2'
+        GROUP by a.lokasi
+        order by a.no_nota DESC;");
+
+        foreach ($ttlPnjl as $d) {
+            $ttl[] = [
+                $d->lokasi == 'alpa' ? $d->total : 0,
+                $d->lokasi == 'mtd' ? $d->total : 0
+            ];
+        }
+
         $data = [
             'title' => 'History Penjualan ayam',
-            'invoice_ayam' => DB::select("SELECT a.*, b.* , c.total_bayar
-            FROM invoice_ayam as a 
-            left join customer as b on b.id_customer = a.id_customer 
-            left join (
-                SELECT c.no_nota, sum(c.kredit - c.debit) as total_bayar
-                FROM bayar_ayam as c 
-                group by c.no_nota
-            ) as c on c.no_nota = a.no_nota
-            where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'
-            order by a.no_nota DESC
-            "),
+            'invoice_ayam' => $inv,
             'customer' => DB::table('customer')->get(),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
+            'pnjlAlpa' => $ttl[0][0],
+            'pnjlMtd' => $ttl[1][0] ?? 0,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
         ];

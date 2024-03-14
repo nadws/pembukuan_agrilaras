@@ -9,50 +9,58 @@
                     class="btn btn-sm btn-primary float-end">Penjualan Ayam</a>
                 <x-theme.btn_filter />
             </div>
-            <div class="col-lg-6">
-                <h5>Total Penjualan Alpa</h5>
-            </div>
+           
         </div>
     </x-slot>
 
     <x-slot name="cardBody">
         <section class="row">
-            <table class="table table-bordered" id="table" width="100%">
-                <thead>
-                    <th class="dhead">No</th>
-                    <th class="dhead">Tanggal</th>
-                    <th class="dhead">No Nota</th>
-                    <th class="dhead">Customer</th>
-                    <th class="dhead text-end">Qty</th>
-                    <th class="dhead text-end">Harga </th>
-                    <th class="dhead text-end">Total Harga</th>
-                    <th class="dhead text-end">Ket</th>
-                    <th class="dhead">Aksi</th>
-                </thead>
-                <tbody>
-                    @foreach ($invoice_ayam as $no => $i)
-                        <tr>
-                            <td>{{ $no + 1 }}</td>
-                            <td>{{ tanggal($i->tgl) }}</td>
-                            <td>{{ $i->no_nota }}</td>
-                            <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
-                            <td class="text-end">{{ $i->qty }}</td>
-                            <td class="text-end">Rp. {{ number_format($i->h_satuan, 0) }}</td>
-                            <td class="text-end">Rp. {{ number_format($i->qty * $i->h_satuan, 0) }}</td>
-                            <td>{{ $i->total_bayar != '0' ? 'Unpaid' : 'Paid' }}</td>
-                            <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#edit_ayam"
-                                    class="btn btn-sm btn-warning edit" no_nota="{{ $i->no_nota }}"><i
-                                        class="fas fa-edit"></i></a>
-                                <a class="btn btn-sm btn-danger delete_nota" no_nota="{{ $i->no_nota }}"
-                                    href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                        class="fas fa-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="col-lg-4">
+                
+                <h6 class="text-end">Total Penjualan Alpa : Rp. {{ number_format($pnjlAlpa, 0) }}</h6>
+                <h6 class="text-end">Total Penjualan MTD : Rp. {{ number_format($pnjlMtd, 0) }}</h6>
+                <hr>
+                <h6 class="text-end"><b>Total : Rp. {{ number_format($pnjlMtd + $pnjlAlpa, 0) }}</b>
+                </h6>
+            </div>
+            <div class="col-lg-12">
+                <table class="table table-bordered" id="table" width="100%">
+                    <thead>
+                        <th class="dhead">No</th>
+                        <th class="dhead">Tanggal</th>
+                        <th class="dhead">No Nota</th>
+                        <th class="dhead">Customer</th>
+                        <th class="dhead text-end">Qty</th>
+                        <th class="dhead text-end">Harga </th>
+                        <th class="dhead text-end">Total Harga</th>
+                        <th class="dhead text-end">Ket</th>
+                        <th class="dhead">Aksi</th>
+                    </thead>
+                    <tbody>
+                        @foreach ($invoice_ayam as $no => $i)
+                            <tr>
+                                <td>{{ $no + 1 }}</td>
+                                <td>{{ tanggal($i->tgl) }}</td>
+                                <td>{{ $i->no_nota }}</td>
+                                <td>{{ $i->nm_customer }}{{ $i->urutan_customer }}</td>
+                                <td class="text-end">{{ $i->qty }}</td>
+                                <td class="text-end">Rp. {{ number_format($i->h_satuan, 0) }}</td>
+                                <td class="text-end">Rp. {{ number_format($i->qty * $i->h_satuan, 0) }}</td>
+                                <td>{{ $i->total_bayar != '0' ? 'Unpaid' : 'Paid' }}</td>
+                                <td>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#edit_ayam"
+                                        class="btn btn-sm btn-warning edit" no_nota="{{ $i->no_nota }}"><i
+                                            class="fas fa-edit"></i></a>
+                                    <a class="btn btn-sm btn-danger delete_nota" no_nota="{{ $i->no_nota }}"
+                                        href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
+                                            class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
             <form action="{{ route('hapus_ayam') }}" method="get">
                 <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
                     aria-hidden="true">
