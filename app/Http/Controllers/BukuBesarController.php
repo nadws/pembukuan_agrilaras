@@ -311,7 +311,7 @@ class BukuBesarController extends Controller
         $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo, c.ket2
         FROM jurnal as a 
         left join akun as b on b.id_akun = a.id_akun 
-        left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun ,GROUP_CONCAT(DISTINCT j.ket SEPARATOR ', ') as ket2
+        left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun ,GROUP_CONCAT(DISTINCT c.ket SEPARATOR ', ') as ket2
         FROM jurnal as c left join akun as d on d.id_akun = c.id_akun where c.id_akun != '$r->id_akun' 
         group by c.no_nota ) as c on c.no_nota = a.no_nota AND c.id_akun != a.id_akun 
         WHERE a.id_akun = '$r->id_akun' and a.tgl BETWEEN '$r->tgl1' and '$r->tgl2' 
