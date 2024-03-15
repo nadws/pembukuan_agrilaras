@@ -8,6 +8,6 @@ class Tes2Controller extends Controller
 {
     function index(Request $r)
     {
-        $NANDA = 'DSA';
+        $NANDA = 'dsadasdasdasdasdasdasdasdasasdsa';
     }
 }

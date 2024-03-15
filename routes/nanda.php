@@ -190,6 +190,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/detail', 'detail')->name('detail');
             Route::get('/export_detail', 'export_detail')->name('export_detail');
             Route::get('/export_detail_format', 'export_detail_format')->name('export_detail_format');
+            Route::get('/buku_besar_new', 'buku_besar_new')->name('buku_besar_new');
+            Route::get('/loadDetail', 'loadDetail')->name('loadDetail');
         });
 
     Route::controller(ProyekController::class)->group(function () {
