@@ -55,8 +55,8 @@
                                 {{ number_format($b->debit + $b->debit_saldo - ($b->kredit + $b->kredit_saldo), 0) }}
                             </td>
                         </tr>
-                        <tr class="loadDetail{{ $b->id_klasifikasi }}"></tr>
-                    @endforeach
+                <tbody class="loadDetail{{ $b->id_klasifikasi }}"></tbody>
+                @endforeach
 
                 </tbody>
             </table>

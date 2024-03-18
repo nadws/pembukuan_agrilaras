@@ -156,6 +156,11 @@
                         <td class="fw-bold text-end">{{ number_format($total_seluruh + $ttl_saldo_p, 0) }}</td>
                     </tr>
                     @foreach ($data as $akun => $months)
+                        @php
+                            $totalPerAkun = 0;
+
+                            $saldo_thn_pen = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
+                        @endphp
                         <tr x-show="open_pendapatan">
                             <td class="text-end">
                                 {{ number_format($saldo_thn_pen->k_saldo, 0) }}
@@ -169,11 +174,7 @@
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
-                            @php
-                                $totalPerAkun = 0;
 
-                                $saldo_thn_pen = \App\Models\ProfitModel::saldo_t_lalu($thn_awal, $thn2, $akun);
-                            @endphp
 
                             @foreach ($months as $month => $nominal)
                                 <td class="text-end">
@@ -188,7 +189,8 @@
                                     $totalPerAkun += $nominal;
                                 @endphp
                             @endforeach
-                            <td class="text-end">{{ number_format($totalPerAkun + $saldo_thn_pen->k_saldo, 0) }}</td>
+                            <td class="text-end">{{ number_format($totalPerAkun + $saldo_thn_pen->k_saldo, 0) }}
+                            </td>
                         </tr>
                     @endforeach
                     {{-- <tr x-show="open_pendapatan">
