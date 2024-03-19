@@ -184,6 +184,8 @@ class JurnalController extends Controller
     {
         if ($r->id_buku == '7') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } elseif ($r->id_buku == '14') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
@@ -202,6 +204,8 @@ class JurnalController extends Controller
     {
         if ($r->id_buku == '7') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } elseif ($r->id_buku == '14') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
