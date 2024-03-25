@@ -23,15 +23,16 @@
                 @endphp
             @endforeach
 
-            <table class="table table-hover table-striped" id="table1">
+            <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th width="5">#</th>
-                        <th>Kode Akun</th>
-                        <th width="200px">Akun</th>
-                        <th style="text-align: right">Debit ({{ number_format($ttldebit, 0) }})</th>
-                        <th style="text-align: right">Kredit ({{ number_format($ttlkredit, 0) }})</th>
-                        <th style="text-align: right">Saldo ({{ number_format($ttldebit - $ttlkredit, 0) }})</th>
+                        <th class="dhead" width="5">#</th>
+                        <th class="dhead">Kode Akun</th>
+                        <th class="dhead" width="200px">Akun</th>
+                        <th class="dhead" style="text-align: right">Debit ({{ number_format($ttldebit, 0) }})</th>
+                        <th class="dhead" style="text-align: right">Kredit ({{ number_format($ttlkredit, 0) }})</th>
+                        <th class="dhead" style="text-align: right">Saldo
+                            ({{ number_format($ttldebit - $ttlkredit, 0) }})</th>
                     </tr>
                 </thead>
                 <tbody>
