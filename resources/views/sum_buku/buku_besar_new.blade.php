@@ -22,7 +22,6 @@
                     $ttlkredit += $b->kredit + $b->kredit_saldo;
                 @endphp
             @endforeach
-
             <table class="table table-hover">
                 <thead>
                     <tr>
