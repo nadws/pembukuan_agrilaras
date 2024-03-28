@@ -36,9 +36,7 @@
                             <tr>
                                 <th class="dhead" width="5">#</th>
                                 <th class="dhead">Tanggal</th>
-                                <th class="dhead text-end">Stok Program</th>
-                                <th class="dhead text-end">Stok Aktual</th>
-                                <th class="dhead text-end">Selisih</th>
+                                <th class="dhead text-end">Qty</th>
                                 <th class="dhead text-end">Harga Satuan</th>
                                 <th class="dhead text-end">Rupiah</th>
                                 <th class="dhead">Admin</th>
@@ -58,17 +56,19 @@
                                 <tr>
                                     <td>{{ $no + 1 }}</td>
                                     <input type="hidden" name="tgl[]" value="{{ $stok->tgl }}">
-                                    <input type="hidden" name="id_stok_telur[]" value="{{$stok->id_rak}}">
-                                    <input type="hidden" name="nota_rak[]" value="{{$stok->no_nota}}">
+                                    <input type="hidden" name="id_stok_telur[]" value="{{ $stok->id_rak }}">
+                                    <input type="hidden" name="nota_rak[]" value="{{ $stok->no_nota }}">
                                     <input type="hidden" name="pembayaran[]"
                                         class="form-control bayar_biasa bayar_biasa{{ $no + 1 }}"
                                         style="text-align: right" value="{{ round($stok->total_rp, 0) }}">
 
                                     <td>{{ tanggal($stok->tgl) }}</td>
-                                    <td class="text-end">{{ number_format($stok->debit + $stok->selisih, 0) }}</td>
-                                    <td class="text-end">{{ number_format($stok->debit, 0) }}</td>
-                                    <td class="text-end">{{ number_format($stok->selisih, 0) }}</td>
-                                    <td class="text-end">{{ number_format($stok->total_rp / $stok->selisih, 1) }}</td>
+                                    <td class="text-end">
+                                        {{ $stok->selisih == 0 ? number_format($stok->kredit, 0) : number_format($stok->selisih, 0) }}
+                                    </td>
+                                    <td class="text-end">
+                                        {{ $stok->selisih == 0 ? number_format($stok->total_rp / $stok->kredit, 1) : number_format($stok->total_rp / $stok->selisih, 1) }}
+                                    </td>
                                     <td class="text-end">{{ number_format($stok->total_rp, 1) }}</td>
                                     <td>{{ $stok->admin }}</td>
                                 </tr>
