@@ -100,14 +100,14 @@
             </td>
             <td>{{ $f->alamat }}</td>
             <td><?= $f->total_rp ?></td>
-            <td><?= floor($f->total_rp * 0.11) ?></td>
+            <td><?= round($f->total_rp * 0.11, 0) ?></td>
             <td>0</td>
             <td>1</td>
             <td>0</td>
             <td>0</td>
             <td>0</td>
             <td>0</td>
-            <td>{{"'$f->ktp"}}</td>
+            <td>{{ "'$f->ktp" }}</td>
             <td>0</td>
         </tr>
         <?php foreach($faktur as $g): ?>
@@ -121,7 +121,7 @@
             <td><?= $g->total_rp ?></td>
             <td>0</td>
             <td><?= $g->total_rp ?></td>
-            <td><?= floor($g->total_rp * 0.11) ?></td>
+            <td><?= round($g->total_rp * 0.11, 0) ?></td>
             <td>0</td>
             <td>0</td>
             <td></td>
