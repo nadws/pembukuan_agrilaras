@@ -68,6 +68,8 @@ class JurnalController extends Controller
             $id_buku = $r->id_buku;
         }
 
+
+
         $jurnal =  DB::select("SELECT a.penutup, a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
@@ -80,14 +82,14 @@ class JurnalController extends Controller
         left JOIN(
             SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
-            where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
+            where b.penutup = 'T' and b.tgl BETWEEN '2022-01-01' and '$tgl2'
             group by b.id_akun
         ) as b on b.id_akun = a.id_akun
 
         left JOIN (
             SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
             FROM jurnal_saldo as c 
-            where  c.tgl BETWEEN '$tgl1' and '$tgl2'
+            where  c.tgl BETWEEN '2022-01-01' and '$tgl2'
             group by c.id_akun
         ) as c on c.id_akun = a.id_akun
         where a.id_klasifikasi  = '9'
