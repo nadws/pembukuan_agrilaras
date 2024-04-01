@@ -64,23 +64,19 @@ class PenjualanUmumController extends Controller
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa' 
         GROUP BY a.urutan ORDER BY a.urutan DESC");
-        $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
-        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2'
-        GROUP BY a.lokasi ORDER BY a.lokasi ASC");
-        foreach($ttlPnjl as $d)
-        {
-            $ttl[] = [
-                $d->lokasi == 'alpa' ? $d->total : 0,
-                $d->lokasi == 'mtd' ? $d->total : 0
-            ];
-        }
-        dd($ttl);
+        $pnjlAlpa = DB::selectOne("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
+        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa'
+        GROUP BY a.lokasi");
+        $pnjlMtd = DB::selectOne("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
+        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'mtd'
+        GROUP BY a.lokasi");
+    
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
             'tgl1' => $tgl1,
-            'pnjlAlpa' => $ttl[0][0] ?? 0,
-            'pnjlMtd' => $ttl[1][1] ?? 0,
+            'pnjlAlpa' => $pnjlAlpa->total ?? 0,
+            'pnjlMtd' => $pnjlMtd->total ?? 0,
             'tgl2' => $tgl2,
 
             'user' => User::where('posisi_id', 1)->get(),
