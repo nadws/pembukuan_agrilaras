@@ -67,6 +67,7 @@ class PenjualanUmumController extends Controller
         $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2'
         GROUP BY a.lokasi;");
+        $ttl = [];
         foreach($ttlPnjl as $d)
         {
             $ttl[] = [
