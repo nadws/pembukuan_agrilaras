@@ -25,7 +25,7 @@ class PenjualanUmumController extends Controller
 
         if (empty($r->period)) {
             $this->tgl1 = date('Y-m-01');
-            $this->tgl2 = date('Y-m-d');
+            $this->tgl2 = date('Y-m-t');
         } elseif ($r->period == 'daily') {
             $this->tgl1 = date('Y-m-d');
             $this->tgl2 = date('Y-m-d');
@@ -35,11 +35,10 @@ class PenjualanUmumController extends Controller
         } elseif ($r->period == 'mounthly') {
             $bulan = $r->bulan;
             $tahun = $r->tahun;
-            $tglawal = "$tahun" . "-" . "$bulan" . "-" . "01";
-            $tglakhir = "$tahun" . "-" . "$bulan" . "-" . "01";
+            $tgl = "$tahun" . "-" . "$bulan" . "-" . "01";
 
-            $this->tgl1 = date('Y-m-01', strtotime($tglawal));
-            $this->tgl2 = date('Y-m-d', strtotime($tglakhir));
+            $this->tgl1 = date('Y-m-01', strtotime($tgl));
+            $this->tgl2 = date('Y-m-t', strtotime($tgl));
         } elseif ($r->period == 'costume') {
             $this->tgl1 = $r->tgl1;
             $this->tgl2 = $r->tgl2;
@@ -49,7 +48,7 @@ class PenjualanUmumController extends Controller
             $tgl_akhir = "$tahun" . "-" . "12" . "-" . "01";
 
             $this->tgl1 = date('Y-m-01', strtotime($tgl_awal));
-            $this->tgl2 = date('Y-m-d', strtotime($tgl_akhir));
+            $this->tgl2 = date('Y-m-t', strtotime($tgl_akhir));
         }
 
         $this->id_proyek = $r->id_proyek ?? 0;
@@ -65,24 +64,19 @@ class PenjualanUmumController extends Controller
         LEFT JOIN customer as b ON a.id_customer = b.id_customer
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa' 
         GROUP BY a.urutan ORDER BY a.urutan DESC");
-
-        $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
-        WHERE a.tgl BETWEEN '2024-03-01' AND '2024-03-13'
-        GROUP BY a.lokasi;");
-        foreach($ttlPnjl as $d)
-        {
-            $ttl[] = [
-                $d->lokasi == 'alpa' ? $d->total : 0,
-                $d->lokasi == 'mtd' ? $d->total : 0
-            ];
-        }
-     
+        $pnjlAlpa = DB::selectOne("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
+        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'alpa'
+        GROUP BY a.lokasi");
+        $pnjlMtd = DB::selectOne("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
+        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'mtd'
+        GROUP BY a.lokasi");
+    
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
             'tgl1' => $tgl1,
-            'pnjlAlpa' => $ttl[0][0],
-            'pnjlMtd' => $ttl[1][0] ?? 0,
+            'pnjlAlpa' => $pnjlAlpa->total ?? 0,
+            'pnjlMtd' => $pnjlMtd->total ?? 0,
             'tgl2' => $tgl2,
 
             'user' => User::where('posisi_id', 1)->get(),

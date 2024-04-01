@@ -336,7 +336,6 @@ class Stok_ayam extends Controller
         where a.lokasi = 'alpa' and a.tgl between '$tgl1' and '$tgl2'
         order by a.no_nota DESC
         ");
-
         $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.qty * a.h_satuan) as total
         FROM invoice_ayam as a 
         where a.tgl between '$tgl1' and '$tgl2'
@@ -356,7 +355,7 @@ class Stok_ayam extends Controller
             'customer' => DB::table('customer')->get(),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'pnjlAlpa' => $ttl[0][0],
+            'pnjlAlpa' => $ttl[0][0] ?? 0,
             'pnjlMtd' => $ttl[1][0] ?? 0,
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
