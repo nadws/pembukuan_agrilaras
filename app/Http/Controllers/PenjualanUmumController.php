@@ -74,6 +74,7 @@ class PenjualanUmumController extends Controller
                 $d->lokasi == 'mtd' ? $d->total : 0
             ];
         }
+        dd($ttl);
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
