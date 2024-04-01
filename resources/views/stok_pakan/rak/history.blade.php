@@ -8,7 +8,8 @@
             <div class="col-lg-6">
 
                 <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Bukukan" />
-                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
+                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end"
+                    teks="" />
             </div>
         </div>
     </x-slot>
@@ -30,9 +31,9 @@
                     <tr>
                         <th width="5">#</th>
                         <th class="dhead">Tanggal</th>
-                        <th class="dhead text-end">Stok Program</th>
-                        <th class="dhead text-end">Stok Aktual</th>
-                        <th class="dhead text-end">Selisih</th>
+                        {{-- <th class="dhead text-end">Stok Program</th>
+                        <th class="dhead text-end">Stok Aktual</th> --}}
+                        <th class="dhead text-end">Qty</th>
                         <th class="dhead text-end">Harga Satuan</th>
                         <th class="dhead text-end">Rupiah</th>
                         <th class="dhead">Admin</th>
@@ -46,17 +47,18 @@
                         <tr>
                             <td>{{ $no + 1 }}</td>
                             <td>{{ tanggal($s->tgl) }}</td>
-                            <td class="text-end">{{ number_format($s->debit + $s->selisih, 0) }}</td>
-                            <td class="text-end">{{ number_format($s->debit, 0) }}</td>
-                            <td class="text-end">{{ number_format($s->selisih, 0) }}</td>
-                            <td class="text-end">{{ number_format($s->total_rp / $s->selisih, 1) }}</td>
+                            <td class="text-end">
+                                {{ $s->selisih == 0 ? number_format($s->kredit, 0) : number_format($s->selisih, 0) }}
+                            </td>
+                            <td class="text-end">
+                                {{ $s->selisih == 0 ? number_format($s->total_rp / $s->kredit, 1) : number_format($s->total_rp / $s->selisih, 1) }}
+                            </td>
                             <td class="text-end">{{ number_format($s->total_rp, 1) }}</td>
                             <td>{{ $s->admin }}</td>
                             <td align="center">
                                 <input type="checkbox" name="" no_nota="{{ $s->id_rak }}"
                                     piutang="{{ $s->total_rp }}" id=""
-                                    class="cek_bayar {{ $max_tgl == $s->tgl ? 'checkbox' : '' }}"
-                                    >
+                                    class="cek_bayar {{ $max_tgl == $s->tgl ? 'checkbox' : '' }}">
 
                             </td>
                         </tr>

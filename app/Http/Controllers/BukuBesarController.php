@@ -308,10 +308,10 @@ class BukuBesarController extends Controller
 
         $kolom = 2;
 
-        $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo 
+        $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo, c.ket2
         FROM jurnal as a 
         left join akun as b on b.id_akun = a.id_akun 
-        left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun 
+        left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun ,GROUP_CONCAT(DISTINCT c.ket SEPARATOR ', ') as ket2
         FROM jurnal as c left join akun as d on d.id_akun = c.id_akun where c.id_akun != '$r->id_akun' 
         group by c.no_nota ) as c on c.no_nota = a.no_nota AND c.id_akun != a.id_akun 
         WHERE a.id_akun = '$r->id_akun' and a.tgl BETWEEN '$r->tgl1' and '$r->tgl2' 
@@ -327,7 +327,7 @@ class BukuBesarController extends Controller
             $sheet1->setCellValue('D' . $kolom, $g->tgl);
             $sheet1->setCellValue('E' . $kolom, $g->saldo == 'Y' ? 'Saldo Awal' : $g->nm_akun2);
 
-            $sheet1->setCellValue('F' . $kolom, $g->ket);
+            $sheet1->setCellValue('F' . $kolom, $g->ket2);
             $sheet1->setCellValue('G' . $kolom, '');
 
             $sheet1->setCellValue('H' . $kolom, $g->debit);
@@ -349,5 +349,73 @@ class BukuBesarController extends Controller
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save('php://output');
         exit();
+    }
+
+    public function buku_besar_new(Request $r)
+    {
+        $tgl1 =  $this->tgl1;
+        $tgl2 =  $this->tgl2;
+
+        $buku = DB::select("SELECT a.id_klasifikasi, d.nm_subklasifikasi, a.id_akun, a.kode_akun , a.nm_akun, sum(b.debit) as debit , sum(b.kredit) as kredit, sum(c.debit) as debit_saldo, sum(c.kredit) as kredit_saldo
+        FROM akun as a
+
+        left JOIN(
+            SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
+            FROM jurnal as b
+            where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by b.id_akun
+        ) as b on b.id_akun = a.id_akun
+
+        left JOIN (
+            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
+            FROM jurnal_saldo as c 
+            where  c.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by c.id_akun
+        ) as c on c.id_akun = a.id_akun
+        left join subklasifikasi_akun as d on d.id_subklasifikasi_akun = a.id_klasifikasi
+        group by a.id_klasifikasi
+        ORDER by d.nm_subklasifikasi ASC;
+        ");
+        $data =  [
+            'title' => 'Summary Buku Besar',
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'buku' => $buku
+
+        ];
+        return view('sum_buku.buku_besar_new', $data);
+    }
+
+    public function loadDetail(Request $r)
+    {
+        $tgl1 =  $r->tgl1;
+        $tgl2 =  $r->tgl2;
+
+        $buku = DB::select("SELECT a.id_akun, a.kode_akun , a.nm_akun, b.debit , b.kredit, c.debit as debit_saldo, c.kredit as kredit_saldo
+        FROM akun as a
+
+        left JOIN(
+            SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
+            FROM jurnal as b
+            where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by b.id_akun
+        ) as b on b.id_akun = a.id_akun
+
+        left JOIN (
+            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
+            FROM jurnal_saldo as c 
+            where  c.tgl BETWEEN '$tgl1' and '$tgl2'
+            group by c.id_akun
+        ) as c on c.id_akun = a.id_akun
+        where a.id_klasifikasi = $r->id_klasifikasi
+        group by a.id_akun
+        ORDER by a.kode_akun ASC;
+        ");
+        $data = [
+            'detail' => $buku,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2
+        ];
+        return view('sum_buku.loadDetail', $data);
     }
 }

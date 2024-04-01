@@ -215,7 +215,24 @@
                     <td>&nbsp;</td>
                 </tr>
                 @php
-                    $total_aktiva = $peralatan->debit + $peralatan->debit_saldo + ($aktiva->debit + $aktiva->debit_saldo) + ($peralatan_gantung->debit + $peralatan_gantung->debit_saldo - $peralatan_gantung->kredit - $peralatan_gantung->kredit_saldo) + ($pullet_gantung->debit + $pullet_gantung->debit_saldo - $pullet_gantung->kredit - $pullet_gantung->kredit_saldo) + ($aktiva_gantung->debit + $aktiva_gantung->debit_saldo - $aktiva_gantung->kredit - $aktiva_gantung->kredit_saldo) - ($akumulasi->kredit + $akumulasi->kredit_saldo) - ($akumulasi_peralatan->kredit + $akumulasi_peralatan->kredit_saldo);
+                    $total_aktiva =
+                        $peralatan->debit +
+                        $peralatan->debit_saldo +
+                        ($aktiva->debit + $aktiva->debit_saldo) +
+                        ($peralatan_gantung->debit +
+                            $peralatan_gantung->debit_saldo -
+                            $peralatan_gantung->kredit -
+                            $peralatan_gantung->kredit_saldo) +
+                        ($pullet_gantung->debit +
+                            $pullet_gantung->debit_saldo -
+                            $pullet_gantung->kredit -
+                            $pullet_gantung->kredit_saldo) +
+                        ($aktiva_gantung->debit +
+                            $aktiva_gantung->debit_saldo -
+                            $aktiva_gantung->kredit -
+                            $aktiva_gantung->kredit_saldo) -
+                        ($akumulasi->kredit + $akumulasi->kredit_saldo) -
+                        ($akumulasi_peralatan->kredit + $akumulasi_peralatan->kredit_saldo);
                 @endphp
                 <tr>
                     <td class="fw-bold">NILAI BUKU</td>
@@ -299,7 +316,8 @@
                     <tr>
                         <td>
                             <a target="_blank"
-                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $h->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ strtoupper($h->nm_akun) }}</a>
+                                href="{{ route('summary_buku_besar.detail', ['id_akun' => $h->id_akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ strtoupper($h->nm_akun) }}
+                            </a>
                         </td>
                         <td align="right">Rp
                             {{ number_format($h->kredit + $h->kredit_saldo - ($h->debit + $h->debit_saldo), 0) }}
@@ -319,7 +337,11 @@
                         {{ number_format($ekuitas2->kredit + $ekuitas2->kredit_saldo - ($ekuitas2->debit + $ekuitas2->debit_saldo) + $laba_berjalan_sebelum_penutup, 0) }}
                     </td>
                     @php
-                        $ttl_laba_berjalan = $ekuitas2->kredit + $ekuitas2->kredit_saldo - ($ekuitas2->debit + $ekuitas2->debit_saldo) + $laba_berjalan_sebelum_penutup;
+                        $ttl_laba_berjalan =
+                            $ekuitas2->kredit +
+                            $ekuitas2->kredit_saldo -
+                            ($ekuitas2->debit + $ekuitas2->debit_saldo) +
+                            $laba_berjalan_sebelum_penutup;
                     @endphp
                 </tr>
                 <tr>

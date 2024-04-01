@@ -70,19 +70,33 @@ class JurnalController extends Controller
 
 
 
-        if ($id_proyek == '0') {
-            $jurnal =  DB::select("SELECT a.penutup, a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
+        $jurnal =  DB::select("SELECT a.penutup, a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post, d.nm_proyek FROM jurnal as a 
             left join akun as b on b.id_akun = a.id_akun
             left join tb_post_center as c on c.id_post_center = a.id_post_center
             left join proyek as d on d.id_proyek = a.id_proyek
             where a.id_buku ='$id_buku' and a.tgl between '$tgl1' and '$tgl2' order by  a.id_jurnal DESC");
-        } else {
-            $jurnal =  DB::select("SELECT a.penutup, a.no_dokumen, a.id_jurnal,a.no_urut,a.admin, a.id_akun, a.tgl, a.debit, a.kredit, a.ket,a.no_nota, b.nm_akun, c.nm_post,d.nm_proyek FROM jurnal as a 
-            left join akun as b on b.id_akun = a.id_akun
-            left join tb_post_center as c on c.id_post_center = a.id_post_center
-            left join proyek as d on d.id_proyek = a.id_proyek
-            where a.id_buku ='$id_buku' and a.id_proyek = $id_proyek and a.tgl between '$tgl1' and '$tgl2' order by  a.id_jurnal DESC");
-        }
+
+        $buku = DB::select("SELECT a.id_akun, a.kode_akun , a.nm_akun, b.debit , b.kredit, c.debit as debit_saldo, c.kredit as kredit_saldo
+        FROM akun as a
+
+        left JOIN(
+            SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
+            FROM jurnal as b
+            where b.penutup = 'T' and b.tgl BETWEEN '2022-01-01' and '$tgl2'
+            group by b.id_akun
+        ) as b on b.id_akun = a.id_akun
+
+        left JOIN (
+            SELECT c.id_akun , sum(c.debit) as debit, sum(c.kredit) as kredit
+            FROM jurnal_saldo as c 
+            where  c.tgl BETWEEN '2022-01-01' and '$tgl2'
+            group by c.id_akun
+        ) as c on c.id_akun = a.id_akun
+        where a.id_klasifikasi  = '9'
+        group by a.id_akun
+        ORDER by a.kode_akun ASC;
+        ");
+
 
         $data =  [
             'title' => 'Jurnal Umum',
@@ -93,7 +107,6 @@ class JurnalController extends Controller
             'id_proyek' => $id_proyek,
             'id_buku' => $id_buku,
             // button
-
             'user' => User::where('posisi_id', 1)->get(),
             'halaman' => 1,
             'tambah' => SettingHal::btnHal(1, $id_user),
@@ -102,8 +115,13 @@ class JurnalController extends Controller
             'detail' => SettingHal::btnHal(6, $id_user),
             'edit' => SettingHal::btnHal(4, $id_user),
             'hapus' => SettingHal::btnHal(5, $id_user),
+            'buku' => $buku
         ];
-        return view('jurnal.index', $data);
+        if ($id_buku == 14) {
+            return view('jurnal.hutang', $data);
+        } else {
+            return view('jurnal.index', $data);
+        }
     }
 
     public function add(Request $r)
@@ -168,6 +186,8 @@ class JurnalController extends Controller
     {
         if ($r->id_buku == '7') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } elseif ($r->id_buku == '14') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
@@ -186,6 +206,8 @@ class JurnalController extends Controller
     {
         if ($r->id_buku == '7') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+        } elseif ($r->id_buku == '14') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
