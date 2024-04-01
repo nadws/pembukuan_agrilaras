@@ -67,7 +67,7 @@ class PenjualanUmumController extends Controller
         GROUP BY a.urutan ORDER BY a.urutan DESC");
 
         $ttlPnjl = DB::select("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
-        WHERE a.tgl BETWEEN '2024-03-01' AND '2024-03-13'
+        WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2'
         GROUP BY a.lokasi;");
         foreach($ttlPnjl as $d)
         {
@@ -81,7 +81,7 @@ class PenjualanUmumController extends Controller
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
             'tgl1' => $tgl1,
-            'pnjlAlpa' => $ttl[0][0],
+            'pnjlAlpa' => $ttl[0][0] ?? 0,
             'pnjlMtd' => $ttl[1][0] ?? 0,
             'tgl2' => $tgl2,
 
