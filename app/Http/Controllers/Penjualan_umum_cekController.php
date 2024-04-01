@@ -78,7 +78,7 @@ class Penjualan_umum_cekController extends Controller
             'title' => 'Penerimaan Uang Martadah',
             'nota' => $r->no_nota,
             'jurnal' => $cekAdadiJurnal,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->get(),
         ];
         return view('penjualan_umum_cek.penerimaan_uang', $data);
     }
@@ -106,7 +106,7 @@ class Penjualan_umum_cekController extends Controller
                 'no_nota' => 'PMLD-' . $nota_t,
                 'id_akun' => '84',
                 'id_buku' => '6',
-                'ket' => $r->no_nota[$x] . ':' . $r->nm_customer[$x] . ' ' .$produkNames,
+                'ket' => $r->no_nota[$x] . ':' . $r->nm_customer[$x] . ' ' . $produkNames,
                 'debit' => '0',
                 'kredit' => $r->pembayaran[$x],
                 'admin' => Auth::user()->name,
@@ -141,7 +141,7 @@ class Penjualan_umum_cekController extends Controller
                 'no_nota' => 'PMLD-' . $nota_t,
                 'id_akun' => $r->id_akun[$x],
                 'id_buku' => '6',
-                'ket' => 'Penjualan lain-lain di Martadah : ' .$produkNames,
+                'ket' => 'Penjualan lain-lain di Martadah : ' . $produkNames,
                 'debit' => $r->debit[$x],
                 'kredit' => $r->kredit[$x],
                 'admin' => Auth::user()->name,
@@ -182,7 +182,7 @@ class Penjualan_umum_cekController extends Controller
                 FROM jurnal as c
                 where c.kredit != '0' and c.id_buku ='6'
             ) as c on c.no_nota = a.no_nota
-            where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(84)
+            where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(84,99)
             group by a.no_nota
             order by a.tgl , a.no_nota ASC
             ")
@@ -304,7 +304,7 @@ class Penjualan_umum_cekController extends Controller
             group by a.no_nota_jurnal
             order by c.tgl ASC
             "),
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7','2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '7', '2'])->where('id_akun', '!=', $invoice->id_akun)->get(),
             'no_nota' => $r->no_nota,
             'invo' => $invoice,
             'title' => 'Print Setoran Umum'
