@@ -238,6 +238,22 @@ class JurnalPenyesuaianController extends Controller
         return view('jurnal_penyesuaian.atk.index', $data);
     }
 
+    public function export_penyesuaian_atk(Request $r)
+    {
+        $data = [
+            'atk' => DB::select("SELECT a.id_produk,  a.kd_produk, a.gudang_id, a.nm_produk, a.admin,f.debit,(f.rp_satuan / f.debit) as rp_satuan,f.kredit,f.tgl as tgl1 
+            FROM tb_produk as a
+            LEFT join (
+                    SELECT max(b.tgl) as tgl, b.id_produk, b.urutan, SUM(b.debit) as debit, SUM(b.rp_satuan) as rp_satuan, sum(b.kredit) as kredit 
+                    FROM tb_stok_produk as b 
+                    where b.jenis = 'selesai'
+                    group by b.id_produk
+                ) as f on f.id_produk = a.id_produk 
+            WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$r->tgl2';"),
+        ];
+        return view('jurnal_penyesuaian.atk.excel', $data);
+    }
+
     public function save_atk(Request $r)
     {
         DB::table('notas')->insert([

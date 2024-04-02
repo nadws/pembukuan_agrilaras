@@ -162,6 +162,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/save_peralatan', 'save_peralatan')->name('save_peralatan');
 
             Route::get('/atk', 'atk')->name('atk');
+            Route::get('/export_penyesuaian_atk', 'export_penyesuaian_atk')->name('export_penyesuaian_atk');
             Route::get('/atk/{gudang_id}', 'atk')->name('atk_gudang');
             Route::post('/save_atk', 'save_atk')->name('save_atk');
 

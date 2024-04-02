@@ -19,16 +19,16 @@
                 <div class="col-lg-12">
                     <ul class="nav nav-pills float-start">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.aktiva'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.aktiva' ? 'active' : '' }}"
                                 aria-current="page" href="{{ route('penyesuaian.aktiva') }}">Aktiva</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.peralatan'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.peralatan' ? 'active' : '' }}"
                                 href="{{ route('penyesuaian.peralatan') }}">Peralatan</a>
 
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk' ||request()->route()->getName() == 'penyesuaian.atk_gudang'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk' || request()->route()->getName() == 'penyesuaian.atk_gudang' ? 'active' : '' }}"
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
                         {{-- <li class="nav-item">
@@ -44,6 +44,12 @@
             </div>
 
             <section class="row">
+
+                <div class="col-lg-12">
+                    <a href="{{ route('penyesuaian.export_penyesuaian_atk', ['tgl2' => $tgl]) }}"
+                        class="btn float-end btn-success mb-2"><i class="fas fa-file-excel"></i>
+                        Export</a>
+                </div>
                 <div class="col-lg-12">
                     <table class="table table-striped">
                         <thead>
