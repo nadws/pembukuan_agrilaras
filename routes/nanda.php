@@ -187,6 +187,7 @@ Route::middleware('auth')->group(function () {
         ->name('summary_buku_besar.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/export_buku_besar', 'export_buku_besar')->name('export_buku_besar');
             Route::get('/detail', 'detail')->name('detail');
             Route::get('/export_detail', 'export_detail')->name('export_detail');
             Route::get('/export_detail_format', 'export_detail_format')->name('export_detail_format');

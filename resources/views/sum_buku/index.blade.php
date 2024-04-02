@@ -6,6 +6,8 @@
             </div>
             <div class="col-lg-6">
                 <a href="{{ route('controlflow') }}" class="btn btn-primary float-end"><i class="fas fa-home"></i></a>
+                <a href="{{ route('summary_buku_besar.export_buku_besar', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
+                    class="btn btn-success float-end me-2"><i class="fas fa-file-excel"></i> Export</a>
                 <x-theme.btn_filter />
             </div>
         </div>
