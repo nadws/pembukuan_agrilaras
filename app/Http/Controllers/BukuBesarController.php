@@ -202,10 +202,8 @@ class BukuBesarController extends Controller
             $s->setTitle(ucwords(substr($r->nm_akun, 0, 30)));
 
             if (empty($detail)) {
-                $s
-                    ->setCellValue('A1', 'Akun : ' . strtoupper($r->nm_akun));
-                $s
-                    ->setCellValue('A2', '#')
+                $s->setCellValue('A1', 'Akun : ' . strtoupper($r->nm_akun));
+                $s->setCellValue('A2', '#')
                     ->setCellValue('B2', 'No Urut Jurnal')
                     ->setCellValue('C2', 'No Urut Akun')
                     ->setCellValue('D2', 'Tanggal ' . $tgl1)
