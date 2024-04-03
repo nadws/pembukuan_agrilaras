@@ -101,7 +101,7 @@
     <x-slot name="cardFooter">
         {{-- <div class="alert_saldo" hidden> --}}
         {{-- <button type="submit" class="float-end btn btn-primary button-save" hidden>Simpan</button> --}}
-        <button type="submit" class="float-end btn btn-primary " hidden>Simpan</button>
+        <button type="submit" class="float-end btn btn-primary button-save" hidden>Simpan</button>
         {{-- </div> --}}
         <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
