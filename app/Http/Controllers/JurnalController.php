@@ -140,7 +140,7 @@ class JurnalController extends Controller
             13 => 'pembalikan aktiva gantung',
             6 => 'penjualan',
             7 => 'kas & bank',
-            10 => 'pemeblian asset',
+            10 => 'pembelian asset',
             14 => 'Hutang',
         ];
 
@@ -188,8 +188,10 @@ class JurnalController extends Controller
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
         } elseif ($r->id_buku == '14') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
+        } elseif ($r->id_buku == '12') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12'])->get();
         } elseif ($r->id_buku == '2') {
-            $akun = Akun::where('nonaktif', 'T')->whereNotIn('id_klasifikasi', ['11', '12'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
@@ -210,8 +212,10 @@ class JurnalController extends Controller
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
         } elseif ($r->id_buku == '14') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
+        } elseif ($r->id_buku == '12') {
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12'])->get();
         } elseif ($r->id_buku == '2') {
-            $akun = Akun::where('nonaktif', 'T')->whereNotIn('id_klasifikasi', ['11', '12'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }

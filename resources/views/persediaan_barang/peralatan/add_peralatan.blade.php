@@ -25,6 +25,11 @@
                             href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'atk']) }}">
                             ATK & Perlengkapan</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $kategori == 'pakan' ? 'active' : '' }}" aria-current="page"
+                            href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'pakan']) }}">
+                            Pakan , Vitamin , Vaksin & Rak telur</a>
+                    </li>
                     {{-- <li class="nav-item">
                         <a class="nav-link {{ $kategori == 'umum' ? 'active' : '' }}" aria-current="page"
                             href="{{ route('jurnal.add', ['id_buku' => $id_buku, 'kategori' => 'umum']) }}">

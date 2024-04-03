@@ -162,7 +162,7 @@
                 $(document).on("click", ".tbh_baris_peralatan", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "{{route('peralatan.tbh_baris_peralatan')}}?count=" + count,
+                        url: "{{ route('peralatan.tbh_baris_peralatan') }}?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#tb_baris_aktiva").append(data);

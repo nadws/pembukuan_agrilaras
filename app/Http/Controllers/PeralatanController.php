@@ -191,7 +191,7 @@ class PeralatanController extends Controller
     {
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::all(),
+            'akun' => Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['6', '11', '1', '2'])->get(),
             'proyek' => proyek::all(),
             'kategori' => $r->kategori,
             'satuan' => DB::table('tb_satuan')->get()
@@ -203,7 +203,7 @@ class PeralatanController extends Controller
     {
         $data =  [
             'title' => 'Jurnal Umum',
-            'akun' => Akun::all(),
+            'akun' => Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['6', '11', '1', '2'])->get(),
             'count' => $r->count
 
         ];
@@ -262,7 +262,11 @@ class PeralatanController extends Controller
 
         $tgl1 = date('Y-m-01', strtotime($r->tgl));
         $tgl2 = date('Y-m-t', strtotime($r->tgl));
-        return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
+        if ($r->kategori == 'pakan') {
+            return redirect()->route('jurnal', ['period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'id_proyek' => 0, 'id_buku' => $id_buku])->with('sukses', 'Data berhasil ditambahkan');
+        } else {
+            return redirect()->route('Cek_aktiva', ['no_nota' => 'JU-' . $nota_t, 'kategori' => $r->kategori ?? 'aktiva', 'pembelian' => 'Y'])->with('sukses', 'Data berhasil ditambahkan');
+        }
     }
 
     public function tbh_baris_peralatan(Request $r)
