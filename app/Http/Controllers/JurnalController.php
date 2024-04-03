@@ -185,13 +185,13 @@ class JurnalController extends Controller
     public function load_menu(Request $r)
     {
         if ($r->id_buku == '7') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '14'])->get();
         } elseif ($r->id_buku == '14') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9', '14'])->get();
         } elseif ($r->id_buku == '12') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12', '14'])->get();
         } elseif ($r->id_buku == '2') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1', '14'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
@@ -209,13 +209,13 @@ class JurnalController extends Controller
     public function tambah_baris_jurnal(Request $r)
     {
         if ($r->id_buku == '7') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '14'])->get();
         } elseif ($r->id_buku == '14') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9', '14'])->get();
         } elseif ($r->id_buku == '12') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12', '14'])->get();
         } elseif ($r->id_buku == '2') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1', '14'])->get();
         } else {
             $akun = Akun::where('nonaktif', 'T')->get();
         }
