@@ -117,8 +117,13 @@ class JurnalController extends Controller
             'hapus' => SettingHal::btnHal(5, $id_user),
             'buku' => $buku
         ];
+
         if ($id_buku == 14) {
-            return view('jurnal.hutang', $data);
+            if (auth()->user()->posisi_id == '2') {
+                return view('jurnal.index', $data);
+            } else {
+                return view('jurnal.hutang', $data);
+            }
         } else {
             return view('jurnal.index', $data);
         }
