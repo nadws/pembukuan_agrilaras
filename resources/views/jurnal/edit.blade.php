@@ -22,7 +22,7 @@
                 </div>
                 <div class="col-lg-3">
                     <label for="">No Urut Jurnal</label>
-                    <input type="text" class="form-control" name="no_nota" value="{{ $no_nota }}">
+                    <input readonly type="text" class="form-control" name="no_nota" value="{{ $no_nota }}">
                     <input type="hidden" class="form-control" name="id_buku" value="{{ $head_jurnal->id_buku }}">
                 </div>
                 <div class="col-lg-3">
