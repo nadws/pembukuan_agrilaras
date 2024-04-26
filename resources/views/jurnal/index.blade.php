@@ -114,13 +114,11 @@
                                                                 class="me-2 fas fa-search"></i>Detail</a>
                                                     </li>
                                                 @endif
-                                                @if ($a->id_akun == 1)
                                                 @if (!empty($edit))
                                                         <li><a class="dropdown-item text-primary edit_akun"
                                                                 href="{{ route('edit_jurnal', ['no_nota' => $a->no_nota]) }}"><i
                                                                     class="me-2 fas fa-pen"></i>Edit</a>
                                                         </li>
-                                                @endif
                                                 @endif
                                             </ul>
                                         </div>
