@@ -216,6 +216,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/tambah_baris_budget_persen', 'tambah_baris_budget_persen')->name('tambah_baris_budget_persen');
         Route::post('/save_budget', 'save_budget')->name('save_budget');
         Route::get('/profit_setahun', 'profit_setahun')->name('profit_setahun');
+        Route::get('/get_depresiasi', 'get_depresiasi')->name('get_depresiasi');
+        // Route::get('/get_depresiasi_peralatan', 'get_depresiasi_peralatan')->name('get_depresiasi_peralatan');
     });
 
     Route::controller(AktivaController::class)->group(function () {

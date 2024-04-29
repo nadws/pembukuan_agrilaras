@@ -550,9 +550,51 @@ class ProfitController extends Controller
         $datas = [
             'title' => 'Profit Setahun',
             'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
-            'thn' => $tahun
+            'thn' => $tahun,
+
         ];
 
         return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5'), $datas);
     }
+
+    public function get_depresiasi(Request $r)
+    {
+        if ($r->akun == '51') {
+            $depresiasi_ak = DB::select("SELECT b.nm_aktiva, b.tgl as tgl_perolehan,  c.nm_kelompok, c.umur,  a.tgl, a.b_penyusutan
+        FROM depresiasi_aktiva as a
+        left join aktiva as b on b.id_aktiva = a.id_aktiva
+        left join kelompok_aktiva as c on c.id_kelompok = b.id_kelompok
+        where a.tgl between '$r->tgl1' and '$r->tgl2'");
+        } else {
+            $depresiasi_ak = DB::select("SELECT b.nm_aktiva, b.tgl, c.nm_kelompok, c.umur, c.periode, a.b_penyusutan
+            FROM depresiasi_peralatan as a
+            left join peralatan as b on b.id_aktiva = a.id_aktiva
+            left join kelompok_peralatan as c on c.id_kelompok = b.id_kelompok
+            where a.tgl between '$r->tgl1' and '$r->tgl2';");
+        }
+        $data = [
+            'depaktiva' => $depresiasi_ak
+        ];
+
+        if ($r->akun == '51') {
+            return view('profit.depresiasi_aktv', $data);
+        } else {
+            return view('profit.depresiasi_peralatan', $data);
+        }
+    }
+    // public function get_depresiasi_peralatan(Request $r)
+    // {
+    //     $depresiasi_ak = DB::select("SELECT b.nm_aktiva, b.tgl, c.nm_kelompok, c.umur, c.periode, a.b_penyusutan
+    //     FROM depresiasi_peralatan as a
+    //     left join peralatan as b on b.id_aktiva = a.id_aktiva
+    //     left join kelompok_peralatan as c on c.id_kelompok = b.id_kelompok
+    //     where a.tgl between '$r->tgl1' and '$r->tgl2';");
+
+
+    //     $data = [
+    //         'depaktiva' => $depresiasi_ak
+    //     ];
+
+    //     return view('profit.depresiasi_peralatan', $data);
+    // }
 }
