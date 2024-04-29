@@ -412,7 +412,7 @@
 
         {{-- --}}
 
-        <x-theme.modal title="Detail Aktiva" size="modal-lg" idModal="detail_aktiva" btnSave='T'>
+        <x-theme.modal title="Detail Penyusutan" size="modal-lg" idModal="detail_aktiva" btnSave='T'>
             <div class="row">
                 <div class="col-lg-12">
                     <div class="get_dep_aktiva"></div>
