@@ -28,7 +28,8 @@
                 </button> --}}
             </td>
             <td style="vertical-align: top;">
-                <select name="id_akun[]" id="" class="select pilih_akun pilih_akun1" count="1" required>
+                <select name="id_akun[]" id="" class="select pilih_akun pilih_akun1" count="1" required
+                    readonly>
                     <option value="">Pilih</option>
                     @php
                         $akunList = [
@@ -39,11 +40,19 @@
                             'pakan' => 1,
                         ];
                         $id_akun = $akunList[request()->get('kategori') ?? 'aktiva'];
+
+                        $akun_id = DB::table('akun')->where('id_akun', $id_akun)->first();
                     @endphp
-                    @foreach ($akun as $a)
-                        <option value="{{ $a->id_akun }}" {{ $id_akun == $a->id_akun ? 'selected' : '' }}>
-                            {{ $a->nm_akun }}</option>
-                    @endforeach
+                    @if ($id_akun == '1')
+                        @foreach ($akun as $a)
+                            <option value="{{ $a->id_akun }}" {{ $id_akun == $a->id_akun ? 'selected' : '' }}>
+                                {{ $a->nm_akun }}</option>
+                        @endforeach
+                    @else
+                        <option value="{{ $id_akun }}" selected>{{ $akun_id->nm_akun }}</option>
+                    @endif
+
+
                 </select>
                 <div class="">
                     <label for="" class="mt-2 ">Urutan Pengeluaran</label>
