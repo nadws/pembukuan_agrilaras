@@ -36,7 +36,6 @@
                             'peralatan' => 16,
                             'aktiva' => 9,
                             'atk' => 30,
-                            'umum' => 1,
                             'pakan' => 1,
                         ];
                         $id_akun = $akunList[request()->get('kategori') ?? 'aktiva'];
