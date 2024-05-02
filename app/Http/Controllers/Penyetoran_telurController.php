@@ -58,7 +58,7 @@ class Penyetoran_telurController extends Controller
             where a.id_buku = '6' and a.id_akun IN('64','25','82') and a.setor ='T' and a.debit != '0' and c.id_akun in(23,26)
             group by a.id_jurnal
             order by a.tgl , a.no_nota ASC
-            ")
+            "),
         ];
         return view('penyetoran.index', $data);
     }
