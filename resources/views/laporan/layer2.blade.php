@@ -261,6 +261,9 @@
                         $rp_ayam = 0;
 
                         $gjl_ttl = 0;
+
+                        $rp_vitamin = 0;
+                        $rp_vaksin = 0;
                     @endphp
                     @foreach ($kandang as $k)
                         @php
@@ -295,6 +298,9 @@
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
                             $gjl_ttl += $k->ttl_gjl * 435000;
+
+                            $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
+                            $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr>
                             <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }} <br>
@@ -306,7 +312,6 @@
                                     $tgl_hari_ini = date('Y-m-d');
                                     $afkir = date('Y-m-d', strtotime($k->chick_out . ' -4 weeks'));
                                     $ckin2 = date('Y-m-d', strtotime($k->tgl_masuk . ' -20 weeks'));
-
                                 @endphp
 
                                 <span class="{{ $tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : '' }}">
@@ -479,7 +484,6 @@
                                     <span
                                         class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 1) }}</span>
                                 @endif
-
                             </td>
 
 
@@ -618,9 +622,17 @@
 
                         <th class="dhead table_layer">{{ number_format(($pcs / $ayam_akhir) * 100, 0) }} <br> <br>
                             {{ number_format(($pcs / $ayam_awal) * 100, 0) }}</th>
-                        <th class="dhead table_layer"></th>
+                        <th class="dhead table_layer">
+
+                        </th>
                         {{-- <th class="dhead"></th> --}}
-                        <th class="dhead table_layer"></th>
+                        <th class="dhead table_layer">
+                            @php
+                                $fcr_day_total = number_format($pakan / $kg_total, 1);
+                                $fcr_day_total_plus = number_format(($pakan + $rp_vitamin + $rp_vaksin) / $kg_total, 1);
+                            @endphp
+                            {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
+                        </th>
                         <th class="dhead table_layer">{{ number_format($pakan, 2) }}</th>
 
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
