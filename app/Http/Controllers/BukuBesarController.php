@@ -363,7 +363,7 @@ class BukuBesarController extends Controller
         $sheet1->getStyle('A2:J' . $kolom - 1)->applyFromArray($style);
 
 
-        $namafile = "Detail buku besar $akun->nm_akun.xlsx";
+        $namafile = "Detail buku besar.xlsx";
 
         $writer = new Xlsx($spreadsheet);
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
