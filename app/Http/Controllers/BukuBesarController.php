@@ -418,7 +418,6 @@ class BukuBesarController extends Controller
 
         $buku = DB::select("SELECT a.id_akun, a.kode_akun , a.nm_akun, b.debit , b.kredit, c.debit as debit_saldo, c.kredit as kredit_saldo
         FROM akun as a
-
         left JOIN(
             SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b

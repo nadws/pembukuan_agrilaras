@@ -310,27 +310,28 @@
                                     $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
                                     $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
                                     $tgl_hari_ini = date('Y-m-d');
-                                    $afkir = date('Y-m-d', strtotime($k->chick_out . ' -4 weeks'));
-                                    $ckin2 = date('Y-m-d', strtotime($k->tgl_masuk . ' -20 weeks'));
+                                    $afkir = date('Y-m-d', strtotime($k->chick_in . ' +99 weeks'));
+                                    $afkir2 = date('Y-m-d', strtotime($afkir . ' -4 weeks'));
+
+                                    $ckin2 = date('Y-m-d', strtotime($k->chick_in . ' +80 weeks'));
+                                    $ckin21 = date('Y-m-d', strtotime($ckin2 . ' -4 weeks'));
                                 @endphp
 
-                                <span class="{{ $tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($k->chick_out)) }} </span> <br>
-                                {{-- <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br> --}}
-                                <span class="{{ $tgl_hari_ini >= $ckin2 ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($k->tgl_masuk)) }}
+                                <span class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
+                                    {{ date('d/m/y', strtotime($afkir)) }} </span> <br>
+                                <span class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
+                                    {{ date('d/m/y', strtotime($ckin2)) }}
                                 </span>
-                                <br>
-                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }}
+                                {{-- <br>
+                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }} --}}
 
 
                             </td>
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
-                                ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>
+                                {{ $k->mgg }} <br> 99 <br>
+                                ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
                                 {{ number_format($k->ttl_gjl / 7) }}
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
