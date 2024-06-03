@@ -311,7 +311,7 @@
                             },
                             dataType: "dataType",
                             success: function(response) {
-                                
+
                             }
                         });
                         Toastify({
@@ -328,7 +328,7 @@
                         loadSelectProduk()
                     })
                 }
-                
+
             })
 
             $(document).on("keyup", ".setor-nohide", function() {
@@ -376,7 +376,7 @@
                     total_kredit += parseFloat($(this).val());
                 });
 
-                var selisih = total_rpAtas - total_debit - total_kredit;
+                var selisih = parseFloat(total_rpAtas) - parseFloat(total_debit) - parseFloat(total_kredit);
                 var selisih_total = selisih.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
