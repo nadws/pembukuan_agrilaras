@@ -431,7 +431,8 @@
                     $(".kredit").each(function() {
                         total_pbyrKredit += parseFloat($(this).val());
                     });
-                    var selisih = total_debit - (total_pbyrDebit - total_pbyrKredit);
+                    var selisih = parseFloat(total_debit) - (parseFloat(total_pbyrDebit) - parseFloat(
+                        total_pbyrKredit));
 
                     var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
