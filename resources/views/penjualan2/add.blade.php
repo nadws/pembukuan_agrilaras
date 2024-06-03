@@ -383,6 +383,7 @@
                 });
                 $(".total").text(selisih_total);
 
+                alert(selisih);
                 if (selisih === 0) {
                     $(".cselisih").css("color", "green");
                     $(".button-save").removeAttr("hidden");
