@@ -211,7 +211,8 @@
 
     </x-slot>
     <x-slot name="cardFooter">
-        <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>
+        {{-- <button type="submit" class="float-end btn btn-primary button-save">Simpan</button> --}}
+        <button type="submit" class="float-end btn btn-primary ">Simpan</button>
         <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
@@ -383,7 +384,7 @@
                 });
                 $(".total").text(selisih_total);
 
-                alert(selisih);
+
                 if (selisih === 0) {
                     $(".cselisih").css("color", "green");
                     $(".button-save").removeAttr("hidden");
