@@ -67,7 +67,7 @@
                         <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl"><i
                                 class="fas fa-caret-down"></i></button>
                     </td>
-                    <td class="text-end">Rp {{ number_format($total_pi, 0) }}</td>
+                    <td class="text-end">Rp {{ number_format($total_pi + $kerugian->debit, 0) }}</td>
                 </tr>
                 @php
                     $total_pi = 0;
@@ -83,8 +83,12 @@
                     </tr>
                 @endforeach
                 <tr x-show="openPbl">
+                    <td>Biaya Kerugian Piutang</td>
+                    <td align="right">Rp. {{ number_format($kerugian->debit, 0) }}</td>
+                </tr>
+                <tr x-show="openPbl">
                     <td class="fw-bold">Total</td>
-                    <td class="fw-bold" align="right">RP {{ number_format($total_pi, 0) }}</td>
+                    <td class="fw-bold" align="right">RP {{ number_format($total_pi + $kerugian->debit, 0) }}</td>
                 </tr>
                 <tr>
                     <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
@@ -120,7 +124,7 @@
                                 class="fas fa-caret-down"></i></button>
 
                     </td>
-                    <td class="text-end">Rp {{ number_format($ttl_piut + $kerugian->debit, 0) }}</td>
+                    <td class="text-end">Rp {{ number_format($ttl_piut + $kerugianBulanIni->debit, 0) }}</td>
                 </tr>
                 @php
                     $t_piutang = 0;
@@ -136,11 +140,11 @@
                 @endforeach
                 <tr x-show="openPbi">
                     <td>Biaya Kerugian Piutang</td>
-                    <td align="right">Rp. {{ number_format($kerugian->debit, 0) }}</td>
+                    <td align="right">Rp. {{ number_format($kerugianBulanIni->debit, 0) }}</td>
                 </tr>
                 <tr x-show="openPbi">
                     <th>Total</th>
-                    <th style="text-align: right">Rp. {{ number_format($t_piutang + $kerugian->debit, 0) }}</th>
+                    <th style="text-align: right">Rp. {{ number_format($t_piutang + $kerugianBulanIni->debit, 0) }}</th>
                 </tr>
                 {{-- <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
@@ -196,7 +200,7 @@
             <tr>
                 <td class="fw-bold">Total </td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit), 0) }}
+                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - ($t_piutang), 0) }}
                 </td>
             </tr>
             <tr>
@@ -215,7 +219,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit + $bg_bank, 0) }}
+                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - ($t_piutang) - $biaya_admin->debit + $bg_bank, 0) }}
                 </td>
             </tr>
             {{-- <tr>
