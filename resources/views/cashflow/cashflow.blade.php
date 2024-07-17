@@ -124,7 +124,7 @@
                                 class="fas fa-caret-down"></i></button>
 
                     </td>
-                    <td class="text-end">Rp {{ number_format($ttl_piut, 0) }}</td>
+                    <td class="text-end">Rp {{ number_format($ttl_piut + $kerugianBulanIni->debit, 0) }}</td>
                 </tr>
                 @php
                     $t_piutang = 0;
