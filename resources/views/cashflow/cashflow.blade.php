@@ -83,8 +83,12 @@
                     </tr>
                 @endforeach
                 <tr x-show="openPbl">
+                    <td>Biaya Kerugian Piutang</td>
+                    <td align="right">Rp. {{ number_format($kerugian->debit, 0) }}</td>
+                </tr>
+                <tr x-show="openPbl">
                     <td class="fw-bold">Total</td>
-                    <td class="fw-bold" align="right">RP {{ number_format($total_pi, 0) }}</td>
+                    <td class="fw-bold" align="right">RP {{ number_format($total_pi - $kerugian->debit, 0) }}</td>
                 </tr>
                 <tr>
                     <td class="fw-bold"><a href="#" onclick="event.preventDefault();"
@@ -134,13 +138,13 @@
                         <td align="right">Rp. {{ number_format($u->debit - $u->kredit, 0) }}</td>
                     </tr>
                 @endforeach
-                <tr x-show="openPbi">
+                {{-- <tr x-show="openPbi">
                     <td>Biaya Kerugian Piutang</td>
                     <td align="right">Rp. {{ number_format($kerugian->debit, 0) }}</td>
-                </tr>
+                </tr> --}}
                 <tr x-show="openPbi">
                     <th>Total</th>
-                    <th style="text-align: right">Rp. {{ number_format($t_piutang + $kerugian->debit, 0) }}</th>
+                    <th style="text-align: right">Rp. {{ number_format($t_piutang, 0) }}</th>
                 </tr>
                 {{-- <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
