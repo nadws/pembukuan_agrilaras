@@ -118,6 +118,7 @@ class CashflowController extends Controller
             left join akun as c on c.id_akun = a.id_akun 
             where a.id_buku in(2,10,12) and a.debit != 0 and a.tgl BETWEEN '$tgl1' and '$tgl2' and b.id_akun is not null 
             group by a.id_akun"),
+
             'biaya_proyek' => DB::select("SELECT a.id_akun, a.no_nota, c.nm_akun, sum(a.debit) as debit , c.id_klasifikasi
             FROM jurnal as a 
             left join ( SELECT b.no_nota , b.id_akun, c.nm_akun FROM jurnal as b 
