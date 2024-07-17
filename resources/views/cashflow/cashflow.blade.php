@@ -67,7 +67,7 @@
                         <button class="btn btn-primary btn-sm btn-buka float-end" @click="openPbl = ! openPbl"><i
                                 class="fas fa-caret-down"></i></button>
                     </td>
-                    <td class="text-end">Rp {{ number_format($total_pi, 0) }}</td>
+                    <td class="text-end">Rp {{ number_format($total_pi - $kerugian->debit, 0) }}</td>
                 </tr>
                 @php
                     $total_pi = 0;
@@ -124,7 +124,7 @@
                                 class="fas fa-caret-down"></i></button>
 
                     </td>
-                    <td class="text-end">Rp {{ number_format($ttl_piut + $kerugian->debit, 0) }}</td>
+                    <td class="text-end">Rp {{ number_format($ttl_piut, 0) }}</td>
                 </tr>
                 @php
                     $t_piutang = 0;
@@ -200,7 +200,7 @@
             <tr>
                 <td class="fw-bold">Total </td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit), 0) }}
+                    {{ number_format($total_pi - $kerugian->debit + $total_pe - ($t_piutang), 0) }}
                 </td>
             </tr>
             <tr>
@@ -219,7 +219,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $total_pe - ($t_piutang + $kerugian->debit) - $biaya_admin->debit + $bg_bank, 0) }}
+                    {{ number_format($total_pi - $kerugian->debit + $total_pe - ($t_piutang) - $biaya_admin->debit + $bg_bank, 0) }}
                 </td>
             </tr>
             {{-- <tr>
