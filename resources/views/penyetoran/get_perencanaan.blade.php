@@ -32,7 +32,7 @@
             @endphp
             <tr>
                 <td>{{ $no + 1 }}</td>
-                <td>{{ date(strtotime('d-m-Y', $i->tgl)) }}</td>
+                <td>{{ date('d-m-Y', strtotime($i->tgl)) }}</td>
                 <td>{{ $i->no_nota_jurnal }}</td>
                 <td>{{ ucwords(strtolower($i->nm_akun)) }}</td>
                 <td>{{ $i->ket }}</td>
