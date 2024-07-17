@@ -51,7 +51,6 @@ class RakController extends Controller
                 $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun_penualan_ayam)->first();
                 $akun = DB::table('akun')->where('id_akun', $id_akun_penualan_ayam)->first();
                 $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
-
                 $data = [
                     'tgl' => $r->tgl[$x],
                     'no_nota' => 'JUP-' . $nota_t,

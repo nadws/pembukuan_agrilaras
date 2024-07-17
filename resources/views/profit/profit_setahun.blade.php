@@ -361,8 +361,24 @@
                                     $tgl2 = date('Y-m-t', strtotime($tgl1));
                                 @endphp
                                 <td class="text-end">
-                                    <a target="_blank"
-                                        href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}</a>
+                                    @if ($akun == '51')
+                                        <a target="_blank" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#detail_aktiva" class="detail_aktiva" akun='51'
+                                            tgl1="{{ $tgl1 }}"
+                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal, 0) }}
+                                        </a>
+                                    @else
+                                        <a target="_blank" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#detail_aktiva" class="detail_aktiva" akun='58'
+                                            tgl1="{{ $tgl1 }}"
+                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal, 0) }}
+                                        </a>
+
+                                        {{-- <a target="_blank"
+                                            href="{{ route('summary_buku_besar.detail', ['id_akun' => $akun, 'tgl1' => $tgl1, 'tgl2' => $tgl2]) }}">{{ number_format($nominal, 0) }}
+                                        </a> --}}
+                                    @endif
+
                                 </td>
                                 @php
                                     $totalPerAkun4 += $nominal;
@@ -395,7 +411,46 @@
 
 
         {{-- --}}
+
+        <x-theme.modal title="Detail Penyusutan" size="modal-lg" idModal="detail_aktiva" btnSave='T'>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="get_dep_aktiva"></div>
+                </div>
+            </div>
+
+        </x-theme.modal>
     </x-slot>
     @section('scripts')
+        <script>
+            $(document).ready(function() {
+                $('.detail_aktiva').click(function(e) {
+                    e.preventDefault();
+                    var tgl1 = $(this).attr('tgl1');
+                    var tgl2 = $(this).attr('tgl2');
+                    var akun = $(this).attr('akun');
+                    $.ajax({
+                        type: "get",
+                        url: "{{ route('get_depresiasi') }}",
+                        data: {
+                            tgl1: tgl1,
+                            tgl2: tgl2,
+                            akun: akun,
+                        },
+                        success: function(response) {
+                            $('.get_dep_aktiva').html(response);
+                            $('#table_detail_akt').DataTable({
+                                "paging": true,
+                                "pageLength": 10,
+                                "lengthChange": true,
+                                "stateSave": true,
+                                "searching": true,
+                            });
+                        }
+                    });
+
+                });
+            });
+        </script>
     @endsection
 </x-theme.app>

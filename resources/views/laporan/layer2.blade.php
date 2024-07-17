@@ -261,6 +261,9 @@
                         $rp_ayam = 0;
 
                         $gjl_ttl = 0;
+
+                        $rp_vitamin = 0;
+                        $rp_vaksin = 0;
                     @endphp
                     @foreach ($kandang as $k)
                         @php
@@ -295,6 +298,9 @@
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
                             $gjl_ttl += $k->ttl_gjl * 435000;
+
+                            $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
+                            $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr>
                             <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }} <br>
@@ -304,28 +310,28 @@
                                     $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
                                     $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
                                     $tgl_hari_ini = date('Y-m-d');
-                                    $afkir = date('Y-m-d', strtotime($k->chick_out . ' -4 weeks'));
-                                    $ckin2 = date('Y-m-d', strtotime($k->tgl_masuk . ' -20 weeks'));
+                                    $afkir = date('Y-m-d', strtotime($k->chick_in . ' +99 weeks'));
+                                    $afkir2 = date('Y-m-d', strtotime($afkir . ' -4 weeks'));
 
+                                    $ckin2 = date('Y-m-d', strtotime($k->chick_in . ' +80 weeks'));
+                                    $ckin21 = date('Y-m-d', strtotime($ckin2 . ' -4 weeks'));
                                 @endphp
 
-                                <span class="{{ $tgl_hari_ini >= $afkir ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($k->chick_out)) }} </span> <br>
-                                {{-- <span class="{{ $tgl_hari_ini >= $merah ? 'text-danger fw-bold' : ''}}">
-                                    {{date('d/m/y', strtotime($k->chick_out . ' +1 month'))}}</span><br> --}}
-                                <span class="{{ $tgl_hari_ini >= $ckin2 ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($k->tgl_masuk)) }}
+                                <span class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
+                                    {{ date('d/m/y', strtotime($afkir)) }} </span> <br>
+                                <span class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
+                                    {{ date('d/m/y', strtotime($ckin2)) }}
                                 </span>
-                                <br>
-                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }}
+                                {{-- <br>
+                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }} --}}
 
 
                             </td>
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} <br> {{ $k->mgg_afkir }} <br>
-                                ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>
+                                {{ $k->mgg }} <br> 99 <br>
+                                ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
                                 {{ number_format($k->ttl_gjl / 7) }}
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
@@ -479,7 +485,6 @@
                                     <span
                                         class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 1) }}</span>
                                 @endif
-
                             </td>
 
 
@@ -618,9 +623,17 @@
 
                         <th class="dhead table_layer">{{ number_format(($pcs / $ayam_akhir) * 100, 0) }} <br> <br>
                             {{ number_format(($pcs / $ayam_awal) * 100, 0) }}</th>
-                        <th class="dhead table_layer"></th>
+                        <th class="dhead table_layer">
+
+                        </th>
                         {{-- <th class="dhead"></th> --}}
-                        <th class="dhead table_layer"></th>
+                        <th class="dhead table_layer">
+                            @php
+                                $fcr_day_total = number_format($pakan / $kg_total, 1);
+                                $fcr_day_total_plus = number_format(($pakan + $rp_vitamin + $rp_vaksin) / $kg_total, 1);
+                            @endphp
+                            {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
+                        </th>
                         <th class="dhead table_layer">{{ number_format($pakan, 2) }}</th>
 
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>

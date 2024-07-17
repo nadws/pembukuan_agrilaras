@@ -211,7 +211,8 @@
 
     </x-slot>
     <x-slot name="cardFooter">
-        <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>
+        {{-- <button type="submit" class="float-end btn btn-primary button-save">Simpan</button> --}}
+        <button type="submit" class="float-end btn btn-primary ">Simpan</button>
         <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
@@ -311,7 +312,7 @@
                             },
                             dataType: "dataType",
                             success: function(response) {
-                                
+
                             }
                         });
                         Toastify({
@@ -328,7 +329,7 @@
                         loadSelectProduk()
                     })
                 }
-                
+
             })
 
             $(document).on("keyup", ".setor-nohide", function() {
@@ -376,12 +377,13 @@
                     total_kredit += parseFloat($(this).val());
                 });
 
-                var selisih = total_rpAtas - total_debit - total_kredit;
+                var selisih = parseFloat(total_rpAtas) - parseFloat(total_debit) - parseFloat(total_kredit);
                 var selisih_total = selisih.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                 });
                 $(".total").text(selisih_total);
+
 
                 if (selisih === 0) {
                     $(".cselisih").css("color", "green");
@@ -430,7 +432,8 @@
                     $(".kredit").each(function() {
                         total_pbyrKredit += parseFloat($(this).val());
                     });
-                    var selisih = total_debit - (total_pbyrDebit - total_pbyrKredit);
+                    var selisih = parseFloat(total_debit) - (parseFloat(total_pbyrDebit) - parseFloat(
+                        total_pbyrKredit));
 
                     var selisih_total = selisih.toLocaleString("id-ID", {
                         style: "currency",
