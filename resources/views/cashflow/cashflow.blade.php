@@ -201,6 +201,7 @@
                 <td class="fw-bold">Total </td>
                 <td class="fw-bold" align="right">Rp
                     {{ number_format($total_pi - $kerugian->debit + $total_pe - ($t_piutang), 0) }}
+                    {{$total_pi}} - {{$kerugian->debit}} + {{$total_pe}} - ({{$t_piutang}})
                 </td>
             </tr>
             <tr>
