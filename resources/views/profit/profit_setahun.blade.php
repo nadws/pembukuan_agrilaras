@@ -139,6 +139,7 @@
                             <th class="dhead text-end freeze-cell1_th">{{ $month }}</th>
                         @endforeach
                         <th class="dhead text-end freeze-cell1_th">Total</th>
+                        <th class="dhead text-end freeze-cell1_th">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,6 +154,7 @@
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth[$month], 0) }}</td>
                         @endforeach
+                        <td class="fw-bold text-end">{{ number_format($total_seluruh, 0) }}</td>
                         <td class="fw-bold text-end">{{ number_format($total_seluruh + $ttl_saldo_p, 0) }}</td>
                     </tr>
                     @foreach ($data as $akun => $months)
@@ -189,8 +191,9 @@
                                     $totalPerAkun += $nominal;
                                 @endphp
                             @endforeach
-                            <td class="text-end">{{ number_format($totalPerAkun + $saldo_thn_pen->k_saldo, 0) }}
-                            </td>
+                            <td class="text-end">{{ number_format($totalPerAkun, 0) }}</td>
+                            <td class="text-end">{{ number_format($totalPerAkun + $saldo_thn_pen->k_saldo, 0) }}</td>
+
                         </tr>
                     @endforeach
                     {{-- <tr x-show="open_pendapatan">
@@ -214,6 +217,7 @@
                         @foreach (array_keys(reset($data2)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth2[$month], 0) }}</td>
                         @endforeach
+                        <td class="fw-bold text-end">{{ number_format($total_seluruh2, 0) }}</td>
                         <td class="fw-bold text-end">{{ number_format($total_seluruh2 + $ttl_saldo_b, 0) }}</td>
                     </tr>
                     @foreach ($data2 as $akun => $months)
@@ -249,6 +253,9 @@
                                 @endphp
                             @endforeach
                             <td class="text-end">
+                                {{ number_format($totalPerAkun2, 0) }}
+                            </td>
+                            <td class="text-end">
                                 {{ number_format($totalPerAkun2 + $saldo_thn_biy->d_saldo - $saldo_thn_biy->k_saldo, 0) }}
                             </td>
                         </tr>
@@ -265,6 +272,7 @@
                         @foreach (array_keys(reset($data3)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth3[$month], 0) }}</td>
                         @endforeach
+                        <td class="fw-bold text-end">{{ number_format($total_seluruh3, 0) }}</td>
                         <td class="fw-bold text-end">{{ number_format($total_seluruh3 + $ttl_saldo_bp, 0) }}</td>
                     </tr>
                     @foreach ($data3 as $akun => $months)
@@ -300,6 +308,9 @@
                                 @endphp
                             @endforeach
                             <td class="text-end">
+                                {{ number_format($totalPerAkun3, 0) }}
+                            </td>
+                            <td class="text-end">
                                 {{ number_format($totalPerAkun3 + $saldo_thn_bip->d_saldo - $saldo_thn_bip->k_saldo, 0) }}
                             </td>
                         </tr>
@@ -318,6 +329,9 @@
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
+                            {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3, 0) }}
+                        </td>
+                        <td class="fw-bold text-end dhead">
                             {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 + ($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp), 0) }}
                         </td>
                     </tr>
@@ -333,6 +347,8 @@
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth4[$month], 0) }}</td>
                         @endforeach
+                        <td class="fw-bold text-end">
+                            {{ number_format($total_seluruh4, 0) }}</td>
                         <td class="fw-bold text-end">
                             {{ number_format($total_seluruh4 + $ttl_saldo_bpa, 0) }}</td>
                     </tr>
@@ -384,6 +400,7 @@
                                     $totalPerAkun4 += $nominal;
                                 @endphp
                             @endforeach
+                            <td class="text-end">{{ number_format($totalPerAkun4, 0) }}</td>
                             <td class="text-end">{{ number_format($totalPerAkun4 + $saldo_thn_bpa->d_saldo, 0) }}</td>
                         </tr>
                     @endforeach
@@ -400,6 +417,9 @@
                                 {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth4[$month], 0) }}
                             </td>
                         @endforeach
+                        <td class="fw-bold text-end dhead">
+                            {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4, 0) }}
+                        </td>
                         <td class="fw-bold text-end dhead">
                             {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4 + ($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $ttl_saldo_bpa), 0) }}
                         </td>
