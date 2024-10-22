@@ -462,13 +462,13 @@
                                         ? '0'
                                         : number_format(
                                             ($k->kg_pakan / 1000 + $vitamin + $vaksin) / ($k->kg - $k->pcs / 180),
-                                            1,
+                                            2,
                                         );
 
                                 $fcr_day =
                                     empty($k->kg_pakan) || empty($k->pcs)
                                         ? '0'
-                                        : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 1);
+                                        : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 2);
                             @endphp
 
                             <td align="center" class="FCR(week)  td_layer">
