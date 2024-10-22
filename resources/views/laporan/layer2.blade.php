@@ -480,10 +480,10 @@
                                     / <span class="{{ $fcr_plus >= 2.2 ? 'text-danger fw-bold' : '' }}">
                                         {{ $fcr_plus }}</span> <br>
                                     <span
-                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 1) }}</span>
+                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 2) }}</span>
                                     /
                                     <span
-                                        class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 1) }}</span>
+                                        class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 2) }}</span>
                                 @endif
                             </td>
 

@@ -144,7 +144,8 @@
                 </tr>
                 <tr x-show="openPbi">
                     <th>Total</th>
-                    <th style="text-align: right">Rp. {{ number_format($t_piutang + $kerugianBulanIni->debit, 0) }}</th>
+                    <th style="text-align: right">Rp. {{ number_format($t_piutang + $kerugianBulanIni->debit, 0) }}
+                    </th>
                 </tr>
                 {{-- <tr>
                     <td colspan="2" class="fw-bold">&nbsp;</td>
@@ -200,7 +201,7 @@
             <tr>
                 <td class="fw-bold">Total </td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - ($t_piutang), 0) }}
+                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - $t_piutang, 0) }}
                 </td>
             </tr>
             <tr>
@@ -219,7 +220,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - ($t_piutang) - $biaya_admin->debit + $bg_bank, 0) }}
+                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - $t_piutang - $biaya_admin->debit + $bg_bank, 0) }}
                 </td>
             </tr>
             {{-- <tr>
