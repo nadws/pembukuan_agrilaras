@@ -328,4 +328,34 @@ class ProfitModel extends Model
         ", [$tahun1, $tahun2, $id_akun, $tahun1, $tahun2, $id_akun]);
         return $result;
     }
+    public static function saldo_pullet($tahun)
+    {
+        $result = DB::select("SELECT a.id_aktiva, b.nm_aktiva, month(a.tgl) as bulan , Year(a.tgl) as tahun, sum(a.b_penyusutan) debit FROM depresiasi_peralatan as a 
+        left join peralatan as b on b.id_aktiva = a.id_aktiva 
+        where b.kategori = 'pullet' and Year(a.tgl) = ?
+       
+        group by b.id_aktiva, MONTH(a.tgl) , YEAR(a.tgl);", [$tahun]);
+        return $result;
+    }
+    public static function saldo_pullet_thn_lalu($tahun, $tahun2)
+    {
+        $result = DB::selectOne("SELECT a.id_aktiva, b.nm_aktiva, month(a.tgl) as bulan , Year(a.tgl) as tahun, sum(a.b_penyusutan) d_saldo FROM depresiasi_peralatan as a 
+        left join peralatan as b on b.id_aktiva = a.id_aktiva 
+        where b.kategori = 'pullet' and Year(a.tgl) BETWEEN ? and ? ;", [$tahun, $tahun2]);
+        return $result;
+    }
+    public static function saldo_pullet_thn_lalu_bulan($tahun, $tahun2, $bulan)
+    {
+        $result = DB::selectOne("SELECT a.id_aktiva, b.nm_aktiva, month(a.tgl) as bulan , Year(a.tgl) as tahun, sum(a.b_penyusutan) d_saldo FROM depresiasi_peralatan as a 
+        left join peralatan as b on b.id_aktiva = a.id_aktiva 
+        where b.kategori = 'pullet' and Year(a.tgl) BETWEEN ? and ? and MONTH(a.tgl) = ?;", [$tahun, $tahun2, $bulan]);
+        return $result;
+    }
+    public static function saldo_pullet_thn_lalu_akun($tahun, $tahun2, $id_akun)
+    {
+        $result = DB::selectOne("SELECT a.id_aktiva, b.nm_aktiva, month(a.tgl) as bulan , Year(a.tgl) as tahun, sum(a.b_penyusutan) d_saldo FROM depresiasi_peralatan as a 
+        left join peralatan as b on b.id_aktiva = a.id_aktiva 
+        where b.kategori = 'pullet' and Year(a.tgl) BETWEEN ? and ? and a.id_aktiva = ? ;", [$tahun, $tahun2, $id_akun]);
+        return $result;
+    }
 }
