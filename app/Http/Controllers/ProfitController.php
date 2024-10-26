@@ -417,6 +417,7 @@ class ProfitController extends Controller
         $biaya_disusutkan = ProfitModel::biaya_disusutkan_setahun($tahun);
         $biaya_beli_asset = ProfitModel::biaya_beli_asset($tahun);
         $saldopullet = ProfitModel::saldo_pullet($tahun);
+        $saldopullet2 = ProfitModel::saldo_pullet2($tahun);
 
         $data = [];
         foreach ($pendapatan as $transaction) {
@@ -573,6 +574,31 @@ class ProfitController extends Controller
             // Menambahkan data nominal ke struktur data
             $data6[$b->id_aktiva][$month] = $nominal;
         }
+        $data7 = [];
+        foreach ($saldopullet2 as $b) {
+            $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+            $nominal = $b->debit; // Menghitung nominal
+
+            // Menambahkan data akun dan nominal ke struktur data
+            if (!isset($data7[$b->id_kandang])) {
+                $data7[$b->id_kandang] = [
+                    'January' => 0,
+                    'February' => 0,
+                    'March' => 0,
+                    'April' => 0,
+                    'May' => 0,
+                    'June' => 0,
+                    'July' => 0,
+                    'August' => 0,
+                    'September' => 0,
+                    'October' => 0,
+                    'November' => 0,
+                    'December' => 0,
+                ];
+            }
+            // Menambahkan data nominal ke struktur data
+            $data7[$b->id_kandang][$month] = $nominal;
+        }
         $datas = [
             'title' => 'Profit Setahun',
             'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun FROM jurnal as a where YEAR(a.tgl) != 0 group by YEAR(a.tgl);"),
@@ -580,7 +606,7 @@ class ProfitController extends Controller
 
         ];
 
-        return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6'), $datas);
+        return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'), $datas);
     }
 
     public function get_depresiasi(Request $r)
@@ -623,4 +649,18 @@ class ProfitController extends Controller
 
     //     return view('profit.depresiasi_peralatan', $data);
     // }
+
+    public function getPopulasi(Request $r)
+    {
+        $data = [
+            'title' => 'Populasi',
+            'kandang' => DB::table('kandang')->where('id_kandang', $r->id_kandang)->first(),
+            'populasi' => DB::select("SELECT a.id_kandang, a.tgl, b.nm_kandang, b.rupiah, b.stok_awal, MONTH(a.tgl) as bulan, YEAR(a.tgl) as tahun, sum(a.mati) as death, sum(a.jual) as jual, sum(a.afkir) as afkir
+            FROM populasi as a 
+            left join kandang as b on b.id_kandang = a.id_kandang
+            where  MONTH(a.tgl) = '$r->bulan' and YEAR(a.tgl) = '$r->tahun' and a.id_kandang = '$r->id_kandang'
+            group by a.tgl;"),
+        ];
+        return view('profit.populasi', $data);
+    }
 }

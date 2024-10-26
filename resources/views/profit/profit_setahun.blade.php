@@ -121,10 +121,10 @@
                 $ttl_saldo_bpp += $saldo_thn_bpp->d_saldo;
             }
 
-            $totalsPerMonth6 = array_fill(0, count(array_keys(reset($data6))), 0);
+            $totalsPerMonth6 = array_fill(0, count(array_keys(reset($data7))), 0);
             $total_seluruh6 = 0;
             // $ttl_saldo_pullet = 0;
-            foreach ($data6 as $akun => $months) {
+            foreach ($data7 as $akun => $months) {
                 $totalPerAkun6 = 0;
                 // $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet($thn_awal, $thn2, $akun);
                 foreach ($months as $month => $nominal) {
@@ -134,6 +134,20 @@
                 $total_seluruh6 += $totalPerAkun6;
                 // $ttl_saldo_pullet += $saldo_thn_pullet->d_saldo;
             }
+            $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data6))), 0);
+            $total_seluruh7 = 0;
+            // $ttl_saldo_pullet = 0;
+            foreach ($data6 as $akun => $months) {
+                $totalPerAkun7 = 0;
+                // $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet($thn_awal, $thn2, $akun);
+                foreach ($months as $month => $nominal) {
+                    $totalPerAkun7 += $nominal;
+                    $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
+                }
+                $total_seluruh7 += $totalPerAkun7;
+                // $ttl_saldo_pullet += $saldo_thn_pullet->d_saldo;
+            }
+
             $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet_thn_lalu($thn_awal, $thn2);
 
         @endphp
@@ -340,14 +354,14 @@
                                     class="fas fa-caret-down"></i></button>
                         </td>
 
-                        @foreach (array_keys(reset($data6)) as $month)
+                        @foreach (array_keys(reset($data7)) as $month)
                             <td class="fw-bold text-end">{{ number_format($totalsPerMonth6[$month], 0) }}</td>
                         @endforeach
                         <td class="fw-bold text-end">{{ number_format($total_seluruh6, 0) }}</td>
                         <td class="fw-bold text-end">
                             {{ number_format($total_seluruh6 + $saldo_thn_pullet->d_saldo, 0) }}</td>
                     </tr>
-                    @foreach ($data6 as $akun => $months)
+                    @foreach ($data7 as $akun => $months)
                         <tr x-show="open_biaya_penyesuaian_pullet">
                             @php
                                 $totalPerAkunpullet = 0;
@@ -367,9 +381,9 @@
 
                             <td>
                                 @php
-                                    $nm_akun = DB::table('peralatan')->where('id_aktiva', $akun)->first();
+                                    $nm_akun = DB::table('kandang')->where('id_kandang', $akun)->first();
                                 @endphp
-                                {{ $nm_akun->nm_aktiva }}
+                                {{ $nm_akun->nm_kandang }}
                             </td>
 
                             @foreach ($months as $month => $nominal)
@@ -378,7 +392,11 @@
                                     $tgl2 = date('Y-m-t', strtotime($tgl1));
                                 @endphp
                                 <td class="text-end">
-                                    <a target="_blank" href="#">{{ number_format($nominal, 0) }}</a>
+                                    <a target="_blank" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#Get_detail_pullet" class="detail_pullet"
+                                        id_kandang="{{ $akun }}" bulan="{{ $loop->iteration }}"
+                                        tahun="{{ $thn }}" href="#">{{ number_format($nominal, 0) }}
+                                    </a>
                                 </td>
                                 @php
                                     $totalPerAkunpullet += $nominal;
@@ -422,10 +440,9 @@
                                 @click="open_biaya_disusutkan = ! open_biaya_disusutkan"><i
                                     class="fas fa-caret-down"></i></button>
                         </td>
-
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">
-                                {{ number_format($totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }}</td>
+                                {{ number_format($totalsPerMonth4[$month] - $totalsPerMonth7[$month], 0) }}</td>
                         @endforeach
                         @php
                             $saldo_pullet_kurangin_atas = \App\Models\ProfitModel::saldo_pullet_thn_lalu($thn, $thn);
@@ -530,7 +547,9 @@
                         <td class="fw-bold dhead">LABA BERSIH</td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
-                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth4[$month], 0) }}
+                                {{-- {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }} --}}
+                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month] - ($totalsPerMonth4[$month] - $totalsPerMonth7[$month]), 0) }}
+
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
@@ -556,6 +575,14 @@
             </div>
 
         </x-theme.modal>
+        <x-theme.modal title="Detail Pullet" size="modal-lg" idModal="Get_detail_pullet" btnSave='T'>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="pash_detail_pullet"></div>
+                </div>
+            </div>
+
+        </x-theme.modal>
     </x-slot>
     @section('scripts')
         <script>
@@ -576,6 +603,32 @@
                         success: function(response) {
                             $('.get_dep_aktiva').html(response);
                             $('#table_detail_akt').DataTable({
+                                "paging": true,
+                                "pageLength": 10,
+                                "lengthChange": true,
+                                "stateSave": true,
+                                "searching": true,
+                            });
+                        }
+                    });
+
+                });
+                $('.detail_pullet').click(function(e) {
+                    e.preventDefault();
+                    var id_kandang = $(this).attr('id_kandang');
+                    var bulan = $(this).attr('bulan');
+                    var tahun = $(this).attr('tahun');
+                    $.ajax({
+                        type: "get",
+                        url: "{{ route('getPopulasi') }}",
+                        data: {
+                            id_kandang: id_kandang,
+                            bulan: bulan,
+                            tahun: tahun,
+                        },
+                        success: function(response) {
+                            $('.pash_detail_pullet').html(response);
+                            $('#table_pullet').DataTable({
                                 "paging": true,
                                 "pageLength": 10,
                                 "lengthChange": true,

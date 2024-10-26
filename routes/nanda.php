@@ -217,6 +217,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/save_budget', 'save_budget')->name('save_budget');
         Route::get('/profit_setahun', 'profit_setahun')->name('profit_setahun');
         Route::get('/get_depresiasi', 'get_depresiasi')->name('get_depresiasi');
+        Route::get('/getPopulasi', 'getPopulasi')->name('getPopulasi');
         // Route::get('/get_depresiasi_peralatan', 'get_depresiasi_peralatan')->name('get_depresiasi_peralatan');
     });
 

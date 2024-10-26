@@ -337,6 +337,19 @@ class ProfitModel extends Model
         group by b.id_aktiva, MONTH(a.tgl) , YEAR(a.tgl);", [$tahun]);
         return $result;
     }
+
+    public static function saldo_pullet2($tahun)
+    {
+        $result = DB::select("SELECT a.id_kandang, b.nm_kandang, b.rupiah, b.stok_awal, MONTH(a.tgl) as bulan, YEAR(a.tgl) as tahun, sum(a.mati) as death, sum(a.jual) as jual, sum(a.afkir) as afkir,
+        sum((b.rupiah / b.stok_awal) * (COALESCE(a.mati,0) + COALESCE(a.jual,0) + COALESCE(a.afkir,0))) as debit
+        FROM populasi as a 
+        left join kandang as b on b.id_kandang = a.id_kandang
+        where YEAR(a.tgl) = ?
+        group by a.id_kandang, MONTH(a.tgl) , YEAR(a.tgl)
+        order by b.nm_kandang ASC
+        ;", [$tahun]);
+        return $result;
+    }
     public static function saldo_pullet_thn_lalu($tahun, $tahun2)
     {
         $result = DB::selectOne("SELECT a.id_aktiva, b.nm_aktiva, month(a.tgl) as bulan , Year(a.tgl) as tahun, sum(a.b_penyusutan) d_saldo FROM depresiasi_peralatan as a 
