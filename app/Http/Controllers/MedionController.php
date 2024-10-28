@@ -24,8 +24,8 @@ class MedionController extends Controller
        a.tgl, c.mati, c.jual,  c.afkir,
        (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir)) as hidup,
        round((((c.mati + c.jual)/(b.stok_awal - (e.mati + e.jual + e.afkir ))) * 100),2) as deplesi,
-       (a.gr/1000) as kg_pakan,
-       (a.gr/ (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir))) as gr_perekor,
+       sum(a.gr/1000) as kg_pakan,
+       sum(a.gr/ (b.stok_awal - (populasi.mati + populasi.jual + populasi.afkir))) as gr_perekor,
        normal.normalPcs, normal.normalKg, abnormal.abnormalPcs , abnormal.abnormalKg,
        f.feed,f.berat,f.berat_telur, f.telur as hd, g.nama_obat
 
