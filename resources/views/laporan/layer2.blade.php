@@ -330,7 +330,7 @@
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} <br> 99 <br>
+                                {{ $k->mgg }} / {{ $k->jlh_hari }} <br> 99 <br>
                                 ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
                                 {{ number_format($k->ttl_gjl / 7) }}
                             </td>
