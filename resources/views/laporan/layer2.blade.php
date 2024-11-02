@@ -330,9 +330,11 @@
                             <!-- Umur -->
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                {{ $k->mgg }} / {{ $k->jlh_hari }} <br> 99 <br>
+                                <br>
+                                {{ $k->mgg }} / {{ number_format($k->ttl_gjl / 7) }}
+                                <br> 99 <br>
                                 ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
-                                {{ number_format($k->ttl_gjl / 7) }}
+
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
@@ -472,6 +474,7 @@
                             @endphp
 
                             <td align="center" class="FCR(week)  td_layer">
+                                <br>
                                 @if ($k->mgg < 21)
                                     0 / 0 <br> 0 / 0
                                 @else
@@ -485,6 +488,8 @@
                                     <span
                                         class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 2) }}</span>
                                 @endif
+                                <br>
+                                {{ $k->jlh_hari }} / 7
                             </td>
 
 
@@ -764,6 +769,10 @@
             }
         });
     });
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>
 
 </html>
