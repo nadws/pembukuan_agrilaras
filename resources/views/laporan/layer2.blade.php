@@ -213,7 +213,7 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ <br> W / W+
+                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ <br> W / W+ <br> PW / PW+
                             <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                 style="cursor: pointer"></i>
                         </th>
@@ -372,7 +372,7 @@
                             @php
                                 $gr_butir = empty($k->pcs)
                                     ? '0'
-                                    : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 0);
+                                    : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 1);
                             @endphp
                             <td align="center" class="td_layer ">
                                 <p style="margin: 0; padding: 0;">&nbsp;</p>
@@ -471,6 +471,20 @@
                                     empty($k->kg_pakan) || empty($k->pcs)
                                         ? '0'
                                         : number_format($k->kg_pakan / 1000 / ($k->kg - $k->pcs / 180), 2);
+
+                                $fcr_past_week = empty($k->kg_telur_past_week)
+                                    ? '0'
+                                    : $k->kg_p_past_week /
+                                        1000 /
+                                        ($k->kg_telur_past_week - $k->pcs_telur_past_week / 180);
+
+                                $vaksin_past_week = $k->kum_ttl_rp_past_vaksin / 7000;
+                                $vitamin_past_week = $k->rp_vitamin_past_week / 7000;
+
+                                $fcr_past_week_plus = empty($k->kg_telur_past_week)
+                                    ? '0'
+                                    : ($k->kg_p_past_week / 1000 + $vaksin_past_week + $vitamin_past_week) /
+                                        ($k->kg_telur_past_week - $k->pcs_telur_past_week / 180);
                             @endphp
 
                             <td align="center" class="FCR(week)  td_layer">
@@ -481,7 +495,8 @@
                                     <span
                                         class="{{ $fcr_day >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ $fcr_day }}</span>
                                     / <span class="{{ $fcr_plus >= 2.2 ? 'text-danger fw-bold' : '' }}">
-                                        {{ $fcr_plus }}</span> <br>
+                                        {{ $fcr_plus }}</span>
+                                    <br>
                                     <span
                                         class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 2) }}</span>
                                     /
@@ -489,7 +504,8 @@
                                         class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 2) }}</span>
                                 @endif
                                 <br>
-                                {{ $k->jlh_hari }} / 7
+                                {{ $k->jlh_hari }} / 7 <br>
+                                {{ number_format($fcr_past_week, 2) }} / {{ number_format($fcr_past_week_plus, 2) }}
                             </td>
 
 
