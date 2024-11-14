@@ -171,7 +171,7 @@
                         <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                        <th class="dhead table_layer th_atas" colspan="5">KUML</th>
+                        <th class="dhead table_layer th_atas" colspan="6">KUML</th>
                     </tr>
                     <tr>
                         {{-- Umur --}}
@@ -228,6 +228,7 @@
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
+                        <th class="dhead table_layer th_atas2"> testing </th>
                         <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>GjL</th>
                         {{-- KUML --}}
                     </tr>
@@ -555,14 +556,20 @@
                             </td>
                             <td class="td_layer">
                                 @php
-                                    $vitamin = DB::select("SELECT a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori
+                                    $vitamin = DB::select("SELECT a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori,  a.total_rp
                                     FROM stok_produk_perencanaan as a
                                     left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
                                     left join tb_satuan as c on c.id_satuan = b.dosis_satuan
                                     WHERE a.tgl = '$tgl' and a.id_kandang = '$k->id_kandang' and b.kategori in('pakan');");
-                                @endphp
 
+                                    $ttl_rp_pakan = 0;
+                                    $gr_pakan_ttl = 0;
+                                @endphp
                                 @foreach ($vitamin as $v)
+                                    @php
+                                        $ttl_rp_pakan += $v->total_rp;
+                                        $gr_pakan_ttl += $v->pcs_kredit / 1000;
+                                    @endphp
                                     <a href="#" onclick="return false;" data-bs-toggle="modal"
                                         data-bs-target="#history" class="history" id_produk="{{ $v->id_pakan }}"
                                         id_kandang="{{ $k->id_kandang }}">{{ $v->nm_produk }} :
@@ -584,6 +591,9 @@
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
+
+
+
                                 <br>
 
 
@@ -593,6 +603,43 @@
                                         ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam + $gjl) / ($k->kuml_kg - $k->kuml_pcs / 180),
                                         1,
                                     ) }}
+                                <br> &nbsp;
+                                {{-- {{ number_format($kg_pakan_kuml, 0) }} /
+                                {{ number_format($k->kuml_kg - $k->kuml_pcs / 180) }} --}}
+                            </td>
+                            <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
+                                @php
+                                    $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
+                                    $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
+                                    $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
+                                    $ayam = $k->rupiah / 7000;
+                                    $gjl = ($k->ttl_gjl * 435000) / 7000;
+                                @endphp
+
+                                &nbsp; <br>
+                                @php
+                                    $frc =
+                                        empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
+                                            ? '0'
+                                            : round($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1);
+                                    $hrga = round($ttl_rp_pakan / $gr_pakan_ttl, 0);
+                                @endphp
+                                {{ number_format($frc * $hrga, 0) }}
+                                <br>
+
+
+
+                                @php
+                                    $frc_kuml =
+                                        empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
+                                            ? '0'
+                                            : round(
+                                                ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam + $gjl) /
+                                                    ($k->kuml_kg - $k->kuml_pcs / 180),
+                                                1,
+                                            );
+                                @endphp
+                                {{ number_format($frc_kuml * $hrga, 0) }}
                                 <br> &nbsp;
                                 {{-- {{ number_format($kg_pakan_kuml, 0) }} /
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180) }} --}}
@@ -655,12 +702,12 @@
                             @endphp
                             {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
                         </th>
-                        <th class="dhead table_layer">{{ number_format($pakan, 2) }}</th>
+                        <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th>
 
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
                             {{ number_format($telur_kuml, 2) }} </th>
                         <th class="dhead table_layer"></th>
-                        <th class="dhead table_layer"></th>
+                        <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
                         {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                         <th class="dhead table_layer">
                             {{ number_format($pakan_kuml / $telur_kuml, 1) }}
@@ -669,6 +716,9 @@
                                 $plus = ($obat_kuml + $vaksin_kuml + $rp_ayam) / 7000;
                             @endphp
                             {{ number_format($pakan_kuml + $plus / $telur_kuml, 1) }}
+                        </th>
+                        <th class="dhead table_layer">
+                            0 / 0
                         </th>
                         <th class="dhead table_layer">
                             {{ number_format($obat_kuml, 0) }} <br>

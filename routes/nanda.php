@@ -295,6 +295,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/seleksi_akun_control_ditarik', 'seleksi_akun_control_ditarik')->name('seleksi_akun_control_ditarik');
         Route::get('/cashflow_setahun', 'cashflowsetahun')->name('cashflow_setahun');
         Route::get('/detail_proyek', 'detail_proyek')->name('detail_proyek');
+        Route::get('/print_uang_ditarik', 'print_uang_ditarik')->name('print_uang_ditarik');
+        Route::get('/export_uang_ditarik', 'export_uang_ditarik')->name('export_uang_ditarik');
     });
     Route::controller(NeracaController::class)->group(function () {
         Route::get('/neraca', 'index')->name('neraca');

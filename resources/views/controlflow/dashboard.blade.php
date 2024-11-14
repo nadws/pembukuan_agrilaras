@@ -229,22 +229,21 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-lg-6">
-                                @php
-                                    $pop = 0;
-                                    foreach ($populasi as $p) {
-                                        $pop += $p->populasi;
-                                    }
-                                @endphp
+
                                 <h6 class="float-strat">Control Uang Ditarik <br>
-                                    Populasi : {{ number_format($pop, 0) }} </h6>
+                                    Populasi per {{ tanggal($tgl2) }} :
+                                    {{ number_format(sumBk($populasi, 'stok_awal') - sumBk($populasi, 'mati') - sumBk($populasi, 'jual') - sumBk($populasi, 'afkir'), 0) }}
+
+                                </h6>
                             </div>
                             <div class="col-lg-6">
-                                <button data-bs-toggle="modal" data-bs-target="#daftaruangditarik"
-                                    class="btn btn-sm btn-primary float-end d_uangditarik"><i
-                                        class="fas fa-clipboard-list"></i> List
-                                    Akun
-                                    <span class="badge bg-danger ttl_akun_ibu"></span>
-                                </button>
+                                <a href="{{ route('export_uang_ditarik', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
+                                    class="btn btn-sm btn-success float-end ms-2"><i class="fas fa-file-excel"></i>
+                                    Export</a>
+                                <a href="{{ route('print_uang_ditarik', ['tgl1' => $tgl1, 'tgl2' => $tgl2]) }}"
+                                    target="_blank" class="btn btn-sm btn-primary float-end"><i
+                                        class="fas fa-print"></i>
+                                    Print</a>
                             </div>
                         </div>
                     </div>

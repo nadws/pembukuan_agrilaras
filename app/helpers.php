@@ -70,6 +70,12 @@ if (!function_exists('buatNota')) {
         return empty($max) ? 1000 : $max->$kolom + 1;
     }
 }
+if (!function_exists('sumBk')) {
+    function sumBk($kategori, $data)
+    {
+        return array_sum(array_column($kategori, $data));
+    }
+}
 
 
 class Nonaktif
