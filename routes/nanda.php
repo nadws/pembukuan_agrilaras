@@ -406,7 +406,6 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(Stok_pakanController::class)->group(function () {
         // History Alpa
-
         Route::get('/load_stok_pakan', 'load_stok_pakan')->name('load_stok_pakan');
         Route::get('/opname_pakan', 'opname_pakan')->name('opname_pakan');
         Route::get('/opnme_vitamin', 'opnme_vitamin')->name('opnme_vitamin');
@@ -422,6 +421,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/history_perencanaan_pakan', 'history_perencanaan_pakan')->name('history_perencanaan_pakan');
         Route::get('/pembukuan_biaya_pv', 'pembukuan_biaya_pv')->name('pembukuan_biaya_pv');
         Route::post('/bukukan_pv', 'bukukan_pv')->name('bukukan_pv');
+        Route::post('/save_stok_pakan', 'save_stok_pakan')->name('save_stok_pakan');
+        Route::get('/tbh_stok_pakan', 'tbh_stok_pakan')->name('tbh_stok_pakan');
+        Route::get('/get_edit_hrga_pakan', 'get_edit_hrga_pakan')->name('get_edit_hrga_pakan');
+        Route::get('/hapus_stok_pakan', 'hapus_stok_pakan')->name('hapus_stok_pakan');
+        Route::post('/edit_stok_pakan', 'edit_stok_pakan')->name('edit_stok_pakan');
     });
 
     Route::controller(Penjualan_martadah_alpaController::class)->group(function () {

@@ -41,8 +41,68 @@ class Stok_pakanController extends Controller
             left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
             where a.`check` = 'T' and b.kategori in('obat_pakan','obat_air') and a.h_opname = 'T' and a.id_kandang != '0';"),
+            'hrga_pakan' => DB::select("SELECT a.id_harga_pakan, b.nm_produk, a.tgl, a.ttl_gr, a.ttl_rp, a.rp_lain
+            FROM harga_pakan as a 
+            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan and b.kategori ='pakan'
+            order by a.tgl DESC"),
+            'pakan_table' => DB::table('tb_produk_perencanaan')->where('kategori', 'pakan')->get()
         ];
         return view('stok_pakan.stok', $data);
+    }
+
+    public function tbh_stok_pakan(Request $r)
+    {
+        $data = [
+            'count' => $r->count,
+            'pakan_table' => DB::table('tb_produk_perencanaan')->where('kategori', 'pakan')->get()
+        ];
+        return view('stok_pakan.tbh_stok_pakan', $data);
+    }
+    public function get_edit_hrga_pakan(Request $r)
+    {
+        $data = [
+            'pakan_table' => DB::table('tb_produk_perencanaan')->where('kategori', 'pakan')->get(),
+            'pakan' => DB::table('harga_pakan')->where('id_harga_pakan', $r->id_harga_pakan)->first()
+        ];
+        return view('stok_pakan.edit_stok_pakan', $data);
+    }
+
+    public function save_stok_pakan(Request $r)
+    {
+        for ($i = 0; $i < count($r->id_pakan); $i++) {
+            $data = [
+                'id_pakan' => $r->id_pakan[$i],
+                'ttl_gr' => $r->sak[$i],
+                'ttl_rp' => $r->total_rp[$i],
+                'rp_lain' => $r->rp_lain[$i],
+                'admin' => Auth::user()->name,
+                'tgl' => $r->tgl[$i]
+            ];
+            DB::table('harga_pakan')->insert($data);
+        }
+        return redirect()->route('produk_telur')->with('sukses', 'Data berhasil di simpan');
+    }
+    public function edit_stok_pakan(Request $r)
+    {
+
+        $data = [
+            'id_pakan' => $r->id_pakan,
+            'ttl_gr' => $r->sak,
+            'ttl_rp' => $r->total_rp,
+            'rp_lain' => $r->rp_lain,
+            'admin' => Auth::user()->name,
+            'tgl' => $r->tgl
+        ];
+        DB::table('harga_pakan')->where('id_harga_pakan', $r->id_harga_pakan)->update($data);
+
+        return redirect()->route('produk_telur')->with('sukses', 'Data berhasil di edit');
+    }
+    public function hapus_stok_pakan(Request $r)
+    {
+
+        DB::table('harga_pakan')->where('id_harga_pakan', $r->id_harga_pakan)->delete();
+
+        return redirect()->route('produk_telur')->with('sukses', 'Data berhasil di hapus');
     }
 
     public function history_stok(Request $r)

@@ -543,14 +543,19 @@
                             @endphp
 
                             @php
-                                $pkn = DB::select("SELECT a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori,  a.total_rp
-                                    FROM stok_produk_perencanaan as a
-                                    left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-                                    left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-                                    WHERE a.tgl = '$tgl' and a.id_kandang = '$k->id_kandang' and b.kategori in('pakan');");
+                                $pkn = DB::select("SELECT a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, (COALESCE(d.ttl_rp,0) + COALESCE(d.rp_lain,0) ) as ttl_rp, (d.ttl_gr) as ttl_gr
+                                FROM stok_produk_perencanaan as a
+                                left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+                                left join tb_satuan as c on c.id_satuan = b.dosis_satuan
+                                left JOIN (
+                                    SELECT a.*
+                                FROM harga_pakan as a 
+                                where a.id_pakan = a.id_pakan and a.tgl = (SELECT max(b.tgl) as tgl FROM harga_pakan as b where b.id_pakan = a.id_pakan)
+                                ) as d on d.id_pakan = a.id_pakan
+                                WHERE a.tgl = '$tgl' and a.id_kandang = '$k->id_kandang' and b.kategori in('pakan');");
 
-                                $tl_rp_pakan = sumbK($pkn, 'total_rp');
-                                $tl_gr_pkn = sumBk($pkn, 'pcs_kredit') / 1000;
+                                $tl_rp_pakan = sumbK($pkn, 'ttl_rp');
+                                $tl_gr_pkn = sumBk($pkn, 'ttl_gr');
                             @endphp
                             <td align="center" class="FCR(week)  td_layer">
                                 <br>
@@ -573,7 +578,7 @@
                                 {{ number_format($fcr_past_week, 2) }} / {{ number_format($fcr_past_week_plus, 2) }}
                                 <br>
                                 @php
-                                    $hrga_stn_pkn = $tl_rp_pakan / $tl_gr_pkn;
+                                    $hrga_stn_pkn = empty($tl_rp_pakan) ? 0 : $tl_rp_pakan / $tl_gr_pkn;
                                 @endphp
                                 {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week, 2), 0) }}
                             </td>

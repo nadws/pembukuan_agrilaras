@@ -805,6 +805,37 @@
 
 
                 });
+                var count = 2;
+                $(document).on("click", ".tambah_hrga_pakan", function() {
+                    count = count + 1;
+                    $.ajax({
+                        url: "/tbh_stok_pakan?count=" + count,
+                        type: "Get",
+                        success: function(data) {
+                            $("#tbh_baris_hrga_pakan").append(data);
+                            $(".select").select2();
+                        },
+                    });
+                });
+                $(document).on("click", ".minus_hrga_pakan", function() {
+                    var delete_row = $(this).attr("count");
+                    $(".baris" + delete_row).remove();
+                });
+                $(document).on("click", ".edit_hrga_pakan", function() {
+                    var id_harga_pakan = $(this).attr("id_harga_pakan");
+                    $.ajax({
+                        type: "get",
+                        url: "{{ route('get_edit_hrga_pakan') }}",
+                        data: {
+                            id_harga_pakan: id_harga_pakan
+                        },
+                        success: function(response) {
+                            $("#load_edit_harga_pakan").html(response)
+                            $(".select").select2();
+                        }
+                    });
+
+                });
             });
         </script>
         <script src="{{ asset('js') }}/stok_opname.js"></script>
