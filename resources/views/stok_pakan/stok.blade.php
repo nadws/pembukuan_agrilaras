@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <form action="{{ route('save_stok_pakan') }}" method="post">
+        <form action="{{ route('save_stok_pakan') }}" method="post" id="save_hrga_pakan">
             @csrf
 
 
@@ -109,7 +109,13 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="submit" class="btn btn-primary button-save">Simpan</button>
+                            <button class="float-end btn btn-primary button-save-modal-loading" type="button"
+                                disabled hidden>
+                                <span class="spinner-border spinner-border-sm " role="status"
+                                    aria-hidden="true"></span>
+                                Loading...
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -157,7 +163,7 @@
             </tbody>
         </table>
 
-        <form action="{{ route('edit_stok_pakan') }}" method="post">
+        <form action="{{ route('edit_stok_pakan') }}" method="post" id="edit_hrga_pakan">
             @csrf
 
 
@@ -175,8 +181,15 @@
                             <div id="load_edit_harga_pakan"></div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-secondary button-save"
+                                data-bs-dismiss="modal">Tutup</button>
+                            <button type="submit" class="btn btn-primary button-save">Simpan</button>
+                            <button class="float-end btn btn-primary button-save-modal-loading" type="button"
+                                disabled hidden>
+                                <span class="spinner-border spinner-border-sm " role="status"
+                                    aria-hidden="true"></span>
+                                Loading...
+                            </button>
                         </div>
                     </div>
                 </div>

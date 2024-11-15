@@ -836,6 +836,9 @@
                     });
 
                 });
+
+                aksiBtn("#save_hrga_pakan");
+                aksiBtn("#edit_hrga_pakan");
             });
         </script>
         <script src="{{ asset('js') }}/stok_opname.js"></script>

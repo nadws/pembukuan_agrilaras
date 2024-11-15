@@ -443,11 +443,14 @@
 
 
     function aksiBtn(idForm) {
+
         $(document).on('submit', idForm, function() {
+
             $(".button-save").hide();
             $(".btn_save_loading").removeAttr("hidden");
         })
     }
+
 
     $('#table').DataTable({
         "paging": true,
