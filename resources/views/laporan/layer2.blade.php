@@ -155,6 +155,7 @@
 
             </div>
         </form>
+
         <div class="table-responsive table-container">
 
             <table style="text-align: center; " class="table_layer">
@@ -205,15 +206,41 @@
                             ttl <br> selisih <br> (kg/butir)<br> 1 minggu
                         </th> --}}
 
-                        <th class="dhead table_layer th_atas2">hd <br> p <br> hh (%)<br>
-                            <i class="fas text-white fa-question-circle rumus" rumus="hd_day"
-                                style="cursor: pointer"></i>
+                        <th class="dhead table_layer th_atas2">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="hd : ttl pcs telur / populasi ayam sekarang">hd</span>
+                            <br>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="p : peforma hd note data dari dokter">
+                                p
+                            </span>
+                            <br>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="hh : ttl pcs telur / populasi ayam awal">
+                                hh (%)
+                            </span>
+                            <br>
+
                         </th>
                         <th class="dhead table_layer th_atas2">hd/ hd<br>present/past<br>week(%)
                             <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
                                 style="cursor: pointer"></i>
                         </th>
-                        <th class="dhead table_layer th_atas2">FCR <br> D / D+ <br> W / W+ <br> PW / PW+
+                        <th class="dhead table_layer th_atas2">FCR <br> <span data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="D (fcr perday): total pakan hari ini / total kg bersih telur hari ini | D+ (fcr perday+): total pakan hari ini + vaksin + vitamin / total kg bersih telur hari ini">D
+                                / D+ </span>
+                            <br>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="W (fcr perday): total pakan minggu ini / total kg bersih telur minggu ini | W+ (fcr perday+): total pakan minggu ini + vaksin + vitamin / total kg bersih telur minggu ini">
+                                W / W+
+                            </span>
+
+                            <br>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="PW (fcr perday): total pakan minggu lalu / total kg bersih telur minggu lalu | PW+ (fcr perday+): total pakan minggu lalu + vaksin + vitamin / total kg bersih telur minggu lalu">
+                                PW / PW+
+                            </span>
                             <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                 style="cursor: pointer"></i>
                         </th>
@@ -222,14 +249,22 @@
                         {{-- pakan --}}
                         <th class="dhead table_layer th_atas2">kg <br> (gr/ekor) / p <br>(day)</th>
                         {{-- KUML --}}
-                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> R2Rp</th>
+                        <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> <span
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="rata-rata harga semua penjualan dibagi total kg perkandang dari awal sampai hari ini">R2Rp</span>
+                        </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
                         {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
-                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>GjL</th>
+                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="gjl : total hari ayam makan * 435,000">
+                                GjL
+                            </span>
+                        </th>
                         {{-- KUML --}}
                     </tr>
                 </thead>
@@ -304,8 +339,12 @@
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr>
-                            <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }} <br>
-                                {{ date('d/m/y', strtotime($k->chick_in)) }} <br>
+                            <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }}
+                                <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="tanggal chick in">
+                                    {{ date('d/m/y', strtotime($k->chick_in)) }}
+                                </span>
+                                <br>
 
                                 @php
                                     $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
@@ -318,9 +357,13 @@
                                     $ckin21 = date('Y-m-d', strtotime($ckin2 . ' -4 weeks'));
                                 @endphp
 
-                                <span class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="tanggal afkir hitung 99 minggu dari chick in"
+                                    class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
                                     {{ date('d/m/y', strtotime($afkir)) }} </span> <br>
-                                <span class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="tanggal chick in 2 hitung 80 minggu dari chick in"
+                                    class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
                                     {{ date('d/m/y', strtotime($ckin2)) }}
                                 </span>
                                 {{-- <br>
@@ -332,9 +375,20 @@
                             <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
                                 <br>
-                                {{ $k->mgg }} / {{ number_format($k->ttl_gjl / 7) }}
-                                <br> 99 <br>
-                                ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
+                                {{ $k->mgg }} / <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="gjl : total hari ayam makan / 7">{{ number_format($k->ttl_gjl / 7) }}</span>
+                                <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="perkiran afkir 99 minggu sama semua kandang">
+                                    99
+                                </span>
+
+                                <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="hitungan persen minggu menuju 99 minggu">
+
+                                    ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
+                                </span>
 
                             </td>
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
