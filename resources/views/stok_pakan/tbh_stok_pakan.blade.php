@@ -5,7 +5,7 @@
     </div>
     <div class="col-lg-2 mt-2">
 
-        <select name="id_pakan[]" id="" class="form-control">
+        <select name="id_pakan[]" id="" class="select">
             <option value="">-Pilih Pakan-</option>
             @foreach ($pakan_table as $p)
                 <option value="{{ $p->id_produk }}">{{ $p->nm_produk }}</option>
