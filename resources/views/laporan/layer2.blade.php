@@ -172,7 +172,7 @@
                         <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                        <th class="dhead table_layer th_atas" colspan="5">KUML</th>
+                        <th class="dhead table_layer th_atas" colspan="6">KUML</th>
                     </tr>
                     <tr>
                         {{-- Umur --}}
@@ -265,6 +265,9 @@
                                 GjL
                             </span>
                         </th>
+                        <th class="dhead table_layer th_atas2">
+                            tpl
+                        </th>
                         {{-- KUML --}}
                     </tr>
                 </thead>
@@ -300,6 +303,8 @@
 
                         $rp_vitamin = 0;
                         $rp_vaksin = 0;
+
+                        $ttl_tpl = 0;
                     @endphp
                     @foreach ($kandang as $k)
                         @php
@@ -691,6 +696,28 @@
                                 {{ number_format($k->rupiah, 0) }} <br>
                                 {{ number_format($k->ttl_gjl * 435000) }}
                             </td>
+                            <td class="obat/vit td_layer">
+                                @php
+                                    $fcr_kuml =
+                                        empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
+                                            ? '0'
+                                            : round($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1);
+                                    $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
+                                    $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+                                    $rp_pakan = round($tl_rp_pakan / $tl_gr_pkn, 0);
+
+                                    $ttl_tpl += (round($rp_telur, 0) - $rp_pakan * $fcr_kuml) * round($ttl_kg_telur, 0);
+                                @endphp
+                                {{-- {{ $fcr_kuml }} / {{ $rp_pakan }} /
+                                {{ round($rp_telur, 0) }}
+                                {{ round($ttl_kg_telur, 0) }}
+                                <br> --}}
+
+                                {{ number_format((round($rp_telur, 0) - $rp_pakan * $fcr_kuml) * round($ttl_kg_telur, 0), 2) }}
+                                <br>
+                                <br>
+                                <br>
+                            </td>
                             <!-- kuml -->
                             <!-- listrik -->
 
@@ -761,6 +788,7 @@
                             {{ number_format($vaksin_kuml, 0) }} <br> {{ number_format($rp_ayam, 0) }}
                             <br>{{ number_format($gjl_ttl, 0) }}
                         </th>
+                        <th class="dhead table_layer">{{ number_format($ttl_tpl, 2) }}</th>
                     </tr>
                 </tfoot>
 
