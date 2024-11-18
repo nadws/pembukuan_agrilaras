@@ -158,7 +158,7 @@ class Laporan_layerController extends Controller
                 SELECT s.id_kandang , sum(s.ttl_rp) as kum_ttl_rp_vaksin, s.tgl
                 FROM tb_vaksin_perencanaan as s
                 group by s.id_kandang
-            ) as s on s.id_kandang = a.id_kandang and s.tgl = '$tgl'
+            ) as s on s.id_kandang = a.id_kandang 
 
             left join (
                 SELECT s.id_kandang , sum(s.ttl_rp) as ttl_rp_vaksin,CEIL(DATEDIFF(s.tgl, b.chick_in) / 7) AS mgg_vaksin
