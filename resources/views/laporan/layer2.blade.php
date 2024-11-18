@@ -266,7 +266,10 @@
                             </span>
                         </th>
                         <th class="dhead table_layer th_atas2">
-                            tpl
+                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="tpl : (rp telur - (fcr kuml * rp pakan)) * ttl kg telur">
+                                tpl
+                            </span>
                         </th>
                         {{-- KUML --}}
                     </tr>
