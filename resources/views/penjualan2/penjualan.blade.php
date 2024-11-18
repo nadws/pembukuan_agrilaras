@@ -13,7 +13,7 @@
     <x-slot name="cardBody">
         <section class="row">
             <div class="col-lg-4">
-                
+
                 <h6 class="text-end">Total Penjualan Alpa : Rp. {{ number_format($pnjlAlpa, 0) }}</h6>
                 <h6 class="text-end">Total Penjualan MTD : Rp. {{ number_format($pnjlMtd, 0) }}</h6>
                 <hr>

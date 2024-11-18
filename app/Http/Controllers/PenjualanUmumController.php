@@ -70,7 +70,7 @@ class PenjualanUmumController extends Controller
         $pnjlMtd = DB::selectOne("SELECT a.lokasi,sum(a.total_rp) as total FROM `penjualan_agl` as a
         WHERE a.tgl BETWEEN '$tgl1' AND '$tgl2' AND a.lokasi = 'mtd'
         GROUP BY a.lokasi");
-    
+
         $data = [
             'title' => 'Penjualan Umum',
             'penjualan' => $penjualan,
@@ -192,11 +192,11 @@ class PenjualanUmumController extends Controller
         $max_akun2 = DB::table('jurnal')->latest('urutan')->where('id_akun', $this->akunPenjualan)->first();
         $akun2 = DB::table('akun')->where('id_akun', $this->akunPenjualan)->first();
         $urutan2 = empty($max_akun2) ? '1001' : ($max_akun2->urutan == 0 ? '1001' : $max_akun2->urutan + 1);
-
+        $nota = buatNota('penjualan_agl', 'urutan');
 
         $dataK = [
             'tgl' => $r->tgl,
-            'no_nota' => 'PUM-' . $r->no_nota,
+            'no_nota' => 'PUM-' . $nota,
             'id_akun' => $this->akunPenjualan,
             'id_buku' => '6',
             'ket' => 'Penjualan Umum Alpa : ' . $produkNames,
@@ -219,7 +219,7 @@ class PenjualanUmumController extends Controller
                 'tgl' => $r->tgl,
                 'id_akun' => $id_akun,
                 'id_buku' => 6,
-                'no_nota' => 'PUM-' . $r->no_nota,
+                'no_nota' => 'PUM-' . $nota,
                 'ket' => "Penjualan $nm_customer $produkNames",
                 'debit' => $r->debit[$i] ?? 0,
                 'kredit' => $r->kredit[$i] ?? 0,
@@ -233,17 +233,17 @@ class PenjualanUmumController extends Controller
             } else {
                 $data = [
                     'tgl' => $r->tgl,
-                    'no_nota' => $r->no_nota,
+                    'no_nota' => $nota,
                     'debit' => $r->debit[$i],
                     'kredit' => $r->kredit[$i],
-                    'no_nota_piutang' => 'PUM-' . $r->no_nota
+                    'no_nota_piutang' => 'PUM-' . $nota
                 ];
                 DB::table('bayar_umum')->insert($data);
             }
         }
         $data = [
             'tgl' => $r->tgl,
-            'no_nota' => $r->no_nota,
+            'no_nota' => $nota,
             'debit' => 0,
             'kredit' => $ttlDebit,
         ];
@@ -251,7 +251,7 @@ class PenjualanUmumController extends Controller
 
         for ($i = 0; $i < count($r->id_produk); $i++) {
             DB::table('penjualan_agl')->insert([
-                'urutan' => $r->no_nota,
+                'urutan' => $nota,
                 'nota_manual' => $r->nota_manual,
                 'tgl' => $r->tgl,
                 'kode' => 'PUM',
@@ -436,8 +436,9 @@ class PenjualanUmumController extends Controller
 
     public function delete(Request $r)
     {
-        DB::table('tb_stok_produk')->where('no_nota', 'PAGL-' . $r->urutan)->delete();
-        DB::table('jurnal')->where('no_nota', 'PAGL-' . $r->urutan)->delete();
+
+        DB::table('tb_stok_produk')->where('no_nota', 'PUM-' . $r->urutan)->delete();
+        DB::table('jurnal')->where('no_nota', 'PUM-' . $r->urutan)->delete();
         DB::table('penjualan_agl')->where('urutan', $r->urutan)->delete();
 
         return redirect()->route('penjualan2.index', ['period' => 'costume', 'tgl1' => $r->tgl1, 'tgl2' => $r->tgl2, 'id_proyek' => 0])->with('sukses', 'Data Berhasil Dihapus');
