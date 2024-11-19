@@ -474,9 +474,16 @@
                             <td align="center" class="hd perday (%) td_layer">
                                 {{-- {{$k->pcs}} --}}
                                 &nbsp; <br>
-                                {{ $k->stok_awal - $k->pop_kurang == 0
-                                    ? 0
-                                    : number_format(($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
+                                @php
+                                    $hd =
+                                        $k->stok_awal - $k->pop_kurang == 0
+                                            ? 0
+                                            : ($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100;
+                                @endphp
+                                <span
+                                    class="{{ empty($k->p_hd) ? '' : ($k->p_hd - $hd > 3 ? 'text-danger fw-bold' : '') }}">
+                                    {{ number_format($hd, 0) }}
+                                </span>
                                 <br>
                                 {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
                                 <br>
