@@ -719,7 +719,7 @@
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
                                     $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
                                     $rp_pakan = empty($tl_rp_pakan) ? 0 : round($tl_rp_pakan / $tl_gr_pkn, 0);
-                                    $rp_pakan_tes = $harga->ttl_rupiah / $harga->pcs;
+                                    $rp_pakan_tes = round($harga->ttl_rupiah / $harga->pcs, 0);
                                     $ttl_tpl +=
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
