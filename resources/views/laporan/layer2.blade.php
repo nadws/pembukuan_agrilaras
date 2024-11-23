@@ -714,7 +714,7 @@
                                             : round($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1);
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
                                     $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
-                                    $rp_pakan = round($tl_rp_pakan / $tl_gr_pkn, 0);
+                                    $rp_pakan = empty($tl_rp_pakan) ? 0 : round($tl_rp_pakan / $tl_gr_pkn, 0);
 
                                     $ttl_tpl += (round($rp_telur, 0) - $rp_pakan * $fcr_kuml) * round($ttl_kg_telur, 0);
                                 @endphp
