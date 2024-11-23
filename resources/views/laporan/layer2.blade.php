@@ -723,17 +723,26 @@
                                     $ttl_tpl +=
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
+                                    $ttl_tpl_kandang =
+                                        (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
+                                        round($ttl_kg_telur, 0);
                                 @endphp
                                 {{-- fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan_tes }} /
                                 rp telur = {{ round($rp_telur, 0) }} /
                                 ttl kg telur {{ round($ttl_kg_telur, 0) }}
                                 <br> --}}
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    class="{{ $ttl_tpl_kandang < 0 ? 'text-danger' : '' }}"
                                     title="fcr kuml = {{ $fcr_kuml_plus }} | rp pakan = {{ $rp_pakan_tes }} | rp telur = {{ round($rp_telur, 0) }} | ttl kg telur {{ round($ttl_kg_telur, 0) }}">
                                     {{ number_format((round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) * round($ttl_kg_telur, 0), 2) }}
                                 </span>
 
                                 <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    class="{{ $ttl_tpl_kandang / $ttl_kg_telur < 0 ? 'text-danger' : '' }}"
+                                    title="tpl = {{ $ttl_tpl_kandang }} |  ttl kg telur {{ round($ttl_kg_telur, 0) }}">
+                                    {{ number_format($ttl_tpl_kandang / $ttl_kg_telur, 2) }}
+                                </span>
                                 <br>
                                 <br>
                             </td>
