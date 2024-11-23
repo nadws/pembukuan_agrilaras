@@ -708,22 +708,27 @@
                             </td>
                             <td class="obat/vit td_layer">
                                 @php
-                                    $fcr_kuml =
+                                    $fcr_kuml_plus =
                                         empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                             ? '0'
-                                            : round($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1);
+                                            : round(
+                                                ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam + $gjl) /
+                                                    ($k->kuml_kg - $k->kuml_pcs / 180),
+                                                1,
+                                            );
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
                                     $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
                                     $rp_pakan = empty($tl_rp_pakan) ? 0 : round($tl_rp_pakan / $tl_gr_pkn, 0);
 
-                                    $ttl_tpl += (round($rp_telur, 0) - $rp_pakan * $fcr_kuml) * round($ttl_kg_telur, 0);
+                                    $ttl_tpl +=
+                                        (round($rp_telur, 0) - $rp_pakan * $fcr_kuml_plus) * round($ttl_kg_telur, 0);
                                 @endphp
-                                {{-- {{ $fcr_kuml }} / {{ $rp_pakan }} /
-                                {{ round($rp_telur, 0) }}
-                                {{ round($ttl_kg_telur, 0) }}
-                                <br> --}}
+                                fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan }} /
+                                rp telur = {{ round($rp_telur, 0) }} /
+                                ttl kg telur {{ round($ttl_kg_telur, 0) }}
+                                <br>
 
-                                {{ number_format((round($rp_telur, 0) - $rp_pakan * $fcr_kuml) * round($ttl_kg_telur, 0), 2) }}
+                                {{ number_format((round($rp_telur, 0) - $rp_pakan * $fcr_kuml_plus) * round($ttl_kg_telur, 0), 2) }}
                                 <br>
                                 <br>
                                 <br>
