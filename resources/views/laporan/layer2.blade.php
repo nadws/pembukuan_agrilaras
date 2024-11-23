@@ -724,12 +724,15 @@
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
                                 @endphp
-                                fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan_tes }} /
+                                {{-- fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan_tes }} /
                                 rp telur = {{ round($rp_telur, 0) }} /
                                 ttl kg telur {{ round($ttl_kg_telur, 0) }}
-                                <br>
+                                <br> --}}
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="fcr kuml = {{ $fcr_kuml_plus }} | rp pakan = {{ $rp_pakan_tes }} | rp telur = {{ round($rp_telur, 0) }} | ttl kg telur {{ round($ttl_kg_telur, 0) }}">
+                                    {{ number_format((round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) * round($ttl_kg_telur, 0), 2) }}
+                                </span>
 
-                                {{ number_format((round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) * round($ttl_kg_telur, 0), 2) }}
                                 <br>
                                 <br>
                                 <br>
