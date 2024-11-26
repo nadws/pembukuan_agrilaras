@@ -117,11 +117,15 @@
             <td></td>
             <td>TELUR <?= strtoupper($g->nm_telur) ?></td>
             <td><?= $g->rp_satuan ?></td>
-            <td><?= $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual ?></td>
-            <td><?= $g->total_rp ?></td>
+            @php
+                $qty = $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual
+                $ttlRp = $qty * $g->rp_satuan;
+            @endphp
+            <td><?= $qty ?></td>
+            <td><?= $ttlRp ?></td>
             <td>0</td>
-            <td><?= $g->total_rp ?></td>
-            <td><?= round($g->total_rp * 0.11, 0) ?></td>
+            <td><?= $ttlRp ?></td>
+            <td><?= round($ttlRp * 0.11, 0) ?></td>
             <td>0</td>
             <td>0</td>
             <td></td>
