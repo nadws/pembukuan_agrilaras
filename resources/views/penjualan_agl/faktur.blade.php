@@ -118,14 +118,14 @@
             <td>TELUR <?= strtoupper($g->nm_telur) ?></td>
             <td><?= $g->rp_satuan ?></td>
             @php
-                $qty = $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual
-                $ttl = $qty * $g->rp_satuan;
+                $qty = $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual;
+                $ttlRp = $qty * $g->rp_satuan;
             @endphp
             <td><?= $qty ?></td>
-            <td><?= $ttl ?></td>
+            <td><?= $ttlRp ?></td>
             <td>0</td>
-            <td><?= $ttl ?></td>
-            <td><?= round($ttl * 0.11, 0) ?></td>
+            <td><?= isset($ttlRp) ? $ttlRp : 0 ?></td>
+            <td><?= isset($ttlRp) ? round($ttlRp * 0.11, 0) : 0 ?></td>
             <td>0</td>
             <td>0</td>
             <td></td>
