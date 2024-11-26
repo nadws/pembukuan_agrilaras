@@ -77,7 +77,7 @@
     </thead>
     <tbody>
         <?php foreach($nota as $no => $f): 
-             $faktur =  DB::select("SELECT b.nm_telur, a.rp_satuan, a.kg_jual, a.pcs, a.total_rp
+             $faktur =  DB::select("SELECT a.tipe,b.nm_telur, a.rp_satuan, a.kg_jual, a.pcs, a.total_rp
                 FROM invoice_telur as a 
                 LEFT JOIN telur_produk as b on b.id_produk_telur = a.id_produk
                 WHERE a.no_nota = '$f->no_nota'")
@@ -117,7 +117,7 @@
             <td></td>
             <td>TELUR <?= strtoupper($g->nm_telur) ?></td>
             <td><?= $g->rp_satuan ?></td>
-            <td><?= $g->kg_jual ?></td>
+            <td><?= $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual ?></td>
             <td><?= $g->total_rp ?></td>
             <td>0</td>
             <td><?= $g->total_rp ?></td>
