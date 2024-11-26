@@ -119,13 +119,13 @@
             <td><?= $g->rp_satuan ?></td>
             @php
                 $qty = $g->tipe == 'pcs' ? $g->pcs : $g->kg_jual
-                $ttlRp = $qty * $g->rp_satuan;
+                $ttl = $qty * $g->rp_satuan;
             @endphp
             <td><?= $qty ?></td>
-            <td><?= $ttlRp ?></td>
+            <td><?= $ttl ?></td>
             <td>0</td>
-            <td><?= $ttlRp ?></td>
-            <td><?= round($ttlRp * 0.11, 0) ?></td>
+            <td><?= $ttl ?></td>
+            <td><?= round($ttl * 0.11, 0) ?></td>
             <td>0</td>
             <td>0</td>
             <td></td>
