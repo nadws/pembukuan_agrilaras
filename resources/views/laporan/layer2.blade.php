@@ -341,7 +341,7 @@
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
-                            $gjl_ttl += $k->ttl_gjl * 435000;
+                            $gjl_ttl += $k->ttl_gjl * 1000000;
 
                             $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
@@ -673,7 +673,7 @@
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
-                                    $gjl = ($k->ttl_gjl * 435000) / 7000;
+                                    $gjl = ($k->ttl_gjl * 1000000) / 7000;
                                 @endphp
 
                                 &nbsp; <br>
@@ -704,7 +704,7 @@
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
-                                {{ number_format($k->ttl_gjl * 435000) }}
+                                {{ number_format($k->ttl_gjl * 1000000) }}
                             </td>
                             <td class="obat/vit td_layer">
                                 @php
