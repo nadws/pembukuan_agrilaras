@@ -221,10 +221,11 @@
                 <tr>
                     @php
                         $bg_bank = $bunga_bank->kredit ?? 0;
+                        $by_admin = $biaya_admin->debit ?? 0;
                     @endphp
                     <td class="fw-bold">Grand Total</td>
                     <td class="fw-bold" align="right">Rp
-                        {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - $t_piutang - $biaya_admin->debit + $bg_bank, 0) }}
+                        {{ number_format($total_pe + $total_pi + $kerugian->debit - ($t_piutang + $kerugianBulanIni->debit) + $bg_bank + $by_admin, 0) }}
                     </td>
                 </tr>
                 {{-- <tr>
@@ -264,7 +265,7 @@
                     @endphp
                     <td class="fw-bold">Grand Total</td>
                     <td class="fw-bold" align="right">Rp
-                        {{ number_format($t_uang + $bg_bank - $biaya_admin->debit, 0) }}
+                        {{ number_format($t_uang + $bg_bank + $biaya_admin->debit, 0) }}
                     </td>
                 </tr>
             </table>
