@@ -222,7 +222,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - $t_piutang + $biaya_admin->debit + $bg_bank, 0) }}
+                    {{ number_format($total_pi + $kerugian->debit + $kerugianBulanIni->debit + $total_pe - $t_piutang, 0) }}
                 </td>
             </tr>
             {{-- <tr>
@@ -262,7 +262,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($t_uang + $bg_bank + $biaya_admin->debit, 0) }}
+                    {{ number_format($t_uang, 0) }}
                 </td>
             </tr>
         </table>
