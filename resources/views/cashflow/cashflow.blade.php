@@ -200,7 +200,7 @@
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
-                <td class="fw-bold bg-warning ">Total </td>
+                <td class="fw-bold bg-warning ">Total dsad </td>
                 <td class="fw-bold bg-warning {{ $t_uang - ($total_pe + $total_pi + $kerugian->debit - ($t_piutang + $kerugianBulanIni->debit)) != 0 ? 'text-danger' : '' }}"
                     align="right">Rp
                     {{ number_format($total_pe + $total_pi + $kerugian->debit - ($t_piutang + $kerugianBulanIni->debit), 0) }}
@@ -241,7 +241,7 @@
     <div class="col-lg-6">
         <table class="table table-bordered">
             <tr>
-                <td class="fw-bold bg-warning ">Total</td>
+                <td class="fw-bold bg-warning ">Total dsads</td>
                 <td class="fw-bold bg-warning {{ $t_uang - ($total_pe + $total_pi + $kerugian->debit - ($t_piutang + $kerugianBulanIni->debit)) != 0 ? 'text-danger' : '' }}"
                     style="text-align: right">{{ number_format($t_uang, 0) }}</td>
             </tr>
