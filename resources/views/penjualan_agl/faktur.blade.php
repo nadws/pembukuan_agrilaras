@@ -1,7 +1,7 @@
 @php
-    // $file = 'Faktur.xls';
-    // header('Content-Type: application/vnd.ms-excel');
-    // header("Content-Disposition: attachment; filename=$file");
+    $file = 'Faktur.xls';
+    header('Content-Type: application/vnd.ms-excel');
+    header("Content-Disposition: attachment; filename=$file");
 @endphp
 <table class="table" border="1" style="white-space:nowrap;">
     <thead>
