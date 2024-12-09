@@ -1,7 +1,7 @@
 @php
-    $file = 'Faktur.xls';
-    header('Content-Type: application/vnd.ms-excel');
-    header("Content-Disposition: attachment; filename=$file");
+    // $file = 'Faktur.xls';
+    // header('Content-Type: application/vnd.ms-excel');
+    // header("Content-Disposition: attachment; filename=$file");
 @endphp
 <table class="table" border="1" style="white-space:nowrap;">
     <thead>
@@ -77,18 +77,44 @@
     </thead>
     <tbody>
         <?php foreach($nota as $no => $f): 
-             $faktur =  DB::select("SELECT a.tipe,b.nm_telur, a.rp_satuan, a.kg_jual, a.pcs, a.total_rp
+            if ($f->lokasi == 'mtd') {
+                $faktur = DB::select("SELECT a.no_nota, a.nm_telur, a.pcs, a.kg as kg_jual, a.rp_satuan, a.ttl_rp as total_rp
+                FROM (
+                SELECT a.no_nota, b.nm_telur, a.pcs_pcs as pcs, a.pcs_pcs as kg, a.rp_pcs as rp_satuan, (a.pcs_pcs * a.rp_pcs) as ttl_rp
+                FROM invoice_mtd as a
+                left join telur_produk as b on b.id_produk_telur = a.id_produk
+                where a.no_nota = '$f->no_nota' 
+
+                UNION ALL
+
+                SELECT a.no_nota, b.nm_telur, a.ikat as pcs, (a.kg_ikat - a.ikat) as kg, a.rp_ikat as rp_satuan, ((a.kg_ikat - a.ikat) * a.rp_ikat) as ttl_rp
+                FROM invoice_mtd as a 
+                left join telur_produk as b on b.id_produk_telur = a.id_produk    
+                where a.no_nota = '$f->no_nota'
+
+                UNION ALL
+
+                SELECT a.no_nota, b.nm_telur, a.pcs_kg as pcs, a.kg_kg as kg, a.rp_kg as rp_satuan, (a.kg_kg * a.rp_kg) as ttl_rp
+                FROM invoice_mtd as a 
+                left join telur_produk as b on b.id_produk_telur = a.id_produk
+                where a.no_nota = '$f->no_nota'
+                ) as a
+                where (a.pcs + a.kg + a.rp_satuan) != 0;");
+            } else {
+                $faktur =  DB::select("SELECT a.tipe,b.nm_telur, a.rp_satuan, if(a.tipe = 'kg',a.kg_jual, a.pcs) as kg_jual, a.total_rp
                 FROM invoice_telur as a 
                 LEFT JOIN telur_produk as b on b.id_produk_telur = a.id_produk
-                WHERE a.no_nota = '$f->no_nota'")
+                WHERE a.no_nota = '$f->no_nota'");
+            }
             
+             
             ?>
         <tr>
             @php
                 $nama = $f->nm_customer;
             @endphp
             <td><?= $no + 1 ?></td>
-            <td>FK </td>
+            <td>FK {{ $f->no_nota }}</td>
             <td>'08</td>
             <td>0</td>
             <td></td>
