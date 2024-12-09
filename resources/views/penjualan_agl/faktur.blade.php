@@ -114,7 +114,7 @@
                 $nama = $f->nm_customer;
             @endphp
             <td><?= $no + 1 ?></td>
-            <td>FK {{ $f->no_nota }}</td>
+            <td>FK</td>
             <td>'08</td>
             <td>0</td>
             <td></td>
