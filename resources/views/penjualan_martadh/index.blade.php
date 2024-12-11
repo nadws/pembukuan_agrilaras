@@ -44,7 +44,7 @@
                             <td>{{ tanggal($i->tgl) }}</td>
                             <td>
                                 {{ $i->no_nota }} <br>
-                                {{ $i->customer }}
+                                {{ $i->customer }} ({{ $i->nm_customer }})
                             </td>
                             <td align="right">Rp {{ number_format($i->ttl_rp, 0) }}</td>
                             @foreach ($produk as $p)
