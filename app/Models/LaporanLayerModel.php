@@ -10,9 +10,10 @@ class LaporanLayerModel extends Model
 {
     use HasFactory;
 
-    public static function getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren)
+    public static function getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren, $tgl_awal_harga)
     {
-        return DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , CEIL(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, (c.jual + c.afkir) as jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, CEIL(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg - (y.pcs_y / 180)) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan / y.ttl)) as rp_satuan_y, z.rp_vitamin_week, aa.ttl_gjl, a.tgl_masuk_kandang, ab.kg_p_past_week, ac.pcs_telur_past_week, ac.kg_telur_past_week, ad.rp_vitamin_past_week, ae.kum_ttl_rp_past_vaksin
+        return DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , CEIL(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, (c.jual + c.afkir) as jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, CEIL(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg - (y.pcs_y / 180)) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan / y.ttl)) as rp_satuan_y, z.rp_vitamin_week, aa.ttl_gjl, a.tgl_masuk_kandang, ab.kg_p_past_week, ac.pcs_telur_past_week, ac.kg_telur_past_week, ad.rp_vitamin_past_week, ae.kum_ttl_rp_past_vaksin,
+        af.pcs_hrga, af.ttl_rupiah_hrga
         FROM kandang as a 
         -- Populasi --
         left join(SELECT b.id_kandang, sum(b.mati+b.jual+b.afkir) as pop_kurang 
@@ -236,6 +237,14 @@ class LaporanLayerModel extends Model
             where s.id_kandang ='7'
             group by CEIL(DATEDIFF(s.tgl, p.chick_in) / 7), s.id_kandang
         ) as ae on ae.id_kandang = a.id_kandang and ae.mgg_hd = CEIL(DATEDIFF('$tgl_sebelumnya', a.chick_in) / 7)
+
+        left join (
+            SELECT a.id_kandang, b.nm_produk, a.tgl, sum(a.pcs_kredit / 1000) as pcs_hrga , sum(a.total_rp) as ttl_rupiah_hrga, a.admin
+            FROM stok_produk_perencanaan as a 
+            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
+            where a.h_opname = 'T' and a.tgl BETWEEN '2020-01-01' and '$tgl' and b.kategori = 'pakan' 
+            group by a.id_kandang
+        ) as af on af.id_kandang = a.id_kandang
 
 
 

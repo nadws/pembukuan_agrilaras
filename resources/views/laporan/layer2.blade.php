@@ -259,11 +259,13 @@
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
                         {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
-                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>
+                        <th class="dhead table_layer th_atas2"> harga pakan <br>obat/vit <br> vaksin <br> Ayam <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
                                 title="gjl : total hari ayam makan * 435,000">
                                 GjL
                             </span>
+
+
                         </th>
                         <th class="dhead table_layer th_atas2">
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
@@ -701,6 +703,7 @@
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit td_layer">
                                 &nbsp; <br>
+                                {{ number_format($k->ttl_rupiah_hrga / $k->pcs_hrga, 0) }} <br>
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
