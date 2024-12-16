@@ -50,7 +50,7 @@
         @foreach ($stok as $no => $d)
             @php
                 $ttlDebit += $d->debit;
-                $rpSatuan = $d->rp / $d->ttl;
+                $rpSatuan = $d->rp / $d->debit;
                 $ttlRpSatuan += $rpSatuan;
                 $ttlRp += $rpSatuan * $d->debit;
             @endphp

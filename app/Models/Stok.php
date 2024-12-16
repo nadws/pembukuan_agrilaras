@@ -96,4 +96,11 @@ class Stok extends Model
       ) as c ON c.id_produk = a.id_produk
       WHERE a.no_nota = '$no_nota';");
   }
+  public static function getCetakBaru($no_nota)
+  {
+    return DB::select("SELECT a.jml_sesudahnya,b.nm_produk,a.jml_sebelumnya, a.debit, a.kredit, a.selisih, a.rp_satuan as rp FROM `tb_stok_produk` as a
+      LEFT JOIN tb_produk as b ON a.id_produk = b.id_produk
+      
+      WHERE a.no_nota = '$no_nota';");
+  }
 }
