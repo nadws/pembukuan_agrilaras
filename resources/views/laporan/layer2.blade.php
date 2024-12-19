@@ -343,7 +343,7 @@
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
-                            $gjl_ttl += $k->ttl_gjl * 1000000;
+                            $gjl_ttl += $k->ttl_gjl * 700000;
 
                             $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
@@ -675,7 +675,7 @@
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
-                                    $gjl = ($k->ttl_gjl * 1000000) / 7000;
+                                    $gjl = ($k->ttl_gjl * 700000) / 7000;
                                 @endphp
 
                                 &nbsp; <br>
@@ -713,7 +713,7 @@
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
-                                {{ number_format($k->ttl_gjl * 1000000) }}
+                                {{ number_format($k->ttl_gjl * 700000) }}
                             </td>
                             <td class="tpl">
                                 @php
@@ -754,16 +754,16 @@
                                 </span>
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="total rp pkan vit dll">
-                                    {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 1000000, 0) }}
+                                    {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000, 0) }}
                                 </span>
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="kurangi a-b">
-                                    {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 1000000), 0) }}
+                                    {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000), 0) }}
                                 </span>
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="hasil c dibagi total telur kandang">
-                                    {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 1000000)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
+                                    {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
                                 </span>
                                 {{-- <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     class="{{ $ttl_tpl_kandang < 0 ? 'text-danger' : '' }}"
