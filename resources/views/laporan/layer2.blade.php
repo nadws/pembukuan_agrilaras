@@ -259,9 +259,9 @@
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
                         {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
-                        <th class="dhead table_layer th_atas2"> harga pakan <br>obat/vit <br> vaksin <br> Ayam <br>
+                        <th class="dhead table_layer th_atas2"> ttl rp pakan <br>obat/vit <br> vaksin <br> Ayam <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="gjl : total hari ayam makan * 435,000">
+                                title="gjl : total hari ayam makan * 1,000,000">
                                 GjL
                             </span>
 
@@ -703,7 +703,7 @@
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit td_layer">
                                 &nbsp; <br>
-                                {{ number_format($k->ttl_rupiah_hrga / $k->pcs_hrga, 0) }} <br>
+                                {{ number_format($k->ttl_rupiah_hrga, 0) }} <br>
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
@@ -721,8 +721,8 @@
                                             );
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
                                     $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
-                                    $rp_pakan = empty($tl_rp_pakan) ? 0 : round($tl_rp_pakan / $tl_gr_pkn, 0);
-                                    $rp_pakan_tes = round($harga->ttl_rupiah / $harga->pcs, 0);
+                                    $rp_pakan = $k->ttl_rupiah_hrga / $k->pcs_hrga;
+                                    $rp_pakan_tes = round($k->ttl_rupiah_hrga / $k->pcs_hrga, 0);
                                     $ttl_tpl +=
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
