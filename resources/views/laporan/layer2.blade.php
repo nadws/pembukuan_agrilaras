@@ -757,11 +757,15 @@
                                     {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000, 0) }}
                                 </span>
                                 <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="kurangi a-b">
+                                <span
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="kurangi a-b">
                                     {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000), 0) }}
                                 </span>
                                 <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                <span
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="hasil c dibagi total telur kandang">
                                     {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
                                 </span>
