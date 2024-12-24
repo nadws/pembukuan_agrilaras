@@ -229,10 +229,9 @@ class JurnalPenyesuaianController extends Controller
                                 where 
                                     b.jenis = 'selesai'
                                 group by 
-                                    b.id_produk,
-                                    b.tgl
+                                    b.id_produk
                                 ) as f on f.id_produk = a.id_produk 
-                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tgl2' group by f.id_produk;
+                        WHERE a.kategori_id = 1 AND f.debit != 0 AND f.tgl BETWEEN '2017-01-01' AND '$tgl2';
             "),
             'tgl' => $tgl2
         ];
