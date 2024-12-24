@@ -421,6 +421,7 @@
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
                                 {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month], 0) }}
+
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
@@ -428,6 +429,7 @@
                         </td>
                         <td class="fw-bold text-end dhead">
                             {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh6 + ($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $saldo_thn_pullet->d_saldo), 0) }}
+
                         </td>
                     </tr>
                     <tr>
@@ -442,7 +444,7 @@
                         </td>
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">
-                                {{ number_format($totalsPerMonth4[$month] - $totalsPerMonth7[$month], 0) }}</td>
+                                {{ number_format($totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }}</td>
                         @endforeach
                         @php
                             $saldo_pullet_kurangin_atas = \App\Models\ProfitModel::saldo_pullet_thn_lalu($thn, $thn);
@@ -511,10 +513,11 @@
                                         <a target="_blank" href="#" data-bs-toggle="modal"
                                             data-bs-target="#detail_aktiva" class="detail_aktiva" akun='58'
                                             tgl1="{{ $tgl1 }}"
-                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal - $saldo_pullet_kurangin->d_saldo, 0) }}
+                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal - $totalsPerMonth6[$month], 0) }}
+
                                         </a>
                                         @php
-                                            $totalPerAkun4 += $nominal - $saldo_pullet_kurangin->d_saldo;
+                                            $totalPerAkun4 += $nominal - $totalsPerMonth6[$month];
                                         @endphp
 
                                         {{-- <a target="_blank"
@@ -547,8 +550,7 @@
                         <td class="fw-bold dhead">LABA BERSIH</td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
-                                {{-- {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }} --}}
-                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month] - ($totalsPerMonth4[$month] - $totalsPerMonth7[$month]), 0) }}
+                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month] - $totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }}
 
                             </td>
                         @endforeach

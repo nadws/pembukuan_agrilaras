@@ -25,6 +25,8 @@ class Laporan_layerController extends Controller
 
         $tgl_awal_harga = date("Y-m-d", strtotime($tgl . "-30 days"));
 
+
+
         $harga = DB::selectOne("SELECT b.nm_produk, a.tgl, sum(a.pcs / 1000) as pcs , sum(a.total_rp) as ttl_rupiah, a.admin
         FROM stok_produk_perencanaan as a 
         left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
@@ -37,7 +39,7 @@ class Laporan_layerController extends Controller
             'tgl' => $tgl,
             'tgl_sebelum' => $tgl_sebelumnya,
             'harga' => $harga,
-            'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren),
+            'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren, $tgl_awal_harga),
         ];
         return view('laporan.layer2', $data);
     }

@@ -259,11 +259,13 @@
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
                         {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
-                        <th class="dhead table_layer th_atas2">obat/vit <br> vaksin <br> Ayam <br>
+                        <th class="dhead table_layer th_atas2"> ttl rp pakan <br>obat/vit <br> vaksin <br> Ayam <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="gjl : total hari ayam makan * 435,000">
+                                title="gjl : total hari ayam makan * 1,000,000">
                                 GjL
                             </span>
+
+
                         </th>
                         <th class="dhead table_layer th_atas2">
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
@@ -341,7 +343,7 @@
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
-                            $gjl_ttl += $k->ttl_gjl * 1000000;
+                            $gjl_ttl += $k->ttl_gjl * 700000;
 
                             $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
@@ -673,7 +675,7 @@
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
-                                    $gjl = ($k->ttl_gjl * 1000000) / 7000;
+                                    $gjl = ($k->ttl_gjl * 700000) / 7000;
                                 @endphp
 
                                 &nbsp; <br>
@@ -701,12 +703,19 @@
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit td_layer">
                                 &nbsp; <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="ttl rp pakan = ttl kg : {{ empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000 }} || rata2 pakan hari ini = {{ number_format($hrga_stn_pkn, 0) }} ">
+                                    {{ number_format(empty($k->kg_pakan_kuml) ? '0' : ($k->kg_pakan_kuml / 1000) * $hrga_stn_pkn, 1) }}
+                                </span>
+
+                                <br>
+                                {{-- {{ number_format($k->ttl_rupiah_hrga, 0) }} <br> --}}
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
-                                {{ number_format($k->ttl_gjl * 1000000) }}
+                                {{ number_format($k->ttl_gjl * 700000) }}
                             </td>
-                            <td class="obat/vit td_layer">
+                            <td class="tpl">
                                 @php
                                     $fcr_kuml_plus =
                                         empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
@@ -718,20 +727,49 @@
                                             );
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
                                     $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
-                                    $rp_pakan = empty($tl_rp_pakan) ? 0 : round($tl_rp_pakan / $tl_gr_pkn, 0);
-                                    $rp_pakan_tes = round($harga->ttl_rupiah / $harga->pcs, 0);
+                                    $rp_pakan = $k->ttl_rupiah_hrga / $k->pcs_hrga;
+                                    $rp_pakan_tes = round($k->ttl_rupiah_hrga / $k->pcs_hrga, 0);
                                     $ttl_tpl +=
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
                                     $ttl_tpl_kandang =
                                         (round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) *
                                         round($ttl_kg_telur, 0);
+
+                                    $nomer1 = round($k->kuml_kg - $k->kuml_pcs / 180, 1);
+                                    $nomer2 = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+
+                                    $ttl_rp_pakan_baru = round(
+                                        empty($k->kg_pakan_kuml) ? '0' : ($k->kg_pakan_kuml / 1000) * $hrga_stn_pkn,
+                                        1,
+                                    );
                                 @endphp
                                 {{-- fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan_tes }} /
                                 rp telur = {{ round($rp_telur, 0) }} /
                                 ttl kg telur {{ round($ttl_kg_telur, 0) }}
                                 <br> --}}
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="rumus 1x2 | nomer1 = {{ $nomer1 }} | nomer2 = {{ $nomer2 }}">
+                                    {{ number_format($nomer1 * $nomer2, 0) }}
+                                </span>
+                                <br>
+                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="total rp pkan vit dll">
+                                    {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000, 0) }}
+                                </span>
+                                <br>
+                                <span
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="kurangi a-b">
+                                    {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000), 0) }}
+                                </span>
+                                <br>
+                                <span
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="hasil c dibagi total telur kandang">
+                                    {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
+                                </span>
+                                {{-- <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     class="{{ $ttl_tpl_kandang < 0 ? 'text-danger' : '' }}"
                                     title="fcr kuml = {{ $fcr_kuml_plus }} | rp pakan = {{ $rp_pakan_tes }} | rp telur = {{ round($rp_telur, 0) }} | ttl kg telur {{ round($ttl_kg_telur, 0) }}">
                                     {{ number_format((round($rp_telur, 0) - $rp_pakan_tes * $fcr_kuml_plus) * round($ttl_kg_telur, 0), 2) }}
@@ -742,7 +780,7 @@
                                     class="{{ $ttl_tpl_kandang / $ttl_kg_telur < 0 ? 'text-danger' : '' }}"
                                     title="tpl = {{ $ttl_tpl_kandang }} |  ttl kg telur {{ round($ttl_kg_telur, 0) }}">
                                     {{ number_format($ttl_tpl_kandang / $ttl_kg_telur, 2) }}
-                                </span>
+                                </span> --}}
                                 <br>
                                 <br>
                             </td>
