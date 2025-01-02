@@ -272,6 +272,9 @@
                                 title="tpl : (rp telur - (fcr kuml * rp pakan)) * ttl kg telur">
                                 tpl
                             </span>
+                            <br>
+                            <br>
+                            <br>
                         </th>
                         {{-- KUML --}}
                     </tr>
