@@ -146,7 +146,8 @@ class JurnalPenyesuaianController extends Controller
             'debit' => $r->debit_kredit,
             'kredit' => '0',
             'admin' => Auth::user()->name,
-            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'kode_penyesuaian' => 'JPA',
+            'no_urut' => $akun->inisial . '-' . $urutan,
             'urutan' => $urutan,
         ];
         Jurnal::create($data_kredit);
@@ -163,7 +164,8 @@ class JurnalPenyesuaianController extends Controller
             'kredit' => $r->debit_kredit,
             'debit' => '0',
             'admin' => Auth::user()->name,
-            'kode_penyesuaian' => 'JPA', 'no_urut' => $akun->inisial . '-' . $urutan,
+            'kode_penyesuaian' => 'JPA',
+            'no_urut' => $akun->inisial . '-' . $urutan,
             'urutan' => $urutan,
         ];
         Jurnal::create($data_debit);
