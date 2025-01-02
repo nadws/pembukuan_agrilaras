@@ -64,23 +64,23 @@
             </thead>
             <tbody>
                 @foreach ($jurnal as $no => $a)
-                <tr>
-                    <td>{{ $no + 1 }}</td>
-                    <td>{{ $a->akun->nm_akun }}</td>
-                    <td>{{ $a->ket }}</td>
-                    <td align="right">{{ number_format($a->debit, 0) }}</td>
-                    <td align="right">{{ number_format($a->kredit, 0) }}</td>
-                    <td>{{ $a->admin }}</td>
-                </tr>
+                    <tr>
+                        <td>{{ $no + 1 }}</td>
+                        <td>{{ $a->akun->nm_akun }}</td>
+                        <td>{{ $a->ket }}</td>
+                        <td align="right">{{ number_format($a->debit, 0) }}</td>
+                        <td align="right">{{ number_format($a->kredit, 0) }}</td>
+                        <td>{{ $a->admin }}</td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
     </x-slot>
     <x-slot name="cardFooter">
         @if ($kategori != 'pullet')
-        <a href="#" class="btn btn-primary float-end" {{ $kategori=='umum' ? 'hidden' : '' }} data-bs-toggle="modal"
-            data-bs-target="#tambah">Tambahkan Ke
-            {{ $kategori }}</a>
+            <a href="#" class="btn btn-primary float-end" {{ $kategori == 'umum' ? 'hidden' : '' }}
+                data-bs-toggle="modal" data-bs-target="#tambah">Tambahkan Ke
+                {{ $kategori }}</a>
         @endif
         <a href="{{ empty($pembelian) ? route('jurnal', ['id_buku' => '13']) : route('jurnal', ['id_buku' => '10']) }}"
             class="float-end btn btn-outline-primary me-2">Kembali</a>
@@ -91,159 +91,165 @@
             <x-theme.modal title="Tambah {{ $kategori }}" idModal="tambah" size="modal-lg-max">
                 <div class="row">
                     @if ($kategori == 'aktiva')
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th width="15%">Kelompok</th>
-                                <th width="15%">Nama Aktiva</th>
-                                <th width="14%">Tanggal Perolehan</th>
-                                <th width="14%">Nilai Perolehan</th>
-                                <th width="10%">Nilai/tahun (%)</th>
-                                <th width="10%" style="text-align: center">Umur</th>
-                                <th width="14%">Penyusutan Perbulan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="baris1">
-                                <td>
-                                    <select name="id_kelompok[]" id=""
-                                        class="select2 pilih_kelompok_{{ $kategori }} pilih_kelompok1" count='1'>
-                                        <option value="">Pilih Kelompok</option>
-                                        @foreach ($kelompok as $k)
-                                        <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td><input type="text" name="nm_aktiva[]" class="form-control "
-                                        value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}"
-                                        readonly></td>
-                                <td><input type="date" name="tgl[]" class="form-control"
-                                        value="{{ $head_jurnal->tgl }}">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control nilai_perolehan nilai_perolehan1" count='1'
-                                        value="Rp. {{ number_format($head_jurnal->debit, 0) }}" readonly>
-                                    <input type="hidden" name="h_perolehan[]"
-                                        class="form-control  nilai_perolehan_biasa1" value="{{ $head_jurnal->debit }}">
-                                </td>
-                                <td>
-                                    <p class="nilai_persen1 text-center"></p>
-                                    <input type="hidden" class="inputnilai_persen1">
-                                </td>
-                                <td>
-                                    <p class="umur1 text-center"></p>
-                                </td>
-                                <td>
-                                    <p class="susut_bulan1 text-center"></p>
-                                </td>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="15%">Kelompok</th>
+                                    <th width="15%">Nama Aktiva</th>
+                                    <th width="14%">Tanggal Perolehan</th>
+                                    <th width="14%">Nilai Perolehan</th>
+                                    <th width="10%">Nilai/tahun (%)</th>
+                                    <th width="10%" style="text-align: center">Umur</th>
+                                    <th width="14%">Penyusutan Perbulan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="baris1">
+                                    <td>
+                                        <select name="id_kelompok[]" id=""
+                                            class="select2 pilih_kelompok_{{ $kategori }} pilih_kelompok1"
+                                            count='1'>
+                                            <option value="">Pilih Kelompok</option>
+                                            @foreach ($kelompok as $k)
+                                                <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="nm_aktiva[]" class="form-control "
+                                            value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}"
+                                            readonly></td>
+                                    <td><input type="date" name="tgl[]" class="form-control"
+                                            value="{{ $head_jurnal->tgl }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control nilai_perolehan nilai_perolehan1"
+                                            count='1' value="Rp. {{ number_format($head_jurnal->debit, 0) }}"
+                                            readonly>
+                                        <input type="hidden" name="h_perolehan[]"
+                                            class="form-control  nilai_perolehan_biasa1"
+                                            value="{{ $head_jurnal->debit }}">
+                                    </td>
+                                    <td>
+                                        <p class="nilai_persen1 text-center"></p>
+                                        <input type="hidden" class="inputnilai_persen1">
+                                    </td>
+                                    <td>
+                                        <p class="umur1 text-center"></p>
+                                    </td>
+                                    <td>
+                                        <p class="susut_bulan1 text-center"></p>
+                                    </td>
 
-                            </tr>
+                                </tr>
 
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     @elseif($kategori == 'peralatan')
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th width="15%">Kelompok</th>
-                                <th width="15%">Nama Peralatan</th>
-                                <th width="14%">Tanggal Perolehan</th>
-                                <th width="14%">Nilai Perolehan</th>
-                                <th width="10%" style="text-align: center">Umur</th>
-                                <th width="14%">Penyusutan Perbulan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="baris1">
-                                <td>
-                                    <select name="id_kelompok[]" id=""
-                                        class="select2 pilih_kelompok_{{ $kategori }} pilih_kelompok1" count='1'>
-                                        <option value="">Pilih Kelompok</option>
-                                        @foreach ($kelompok as $k)
-                                        <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td><input type="text" name="nm_aktiva[]" class="form-control "
-                                        value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}">
-                                </td>
-                                <td><input type="date" name="tgl[]" class="form-control"
-                                        value="{{ $head_jurnal->tgl }}">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control nilai_perolehan nilai_perolehan1" count='1'
-                                        value="Rp. {{ number_format($head_jurnal->debit, 0) }}">
-                                    <input type="hidden" name="h_perolehan[]"
-                                        class="form-control  nilai_perolehan_biasa1" value="{{ $head_jurnal->debit }}">
-                                </td>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="15%">Kelompok</th>
+                                    <th width="15%">Nama Peralatan</th>
+                                    <th width="14%">Tanggal Perolehan</th>
+                                    <th width="14%">Nilai Perolehan</th>
+                                    <th width="10%" style="text-align: center">Umur</th>
+                                    <th width="14%">Penyusutan Perbulan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="baris1">
+                                    <td>
+                                        <select name="id_kelompok[]" id=""
+                                            class="select2 pilih_kelompok_{{ $kategori }} pilih_kelompok1"
+                                            count='1'>
+                                            <option value="">Pilih Kelompok</option>
+                                            @foreach ($kelompok as $k)
+                                                <option value="{{ $k->id_kelompok }}">{{ $k->nm_kelompok }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="nm_aktiva[]" class="form-control "
+                                            value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}">
+                                    </td>
+                                    <td><input type="date" name="tgl[]" class="form-control"
+                                            value="{{ $head_jurnal->tgl }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control nilai_perolehan nilai_perolehan1"
+                                            count='1' value="Rp. {{ number_format($head_jurnal->debit, 0) }}">
+                                        <input type="hidden" name="h_perolehan[]"
+                                            class="form-control  nilai_perolehan_biasa1"
+                                            value="{{ $head_jurnal->debit }}">
+                                    </td>
 
-                                <td>
-                                    <p class="umur1 text-center"></p>
-                                </td>
-                                <input type="hidden" class="periode1">
-                                <input type="hidden" class="umurInput1">
+                                    <td>
+                                        <p class="umur1 text-center"></p>
+                                    </td>
+                                    <input type="hidden" class="periode1">
+                                    <input type="hidden" class="umurInput1">
 
-                                <td>
-                                    <p class="susut_bulan1 text-center"></p>
-                                </td>
+                                    <td>
+                                        <p class="susut_bulan1 text-center"></p>
+                                    </td>
 
-                            </tr>
+                                </tr>
 
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     @else
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th width="15%">Tanggal</th>
-                                <th width="15%">Nama Atk</th>
-                                <th width="15%">Gudang</th>
-                                <th width="15%">Stok</th>
-                                <th width="14%">Satuan</th>
-                                <th width="14%">Total Rp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th width="15%">Tanggal</th>
+                                    <th width="15%">Nama Atk</th>
+                                    <th width="15%">Gudang</th>
+                                    <th width="15%">Stok</th>
+                                    <th width="14%">Satuan</th>
+                                    <th width="14%">Total Rp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                            <tr>
-                                <td><input type="date" name="tgl" class="form-control" value="{{ $head_jurnal->tgl }}">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control" name="nm_atk"
-                                        value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}"
-                                        readonly>
-                                </td>
-                                <td>
-                                    <select name="id_gudang" class="form-control select2" id="">
-                                        <option value="">- Pilih Gudang -</option>
-                                        @foreach ($gudang as $s)
-                                        <option value="{{ $s->id_gudang }}">{{ $s->nm_gudang }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control" name="stok">
-                                </td>
-                                <td>
-                                    <select name="id_satuan" id="" class="select2">
-                                        <option value="">Pilih Satuan</option>
-                                        @foreach ($satuan as $k)
-                                        <option value="{{ $k->id_satuan }}">{{ $k->nm_satuan }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control"
-                                        value="Rp. {{ number_format($head_jurnal->debit, 0) }}" readonly>
-                                    <input type="hidden" name="total_rp" class="form-control"
-                                        value="{{ $head_jurnal->debit }}">
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><input type="date" name="tgl" class="form-control"
+                                            value="{{ $head_jurnal->tgl }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="nm_atk"
+                                            value="{{ empty($pembelian) ? $head_jurnal->nm_post : $head_jurnal->ket }}"
+                                            readonly>
+                                    </td>
+                                    <td>
+                                        <select name="id_gudang" class="form-control select2" id="">
+                                            <option value="">- Pilih Gudang -</option>
+                                            @foreach ($gudang as $s)
+                                                <option value="{{ $s->id_gudang }}">{{ $s->nm_gudang }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="stok">
+                                    </td>
+                                    <td>
+                                        <select name="id_satuan" id="" class="select2">
+                                            <option value="">Pilih Satuan</option>
+                                            @foreach ($satuan as $k)
+                                                <option value="{{ $k->id_satuan }}">{{ $k->nm_satuan }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                            value="Rp. {{ number_format($head_jurnal->debit, 0) }}" readonly>
+                                        <input type="hidden" name="total_rp" class="form-control"
+                                            value="{{ $head_jurnal->debit }}">
+                                    </td>
+                                </tr>
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     @endif
 
                 </div>
@@ -307,8 +313,8 @@
 
     </x-slot>
     @section('scripts')
-    <script>
-        $(document).ready(function() {
+        <script>
+            $(document).ready(function() {
                 $(document).on("change", ".pilih_kelompok_peralatan", function() {
                     var count = $(this).attr("count");
                     var id_kelompok = $('.pilih_kelompok' + count).val();
@@ -385,7 +391,7 @@
 
                 aksiBtn("form");
             });
-    </script>
+        </script>
     @endsection
 
 
