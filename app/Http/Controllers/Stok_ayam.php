@@ -343,12 +343,17 @@ class Stok_ayam extends Controller
         order by a.no_nota DESC;");
 
 
+        $pnjlData = [
+            'alpa' => 0,
+            'mtd' => 0,
+        ];
 
         foreach ($ttlPnjl as $d) {
-            $ttl[] = [
-                $d->lokasi == 'alpa' ? $d->total : 0,
-                $d->lokasi == 'mtd' ? $d->total : 0
-            ];
+            if ($d->lokasi == 'alpa') {
+                $pnjlData['alpa'] += $d->total;
+            } elseif ($d->lokasi == 'mtd') {
+                $pnjlData['mtd'] += $d->total;
+            }
         }
 
         $data = [
@@ -357,8 +362,8 @@ class Stok_ayam extends Controller
             'customer' => DB::table('customer')->get(),
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
-            'pnjlAlpa' => $ttl[0][0] ?? 0,
-            'pnjlMtd' => $ttl[1][0] ?? 0,
+            'pnjlAlpa' => $pnjlData['alpa'],
+            'pnjlMtd' => $pnjlData['mtd'],
             'stok_ayam_bjm' => DB::selectOne("SELECT sum(a.debit - a.kredit) as saldo_bjm FROM stok_ayam as a where a.id_gudang = '2' and a.jenis = 'ayam'"),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
         ];
