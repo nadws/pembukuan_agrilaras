@@ -342,6 +342,8 @@ class Stok_ayam extends Controller
         GROUP by a.lokasi
         order by a.no_nota DESC;");
 
+
+
         foreach ($ttlPnjl as $d) {
             $ttl[] = [
                 $d->lokasi == 'alpa' ? $d->total : 0,

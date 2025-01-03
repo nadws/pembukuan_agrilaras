@@ -63,6 +63,7 @@
                 </tr>
             </thead>
             <tbody>
+
                 @foreach ($jurnal as $no => $a)
                     <tr>
                         <td>{{ $no + 1 }}</td>
@@ -73,20 +74,29 @@
                         <td>{{ $a->admin }}</td>
                     </tr>
                 @endforeach
+                @php
+                    $total_debit = $jurnal->sum('debit');
+                @endphp
             </tbody>
         </table>
     </x-slot>
     <x-slot name="cardFooter">
-        @if ($kategori != 'pullet')
-            <a href="#" class="btn btn-primary float-end" {{ $kategori == 'umum' ? 'hidden' : '' }}
-                data-bs-toggle="modal" data-bs-target="#tambah">Tambahkan Ke
-                {{ $kategori }}</a>
-        @endif
-        <a href="{{ empty($pembelian) ? route('jurnal', ['id_buku' => '13']) : route('jurnal', ['id_buku' => '10']) }}"
-            class="float-end btn btn-outline-primary me-2">Kembali</a>
-        <form
-            action="{{ $kategori == 'aktiva' ? route('save_aktiva') : ($kategori == 'peralatan' ? route('peralatan.save_aktiva') : route('save_atk_pembalik')) }}"
-            method="post" class="save_jurnal">
+
+        <a href="#" class="btn btn-primary float-end" {{ $kategori == 'umum' ? 'hidden' : '' }}
+            data-bs-toggle="modal" data-bs-target="#tambah">Tambahkan Ke
+            {{ $kategori }}</a>
+
+        @php
+            $route =
+                $kategori == 'aktiva'
+                    ? 'save_aktiva'
+                    : ($kategori == 'peralatan'
+                        ? 'peralatan.save_aktiva'
+                        : ($kategori == 'pullet'
+                            ? 'save_pullet'
+                            : 'save_atk_pembalik'));
+        @endphp
+        <form action="{{ route($route) }}" method="post" class="save_jurnal">
             @csrf
             <x-theme.modal title="Tambah {{ $kategori }}" idModal="tambah" size="modal-lg-max">
                 <div class="row">
@@ -196,6 +206,42 @@
                                 </tr>
 
 
+                            </tbody>
+                        </table>
+                    @elseif($kategori == 'pullet')
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="15%">Tanggal Chickin</th>
+                                    <th width="15%">Nama Kandang</th>
+                                    <th width="14%">Strain</th>
+                                    <th width="14%">Populasi Awal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="baris1">
+                                    <td>
+                                        <input type="date" name="tgl" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="nm_kandang" class="form-control"
+                                            value="{{ $head_jurnal->nm_post }}">
+                                    </td>
+                                    <td>
+                                        <select name="id_strain" id="" class="form-control">
+                                            <option value="">- Pilih Strain -</option>
+                                            @foreach ($strain as $s)
+                                                <option value="{{ $s->id_strain }}">{{ $s->nm_strain }}</option>
+                                            @endforeach
+
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="stok_awal" class="form-control">
+                                        <input type="hidden" name="rupiah" value="{{ $total_debit }}">
+                                        <input type="hidden" name="nota" value="{{ $head_jurnal->no_nota }}">
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     @else

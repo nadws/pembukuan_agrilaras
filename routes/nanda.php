@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/Cek_aktiva', 'Cek_aktiva')->name('Cek_aktiva');
         Route::get('/get_post_pembalikan', 'get_post_pembalikan')->name('get_post_pembalikan');
         Route::post('/save_atk_pembalik', 'save_atk')->name('save_atk_pembalik');
+        Route::post('/save_pullet', 'save_pullet')->name('save_pullet');
     });
 
     Route::controller(AkunController::class)->group(function () {

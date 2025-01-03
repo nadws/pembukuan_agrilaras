@@ -411,9 +411,6 @@ class ProfitController extends Controller
         } else {
             $tahun = $r->tahun;
         }
-
-
-
         $pendapatan = ProfitModel::pendapatan_setahun($tahun, '4');
         $biaya = ProfitModel::pendapatan_setahun($tahun, '3');
         $biaya_penyesuaian = ProfitModel::biaya_penyesuaian_setahun($tahun);

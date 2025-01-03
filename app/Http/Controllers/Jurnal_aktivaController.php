@@ -37,7 +37,7 @@ class Jurnal_aktivaController extends Controller
             $post = 'peralatan';
         } else if ($kategori == 'pullet') {
             $akun_gantung = DB::table('akun')->where('id_akun', 76)->first();
-            $akun_aktiva = DB::table('akun')->where('id_akun', 75)->first();
+            $akun_aktiva = DB::table('akun')->where('id_akun', 107)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM peralatan as b)");
         } else {
             $akun_gantung = DB::table('akun')->where('id_akun', 60)->first();
@@ -143,7 +143,8 @@ class Jurnal_aktivaController extends Controller
             'kelompok' => $kelompok,
             'kategori' => $r->kategori,
             'pembelian' => $r->pembelian ?? '',
-            'satuan' => DB::table('tb_satuan')->get()
+            'satuan' => DB::table('tb_satuan')->get(),
+            'strain' => DB::table('strain')->get(),
         ];
 
         return view('jurnal_pembalik_aktiva.cek_aktiva', $data);
@@ -195,6 +196,30 @@ class Jurnal_aktivaController extends Controller
         echo "<option value=''>Pilih sub akun</option>";
         foreach ($post as $k) {
             echo "<option value='" . $k->id_post_center  . "'>" . $k->nm_post . "</option>";
+        }
+    }
+
+    public function save_pullet(Request $r)
+    {
+        $kandang = DB::table('kandang')->where('nm_kandang', $r->nm_kandang)->first();
+        if (!empty($kandang)) {
+            return redirect()->back()->with('error', 'Kandang sudah ada');
+        } else {
+            $id_kandang = DB::table('kandang')->insertGetId([
+                'nm_kandang' => $r->nm_kandang,
+                'stok_awal' => $r->stok_awal,
+                'chick_in' => $r->tgl,
+                'id_strain' => $r->id_strain,
+                'rupiah' => $r->rupiah,
+                'nota' => $r->nota,
+            ]);
+            DB::table('populasi')->insert([
+                'id_kandang' => $id_kandang, // Gunakan ID kandang yang baru saja dibuat
+                'mati' => '0',
+                'jual' => '0',
+                'tgl' => date('Y-m-d')
+            ]);
+            return redirect()->route('jurnal', ['id_buku' => 13])->with('sukses', 'Data Berhasil Ditambahkan');
         }
     }
 }
