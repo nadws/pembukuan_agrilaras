@@ -404,10 +404,10 @@ class ProfitController extends Controller
     function profit_setahun(Request $r)
     {
 
-        // $cari_tahun = DB::selectOne("SELECT YEAR(max(a.tgl)) as tahun FROM jurnal as a where a.id_akun = '26' and YEAR(a.tgl) != 0");
-        $cari_tahun = 2024;
+        $cari_tahun = DB::selectOne("SELECT YEAR(max(a.tgl)) as tahun FROM jurnal as a where a.id_akun = '26' and YEAR(a.tgl) != 0");
+        // $cari_tahun = 2024;
         if (empty($r->tahun)) {
-            $tahun = $cari_tahun;
+            $tahun = $cari_tahun->tahun;
         } else {
             $tahun = $r->tahun;
         }
