@@ -239,7 +239,8 @@
                                     <td>
                                         <input type="text" name="stok_awal" class="form-control">
                                         <input type="hidden" name="rupiah" value="{{ $total_debit }}">
-                                        <input type="hidden" name="nota" value="{{ $head_jurnal->no_nota }}">
+                                        <input type="hidden" name="id_post_center"
+                                            value="{{ $head_jurnal->id_post_center }}">
                                     </td>
                                 </tr>
                             </tbody>

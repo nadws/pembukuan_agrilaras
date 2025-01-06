@@ -184,19 +184,19 @@
                 $total_seluruh6 += $totalPerAkun6;
                 // $ttl_saldo_pullet += $saldo_thn_pullet->d_saldo;
             }
-            $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data6))), 0);
-            $total_seluruh7 = 0;
-            // $ttl_saldo_pullet = 0;
-            foreach ($data6 as $akun => $months) {
-                $totalPerAkun7 = 0;
-                // $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet($thn_awal, $thn2, $akun);
-                foreach ($months as $month => $nominal) {
-                    $totalPerAkun7 += $nominal;
-                    $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
-                }
-                $total_seluruh7 += $totalPerAkun7;
-                // $ttl_saldo_pullet += $saldo_thn_pullet->d_saldo;
-            }
+            // $totalsPerMonth7 = array_fill(0, count(array_keys(reset($data6))), 0);
+            // $total_seluruh7 = 0;
+            // // $ttl_saldo_pullet = 0;
+            // foreach ($data6 as $akun => $months) {
+            //     $totalPerAkun7 = 0;
+            //     // $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet($thn_awal, $thn2, $akun);
+            //     foreach ($months as $month => $nominal) {
+            //         $totalPerAkun7 += $nominal;
+            //         $totalsPerMonth7[$month] = ($totalsPerMonth7[$month] ?? 0) + $nominal;
+            //     }
+            //     $total_seluruh7 += $totalPerAkun7;
+            //     // $ttl_saldo_pullet += $saldo_thn_pullet->d_saldo;
+            // }
 
             $saldo_thn_pullet = \App\Models\ProfitModel::saldo_pullet_thn_lalu($thn_awal, $thn2);
 
@@ -492,12 +492,12 @@
                                     class="fas fa-caret-down"></i></button>
                         </td>
                         <td class="fw-bold text-end ">
-                            {{ number_format($ttl_saldo_bpa - $saldo_thn_pullet->d_saldo, 0) }}</td>
+                            {{ number_format($ttl_saldo_bpa, 0) }}</td>
                         <td class="fw-bold text-end ">
-                            {{ number_format(($ttl_saldo_bpa - $saldo_thn_pullet->d_saldo) / 12, 0) }}</td>
+                            {{ number_format($ttl_saldo_bpa / 12, 0) }}</td>
                         @foreach (array_keys(reset($data4)) as $month)
                             <td class="fw-bold text-end">
-                                {{ number_format($totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }}</td>
+                                {{ number_format($totalsPerMonth4[$month], 0) }}</td>
                         @endforeach
                         @php
                             $saldo_pullet_kurangin_atas = \App\Models\ProfitModel::saldo_pullet_thn_lalu($thn, $thn);
@@ -522,21 +522,14 @@
                                 @endphp
                                 {{ $nm_akun->nm_akun }}
                             </td>
-                            @if ($akun == '51')
-                                <td class="text-end ">
-                                    {{ number_format($saldo_thn_bpa->d_saldo, 0) }}
-                                </td>
-                                <td class="text-end ">
-                                    {{ number_format($saldo_thn_bpa->d_saldo / 12, 0) }}
-                                </td>
-                            @else
-                                <td class="text-end ">
-                                    {{ number_format($saldo_thn_bpa->d_saldo - $saldo_thn_pullet->d_saldo, 0) }}
-                                </td>
-                                <td class="text-end ">
-                                    {{ number_format(($saldo_thn_bpa->d_saldo - $saldo_thn_pullet->d_saldo) / 12, 0) }}
-                                </td>
-                            @endif
+
+                            <td class="text-end ">
+                                {{ number_format($saldo_thn_bpa->d_saldo, 0) }}
+                            </td>
+                            <td class="text-end ">
+                                {{ number_format($saldo_thn_bpa->d_saldo / 12, 0) }}
+                            </td>
+
                             @php
                                 $saldo_pullet_kurangin_ttl = 0;
                             @endphp
@@ -557,17 +550,10 @@
                                             $totalPerAkun4 += $nominal;
                                         @endphp
                                     @else
-                                        @php
-                                            $saldo_pullet_kurangin = \App\Models\ProfitModel::saldo_pullet_thn_lalu_bulan(
-                                                $thn,
-                                                $thn,
-                                                $loop->iteration,
-                                            );
-                                        @endphp
                                         <a target="_blank" href="#" data-bs-toggle="modal"
                                             data-bs-target="#detail_aktiva" class="detail_aktiva" akun='58'
                                             tgl1="{{ $tgl1 }}"
-                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal - $totalsPerMonth6[$month], 0) }}
+                                            tgl2="{{ $tgl2 }}">{{ number_format($nominal, 0) }}
 
                                         </a>
                                         @php
@@ -584,14 +570,10 @@
 
 
                             <td class="text-end">{{ number_format($totalPerAkun4, 0) }}</td>
-                            @if ($akun == '51')
-                                <td class="text-end">{{ number_format($totalPerAkun4 + $saldo_thn_bpa->d_saldo, 0) }}
-                                </td>
-                            @else
-                                <td class="text-end">
-                                    {{ number_format($totalPerAkun4 + $saldo_thn_bpa->d_saldo - $saldo_thn_pullet->d_saldo, 0) }}
-                                </td>
-                            @endif
+
+                            <td class="text-end">{{ number_format($totalPerAkun4 + $saldo_thn_bpa->d_saldo, 0) }}
+                            </td>
+
                         </tr>
                     @endforeach
                     <tr>
@@ -605,12 +587,12 @@
                         </td>
                         @foreach (array_keys(reset($data)) as $month)
                             <td class="fw-bold text-end dhead">
-                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month] - $totalsPerMonth4[$month] - $totalsPerMonth6[$month], 0) }}
+                                {{ number_format($totalsPerMonth[$month] - $totalsPerMonth2[$month] - $totalsPerMonth3[$month] - $totalsPerMonth6[$month] - $totalsPerMonth4[$month], 0) }}
 
                             </td>
                         @endforeach
                         <td class="fw-bold text-end dhead">
-                            {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4, 0) }}
+                            {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4 - $total_seluruh6, 0) }}
                         </td>
                         <td class="fw-bold text-end dhead">
                             {{ number_format($total_seluruh - $total_seluruh2 - $total_seluruh3 - $total_seluruh4 + ($ttl_saldo_p - $ttl_saldo_b - $ttl_saldo_bp - $ttl_saldo_bpa), 0) }}

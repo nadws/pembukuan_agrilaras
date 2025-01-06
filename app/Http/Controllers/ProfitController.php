@@ -412,12 +412,16 @@ class ProfitController extends Controller
             $tahun = $r->tahun;
         }
         $pendapatan = ProfitModel::pendapatan_setahun($tahun, '4');
+
+
         $biaya = ProfitModel::pendapatan_setahun($tahun, '3');
         $biaya_penyesuaian = ProfitModel::biaya_penyesuaian_setahun($tahun);
         $biaya_disusutkan = ProfitModel::biaya_disusutkan_setahun($tahun);
         $biaya_beli_asset = ProfitModel::biaya_beli_asset($tahun);
-        $saldopullet = ProfitModel::saldo_pullet($tahun);
+        // $saldopullet = ProfitModel::saldo_pullet($tahun);
         $saldopullet2 = ProfitModel::saldo_pullet2($tahun);
+
+
 
         $data = [];
         foreach ($pendapatan as $transaction) {
@@ -549,31 +553,31 @@ class ProfitController extends Controller
             // Menambahkan data nominal ke struktur data
             $data5[$b->id_akun][$month] = $nominal;
         }
-        $data6 = [];
-        foreach ($saldopullet as $b) {
-            $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
-            $nominal = $b->debit; // Menghitung nominal
+        // $data6 = [];
+        // foreach ($saldopullet as $b) {
+        //     $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
+        //     $nominal = $b->debit; // Menghitung nominal
 
-            // Menambahkan data akun dan nominal ke struktur data
-            if (!isset($data6[$b->id_aktiva])) {
-                $data6[$b->id_aktiva] = [
-                    'January' => 0,
-                    'February' => 0,
-                    'March' => 0,
-                    'April' => 0,
-                    'May' => 0,
-                    'June' => 0,
-                    'July' => 0,
-                    'August' => 0,
-                    'September' => 0,
-                    'October' => 0,
-                    'November' => 0,
-                    'December' => 0,
-                ];
-            }
-            // Menambahkan data nominal ke struktur data
-            $data6[$b->id_aktiva][$month] = $nominal;
-        }
+        //     // Menambahkan data akun dan nominal ke struktur data
+        //     if (!isset($data6[$b->id_aktiva])) {
+        //         $data6[$b->id_aktiva] = [
+        //             'January' => 0,
+        //             'February' => 0,
+        //             'March' => 0,
+        //             'April' => 0,
+        //             'May' => 0,
+        //             'June' => 0,
+        //             'July' => 0,
+        //             'August' => 0,
+        //             'September' => 0,
+        //             'October' => 0,
+        //             'November' => 0,
+        //             'December' => 0,
+        //         ];
+        //     }
+        //     // Menambahkan data nominal ke struktur data
+        //     $data6[$b->id_aktiva][$month] = $nominal;
+        // }
         $data7 = [];
         foreach ($saldopullet2 as $b) {
             $month = date('F', strtotime("{$b->tahun}-{$b->bulan}-01")); // Ubah bulan dan tahun menjadi format yang benar
@@ -606,7 +610,7 @@ class ProfitController extends Controller
 
         ];
 
-        return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'), $datas);
+        return view('profit.profit_setahun', compact('data', 'data2', 'data3', 'data4', 'data5',  'data7'), $datas);
     }
 
     public function get_depresiasi(Request $r)
