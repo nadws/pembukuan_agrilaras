@@ -227,7 +227,7 @@ class ProfitModel extends Model
            where Year(c.tgl) = ?
            group by c.id_akun , MONTH(c.tgl), YEAR(c.tgl)
         ) as c on c.id_akun = a.id_akun and b.tahun = c.tahun2 and b.bulan = c.bulan2
-        where a.id_klasifikasi = '5' and a.id_akun not in(51,58);
+        where a.id_klasifikasi = '5' and a.id_akun not in(51,58,109);
         ", [$tahun, $tahun]);
         return $result;
     }
