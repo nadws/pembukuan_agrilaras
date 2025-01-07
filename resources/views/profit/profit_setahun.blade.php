@@ -365,7 +365,7 @@
                                 @php
                                     $nm_akun = DB::table('akun')->where('id_akun', $akun)->first();
                                 @endphp
-                                {{ $nm_akun->nm_akun }} dsadas
+                                {{ $nm_akun->nm_akun }}
                             </td>
                             <td class="text-end ">
                                 {{ number_format($saldo_thn_bip->d_saldo - $saldo_thn_bip->k_saldo, 0) }}
