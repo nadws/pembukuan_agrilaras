@@ -706,6 +706,7 @@
 
                             <!--(144,502.2 , 60,920.9 , 864,183.0)-->
                             <td align="center" class="obat/vit td_layer">
+
                                 &nbsp; <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="ttl rp pakan = ttl kg : {{ empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000 }} || rata2 pakan hari ini = {{ number_format($hrga_stn_pkn, 0) }} ">
@@ -723,10 +724,11 @@
 
                                 @php
                                     $gjl_new = 185 * $k->stok_awal * $k->ttl_gjl;
+                                    $gjl_new_kemarin = 185 * $k->stok_awal * ($k->ttl_gjl - 1);
                                 @endphp
 
                             </td>
-                            <td class="tpl">
+                            <td class="obat/vit td_layer" align="center">
                                 @php
                                     $fcr_kuml_plus =
                                         empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
@@ -749,16 +751,38 @@
 
                                     $nomer1 = round($k->kuml_kg - $k->kuml_pcs / 180, 1);
                                     $nomer2 = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
-
                                     $ttl_rp_pakan_baru = round(
                                         empty($k->kg_pakan_kuml) ? '0' : ($k->kg_pakan_kuml / 1000) * $hrga_stn_pkn,
                                         1,
                                     );
+
+                                    $nomer3 = round($k->kuml_kg_kemarin - $k->kuml_pcs_kemarin / 180, 1);
+                                    $nomer4 = empty($k->kg_bagi_y_kemarin)
+                                        ? '0'
+                                        : round($k->rp_satuan_y_kemarin / $k->kg_bagi_y_kemarin, 0);
+
+                                    $A_kemarin = $nomer3 * $nomer4;
+
+                                    $ttl_rp_pakan_kemarin = round(
+                                        empty($k->kg_pakan_kuml_kemarin)
+                                            ? '0'
+                                            : ($k->kg_pakan_kuml_kemarin / 1000) * $hrga_stn_pkn,
+                                        1,
+                                    );
+
+                                    $B_kemarin =
+                                        $ttl_rp_pakan_kemarin +
+                                        $k->kuml_rp_vitamin_kemarin +
+                                        $k->kum_ttl_rp_vaksin_kemarin +
+                                        $k->rupiah +
+                                        $gjl_new_kemarin;
                                 @endphp
                                 {{-- fcr kuml = {{ $fcr_kuml_plus }} / rp pakan = {{ $rp_pakan_tes }} /
                                 rp telur = {{ round($rp_telur, 0) }} /
                                 ttl kg telur {{ round($ttl_kg_telur, 0) }}
                                 <br> --}}
+
+                                <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="rumus 1x2 | nomer1 = {{ $nomer1 }} | nomer2 = {{ $nomer2 }}">
                                     {{ number_format($nomer1 * $nomer2, 0) }}
@@ -793,6 +817,19 @@
                                     {{ number_format($ttl_tpl_kandang / $ttl_kg_telur, 2) }}
                                 </span> --}}
                                 <br>
+                                @php
+                                    $tpl_hari_ini =
+                                        $nomer1 * $nomer2 -
+                                        ($ttl_rp_pakan_baru +
+                                            $k->kuml_rp_vitamin +
+                                            $k->kum_ttl_rp_vaksin +
+                                            $k->rupiah +
+                                            $gjl_new);
+                                    $tpl_kemarin = $A_kemarin - $B_kemarin;
+                                @endphp
+
+                                {{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}
+
                                 <br>
                             </td>
                             <!-- kuml -->

@@ -38,6 +38,7 @@ class Laporan_layerController extends Controller
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
             'tgl_sebelum' => $tgl_sebelumnya,
+            'tgl_kemarin' => $tgl_kemarin,
             'harga' => $harga,
             'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren, $tgl_awal_harga),
         ];

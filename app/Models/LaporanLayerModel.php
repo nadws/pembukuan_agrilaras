@@ -13,7 +13,7 @@ class LaporanLayerModel extends Model
     public static function getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren, $tgl_awal_harga)
     {
         return DB::select("SELECT a.id_kandang, a.chick_in, a.chick_out, a.tgl_masuk, a.nm_kandang  , CEIL(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg , DATEDIFF('$tgl', a.chick_in) AS hari, a.stok_awal, b.pop_kurang, c.mati, (c.jual + c.afkir) as jual, d.kg_pakan, e.feed, f.kg_pakan_week, g.feed as feed_past, e.berat as berat_badan , h.pcs, i.pcs_past, j.kuml_pcs, h.kg, i.kg_past,j.kuml_kg, g.telur,k.pcs_telur_week,k.kg_telur_week,l.kg_pakan_kuml, m.rp_vitamin, n.kuml_rp_vitamin,o.pop_kurang_past, e.berat_telur as t_peforma, p.jlh_hari, q.jlh_hari_past, r.pcs_telur_week_past, q.kg_pp_week,p.kg_p_week, s.kum_ttl_rp_vaksin,t.ttl_rp_vaksin, e.telur as p_hd, u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya, w.mati_week , w.jual_week, DATE_ADD( a.chick_in, INTERVAL 85 WEEK) AS tgl_setelah_85_minggu, CEIL(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, a.rupiah, j.count_bagi, x.tgl_awal, x.tgl_akhir, sum(y.kg - (y.pcs_y / 180)) as kg_bagi_y , sum((y.kg - (y.pcs_y / 180)) * (y.rp_satuan / y.ttl)) as rp_satuan_y, z.rp_vitamin_week, aa.ttl_gjl, a.tgl_masuk_kandang, ab.kg_p_past_week, ac.pcs_telur_past_week, ac.kg_telur_past_week, ad.rp_vitamin_past_week, ae.kum_ttl_rp_past_vaksin,
-        af.pcs_hrga, af.ttl_rupiah_hrga
+        af.pcs_hrga, af.ttl_rupiah_hrga, ag.kuml_kg_kemarin, ag.kuml_pcs_kemarin, sum(ah.kg - (ah.pcs_y / 180)) as kg_bagi_y_kemarin , sum((ah.kg - (ah.pcs_y / 180)) * (ah.rp_satuan / ah.ttl)) as rp_satuan_y_kemarin, ai.kg_pakan_kuml_kemarin, aj.kuml_rp_vitamin_kemarin, ak.kum_ttl_rp_vaksin_kemarin
         FROM kandang as a 
         -- Populasi --
         left join(SELECT b.id_kandang, sum(b.mati+b.jual+b.afkir) as pop_kurang 
@@ -190,7 +190,7 @@ class LaporanLayerModel extends Model
             SELECT a.id_kandang, count(a.id_kandang) as total
             FROM stok_produk_perencanaan as a 
             left join tb_produk_perencanaan as b on a.id_pakan = b.id_produk
-            where b.kategori = 'pakan' and a.pcs_kredit != 0
+            where b.kategori = 'pakan' and a.pcs_kredit != 0 and a.tgl between '2020-01-01' and '$tgl'
             group by a.tgl,  a.id_kandang
             ) as b on b.id_kandang = a.id_kandang
             GROUP by a.id_kandang
@@ -245,6 +245,45 @@ class LaporanLayerModel extends Model
             where a.h_opname = 'T' and a.tgl BETWEEN '2020-01-01' and '$tgl' and b.kategori = 'pakan' 
             group by a.id_kandang
         ) as af on af.id_kandang = a.id_kandang
+
+        left join (SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs_kemarin, sum(h.kg) as kuml_kg_kemarin FROM stok_telur as h  where h.tgl between '2020-01-01' and '$tgl_kemarin' and h.pcs != 0 group by h.id_kandang) as ag on ag.id_kandang = a.id_kandang
+
+        left join (
+            SELECT a.id_kandang, b.nm_kandang, month(a.tgl) as bulan, YEAR(a.tgl) as tahun , round(sum(a.kg),1) as kg,c.rp_satuan, c.ttl, sum(a.pcs) as pcs_y
+            FROM stok_telur as a
+            left join kandang as b on b.id_kandang = a.id_kandang
+            left join (
+            SELECT sum(a.total_rp) as rp_satuan, sum(a.kg_jual) as ttl, MONTH(a.tgl) as bulan, YEAR(a.tgl) as tahun
+                    FROM invoice_telur as a 
+                    where a.id_produk = '1' and a.`lokasi`!= 'opname' and a.tgl BETWEEN '2020-01-01' and '$tgl_kemarin'
+                group by MONTH(a.tgl) , YEAR(a.tgl)
+            ) as c on c.bulan = month(a.tgl) and c.tahun = YEAR(a.tgl)
+            where a.id_kandang != 0 and a.tgl BETWEEN '2020-01-01' and '$tgl_kemarin'
+            group by  month(a.tgl) , YEAR(a.tgl) , a.id_kandang
+        ) as ah on ah.id_kandang = a.id_kandang
+
+        left join (
+            SELECT d.id_kandang, sum(d.pcs_kredit) as kg_pakan_kuml_kemarin
+            FROM stok_produk_perencanaan as d 
+            left join tb_produk_perencanaan as b on b.id_produk = d.id_pakan
+            where d.tgl between '2020-01-01' and '$tgl_kemarin' and b.kategori = 'pakan'
+            group by d.id_kandang
+        ) as ai on ai.id_kandang = a.id_kandang
+
+        left join (
+            SELECT d.id_kandang, sum(d.total_rp) as kuml_rp_vitamin_kemarin
+            FROM stok_produk_perencanaan as d 
+            left join tb_produk_perencanaan as e on e.id_produk = d.id_pakan
+            where d.tgl between '2020-01-01' and '$tgl_kemarin' and e.kategori in('obat_pakan','obat_air') and d.pcs_kredit != '0'
+            group by d.id_kandang
+        ) as aj on aj.id_kandang = a.id_kandang
+
+        left join (
+            SELECT s.id_kandang , sum(s.ttl_rp) as kum_ttl_rp_vaksin_kemarin, s.tgl
+            FROM tb_vaksin_perencanaan as s
+            where s.tgl between '2020-01-01' and '$tgl_kemarin'
+            group by s.id_kandang
+        ) as ak on ak.id_kandang = a.id_kandang 
 
 
 
