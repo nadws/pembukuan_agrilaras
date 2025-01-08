@@ -261,7 +261,7 @@
                         {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
                         <th class="dhead table_layer th_atas2"> ttl rp pakan <br>obat/vit <br> vaksin <br> Ayam <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="gjl : total hari ayam makan * 1,000,000">
+                                title="gjl : 185 * pop awal * total hari ayam makan">
                                 GjL
                             </span>
 
@@ -346,7 +346,7 @@
 
                             $pcs += $k->pcs;
                             $rp_ayam += $k->rupiah;
-                            $gjl_ttl += $k->ttl_gjl * 700000;
+                            $gjl_ttl += 185 * $k->stok_awal * $k->ttl_gjl;
 
                             $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
@@ -424,7 +424,7 @@
                             </td>
                             <td align="center" class="pop awal td_layer">
                                 &nbsp; <br>{{ $k->stok_awal }} <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
-                                {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
+                                {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}% /
                             </td>
 
                             <!-- populasi -->
@@ -678,7 +678,8 @@
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
-                                    $gjl = ($k->ttl_gjl * 700000) / 7000;
+                                    // $gjl = ($k->ttl_gjl * 700000) / 7000;
+                                    $gjl = (185 * $k->stok_awal * $k->ttl_gjl) / 7000;
                                 @endphp
 
                                 &nbsp; <br>
@@ -716,7 +717,14 @@
                                 {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
                                 {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
                                 {{ number_format($k->rupiah, 0) }} <br>
-                                {{ number_format($k->ttl_gjl * 700000) }}
+
+                                {{-- {{ number_format($k->ttl_gjl * 700000) }} --}}
+                                {{ number_format(185 * $k->stok_awal * $k->ttl_gjl, 0) }}
+
+                                @php
+                                    $gjl_new = 185 * $k->stok_awal * $k->ttl_gjl;
+                                @endphp
+
                             </td>
                             <td class="tpl">
                                 @php
@@ -757,20 +765,20 @@
                                 </span>
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="total rp pkan vit dll">
-                                    {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000, 0) }}
+                                    {{ number_format($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $gjl_new, 0) }}
                                 </span>
                                 <br>
                                 <span
-                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $gjl_new) < 0 ? 'text-danger' : '' }}"
                                     data-bs-toggle="tooltip" data-bs-placement="top" title="kurangi a-b">
-                                    {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000), 0) }}
+                                    {{ number_format($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $gjl_new), 0) }}
                                 </span>
                                 <br>
                                 <span
-                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000) < 0 ? 'text-danger' : '' }}"
+                                    class="{{ $nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $gjl_new) < 0 ? 'text-danger' : '' }}"
                                     data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="hasil c dibagi total telur kandang">
-                                    {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $k->ttl_gjl * 700000)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
+                                    {{ number_format(($nomer1 * $nomer2 - ($ttl_rp_pakan_baru + $k->kuml_rp_vitamin + $k->kum_ttl_rp_vaksin + $k->rupiah + $gjl_new)) / ($k->kuml_kg - $k->kuml_pcs / 180), 0) }}
                                 </span>
                                 {{-- <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     class="{{ $ttl_tpl_kandang < 0 ? 'text-danger' : '' }}"
