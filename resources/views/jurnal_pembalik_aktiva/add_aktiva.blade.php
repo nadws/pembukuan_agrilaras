@@ -96,7 +96,7 @@
                                 <th width="12%" style="text-align: right;">Debit</th>
                                 <th width="12%" style="text-align: right;">Kredit</th>
                                 {{-- <th width="12%" style="text-align: right;">Saldo</th> --}}
-                                {{-- <th width="5%">Aksi</th> --}}
+
                             </tr>
                         </thead>
                         <tbody>
@@ -183,6 +183,76 @@
                                     </button>
                                 </td> --}}
                             </tr>
+                            @if ($kategori == 'aktiva')
+                                <tr class="baris3">
+                                    <td style="vertical-align: top;">
+                                        {{-- <button type="button" data-bs-toggle="collapse" href=".join1"
+                                        class="btn rounded-pill " count="1"><i class="fas fa-angle-down"></i>
+                                    </button> --}}
+                                    </td>
+                                    <td style="vertical-align: top;">
+
+                                        <input type="hidden" name="id_akun[]"
+                                            value="{{ $akun_gantung2->id_akun }}">
+                                        <input type="text" class="form-control"
+                                            value="{{ $akun_gantung2->nm_akun }} " readonly>
+
+
+
+
+                                        <div class="">
+                                            <label for="" class="mt-2 ">Urutan Pengeluaran</label>
+                                            <input type="text" class="form-control " name="no_urut[]">
+                                        </div>
+
+                                    </td>
+                                    <td style="vertical-align: top;">
+
+                                        <select name="id_post" id=""
+                                            class="select2_add post_center post_center3" count="3">
+                                            <option value="">-Pilih Post-</option>
+                                            @foreach ($post2 as $p)
+                                                <option value="{{ $p->id_post_center }}">{{ $p->nm_post }}
+                                                </option>
+                                            @endforeach
+
+                                        </select>
+
+
+                                    </td>
+
+                                    <td style="vertical-align: top;">
+                                        <input type="text" name="keterangan[]" class="form-control"
+                                            style="vertical-align: top" placeholder="nama barang, qty, @rp">
+
+                                    </td>
+                                    <td style="vertical-align: top;">
+                                        <input type="text" class="form-control debit_rupiah text-end"
+                                            value="Rp 0" count="3" readonly>
+                                        <input type="hidden" class="form-control debit_biasa debit_biasa3"
+                                            value="0" name="debit[]">
+                                        <p class="peringatan_debit1 mt-2 text-danger" hidden>Data yang dimasukkan salah
+                                            harap cek kembali !!
+                                        </p>
+                                    </td>
+                                    <td style="vertical-align: top;">
+                                        <input type="text"
+                                            class="form-control kredit_rupiah kredit_rupiah3 text-end" value="Rp 0"
+                                            count="3" readonly>
+                                        <input type="hidden" class="form-control kredit_biasa kredit_biasa3"
+                                            value="0" name="kredit[]">
+                                        <input type="hidden" class="form-control id_klasifikasi3" value="0"
+                                            name="id_klasifikasi[]">
+                                        <p class="peringatan1 mt-2 text-danger" hidden>Apakah anda yakin ingin
+                                            memasukkan
+                                            biaya disebelah kredit
+                                        </p>
+                                    </td>
+
+                                </tr>
+                            @else
+                            @endif
+
 
 
                             <tr class="baris2">
@@ -535,6 +605,7 @@
                     var id_post = $(".post_center" + count).val();
 
 
+
                     $.ajax({
                         url: "/get_total_post?id_post=" + id_post,
                         type: "Get",
@@ -542,11 +613,21 @@
                             $(".kredit_rupiah" + count).val(data.format);
                             $(".kredit_biasa" + count).val(data.biasa);
 
-                            $(".debit_rupiah2").val(data.format);
-                            $(".debit_biasa2").val(data.biasa);
+                            var debit = 0;
+                            $(".kredit_biasa").each(function() {
+                                debit += parseFloat($(this).val());
+                            });
+                            var total_debit = debit.toLocaleString("id-ID", {
+                                style: "currency",
+                                currency: "IDR",
+                            });
 
-                            $(".total").text(data.format);
-                            $(".total_kredit").text(data.format);
+
+                            $(".debit_rupiah2").val(total_debit);
+                            $(".debit_biasa2").val(debit);
+
+                            $(".total").text(total_debit);
+                            $(".total_kredit").text(total_debit);
                             $(".cselisih").css("color", "green");
                             $(".button-save").removeAttr("hidden");
                         },

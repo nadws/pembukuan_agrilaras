@@ -29,20 +29,28 @@ class Jurnal_aktivaController extends Controller
 
         if ($kategori == 'aktiva') {
             $akun_gantung = DB::table('akun')->where('id_akun', 43)->first();
+            $akun_gantung2 = DB::table('akun')->where('id_akun', 112)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 9)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
+            $post2 = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung2->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
         } else if ($kategori == 'peralatan') {
             $akun_gantung = DB::table('akun')->whereIn('id_akun', [61, 76])->get();
+            $akun_gantung2 = DB::table('akun')->where('id_akun', 0)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 16)->first();
             $post = 'peralatan';
+            $post2 = 'peralatan';
         } else if ($kategori == 'pullet') {
             $akun_gantung = DB::table('akun')->where('id_akun', 76)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 107)->first();
+            $akun_gantung2 = DB::table('akun')->where('id_akun', 0)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.nm_post not in(SELECT b.nm_kandang FROM kandang as b)");
+            $post2 = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung2->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
         } else {
             $akun_gantung = DB::table('akun')->where('id_akun', 60)->first();
             $akun_aktiva = DB::table('akun')->where('id_akun', 30)->first();
+            $akun_gantung2 = DB::table('akun')->where('id_akun', 0)->first();
             $post = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung->id_akun' and a.id_post not in(SELECT b.id_post FROM kandang as b)");
+            $post2 = DB::select("SELECT * FROM tb_post_center as a where a.id_akun = '$akun_gantung2->id_akun' and a.nm_post not in(SELECT b.nm_aktiva FROM aktiva as b)");
         }
 
         $data =  [
@@ -52,9 +60,11 @@ class Jurnal_aktivaController extends Controller
             'suplier' => DB::table('tb_suplier')->get(),
             'id_buku' => $r->id_buku,
             'akun_gantung' => $akun_gantung,
+            'akun_gantung2' => $akun_gantung2,
             'akun_aktiva' => $akun_aktiva,
             'post' => $post,
-            'kategori' => $kategori
+            'kategori' => $kategori,
+            'post2' => $post2
 
         ];
 
