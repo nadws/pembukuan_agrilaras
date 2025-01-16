@@ -251,7 +251,7 @@
                         {{-- KUML --}}
                         <th class="dhead table_layer th_atas2">pakan(kg) <br> telur(kg) <br> <span
                                 data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="rata-rata harga semua penjualan dibagi total kg perkandang dari awal sampai hari ini">R2Rp</span>
+                                title="Summary dari = (rata rata penjualan telur perhari * produksi telur perhari) / ttl kg bersih">R2Rp</span>
                         </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
