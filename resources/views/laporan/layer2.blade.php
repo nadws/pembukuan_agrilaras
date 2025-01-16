@@ -626,7 +626,9 @@
                                 <br>
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
                                 <br>
-                                {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }}
+                                {{-- {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
+                                {{ number_format($k->rata, 0) }}
+
 
                             </td>
                             {{-- vitamin --}}
@@ -739,7 +741,8 @@
                                                 1,
                                             );
                                     $ttl_kg_telur = $k->kuml_kg - $k->kuml_pcs / 180;
-                                    $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+                                    // $rp_telur = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+                                    $rp_telur = $k->rata;
                                     $rp_pakan = $k->ttl_rupiah_hrga / $k->pcs_hrga;
                                     $rp_pakan_tes = round($k->ttl_rupiah_hrga / $k->pcs_hrga, 0);
                                     $ttl_tpl +=
@@ -750,16 +753,18 @@
                                         round($ttl_kg_telur, 0);
 
                                     $nomer1 = round($k->kuml_kg - $k->kuml_pcs / 180, 1);
-                                    $nomer2 = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+                                    // $nomer2 = empty($k->kg_bagi_y) ? '0' : round($k->rp_satuan_y / $k->kg_bagi_y, 0);
+                                    $nomer2 = $k->rata;
                                     $ttl_rp_pakan_baru = round(
                                         empty($k->kg_pakan_kuml) ? '0' : ($k->kg_pakan_kuml / 1000) * $hrga_stn_pkn,
                                         1,
                                     );
 
                                     $nomer3 = round($k->kuml_kg_kemarin - $k->kuml_pcs_kemarin / 180, 1);
-                                    $nomer4 = empty($k->kg_bagi_y_kemarin)
-                                        ? '0'
-                                        : round($k->rp_satuan_y_kemarin / $k->kg_bagi_y_kemarin, 0);
+                                    // $nomer4 = empty($k->kg_bagi_y_kemarin)
+                                    //     ? '0'
+                                    //     : round($k->rp_satuan_y_kemarin / $k->kg_bagi_y_kemarin, 0);
+                                    $nomer4 = round($k->rata_kemarin, 0);
 
                                     $A_kemarin = $nomer3 * $nomer4;
 
@@ -827,9 +832,7 @@
                                             $gjl_new);
                                     $tpl_kemarin = $A_kemarin - $B_kemarin;
                                 @endphp
-
                                 {{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}
-
                                 <br>
                             </td>
                             <!-- kuml -->
