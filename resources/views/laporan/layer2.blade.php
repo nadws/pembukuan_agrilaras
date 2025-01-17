@@ -216,7 +216,7 @@
                             </span>
                             <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="hh : ttl pcs telur / populasi ayam awal">
+                                title="hh : total kg telur bersih / total ayam awal">
                                 hh (%)
                             </span>
                             <br>
@@ -492,7 +492,7 @@
                                 <br>
                                 {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
                                 <br>
-                                {{ number_format(($k->pcs / $k->stok_awal) * 100, 0) }}
+                                {{ number_format((($k->kg - $k->pcs / 180) / $k->stok_awal) * 100, 2) }}
                             </td>
 
 
