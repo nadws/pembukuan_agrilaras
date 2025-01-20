@@ -217,7 +217,7 @@
                             <br>
                             <span data-bs-toggle="tooltip" data-bs-placement="top"
                                 title="hh : total kg telur bersih / total ayam awal">
-                                hh (%)
+                                hh
                             </span>
                             <br>
 
@@ -832,7 +832,8 @@
                                             $gjl_new);
                                     $tpl_kemarin = $A_kemarin - $B_kemarin;
                                 @endphp
-                                {{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}
+                                <span
+                                    class="{{ $tpl_hari_ini - $tpl_kemarin < 0 ? 'text-danger' : '' }}">{{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}</span>
                                 <br>
                             </td>
                             <!-- kuml -->
