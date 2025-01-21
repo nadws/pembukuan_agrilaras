@@ -527,11 +527,12 @@
                                 $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
 
                                 $vitamin_week = empty($k->rp_vitamin_week) ? '0' : $k->rp_vitamin_week / 7000;
+                                $gjl_week = (185 * $k->stok_awal * $k->jlh_hari) / 7000;
 
                                 $fcr_plus_week =
                                     empty($k->kg_p_week) || empty($k->kg_telur_week) || empty($k->pcs_telur_week)
                                         ? '0'
-                                        : ($k->kg_p_week / 1000 + $vitamin_week) /
+                                        : ($k->kg_p_week / 1000 + $vitamin_week + $gjl_week) /
                                             ($k->kg_telur_week - $k->pcs_telur_week / 180);
 
                                 $fcr_plus =
@@ -555,10 +556,14 @@
 
                                 $vaksin_past_week = $k->kum_ttl_rp_past_vaksin / 7000;
                                 $vitamin_past_week = $k->rp_vitamin_past_week / 7000;
+                                $gjl_pastweek = (185 * $k->stok_awal * 7) / 7000;
 
                                 $fcr_past_week_plus = empty($k->kg_telur_past_week)
                                     ? '0'
-                                    : ($k->kg_p_past_week / 1000 + $vaksin_past_week + $vitamin_past_week) /
+                                    : ($k->kg_p_past_week / 1000 +
+                                            $vaksin_past_week +
+                                            $vitamin_past_week +
+                                            $gjl_pastweek) /
                                         ($k->kg_telur_past_week - $k->pcs_telur_past_week / 180);
                             @endphp
 
@@ -588,7 +593,8 @@
                                         {{ $fcr_plus }}</span>
                                     <br>
                                     <span
-                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 2) }}</span>
+                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 2) }}
+                                    </span>
                                     /
                                     <span
                                         class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 2) }}</span>
@@ -600,7 +606,14 @@
                                 @php
                                     $hrga_stn_pkn = empty($tl_rp_pakan) ? 0 : $tl_rp_pakan / $tl_gr_pkn;
                                 @endphp
-                                {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week, 2), 0) }}
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="harga satuan pakan * fcr past week">
+                                    {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week, 2), 0) }}
+                                </span> /
+                                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="harga satuan pakan * fcr past week plus">
+                                    {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week_plus, 2), 0) }}
+                                </span>
                             </td>
 
 
@@ -614,6 +627,8 @@
                                 {{ number_format($k->kg_pakan / 1000, 1) }} <br>
                                 {{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}
                                 <br> {{ empty($k->feed) ? 'NA' : $k->feed }}
+
+
                             </td>
                             <!-- pakan -->
 
