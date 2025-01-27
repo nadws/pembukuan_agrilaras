@@ -492,7 +492,8 @@
                                 <br>
                                 {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
                                 <br>
-                                {{ number_format((($k->kg - $k->pcs / 180) / $k->stok_awal) * 100, 2) }}
+                                {{ number_format((($k->kuml_kg - $k->kuml_pcs / 180) / $k->stok_awal) * 100, 1) }}
+
                             </td>
 
 

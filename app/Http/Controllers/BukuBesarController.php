@@ -352,8 +352,8 @@ class BukuBesarController extends Controller
             $sheet1->setCellValue('D' . $kolom, $g->tgl);
             $sheet1->setCellValue('E' . $kolom, $g->saldo == 'Y' ? 'Saldo Awal' : $g->nm_akun2);
 
-            $sheet1->setCellValue('F' . $kolom, $g->ket2);
-            $sheet1->setCellValue('G' . $kolom, '');
+            $sheet1->setCellValue('F' . $kolom, $g->ket);
+            $sheet1->setCellValue('G' . $kolom, $g->ket2);
 
             $sheet1->setCellValue('H' . $kolom, $g->debit);
             $sheet1->setCellValue('I' . $kolom, $g->kredit);
