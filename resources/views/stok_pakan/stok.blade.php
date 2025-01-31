@@ -198,7 +198,7 @@
 
 
     </div>
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <div class="row mb-2">
 
             <div class="col-lg-4">
@@ -243,7 +243,7 @@
         </table>
     </div>
 
-    <div class="col-lg-3">
+    <div class="col-lg-4">
         <table class="table table-bordered" width="100%">
             <tr>
                 <th style="text-align: center">
@@ -266,5 +266,32 @@
             </tr>
 
         </table>
+        <table class="table table-bordered" width="100%">
+            <tr>
+                <th style="text-align: center" colspan="4">
+                    <h6>Pakan & Vitamin<br>{{ tanggal(date('Y-m-d')) }}</h6>
+                </th>
+            </tr>
+            <tr>
+                <th class="dhead">Nama</th>
+                <th class="dhead">Kategori</th>
+                <th class="dhead text-end">Qty</th>
+                <th class="dhead text-end">Total Rp</th>
+            </tr>
+            <tbody>
+                @foreach ($pengeluaran_pakan as $p)
+                    <tr>
+                        <td>{{ $p->nm_produk }}</td>
+                        <td>{{ $p->kategori }}</td>
+                        <td class="text-end">{{ number_format($p->qty, 1) }} {{ $p->nm_satuan }}</td>
+                        <td class="text-end">{{ number_format($p->ttl_rp, 0) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+
+
+        </table>
+
+
     </div>
 </div>
