@@ -115,10 +115,10 @@
                                                     </li>
                                                 @endif
                                                 @if (!empty($edit))
-                                                        <li><a class="dropdown-item text-primary edit_akun"
-                                                                href="{{ route('edit_jurnal', ['no_nota' => $a->no_nota]) }}"><i
-                                                                    class="me-2 fas fa-pen"></i>Edit</a>
-                                                        </li>
+                                                    <li><a class="dropdown-item text-primary edit_akun"
+                                                            href="{{ route('edit_jurnal', ['no_nota' => $a->no_nota]) }}"><i
+                                                                class="me-2 fas fa-pen"></i>Edit</a>
+                                                    </li>
                                                 @endif
                                             </ul>
                                         </div>
@@ -261,8 +261,9 @@
                         <label for="">Tahun</label>
                         <select name="tahun" id="" class="selectView bulan">
                             <option value="2022">2022</option>
-                            <option value="2023" selected>2023</option>
-                            <option value="2024" selected>2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
                         </select>
                     </div>
                     <div class="col-lg-8 tahun_muncul mt-2">
@@ -270,7 +271,8 @@
                         <select name="tahunfilter" id="" class="selectView tahun">
                             <option value="2022">2022</option>
                             <option value="2023">2023</option>
-                            <option value="2024" selected>2024</option>
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
                         </select>
                     </div>
                 </div>
