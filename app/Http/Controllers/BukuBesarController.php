@@ -99,7 +99,7 @@ class BukuBesarController extends Controller
         left JOIN(
             SELECT b.id_akun , sum(b.debit) as debit, sum(b.kredit) as kredit
             FROM jurnal as b
-            where b.penutup = 'T' and b.tgl BETWEEN '$tgl1' and '$tgl2'
+            where  b.tgl BETWEEN '$tgl1' and '$tgl2'
             group by b.id_akun
         ) as b on b.id_akun = a.id_akun
 
