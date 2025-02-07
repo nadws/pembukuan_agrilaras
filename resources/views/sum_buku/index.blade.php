@@ -20,9 +20,9 @@
                 $ttlSaldo = 0;
 
                 foreach ($buku as $d) {
-                    $ttlDebit += $d->debit + $d->debit_saldo;
-                    $ttlKredit += $d->kredit + $d->kredit_saldo;
-                    $ttlSaldo += $d->debit + $d->debit_saldo - ($d->kredit + $d->kredit_saldo);
+                    $ttlDebit += $d->debit;
+                    $ttlKredit += $d->kredit;
+                    $ttlSaldo += $d->debit - $d->kredit;
                 }
             @endphp
             <table class="table table-hover table-striped" id="table1">
