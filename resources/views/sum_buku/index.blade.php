@@ -25,6 +25,7 @@
                     $ttlSaldo += $d->debit - $d->kredit;
                 }
             @endphp
+
             <table class="table table-hover table-striped" id="table1">
                 <thead>
                     <tr>
@@ -34,6 +35,7 @@
                         <th style="text-align: right">Debit ({{ number_format($ttlDebit, 2) }})</th>
                         <th style="text-align: right">Kredit ({{ number_format($ttlKredit, 2) }})</th>
                         <th style="text-align: right">Saldo ({{ number_format($ttlSaldo, 2) }})</th>
+
                     </tr>
                 </thead>
                 <tbody>
@@ -55,6 +57,7 @@
                             <td style="text-align: right">
                                 {{ number_format($a->debit - $a->kredit, 2) }}
                             </td>
+                            <td></td>
                         </tr>
                     @endforeach
                 </tbody>
