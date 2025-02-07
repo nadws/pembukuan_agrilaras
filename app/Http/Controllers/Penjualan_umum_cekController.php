@@ -203,7 +203,7 @@ class Penjualan_umum_cekController extends Controller
         $data = [
             'title' => 'Perencanaan Setoran Umum',
             'id_jurnal' => $r->id_jurnal,
-            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
+            'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '9'])->get(),
             'nota' => $nota_t
         ];
         return view('penjualan_umum_cek.perencanaan', $data);
