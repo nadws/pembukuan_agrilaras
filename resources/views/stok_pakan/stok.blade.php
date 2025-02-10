@@ -269,7 +269,10 @@
         <table class="table table-bordered" width="100%">
             <tr>
                 <th style="text-align: center" colspan="4">
-                    <h6>Pakan & Vitamin<br>{{ tanggal(date('Y-m-d')) }}</h6>
+                    <h6>Pakan & Vitamin<br>{{ tanggal($tgl) }}</h6>
+                    <br>
+                    <button class="btn btn-primary btn-sm float-end" data-bs-toggle="modal"
+                        data-bs-target="#viewnew">View</button>
                 </th>
             </tr>
             <tr>
@@ -291,6 +294,18 @@
 
 
         </table>
+
+        <form id="view_baru_pakan">
+            <x-theme.modal btnSave='Y' title="View pakan dan obat" size="moda-md" idModal="viewnew">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label for="">Tanggal</label>
+                        <input type="date" name="tgl" class="form-control tgl_view_baru">
+                    </div>
+                </div>
+
+            </x-theme.modal>
+        </form>
 
 
     </div>

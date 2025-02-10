@@ -841,6 +841,6 @@
                 aksiBtn("#edit_hrga_pakan");
             });
         </script>
-        <script src="{{ asset('js') }}/stok_opname.js"></script>
+        <script src="{{ asset('js') }}/stok_opname2.js"></script>
     @endsection
 </x-theme.app>

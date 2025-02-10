@@ -1,8 +1,11 @@
 $(document).ready(function () {
-    function load_stok_pakan() {
+    function load_stok_pakan(tgl) {
         $.ajax({
             type: "GET",
             url: "/load_stok_pakan",
+            data: {
+                tgl: tgl,
+            },
             success: function (r) {
                 $("#load_stok_pakan").html(r);
                 $('[data-bs-toggle="tooltip"]').tooltip();
@@ -138,5 +141,12 @@ $(document).ready(function () {
     $(document).on("click", ".remove_baris", function () {
         var delete_row = $(this).attr("count");
         $(".baris" + delete_row).remove();
+    });
+
+    $(document).on("submit", "#view_baru_pakan", function (e) {
+        e.preventDefault();
+        var tgl = $(".tgl_view_baru").val();
+        load_stok_pakan(tgl);
+        $("#viewnew").modal("hide");
     });
 });

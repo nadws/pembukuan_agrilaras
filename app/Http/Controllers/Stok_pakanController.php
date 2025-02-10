@@ -10,7 +10,11 @@ class Stok_pakanController extends Controller
 {
     public function load_stok_pakan(Request $r)
     {
-        $tgl = date('Y-m-d');
+        if (empty($r->tgl)) {
+            $tgl = date('Y-m-d');
+        } else {
+            $tgl = $r->tgl;
+        }
         $data = [
             'pakan' => DB::select("SELECT a.id_pakan, b.nm_produk, sum(a.pcs) as pcs_debit, sum(a.pcs_kredit) as pcs_kredit, c.nm_satuan
             FROM stok_produk_perencanaan as a 
@@ -47,12 +51,14 @@ class Stok_pakanController extends Controller
             left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan and b.kategori ='pakan'
             order by a.tgl DESC"),
             'pakan_table' => DB::table('tb_produk_perencanaan')->where('kategori', 'pakan')->get(),
+
             'pengeluaran_pakan' => DB::select("SELECT b.nm_produk, b.kategori, sum(a.pcs_kredit) as qty, c.nm_satuan, sum(a.total_rp) as ttl_rp
             FROM stok_produk_perencanaan as a 
             left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
             WHERE a.tgl = '$tgl'
-            group by a.id_pakan;")
+            group by a.id_pakan;"),
+            'tgl' => $tgl
 
         ];
         return view('stok_pakan.stok', $data);
