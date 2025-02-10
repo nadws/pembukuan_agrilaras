@@ -131,11 +131,11 @@ class PiutangtelurController extends Controller
             $nota_t = empty($max) || $max->urutan_piutang == '0' ? '1000' : $max->urutan_piutang + 1;
 
             for ($x = 0; $x < count($r->no_nota); $x++) {
-                $bayar = DB::table('bayar_telur')->where('no_nota', $r->no_nota[$x])->where('kredit', '!=', '0')->first();
+                // $bayar = DB::table('bayar_telur')->where('no_nota', $r->no_nota[$x])->where('kredit', '!=', '0')->first();
 
-                if ($bayar && strtotime($r->tgl) < strtotime($bayar->tgl)) {
-                    throw new \Exception("Tanggal yang diinput tidak boleh kurang dari tanggal di nota.");
-                }
+                // if ($bayar && strtotime($r->tgl) < strtotime($bayar->tgl)) {
+                //     throw new \Exception("Tanggal yang diinput tidak boleh kurang dari tanggal di nota.");
+                // }
                 $data = [
                     'urutan_piutang' => $nota_t,
                     'no_nota_piutang' => 'PT' . $nota_t,
