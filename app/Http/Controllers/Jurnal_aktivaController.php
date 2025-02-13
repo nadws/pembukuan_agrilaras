@@ -85,6 +85,8 @@ class Jurnal_aktivaController extends Controller
         $id_buku = $r->id_buku;
 
 
+
+
         $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '2')->first();
 
         if (empty($max)) {
@@ -116,7 +118,7 @@ class Jurnal_aktivaController extends Controller
                 'id_suplier' => $id_suplier,
                 'no_urut' => $akun->inisial . '-' . $urutan,
                 'urutan' => $urutan,
-                'id_post_center' => $id_post
+                'id_post_center' => $id_post[$i] ?? 0
             ];
             Jurnal::create($data);
         }
@@ -149,7 +151,7 @@ class Jurnal_aktivaController extends Controller
             left join proyek as b on b.id_proyek = a.id_proyek
             left join tb_suplier as c on c.id_suplier = a.id_suplier
             left join tb_post_center as d on d.id_post_center = a.id_post_center
-            where a.no_nota = '$r->no_nota'"),
+            where a.no_nota = '$r->no_nota' and a.id_akun = '43' "),
             'kelompok' => $kelompok,
             'kategori' => $r->kategori,
             'pembelian' => $r->pembelian ?? '',

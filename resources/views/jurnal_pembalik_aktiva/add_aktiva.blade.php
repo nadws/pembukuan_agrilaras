@@ -132,12 +132,12 @@
                                 </td>
                                 <td style="vertical-align: top;">
                                     @if ($post == 'peralatan')
-                                        <select name="id_post" id=""
+                                        <select name="id_post[]" id=""
                                             class="select2_add post1 post_center post_center1" count="1">
 
                                         </select>
                                     @else
-                                        <select name="id_post" id=""
+                                        <select name="id_post[]" id=""
                                             class="select2_add post_center post_center1" count="1">
                                             <option value="">-Pilih Post-</option>
                                             @foreach ($post as $p)
@@ -208,7 +208,7 @@
                                     </td>
                                     <td style="vertical-align: top;">
 
-                                        <select name="id_post" id=""
+                                        <select name="id_post[]" id=""
                                             class="select2_add post_center post_center3" count="3">
                                             <option value="">-Pilih Post-</option>
                                             @foreach ($post2 as $p)
