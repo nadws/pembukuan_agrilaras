@@ -318,24 +318,27 @@ class BukuBesarController extends Controller
         $sheet1->setTitle('Sheet1');
 
 
-        $sheet1->getStyle("A1:J1")->applyFromArray($style_atas);
+        $sheet1->getStyle("A1:K1")->applyFromArray($style_atas);
 
         $sheet1->setCellValue('A1', 'ID');
         $sheet1->setCellValue('B1', 'AGRIKA GATYA ARUM PT');
         $sheet1->setCellValue('C1', 'Cfm');
         $sheet1->setCellValue('D1', 'Tanggal');
-        $sheet1->setCellValue('E1', 'Post Center');
-        $sheet1->setCellValue('F1', 'Keterangan');
-        $sheet1->setCellValue('G1', 'Keterangan2');
-        $sheet1->setCellValue('H1', 'Debit');
-        $sheet1->setCellValue('I1', 'Kredit');
-        $sheet1->setCellValue('J1', 'Balance');
+        $sheet1->setCellValue('E1', 'Nama Akun Lawan');
+        $sheet1->setCellValue('F1', 'Sub Akun');
+        $sheet1->setCellValue('G1', 'Keterangan');
+        $sheet1->setCellValue('H1', 'Keterangan2');
+        $sheet1->setCellValue('I1', 'Debit');
+        $sheet1->setCellValue('J1', 'Kredit');
+        $sheet1->setCellValue('K1', 'Balance');
 
         $kolom = 2;
 
-        $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo, c.ket2
+        $detail = DB::select("SELECT b.nm_akun, a.no_nota, a.tgl, c.nm_akun as nm_akun2, a.ket, a.debit, a.kredit, a.saldo, c.ket2,
+        k.nm_post
         FROM jurnal as a 
         left join akun as b on b.id_akun = a.id_akun 
+        left join tb_post_center as k on k.id_post_center = a.id_post_center
         left join ( SELECT c.id_akun, c.no_nota, GROUP_CONCAT(DISTINCT d.nm_akun SEPARATOR ', ') as nm_akun ,GROUP_CONCAT(DISTINCT c.ket SEPARATOR ', ') as ket2
         FROM jurnal as c left join akun as d on d.id_akun = c.id_akun where c.id_akun != '$r->id_akun' 
         group by c.no_nota ) as c on c.no_nota = a.no_nota AND c.id_akun != a.id_akun 
@@ -351,13 +354,14 @@ class BukuBesarController extends Controller
 
             $sheet1->setCellValue('D' . $kolom, $g->tgl);
             $sheet1->setCellValue('E' . $kolom, $g->saldo == 'Y' ? 'Saldo Awal' : $g->nm_akun2);
+            $sheet1->setCellValue('F' . $kolom, $g->nm_post);
 
-            $sheet1->setCellValue('F' . $kolom, $g->ket);
-            $sheet1->setCellValue('G' . $kolom, $g->ket2);
+            $sheet1->setCellValue('G' . $kolom, $g->ket);
+            $sheet1->setCellValue('H' . $kolom, $g->ket2);
 
-            $sheet1->setCellValue('H' . $kolom, $g->debit);
-            $sheet1->setCellValue('I' . $kolom, $g->kredit);
-            $sheet1->setCellValue('J' . $kolom, $saldo);
+            $sheet1->setCellValue('I' . $kolom, $g->debit);
+            $sheet1->setCellValue('J' . $kolom, $g->kredit);
+            $sheet1->setCellValue('K' . $kolom, $saldo);
             $kolom++;
         }
         $sheet1->getStyle('A2:J' . $kolom - 1)->applyFromArray($style);
