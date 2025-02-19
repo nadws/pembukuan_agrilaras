@@ -56,7 +56,7 @@ class Stok_pakanController extends Controller
             FROM stok_produk_perencanaan as a 
             left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
-            WHERE a.tgl = '$tgl'
+            WHERE a.tgl = '$tgl' and a.id_kandang != '0'
             group by a.id_pakan;"),
             'tgl' => $tgl
 
