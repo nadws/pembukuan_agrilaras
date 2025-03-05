@@ -136,13 +136,14 @@
                         <tr>
                             <th class="dhead" rowspan="2" style="text-align: center">Kandang</th>
                             @foreach ($produk as $p)
-                                <th colspan="2" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
+                                <th colspan="3" style="text-align: center" class="dhead">{{ $p->nm_telur }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             @foreach ($produk as $p)
                                 <th style="text-align: center" class="dhead">Pcs</th>
                                 <th style="text-align: center" class="dhead">Kg</th>
+                                <th style="text-align: center" class="dhead">Kg Bersih</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -162,6 +163,9 @@
                                     @endphp
                                     <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
                                     <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
+                                    <td align="right">
+                                        {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->pcs / 180, 1) }}
+                                    </td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -179,6 +183,8 @@
                                 @endphp
                                 <th class="text-end">{{ number_format($total_mtd->pcs, 0) }}</th>
                                 <th class="text-end">{{ number_format($total_mtd->kg, 1) }}</th>
+                                <th class="text-end">{{ number_format($total_mtd->kg - $total_mtd->pcs / 180, 1) }}
+                                </th>
                             @endforeach
                         </tr>
 
