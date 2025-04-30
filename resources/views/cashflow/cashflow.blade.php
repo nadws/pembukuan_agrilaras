@@ -188,6 +188,10 @@
                         <td align="right">Rp. {{ number_format($u->debit, 0) }} </td>
                     </tr>
                 @endforeach
+                <tr >
+                    <td>Biaya Kerugian Piutang</td>
+                    <td align="right">Rp. {{ number_format($kerugian->debit, 0) }}</td>
+                </tr>
                 {{-- <tr>
                     <th>Total</th>
                     <th style="text-align: right">{{number_format($t_uang,0)}}</th>
@@ -263,7 +267,7 @@
                 @endphp
                 <td class="fw-bold">Grand Total</td>
                 <td class="fw-bold" align="right">Rp
-                    {{ number_format($t_uang + $bg_bank - $biaya_admin->debit, 0) }}
+                    {{ number_format($t_uang + $bg_bank - $biaya_admin->debit + $kerugian->debit, 0) }}
                 </td>
             </tr>
         </table>
