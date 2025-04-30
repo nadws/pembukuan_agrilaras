@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\TelurExport;
+use App\Models\AkunAccurate;
+use App\Models\CashIbuModel;
+use App\Models\JurnalAccurate;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Produk_telurController extends Controller
 {
@@ -78,6 +82,26 @@ class Produk_telurController extends Controller
         ];
         return view('produk_telur.dashboard', $data);
     }
+    // public function index(Request $r)
+    // {
+    //     $bulan = $r->bulan ?? date('m');
+    //     $tahun = $r->tahun ?? date('Y');
+    //     $tgl = $tahun . '-' . $bulan . '-01';
+    //     $tgl2 = empty($r->bulan) ? date('Y-m-d') : date('Y-m-t', strtotime($tgl));
+
+    //     $data = [
+    //         'title' => 'Dashboard Telur',
+    //         'bulan' => DB::table('bulan')->get(),
+    //         'populasi' => CashIbuModel::ttl_ayam2($tgl2, $bulan, $tahun),
+    //         'biaya' => DB::select("SELECT * 
+    //         FROM jurnal_accurates as a 
+    //         left join akun_accurates as b on b.kode_akun = a.kode_akun
+    //         where a.bulan = '$bulan' and a.tahun = '$tahun' and b.tipe_akun = 'Biaya Operasional' "),
+    //         'tanggal' => $tgl2,
+
+    //     ];
+    //     return view('produk_telur.dashboard2', $data);
+    // }
     public function CheckMartadah(Request $r)
     {
         if ($r->cek == 'T') {
@@ -182,5 +206,103 @@ class Produk_telurController extends Controller
             'tgl2' => $tgl2
         ];
         return view('produk_telur.history_alpa', $data);
+    }
+
+    public function import_biaya(Request $r)
+    {
+        $r->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        // notulenTinjauanManajemen::where('tanggal', $r->tanggal)->delete();
+
+        $file = $r->file('file');
+        $spreadsheet = IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $bulan = $r->bulan;
+        $tahun = $r->tahun;
+
+
+        JurnalAccurate::where('bulan', $bulan)->where('tahun', $tahun)->where('id_kandang', '0')->delete();
+        // Skip header
+        foreach (array_slice($rows, 1) as $row) {
+            $kode_akun = $row[1];
+            $nama_akun = $row[3];
+            $debit = str_replace([',', ' '], '', $row[5]);
+
+
+            $akun = AkunAccurate::where('kode_akun', $kode_akun)->first();
+
+
+            if (empty($akun->kode_akun)) {
+                $data = [
+                    'kode_akun' => $kode_akun,
+                    'nama_akun' => $nama_akun,
+                    'tipe_akun' => 'Biaya Operasional',
+                ];
+                AkunAccurate::create($data);
+            } else {
+            }
+
+            $data = [
+                'kode_akun' => $kode_akun,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'total_biaya' => $debit,
+            ];
+            JurnalAccurate::create($data);
+        }
+
+        return redirect()->route('produk_telur', ['bulan' => $bulan, 'tahun' => $tahun])->with('sukses', 'Data Berhasil Di Import');
+    }
+    public function import_biaya_hpp(Request $r)
+    {
+        $r->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        // notulenTinjauanManajemen::where('tanggal', $r->tanggal)->delete();
+
+        $file = $r->file('file');
+        $spreadsheet = IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $bulan = $r->bulan;
+        $tahun = $r->tahun;
+
+
+        JurnalAccurate::where('bulan', $bulan)->where('tahun', $tahun)->where('id_kandang', '!=', '0')->delete();
+        // Skip header
+        foreach (array_slice($rows, 1) as $row) {
+            $kode_akun = $row[1];
+            $nama_akun = $row[2];
+            $debit = str_replace([',', ' '], '', $row[3]);
+
+
+            $akun = AkunAccurate::where('kode_akun', $kode_akun)->first();
+            if (empty($akun->kode_akun)) {
+                $data = [
+                    'kode_akun' => $kode_akun,
+                    'nama_akun' => $nama_akun,
+                    'tipe_akun' => 'Biaya HPP',
+                ];
+                AkunAccurate::create($data);
+            } else {
+            }
+            $kandang = DB::table('kandang')->where('nm_kandang', $row[0])->first();
+            $data = [
+                'kode_akun' => $kode_akun,
+                'id_kandang' => $kandang->id_kandang,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'total_biaya' => $debit,
+            ];
+            JurnalAccurate::create($data);
+        }
+
+        return redirect()->route('produk_telur', ['bulan' => $bulan, 'tahun' => $tahun])->with('sukses', 'Data Berhasil Di Import');
     }
 }

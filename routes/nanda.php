@@ -381,6 +381,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit_telur_dashboard', 'edit_telur_dashboard')->name('edit_telur_dashboard');
         Route::get('/export_telur', 'export')->name('export_telur');
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
+        Route::post('/import_biaya', 'import_biaya')->name('import_biaya');
+        Route::post('/import_biaya_hpp', 'import_biaya_hpp')->name('import_biaya_hpp');
     });
     Route::controller(Saldo_penutup::class)->group(function () {
         Route::get('/saldo_penutup', 'index')->name('saldo_penutup');

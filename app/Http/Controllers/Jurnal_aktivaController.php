@@ -151,7 +151,7 @@ class Jurnal_aktivaController extends Controller
             left join proyek as b on b.id_proyek = a.id_proyek
             left join tb_suplier as c on c.id_suplier = a.id_suplier
             left join tb_post_center as d on d.id_post_center = a.id_post_center
-            where a.no_nota = '$r->no_nota' and a.id_akun = '43' "),
+            where a.no_nota = '$r->no_nota' and a.id_akun in('43','1','32') "),
             'kelompok' => $kelompok,
             'kategori' => $r->kategori,
             'pembelian' => $r->pembelian ?? '',

@@ -578,7 +578,9 @@
                                 FROM harga_pakan as a 
                                 where a.id_pakan = a.id_pakan and a.tgl = (SELECT max(b.tgl) as tgl FROM harga_pakan as b where b.id_pakan = a.id_pakan)
                                 ) as d on d.id_pakan = a.id_pakan
-                                WHERE a.tgl = '$tgl' and a.id_kandang = '$k->id_kandang' and b.kategori in('pakan');");
+                                WHERE a.tgl = '$tgl' and a.id_kandang = '$k->id_kandang' and b.kategori in('pakan')
+                                 GROUP by a.id_pakan;
+                                ");
 
                                 $tl_rp_pakan = sumbK($pkn, 'ttl_rp');
                                 $tl_gr_pkn = sumBk($pkn, 'ttl_gr');
@@ -747,6 +749,7 @@
 
                             </td>
                             <td class="obat/vit td_layer" align="center">
+
                                 @php
                                     $fcr_kuml_plus =
                                         empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)

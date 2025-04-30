@@ -161,8 +161,10 @@
                             a.id_kandang = '$k->id_kandang'
                             ");
                                     @endphp
-                                    <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs, 0) }}</td>
-                                    <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg, 1) }}</td>
+                                    <td align="right">{{ empty($stok->pcs) ? '0' : number_format($stok->pcs ?? 0, 0) }}
+                                    </td>
+                                    <td align="right">{{ empty($stok->kg) ? '0' : number_format($stok->kg ?? 0, 1) }}
+                                    </td>
                                     <td align="right">
                                         {{ empty($stok->kg) ? '0' : number_format($stok->kg - $stok->pcs / 180, 1) }}
                                     </td>
@@ -317,29 +319,29 @@
                                     @endphp
                                     @if ($g->id_gudang_telur == '1')
                                         <td align="right">
-                                            {{ number_format($stok->pcs - $stok->pcs_kredit, 0) }}
+                                            {{ number_format(($stok->pcs ?? 0) - ($stok->pcs_kredit ?? 0), 0) }}
                                             <br>
-                                            {{ number_format($stok2->pcs - $stok2->pcs_kredit, 0) }}
+                                            {{ number_format(($stok2->pcs ?? 0) - ($stok2->pcs_kredit ?? 0), 0) }}
                                         </td>
                                         <td align="right">
-                                            {{ number_format($stok->kg - $stok->kg_kredit, 2) }}
+                                            {{ number_format(($stok->kg ?? 0) - ($stok->kg_kredit ?? 0), 2) }}
                                             <br>
-                                            {{ number_format($stok2->kg - $stok2->kg_kredit, 2) }}
+                                            {{ number_format(($stok2->kg ?? 0) - ($stok2->kg_kredit ?? 0), 2) }}
                                         </td>
                                         <td align="right">
-                                            {{ number_format(($stok->pcs - $stok->pcs_kredit) / 180, 2) }}
+                                            {{ number_format((($stok->pcs ?? 0) - ($stok->pcs_kredit ?? 0)) / 180, 2) }}
                                             <br>
-                                            {{ number_format(($stok2->pcs - $stok2->pcs_kredit) / 180, 2) }}
+                                            {{ number_format((($stok2->pcs ?? 0) - ($stok2->pcs_kredit ?? 0)) / 180, 2) }}
                                         </td>
                                     @else
                                         <td align="right">
-                                            {{ number_format($stok->pcs - $stok->pcs_kredit, 0) }}
+                                            {{ number_format(($stok->pcs ?? 0) - ($stok->pcs_kredit ?? 0), 0) }}
                                         </td>
                                         <td align="right">
-                                            {{ number_format($stok->kg - $stok->kg_kredit, 1) }}
+                                            {{ number_format(($stok->kg ?? 0) - ($stok->kg_kredit ?? 0), 1) }}
                                         </td>
                                         <td align="right">
-                                            {{ number_format(($stok->pcs - $stok->pcs_kredit) / 180, 1) }}
+                                            {{ number_format((($stok->pcs ?? 0) - ($stok->pcs_kredit ?? 0)) / 180, 1) }}
                                         </td>
                                     @endif
                                 @endforeach

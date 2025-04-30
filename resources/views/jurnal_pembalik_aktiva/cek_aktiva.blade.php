@@ -133,11 +133,11 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control nilai_perolehan nilai_perolehan1"
-                                            count='1' value="Rp. {{ number_format($head_jurnal->debit, 0) }}"
+                                            count='1' value="Rp. {{ number_format($head_jurnal->kredit, 0) }}"
                                             readonly>
                                         <input type="hidden" name="h_perolehan[]"
                                             class="form-control  nilai_perolehan_biasa1"
-                                            value="{{ $head_jurnal->debit }}">
+                                            value="{{ $head_jurnal->kredit }}">
                                     </td>
                                     <td>
                                         <p class="nilai_persen1 text-center"></p>

@@ -17,16 +17,16 @@
                 <div class="col-lg-12">
                     <ul class="nav nav-pills float-start">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.aktiva'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.aktiva' ? 'active' : '' }}"
                                 aria-current="page" href="{{ route('penyesuaian.aktiva') }}">Aktiva</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.peralatan'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.peralatan' ? 'active' : '' }}"
                                 href="{{ route('penyesuaian.peralatan') }}">Peralatan</a>
 
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk'? 'active': '' }}"
+                            <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.atk' ? 'active' : '' }}"
                                 href="{{ route('penyesuaian.atk') }}">Atk</a>
                         </li>
                         {{-- <li class="nav-item">
@@ -94,7 +94,7 @@
                                     <input type="text" readonly class="text-end form-control"
                                         value="Rp {{ number_format($total, 2, ',', '.') }}">
                                 </td>
-                                <input type="hidden" class="total_biasa" name="debit_kredit"
+                                <input type="text" class="total_biasa" name="debit_kredit"
                                     value="{{ round($total, 2) }}">
                                 <td>
                                     {{ ucwords($akunKredit->nm_akun) }}

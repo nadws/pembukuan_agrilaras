@@ -17,10 +17,10 @@
         <section class="row">
             <div class="col-md-12">
                 @php
-                $ttlAllPiutang = 0;
-                foreach ($invoice_umum as $i) {
-                $ttlAllPiutang += $i->total_bayar;
-                }
+                    $ttlAllPiutang = 0;
+                    foreach ($invoice_umum as $i) {
+                        $ttlAllPiutang += $i->total_bayar;
+                    }
                 @endphp
                 <button type="button" class="btn btn-outline-primary btn-md font-extrabold mb-0"> Semua Piutang
                     : Rp. {{ number_format($ttlAllPiutang, 2) }}
@@ -51,28 +51,28 @@
                 </thead>
                 <tbody>
                     @foreach ($invoice_umum as $no => $i)
-                    <tr>
-                        <td>{{$no+1}}</td>
-                        <td>{{tanggal($i->tgl)}}</td>
-                        <td>{{$i->kode}}-{{$i->urutan}}</td>
-                        <td>{{$i->nm_produk_concat}}</td>
-                        <td>
-                            @if ($i->lokasi == 'mtd')
-                            {{$i->id_customer}}
-                            @else
-                            {{$i->nm_customer}}
-                            @endif
+                        <tr>
+                            <td>{{ $no + 1 }}</td>
+                            <td>{{ tanggal($i->tgl) }}</td>
+                            <td>{{ $i->kode }}-{{ $i->urutan }}</td>
+                            <td>{{ $i->nm_produk_concat }}</td>
+                            <td>
+                                @if ($i->lokasi == 'mtd')
+                                    {{ $i->id_customer }}
+                                @else
+                                    {{ $i->nm_customer }}
+                                @endif
 
-                        </td>
-                        <td class="text-end">{{$i->qty}}</td>
-                        <td class="text-end">Rp. {{number_format($i->ttl_rp,0)}}</td>
-                        <td class="text-end">Rp. {{number_format($i->total_bayar,0)}}</td>
-                        <td align="center">
-                            <input type="checkbox" no_nota="{{ $i->urutan }}" piutang="{{ $i->total_bayar }}"
-                                class="form-check-glow form-check-input form-check-primary cek_bayar" />
-                        </td>
+                            </td>
+                            <td class="text-end">{{ $i->qty }}</td>
+                            <td class="text-end">Rp. {{ number_format($i->ttl_rp, 0) }}</td>
+                            <td class="text-end">Rp. {{ number_format($i->total_bayar, 0) }}</td>
+                            <td align="center">
+                                <input type="checkbox" no_nota="{{ $i->urutan }}" piutang="{{ $i->total_bayar }}"
+                                    class="form-check-glow form-check-input form-check-primary cek_bayar" />
+                            </td>
 
-                    </tr>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -103,39 +103,39 @@
 
         </section>
         @section('js')
-        <script>
-            $(document).ready(function() {
-                pencarian('pencarian', 'tablealdi');
-                $(".btn_bayar").hide();
-                $(".piutang_cek").hide();
-                $(document).on('change', '.cek_bayar', function() {
-                    var totalPiutang = 0
-                    $('.cek_bayar:checked').each(function() {
-                        var piutang = $(this).attr('piutang');
-                        totalPiutang += parseInt(piutang);
+            <script>
+                $(document).ready(function() {
+                    pencarian('pencarian', 'tablealdi');
+                    $(".btn_bayar").hide();
+                    $(".piutang_cek").hide();
+                    $(document).on('change', '.cek_bayar', function() {
+                        var totalPiutang = 0
+                        $('.cek_bayar:checked').each(function() {
+                            var piutang = $(this).attr('piutang');
+                            totalPiutang += parseInt(piutang);
+                        });
+                        var anyChecked = $('.cek_bayar:checked').length > 0;
+                        $('.btn_bayar').toggle(anyChecked);
+                        $(".piutang_cek").toggle(anyChecked);
+                        $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
                     });
-                    var anyChecked = $('.cek_bayar:checked').length > 0;
-                    $('.btn_bayar').toggle(anyChecked);
-                    $(".piutang_cek").toggle(anyChecked);
-                    $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
-                });
-                $(document).on('click', '.btn_bayar', function() {
-                    var dipilih = [];
-                    $('.cek_bayar:checked').each(function() {
-                        var no_nota = $(this).attr('no_nota');
-                        dipilih.push(no_nota);
-                    });
-                    var params = new URLSearchParams();
+                    $(document).on('click', '.btn_bayar', function() {
+                        var dipilih = [];
+                        $('.cek_bayar:checked').each(function() {
+                            var no_nota = $(this).attr('no_nota');
+                            dipilih.push(no_nota);
+                        });
+                        var params = new URLSearchParams();
 
-                    dipilih.forEach(function(orderNumber) {
-                        params.append('no_nota', orderNumber);
-                    });
-                    var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
-                    window.location.href = "/penjualan2/bayar_piutang_umum?" + queryString;
+                        dipilih.forEach(function(orderNumber) {
+                            params.append('no_nota', orderNumber);
+                        });
+                        var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
+                        window.location.href = "/penjualan2/bayar_piutang_umum?" + queryString;
 
+                    });
                 });
-            });
-        </script>
+            </script>
         @endsection
     </x-slot>
 </x-theme.app>

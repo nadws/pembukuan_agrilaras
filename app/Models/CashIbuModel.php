@@ -141,8 +141,32 @@ class CashIbuModel extends Model
             where c.tgl BETWEEN (SELECT MIN(d.tgl) FROM populasi as d WHERE d.id_kandang = c.id_kandang) and '$tgl2'
             group by c.id_kandang
         ) as c on c.id_kandang = a.id_kandang
+       
         where a.tgl = '$tgl2'
-        group by a.id_kandang;
+        group by a.id_kandang
+        order by b.nm_kandang ASC
+        ");
+    }
+    public static function ttl_ayam2($tgl2, $bulan, $tahun)
+    {
+        return  DB::select("SELECT a.id_kandang,  b.nm_kandang, b.stok_awal, c.mati,c.jual, c.afkir, d.biaya
+        FROM tb_pakan_perencanaan as a 
+        left join kandang as b on b.id_kandang = a.id_kandang
+        left join (
+            SELECT c.id_kandang , sum(c.mati) as mati, sum(c.jual) as jual, sum(c.afkir) as afkir
+            FROM populasi as c 
+            where c.tgl BETWEEN (SELECT MIN(d.tgl) FROM populasi as d WHERE d.id_kandang = c.id_kandang) and '$tgl2'
+            group by c.id_kandang
+        ) as c on c.id_kandang = a.id_kandang
+        left join (
+            SELECT sum(c.total_biaya) as biaya, c.id_kandang
+            FROM jurnal_accurates as c 
+            where c.bulan = $bulan and c.tahun = $tahun
+            group by c.id_kandang
+        ) as d on d.id_kandang = a.id_kandang
+        where a.tgl = '$tgl2'
+        group by a.id_kandang
+        order by b.nm_kandang ASC
         ");
     }
 }

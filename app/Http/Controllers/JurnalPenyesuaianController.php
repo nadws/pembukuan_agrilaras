@@ -67,6 +67,7 @@ class JurnalPenyesuaianController extends Controller
             $nota_t = $max->nomor_nota + 1;
         }
 
+
         $id_user = auth()->user()->id;
         $data =  [
             'title' => 'Jurnal Penyesuaian',

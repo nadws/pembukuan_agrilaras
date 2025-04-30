@@ -191,7 +191,7 @@ class JurnalController extends Controller
         } elseif ($r->id_buku == '14') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '9', '14'])->get();
         } elseif ($r->id_buku == '12') {
-            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12', '14'])->get();
+            $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['1', '2', '12', '14', '6'])->get();
         } elseif ($r->id_buku == '2') {
             $akun = Akun::where('nonaktif', 'T')->whereIn('id_klasifikasi', ['3', '2', '1', '14'])->get();
         } else {
