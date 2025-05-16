@@ -58,7 +58,8 @@ class Stok_pakanController extends Controller
             left join tb_satuan as c on c.id_satuan = b.dosis_satuan
             WHERE a.tgl = '$tgl' and a.id_kandang != '0'
             group by a.id_pakan;"),
-            'tgl' => $tgl
+            'tgl' => $tgl,
+
 
         ];
         return view('stok_pakan.stok', $data);

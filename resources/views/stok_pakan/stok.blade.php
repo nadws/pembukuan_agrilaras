@@ -1,6 +1,7 @@
 <div class="row">
-    <div class="col-lg-5">
-        <div class="row mb-2">
+    <div class="col-lg-12">
+        <h5>Pembelian Pakan</h5>
+        {{-- <div class="row mb-2">
             <div class="col-lg-3">
                 <h6>Stok Pakan</h6>
             </div>
@@ -45,7 +46,7 @@
                 @endforeach
             </tbody>
         </table>
-        <br>
+        <br> --}}
         <div class="row">
             <div class="col-lg-3">
 
@@ -110,8 +111,8 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                             <button type="submit" class="btn btn-primary button-save">Simpan</button>
-                            <button class="float-end btn btn-primary button-save-modal-loading" type="button"
-                                disabled hidden>
+                            <button class="float-end btn btn-primary button-save-modal-loading" type="button" disabled
+                                hidden>
                                 <span class="spinner-border spinner-border-sm " role="status"
                                     aria-hidden="true"></span>
                                 Loading...
@@ -198,7 +199,8 @@
 
 
     </div>
-    <div class="col-lg-3">
+
+    {{-- <div class="col-lg-3">
         <div class="row mb-2">
 
             <div class="col-lg-4">
@@ -308,5 +310,5 @@
         </form>
 
 
-    </div>
+    </div> --}}
 </div>

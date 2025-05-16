@@ -5,8 +5,8 @@
                 <h6 class="float-start mt-1">{{ $title }} </h6>
             </div>
             <div class="col-lg-6">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#view"
-                    class="btn btn-sm btn-primary float-end"><i class="fas fa-calendar-week"></i></a>
+                {{-- <a href="#" data-bs-toggle="modal" data-bs-target="#view"
+                    class="btn btn-sm btn-primary float-end"><i class="fas fa-calendar-week"></i></a> --}}
             </div>
         </div>
     </x-slot>
@@ -129,7 +129,7 @@
 
 
         <section class="row">
-            <div class="col-lg-6">
+            {{-- <div class="col-lg-6">
                 <h6>Stok masuk martadah {{ tanggal($tanggal) }}</h6>
                 <table class="table table-bordered">
                     <thead style="font-size: 10px; border-top-left-radius: 50px">
@@ -201,7 +201,7 @@
                 @endif
 
 
-                {{-- dasda --}}
+
                 <button class="float-end btn btn-sm btn-primary me-2 history-mtd"><i class="fas fa-history"></i>
                     History
                 </button>
@@ -253,8 +253,8 @@
 
                 <button class="float-end btn btn-sm btn-primary me-2 history-tf-alpa"><i class="fas fa-history"></i>
                     History</button>
-            </div>
-            <div class="col-lg-12 mt-4">
+            </div> --}}
+            {{-- <div class="col-lg-12 mt-4">
                 <h6>Stok Telur</h6>
                 <table class="table table-bordered ">
                     <thead>
@@ -349,8 +349,8 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-            <div class="col-lg-8">
+            </div> --}}
+            {{-- <div class="col-lg-8">
 
 
                 <div class="row">
@@ -456,13 +456,101 @@
             </div>
             <div class="col-lg-4">
                 <div id="load_stok_ayam"></div>
-            </div>
+            </div> --}}
 
-            <div class="col-lg-12">
+            {{-- <div class="col-lg-12">
                 <hr style="border: 1px solid #435EBE">
-            </div>
+            </div> --}}
 
-            <div id="load_stok_pakan"></div>
+            <div class="col-lg-6">
+                <div id="load_stok_pakan"></div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5 class="float-start">Rata-rata Harga Telur</h5>
+                    </div>
+                    <div class="col-lg-6">
+                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#tambah_harga_telur"
+                            class="btn btn-primary btn-sm btn-block float-end">Tambah Data</a>
+
+                    </div>
+                    <br>
+                    <br>
+                </div>
+
+
+                <table class="table table-bordered" id="table1">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tanggal</th>
+                            <th>Harga rata-rata</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($harga_telur as $h)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ tanggal($h->tgl) }}</td>
+                                <td>Rp {{ number_format($h->harga, 0) }}</td>
+                                <td>
+                                    <a href="" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                                    <a href="" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                            </tr>
+                        @endforeach
+
+                    </tbody>
+
+                </table>
+
+                <form action="{{ route('saveHargaTelur') }}" method="post" id="save_hrga_pakan">
+                    @csrf
+
+
+                    <div class="modal fade" id="tambah_harga_telur" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog ">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Tambah Harga Telur</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <label for="">Tanggal</label>
+                                            <input type="date" name="tgl" id="" class="form-control">
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <label for="">Harga Rata-rata</label>
+                                            <input type="text" name="harga" class="form-control">
+                                        </div>
+
+                                    </div>
+                                    <div id="tbh_baris_hrga_pakan"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Tutup</button>
+                                    <button type="submit" class="btn btn-primary button-save">Simpan</button>
+                                    <button class="float-end btn btn-primary button-save-modal-loading" type="button"
+                                        disabled hidden>
+                                        <span class="spinner-border spinner-border-sm " role="status"
+                                            aria-hidden="true"></span>
+                                        Loading...
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
         </section>
 
         <x-theme.modal btnSave='T' title="History Telur Martdah" size="modal-lg-max" idModal="history_mtd">

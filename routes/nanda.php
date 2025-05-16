@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AktivaController;
 use App\Http\Controllers\AkunController;
+use App\Http\Controllers\AkunPerkiraanController;
 use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\Jurnal_aktivaController;
+use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\MedionController;
 use App\Http\Controllers\PenjualanAyamController;
 use App\Http\Controllers\Saldo_penutup;
@@ -383,6 +385,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
         Route::post('/import_biaya', 'import_biaya')->name('import_biaya');
         Route::post('/import_biaya_hpp', 'import_biaya_hpp')->name('import_biaya_hpp');
+        Route::post('/saveHargaTelur', 'saveHargaTelur')->name('saveHargaTelur');
     });
     Route::controller(Saldo_penutup::class)->group(function () {
         Route::get('/saldo_penutup', 'index')->name('saldo_penutup');
@@ -486,4 +489,12 @@ Route::controller(MedionController::class)->group(function () {
 });
 Route::controller(ExportRecordingController::class)->group(function () {
     Route::get('/commercial_layer', 'commercial_layer')->name('commercial_layer');
+});
+Route::controller(AkunPerkiraanController::class)->group(function () {
+    Route::get('/akun_perkiraan', 'index')->name('akun_perkiraan');
+    Route::post('/importHpp', 'importHpp')->name('importHpp');
+    Route::post('/importBiaya', 'importBiaya')->name('importBiaya');
+});
+Route::controller(LaporanLabarugiKandangController::class)->group(function () {
+    Route::get('/laporanlabakandang', 'index')->name('laporanlabakandang');
 });

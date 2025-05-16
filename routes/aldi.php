@@ -157,15 +157,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'jurnal')->name('index');
             Route::get('/aktiva', 'index')->name('aktiva');
             Route::post('/aktiva', 'save_aktiva')->name('save_aktiva');
-
             Route::get('/peralatan', 'peralatan')->name('peralatan');
             Route::post('/save_peralatan', 'save_peralatan')->name('save_peralatan');
-
             Route::get('/atk', 'atk')->name('atk');
             Route::get('/export_penyesuaian_atk', 'export_penyesuaian_atk')->name('export_penyesuaian_atk');
             Route::get('/atk/{gudang_id}', 'atk')->name('atk_gudang');
             Route::post('/save_atk', 'save_atk')->name('save_atk');
-
             Route::get('/umum', 'umum')->name('umum');
             Route::get('/load_data_cancel', 'load_data_cancel')->name('load_data_cancel');
             Route::post('/save_umum', 'save_umum')->name('save_umum');

@@ -78,6 +78,7 @@ class Produk_telurController extends Controller
                   where a.cek ='T' and a.lokasi ='opname'
                   group by a.no_nota
                 ) as a;"),
+            'harga_telur' => DB::table('harga_telur')->orderBy('tgl', 'DESC')->get()
 
         ];
         return view('produk_telur.dashboard', $data);
@@ -304,5 +305,16 @@ class Produk_telurController extends Controller
         }
 
         return redirect()->route('produk_telur', ['bulan' => $bulan, 'tahun' => $tahun])->with('sukses', 'Data Berhasil Di Import');
+    }
+
+    public function saveHargaTelur(Request $r)
+    {
+        $data = [
+            'tgl' => $r->tgl,
+            'harga' => $r->harga,
+            'admin' => Auth::user()->name
+        ];
+        DB::table('harga_telur')->insert($data);
+        return redirect()->route('produk_telur', ['tgl' => $r->tgl])->with('sukses', 'Data Berhasil Di Simpan');
     }
 }

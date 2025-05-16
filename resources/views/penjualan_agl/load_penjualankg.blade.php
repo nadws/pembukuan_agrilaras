@@ -58,7 +58,9 @@
     <tbody id="tb_baris_kg">
 
     </tbody>
+
     <tfoot>
+
         <tr>
             <th colspan="9">
                 <button type="button" class="btn btn-block btn-lg tbh_baris_kg"
