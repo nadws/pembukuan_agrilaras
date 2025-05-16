@@ -198,7 +198,8 @@
                     <tr>
                         <th class="text-center dhead freeze-cell1_th  text-white align-middle">DESKRIPSI</th>
                         @foreach ($kandang as $k)
-                            <th class="text-center dhead th_atas text-white">Kandang {{ $k->nm_kandang }}</th>
+                            <th class="text-center dhead th_atas text-white align-middle">Kandang {{ $k->nm_kandang }}
+                            </th>
                         @endforeach
                         <th class="text-end dhead th_atas text-white align-middle">Total</th>
                     </tr>
