@@ -139,6 +139,23 @@
             </a>
         </div>
     </nav>
+    <nav id="navbar-example2" class="navbar bg-body-tertiary px-3 mb-3">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
+                    href="{{ route('laporan_layer') }}">
+                    Laporan Layer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('laporanlabakandang') ? 'active' : '' }}"
+                    href="{{ route('laporanlabakandang') }}">
+                    Laporan Laba Rugi Kandang
+                </a>
+            </li>
+
+        </ul>
+    </nav>
     <div class="container-fluid mt-2">
 
         <form action="">

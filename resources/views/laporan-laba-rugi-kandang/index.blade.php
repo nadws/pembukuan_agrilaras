@@ -139,9 +139,57 @@
             </a>
         </div>
     </nav>
-    <div class="container-fluid mt-2">
+    <nav id="navbar-example2" class="navbar bg-body-tertiary px-3 mb-3">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
+                    href="{{ route('laporan_layer') }}">
+                    Laporan Layer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('laporanlabakandang') ? 'active' : '' }}"
+                    href="{{ route('laporanlabakandang') }}">
+                    Laporan Laba Rugi Kandang
+                </a>
+            </li>
 
-        <h4 class="text-center">Laporan Laba Rugi Perkandang</h4>
+
+        </ul>
+    </nav>
+    <div class="container-fluid mt-2">
+        <div class="row">
+            <div class="col-6 col-lg-8 elemen-hilang">
+                <h6 class="mb-2">Laporan Laba Rugi Kandang {{ date('F Y', strtotime($tgl)) }}</h6>
+            </div>
+            <form action="">
+                <div class="col-12 col-lg-4 float-end d-flex align-items-center">
+
+                    <select name="bulan" id="" class="form-control">
+                        <option value="">Pilih Bulan</option>
+                        @foreach ($bulan_array as $b)
+                            <option value="{{ $b->bulan }}" @selected($b->bulan == $bulan)>{{ $b->nm_bulan }}
+                            </option>
+                        @endforeach
+                    </select>
+                    &nbsp;
+                    <select name="tahun" id="" class="form-control">
+                        <option value="">Pilih Tahun</option>
+                        @foreach ($tahun_array as $b)
+                            <option value="{{ $b->tahun }}" @selected($b->tahun == $tahun)>{{ $b->tahun }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
+                </div>
+            </form>
+            <div class="col-lg-12">
+                <br>
+
+            </div>
+        </div>
+
+
 
         <div class="table-responsive table-container">
             <table class="table table-bordered">
@@ -191,9 +239,9 @@
                                     ->whereMonth('tgl', $bulan)
                                     ->whereYear('tgl', $tahun)
                                     ->first();
-                                $total1 += $ayam->kredit;
+                                $total1 += $ayam->kredit ?? 0;
                             @endphp
-                            <td class="text-end">{{ number_format($ayam->kredit, 0) }}</td>
+                            <td class="text-end">{{ number_format($ayam->kredit ?? 0, 0) }}</td>
                         @endforeach
                         <td class="text-end">{{ number_format($total1, 0) }}</td>
                     </tr>
@@ -209,7 +257,7 @@
                                     ->first();
                             @endphp
                             <td class="text-end fw-bold">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + $ayam->kredit, 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0), 0) }}
                             </td>
                         @endforeach
                         <td class="text-end fw-bold">{{ number_format($total1 + $total, 0) }}</td>
@@ -265,9 +313,7 @@
                             {{ number_format(array_sum($total_per_kandang), 0) }}
                         </th>
                     </tr>
-                    <tr>
-                        <th>&nbsp;</th>
-                    </tr>
+
                     <tr>
                         <th class="freeze-cell1_td ">LABA KOTOR</th>
                         @foreach ($kandang as $k)
@@ -280,7 +326,7 @@
                                     ->first();
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + $ayam->kredit - ($total_per_kandang[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">
@@ -330,9 +376,7 @@
                             {{ number_format(array_sum($total_per_kandang2), 0) }}
                         </th>
                     </tr>
-                    <tr>
-                        <th>&nbsp;</th>
-                    </tr>
+
                     <tr>
                         <th class="freeze-cell1_td">LABA/RUGI</th>
                         @foreach ($kandang as $k)
@@ -345,7 +389,7 @@
                                     ->first();
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + $ayam->kredit - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">

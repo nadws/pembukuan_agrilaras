@@ -22,7 +22,7 @@ class LaporanLabarugiKandangController extends Controller
                 where c.tgl <= '$tgl'
                 group by c.id_kandang
             ) as c on c.id_kandang = a.id_kandang
-            where Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun' and a.pcs != 0 and a.id_gudang = '1'
+            where Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun' and a.pcs != 0 and a.id_gudang = '1' and a.id_kandang != '0'
             group by a.id_kandang
             order by b.nm_kandang ASC;"),
             'biaya_pokok' => DB::select("SELECT a.kode, b.nama, a.nm_departemen, sum(a.debit) as total
@@ -37,7 +37,14 @@ class LaporanLabarugiKandangController extends Controller
             FROM jurnal_accurate as a 
             left join akun_accurate as b on b.kode = a.kode
             where a.buku = '2' and MONTH(a.tgl) = '5' and YEAR(a.tgl) = '2025'
-            group by a.kode;")
+            group by a.kode;"),
+            'tgl' => $tgl,
+            'bulan_array' => DB::table('bulan')->get(),
+            'tahun_array' => DB::table('jurnal_accurate')
+                ->selectRaw('YEAR(tgl) as tahun')
+                ->distinct()
+                ->orderBy('tahun', 'desc')
+                ->get()
 
 
         ];
