@@ -37,7 +37,7 @@ class LaporanLabarugiKandangController extends Controller
             'operasional' => DB::select("SELECT a.kode, b.nama, sum(a.debit) as debit
             FROM jurnal_accurate as a 
             left join akun_accurate as b on b.kode = a.kode
-            where a.buku = '2' and MONTH(a.tgl) = '5' and YEAR(a.tgl) = '2025'
+            where a.buku = '2' and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun'
             group by a.kode;"),
             'biaya_pokok2' => DB::select("SELECT a.kode, b.nama, sum(a.debit) as debit
             FROM jurnal_accurate as a 
