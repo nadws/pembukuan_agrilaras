@@ -188,9 +188,6 @@
 
             </div>
         </div>
-
-
-
         <div class="table-responsive table-container">
             <table class="table table-bordered">
 
@@ -217,10 +214,12 @@
                         <td class="freeze-cell1_td ">Penjualan Telur</td>
                         @php
                             $total = 0;
+                            $ttl_ayam_jual = 0;
                         @endphp
                         @foreach ($kandang as $k)
                             @php
                                 $total += ($k->kg - $k->pcs / 180) * $harga_telur->harga;
+                                $ttl_ayam_jual += $k->jual;
                             @endphp
                             <td class="text-end">{{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga, 0) }}
                                 {{-- /{{ $k->kg - $k->pcs / 180 }} --}}
@@ -232,19 +231,26 @@
                         <td class="freeze-cell1_td ">Penjualan Ayam</td>
                         @php
                             $total1 = 0;
+
                         @endphp
                         @foreach ($kandang as $k)
                             @php
-                                $ayam = DB::table('jurnal_accurate')
-                                    ->where('kode', '400002')
-                                    ->where('nm_departemen', $k->nm_kandang)
-                                    ->whereMonth('tgl', $bulan)
-                                    ->whereYear('tgl', $tahun)
-
-                                    ->first();
-                                $total1 += $ayam->kredit ?? 0;
+                                $ayam = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and a.nm_departemen = '$k->nm_kandang' and a.nm_departemen is not null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+                                $ayam2 = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and  a.nm_departemen is  null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+                                $total1 += empty($ayam->kredit)
+                                    ? ($ayam2->kredit / $ttl_ayam_jual) * $k->jual
+                                    : $ayam->kredit;
                             @endphp
-                            <td class="text-end">{{ number_format($ayam->kredit ?? 0, 0) }}</td>
+                            <td class="text-end">
+                                {{ number_format(empty($ayam->kredit) ? ($ayam2->kredit / $ttl_ayam_jual) * $k->jual : $ayam->kredit, 0) }}
+                                {{-- /
+                                {{ $k->jual }}/{{ $ttl_ayam_jual }}</td> --}}
                         @endforeach
                         <td class="text-end">{{ number_format($total1, 0) }}</td>
                     </tr>
@@ -252,15 +258,21 @@
                         <td class="fw-bold freeze-cell1_td ">Jumlah Pendapatan</td>
                         @foreach ($kandang as $k)
                             @php
-                                $ayam = DB::table('jurnal_accurate')
-                                    ->where('kode', '400002')
-                                    ->where('nm_departemen', $k->nm_kandang)
-                                    ->whereMonth('tgl', $bulan)
-                                    ->whereYear('tgl', $tahun)
-                                    ->first();
+                                $ayam = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and a.nm_departemen = '$k->nm_kandang' and a.nm_departemen is not null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+                                $ayam2 = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and  a.nm_departemen is  null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+
+                                $hasil = empty($ayam->kredit)
+                                    ? ($ayam2->kredit / $ttl_ayam_jual) * $k->jual
+                                    : $ayam->kredit;
                             @endphp
                             <td class="text-end fw-bold">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + $hasil, 0) }}
                             </td>
                         @endforeach
                         <td class="text-end fw-bold">{{ number_format($total1 + $total, 0) }}</td>
@@ -359,15 +371,21 @@
                         <th class="freeze-cell1_td ">LABA KOTOR</th>
                         @foreach ($kandang as $k)
                             @php
-                                $ayam = DB::table('jurnal_accurate')
-                                    ->where('kode', '400002')
-                                    ->where('nm_departemen', $k->nm_kandang)
-                                    ->whereMonth('tgl', $bulan)
-                                    ->whereYear('tgl', $tahun)
-                                    ->first();
+                                $ayam = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and a.nm_departemen = '$k->nm_kandang' and a.nm_departemen is not null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+                                $ayam2 = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and  a.nm_departemen is  null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+
+                                $hasil = empty($ayam->kredit)
+                                    ? ($ayam2->kredit / $ttl_ayam_jual) * $k->jual
+                                    : $ayam->kredit;
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($hasil ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">
@@ -423,15 +441,21 @@
                         <th class="freeze-cell1_td">LABA/RUGI</th>
                         @foreach ($kandang as $k)
                             @php
-                                $ayam = DB::table('jurnal_accurate')
-                                    ->where('kode', '400002')
-                                    ->where('nm_departemen', $k->nm_kandang)
-                                    ->whereMonth('tgl', $bulan)
-                                    ->whereYear('tgl', $tahun)
-                                    ->first();
+                                $ayam = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and a.nm_departemen = '$k->nm_kandang' and a.nm_departemen is not null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+                                $ayam2 = DB::selectOne(
+                                    "SELECT a.* FROM jurnal_accurate as a 
+                                    where a.kode = '400002' and  a.nm_departemen is  null and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun';",
+                                );
+
+                                $hasil = empty($ayam->kredit)
+                                    ? ($ayam2->kredit / $ttl_ayam_jual) * $k->jual
+                                    : $ayam->kredit;
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($hasil ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">

@@ -13,7 +13,7 @@ class LaporanLabarugiKandangController extends Controller
         $tahun = $r->tahun ?? date('Y');
         $tgl = date('Y-m-t', strtotime($tahun . '-' . $bulan . '-01'));
         $data = [
-            'kandang' => DB::select("SELECT a.id_kandang, b.nm_kandang, sum(a.pcs) as pcs , sum(a.kg) as kg, (COALESCE(b.stok_awal,0) - COALESCE(c.mati,0) -COALESCE(c.jual,0) - COALESCE(c.afkir,0)) as ttl_ayam
+            'kandang' => DB::select("SELECT a.id_kandang, b.nm_kandang, sum(a.pcs) as pcs , sum(a.kg) as kg, (COALESCE(b.stok_awal,0) - COALESCE(c.mati,0) -COALESCE(c.jual,0) - COALESCE(c.afkir,0)) as ttl_ayam, (COALESCE(c.jual,0) + COALESCE(c.afkir,0)) as jual
             FROM stok_telur as a 
             left join kandang as b on b.id_kandang = a.id_kandang
             left join (
