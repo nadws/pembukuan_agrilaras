@@ -14,7 +14,15 @@ class AkunPerkiraanController extends Controller
     {
         $data = [
             'title' => 'Akun Perkiraan',
-            'akun' => DB::table('akun_accurate')->whereNull('akun_induk')->get(),
+            'akun' => DB::select("SELECT a.kode, a.nama, b.debit, b.kredit, a.tipe_akun
+            FROM akun_accurate as a 
+                left join (
+                    SELECT b.kode , sum(b.debit) as debit , sum(b.kredit) as kredit
+                    FROM jurnal_accurate as b
+                    group by b.kode
+                ) as b on b.kode = a.kode
+                where a.akun_induk is null
+                "),
             'bulan' => DB::table('bulan')->get(),
         ];
         return view('akun-perkiraan.index', $data);

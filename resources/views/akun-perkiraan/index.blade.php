@@ -30,14 +30,23 @@
 
                     @foreach ($akun as $a)
                         @php
-                            $akun2 = DB::table('akun_accurate')->where('akun_induk', $a->kode)->get();
+                            // $akun2 = DB::table('akun_accurate')->where('akun_induk', $a->kode)->get();
+                            $akun2 = DB::select("SELECT a.kode, a.nama, b.debit, b.kredit,a.tipe_akun
+                            FROM akun_accurate as a 
+                                left join (
+                                    SELECT b.kode , sum(b.debit) as debit , sum(b.kredit) as kredit
+                                    FROM jurnal_accurate as b
+                                    group by b.kode
+                                ) as b on b.kode = a.kode
+                                where a.akun_induk = '$a->kode'
+                                ");
                         @endphp
                         <tr>
                             <td>{{ $no++ }}</td>
                             <td>{{ $a->kode }}</td>
                             <td><strong>{{ $a->nama }}</strong></td>
                             <td>{{ $a->tipe_akun }}</td>
-                            <td class="text-end"></td>
+                            <td class="text-end">{{ number_format($a->debit - $a->kredit, 0) }}</td>
                         </tr>
                         @foreach ($akun2 as $a2)
                             <tr>
@@ -45,7 +54,7 @@
                                 <td style="padding-left: 20px;">{{ $a2->kode }}</td>
                                 <td>{{ $a2->nama }}</td>
                                 <td>{{ $a2->tipe_akun }}</td>
-                                <td class="text-end"></td>
+                                <td class="text-end">{{ number_format($a2->debit - $a2->kredit, 0) }}</td>
                             </tr>
                         @endforeach
                     @endforeach
