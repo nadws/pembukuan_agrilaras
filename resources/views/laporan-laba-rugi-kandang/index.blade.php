@@ -240,6 +240,7 @@
                                     ->where('nm_departemen', $k->nm_kandang)
                                     ->whereMonth('tgl', $bulan)
                                     ->whereYear('tgl', $tahun)
+
                                     ->first();
                                 $total1 += $ayam->kredit ?? 0;
                             @endphp
@@ -305,14 +306,52 @@
                             <td class="text-end fw-bold">{{ number_format($total2, 0) }}</td>
                         </tr>
                     @endforeach
+                    @php
+                        $total_per_kandang2 = [];
+                        foreach ($kandang as $k) {
+                            $total_per_kandang2[$k->nm_kandang] = 0;
+                        }
+
+                    @endphp
+                    @php
+                        $total_per_kandang_pokok = [];
+                        foreach ($kandang as $k) {
+                            $total_per_kandang_pokok[$k->nm_kandang] = 0;
+                        }
+
+                    @endphp
+                    @foreach ($biaya_pokok2 as $o)
+                        <tr>
+                            <td class="freeze-cell1_td">{{ $o->nama }}</td>
+                            @php
+                                $total_pokok = 0;
+                            @endphp
+                            @foreach ($kandang as $k)
+                                @php
+                                    $total_pokok += ($o->debit / $ttl_ayam) * $k->ttl_ayam;
+                                    $nilai2 = ($o->debit / $ttl_ayam) * $k->ttl_ayam;
+                                    $total_per_kandang_pokok[$k->nm_kandang] += $nilai2;
+                                @endphp
+                                <td class="text-end">{{ number_format(($o->debit / $ttl_ayam) * $k->ttl_ayam, 0) }}
+                                    {{-- <br>
+                                    {{ $ttl_ayam }} / {{ $k->ttl_ayam }}
+                                    <br>
+                                    {{ $o->debit }} --}}
+                                </td>
+                            @endforeach
+                            <td class="text-end fw-bold">{{ number_format($total_pokok, 0) }}</td>
+                        </tr>
+                    @endforeach
 
                     <tr>
                         <th class="freeze-cell1_td ">Jumlah Beban Pokok Penjualan</th>
                         @foreach ($kandang as $k)
-                            <th class="text-end">{{ number_format($total_per_kandang[$k->nm_kandang] ?? 0, 0) }}</th>
+                            <th class="text-end">
+                                {{ number_format(($total_per_kandang[$k->nm_kandang] ?? 0) + ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
+                            </th>
                         @endforeach
                         <th class="text-end fw-bold">
-                            {{ number_format(array_sum($total_per_kandang), 0) }}
+                            {{ number_format(array_sum($total_per_kandang) + array_sum($total_per_kandang_pokok), 0) }}
                         </th>
                     </tr>
 
@@ -328,11 +367,12 @@
                                     ->first();
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">
-                            {{ number_format($total1 + $total - array_sum($total_per_kandang), 0) }}</td>
+                            {{ number_format($total1 + $total - array_sum($total_per_kandang) - array_sum($total_per_kandang_pokok), 0) }}
+                        </td>
                     </tr>
                     {{-- <tr>
                         <th class="freeze-cell1_td ">BEBAN OPERASIONAL</th>
@@ -391,11 +431,11 @@
                                     ->first();
                             @endphp
                             <th class="text-end">
-                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0), 0) }}
+                                {{ number_format(($k->kg - $k->pcs / 180) * $harga_telur->harga + ($ayam->kredit ?? 0) - ($total_per_kandang[$k->nm_kandang] ?? 0) - ($total_per_kandang2[$k->nm_kandang] ?? 0) - ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
                             </th>
                         @endforeach
                         <td class="text-end fw-bold">
-                            {{ number_format($total1 + $total - array_sum($total_per_kandang) - array_sum($total_per_kandang2), 0) }}
+                            {{ number_format($total1 + $total - array_sum($total_per_kandang) - array_sum($total_per_kandang_pokok) - array_sum($total_per_kandang2), 0) }}
                         </td>
                     </tr>
 

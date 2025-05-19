@@ -27,10 +27,15 @@ class AkunPerkiraanController extends Controller
             'file' => 'required|mimes:xlsx,xls'
         ]);
 
+
+
         $bulan = $r->bulan;
         $tahun = $r->tahun;
         $tgl = $tahun . '-' . $bulan . '-01';
         $tgl = date('Y-m-t', strtotime($tgl));
+
+        $tes =  DB::table('jurnal_accurate')->whereMonth('tgl', $bulan)->whereYear('tgl', $tahun)->where('buku', '1')->delete();
+
 
         $file = $r->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
@@ -80,7 +85,7 @@ class AkunPerkiraanController extends Controller
         $tahun = $r->tahun;
         $tgl = $tahun . '-' . $bulan . '-01';
         $tgl = date('Y-m-t', strtotime($tgl));
-
+        DB::table('jurnal_accurate')->whereMonth('tgl', $bulan)->whereYear('tgl', $tahun)->where('buku', '2')->delete();
         $file = $r->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();

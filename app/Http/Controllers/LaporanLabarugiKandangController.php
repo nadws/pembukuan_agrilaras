@@ -28,8 +28,9 @@ class LaporanLabarugiKandangController extends Controller
             'biaya_pokok' => DB::select("SELECT a.kode, b.nama, a.nm_departemen, sum(a.debit) as total
             FROM jurnal_accurate as a
             left join akun_accurate as b on b.kode = a.kode
-            WHERE a.buku='1' and a.debit != 0 and Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun'
+            WHERE a.buku='1' and a.debit != 0 and Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun' and a.nm_departemen is not null
             group by a.kode;"),
+
             'bulan' => $bulan,
             'tahun' => $tahun,
             'harga_telur' => DB::table('harga_telur')->whereMonth('tgl', $bulan)->whereYear('tgl', $tahun)->orderByDesc('tgl')->first(),
@@ -37,6 +38,11 @@ class LaporanLabarugiKandangController extends Controller
             FROM jurnal_accurate as a 
             left join akun_accurate as b on b.kode = a.kode
             where a.buku = '2' and MONTH(a.tgl) = '5' and YEAR(a.tgl) = '2025'
+            group by a.kode;"),
+            'biaya_pokok2' => DB::select("SELECT a.kode, b.nama, sum(a.debit) as debit
+            FROM jurnal_accurate as a 
+            left join akun_accurate as b on b.kode = a.kode
+            where a.buku = '1' and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun' and a.nm_departemen is null and a.debit != 0
             group by a.kode;"),
             'tgl' => $tgl,
             'bulan_array' => DB::table('bulan')->get(),

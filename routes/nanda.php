@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/testing', 'testing')->name('testing');
         Route::get('/penjualan_agl', 'penjualan_agl')->name('penjualan_agl');
         Route::get('/kandang', 'kandang')->name('kandang');
+        Route::get('/accurate', 'accurate')->name('accurate');
     });
 
 

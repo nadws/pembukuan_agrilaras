@@ -178,6 +178,20 @@ class NavbarController extends Controller
         $title = 'Pembelian';
         return view('navbar.data_master', compact(['data', 'title']));
     }
+    public function accurate()
+    {
+        $data = [
+            [
+                'judul' => 'Akun Perkiraan',
+                'route' => 'akun_perkiraan',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Import dan data dari accurate',
+            ]
+
+        ];
+        $title = 'Pembelian';
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
     public function pembayaran()
     {
         $data = [
