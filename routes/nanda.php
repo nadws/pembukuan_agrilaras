@@ -498,4 +498,6 @@ Route::controller(AkunPerkiraanController::class)->group(function () {
 });
 Route::controller(LaporanLabarugiKandangController::class)->group(function () {
     Route::get('/laporanlabakandang', 'index')->name('laporanlabakandang');
+    Route::get('/saveLabaRugiKandang', 'saveLabaRugiKandang')->name('saveLabaRugiKandang');
+    Route::get('/detailLabaRugiKandang', 'detailLabaRugiKandang')->name('detailLabaRugiKandang');
 });

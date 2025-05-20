@@ -149,7 +149,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('laporanlabakandang') ? 'active' : '' }}"
-                    href="{{ route('laporanlabakandang') }}">
+                    href="{{ route('saveLabaRugiKandang') }}">
                     Laporan Laba Rugi Kandang
                 </a>
             </li>

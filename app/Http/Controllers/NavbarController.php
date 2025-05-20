@@ -186,6 +186,12 @@ class NavbarController extends Controller
                 'route' => 'akun_perkiraan',
                 'img' => 'accounting.png',
                 'deskripsi' => 'Import dan data dari accurate',
+            ],
+            [
+                'judul' => 'Egg Production Forecast',
+                'route' => 'akun_perkiraan',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Import dan data dari accurate',
             ]
 
         ];
