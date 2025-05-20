@@ -13,6 +13,7 @@ class LaporanLabarugiKandangController extends Controller
     {
         $bulan = $r->bulan ?? date('m');
         $tahun = $r->tahun ?? date('Y');
+
         $tgl = date('Y-m-t', strtotime($tahun . '-' . $bulan . '-01'));
         $tgl_sebelum = date('Y-m-t', strtotime($tahun . '-' . $bulan . '-01 -1 month'));
         $tanggalBatas = Carbon::createFromDate($tahun, $bulan, 1);
@@ -90,11 +91,14 @@ class LaporanLabarugiKandangController extends Controller
 
             $ayam = LabarugiKandang::ayam1($bulan, $tahun, $k->nm_kandang);
             $ayam2 = LabarugiKandang::ayam2($bulan, $tahun);
+
+            $ttl_ayam1 = $ayam->kredit ?? 0;
+            $ttl_ayam2 = empty($ayam2->kredit) ? 0 : ($ayam2->kredit / $ttl_ayam_jual) * $k->jual;
             $penjualan_ayam = [
                 'tgl' => $tgl,
                 'kandang_id' => $k->id_kandang,
                 'kode' => '400002',
-                'ttl_rp' => empty($ayam->kredit) ? (empty($ayam2->kredit) ? 0 : ($ayam2->kredit / $ttl_ayam_jual) * $k->jual) : $ayam->kredit,
+                'ttl_rp' => $ttl_ayam1 + $ttl_ayam2,
                 'buku' => '1',
             ];
 

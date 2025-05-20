@@ -163,7 +163,7 @@
 
             </div>
         </div>
-        <form action="">
+        <form action="{{ route('saveLabaRugiKandang') }}" method="get">
             <div class="row">
                 <div class="col-6 col-lg-8 elemen-hilang">
                     <h6 class="mb-2">Laporan Laba Rugi Kandang {{ date('F Y', strtotime($tgl)) }}</h6>
