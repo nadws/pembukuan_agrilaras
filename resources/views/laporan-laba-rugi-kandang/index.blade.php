@@ -449,7 +449,7 @@
                                             $total_per_kandang2[$k->nm_kandang] += $nilai2;
                                         @endphp
                                         <td data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Total Ayam : {{ $k->ttl_ayam }} | Ayam awal : {{ $k->ttl_ayam - $k->jual }} "
+                                            title="Total Ayam : {{ $ttl_ayam }} | Ayam awal : {{ $k->ttl_ayam - $k->jual }} "
                                             class="text-end">
                                             {{ number_format(($o->debit / $ttl_ayam) * $k->ttl_ayam, 0) }}
                                             {{-- <br>

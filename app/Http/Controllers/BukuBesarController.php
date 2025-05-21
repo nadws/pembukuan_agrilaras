@@ -166,7 +166,7 @@ class BukuBesarController extends Controller
         // return Excel::download(new Buku_besarExport($tgl1, $tgl2, $id_akun, $totalrow), 'detail_buku_besar.xlsx');
 
 
-        $akun = DB::table('akun')->where('id_klasifikasi', $id_klasifikasi)->get();
+        $akun = DB::table('akun')->get();
         $style = [
             'borders' => [
                 'alignment' => [
