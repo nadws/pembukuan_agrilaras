@@ -169,7 +169,8 @@ class LaporanLabarugiKandangController extends Controller
             'kandang' => DB::select("SELECT a.kandang_id , b.nm_kandang
             FROM laba_rugi_kandang as a
             left join kandang as b on a.kandang_id = b.id_kandang 
-            group by a.kandang_id"),
+            group by a.kandang_id
+            order by b.nm_kandang asc"),
             'kandang_id' => $r->id_kandang,
         ];
 
