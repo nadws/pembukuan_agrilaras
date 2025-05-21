@@ -1,4 +1,12 @@
 <div class="row">
+    <div class="col-lg-6 mb-4">
+        <label for="">Pilih Kandang</label>
+        <select name="" id="" class="form-control pilih-kandang">
+            @foreach ($kandang as $k)
+                <option value="{{ $k->kandang_id }}" @selected($kandang_id == $k->kandang_id)>{{ $k->nm_kandang }}</option>
+            @endforeach
+        </select>
+    </div>
     <div class="col-lg-12">
         <table class="table ">
 

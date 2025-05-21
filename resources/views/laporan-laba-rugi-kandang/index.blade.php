@@ -527,6 +527,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div id="loading-spinner" style="display: none; text-align: center;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                     <div class="history_kandang"></div>
                 </div>
                 <div class="modal-footer">
@@ -547,22 +552,45 @@
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-    $(document).on('click', '.kandang', function() {
-        var nm_kandang = $(this).attr('nm_kandang');
-        var id_kandang = $(this).attr('id_kandang');
-        $('.modal-title').text('Akumulasi Kandang ' + nm_kandang)
+    $(document).ready(function() {
+        function getkandang(id_kandang) {
+            $.ajax({
+                type: "get",
+                url: "{{ route('detailLabaRugiKandang') }}",
+                data: {
+                    id_kandang: id_kandang
+                },
+                success: function(response) {
 
-        $.ajax({
-            type: "get",
-            url: "{{ route('detailLabaRugiKandang') }}",
-            data: {
-                id_kandang: id_kandang
-            },
-            success: function(response) {
-                $('.history_kandang').html(response);
-            }
+                    $('.history_kandang').html(response);
+                    $('#loading-spinner').hide();
+                }
+            });
+        }
+        $(document).on('click', '.kandang', function() {
+            var nm_kandang = $(this).attr('nm_kandang');
+            var id_kandang = $(this).attr('id_kandang');
+
+            $('#loading-spinner').show();
+            $('.history_kandang').html("");
+            setTimeout(function() {
+                $('.modal-title').text('Akumulasi Kandang ' + nm_kandang)
+                getkandang(id_kandang);
+                $('#loading-spinner').hide();
+            }, 1000);
         });
+        $(document).on('change', '.pilih-kandang', function() {
+            var nm_kandang = $(this).find('option:selected').text();
+            var id_kandang = $(this).val();
+            $('#loading-spinner').show();
+            $('.history_kandang').html("");
+            setTimeout(function() {
+                $('.modal-title').text('Akumulasi Kandang ' + nm_kandang)
+                getkandang(id_kandang);
+                $('#loading-spinner').hide();
+            }, 1000);
 
+        });
     });
 
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))

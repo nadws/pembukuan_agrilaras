@@ -166,6 +166,11 @@ class LaporanLabarugiKandangController extends Controller
             'pendapatan' => LabarugiKandang::akumulasiKandang($r->id_kandang, 'REVE'),
             'biaya_pokok' => LabarugiKandang::akumulasiKandang($r->id_kandang, 'COGS'),
             'biaya_operasional' => LabarugiKandang::akumulasiKandang($r->id_kandang, 'EXPS'),
+            'kandang' => DB::select("SELECT a.kandang_id , b.nm_kandang
+            FROM laba_rugi_kandang as a
+            left join kandang as b on a.kandang_id = b.id_kandang 
+            group by a.kandang_id"),
+            'kandang_id' => $r->id_kandang,
         ];
 
         return view('laporan-laba-rugi-kandang.detail', $data);
