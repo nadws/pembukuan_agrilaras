@@ -192,7 +192,13 @@ class NavbarController extends Controller
                 'route' => 'akun_perkiraan',
                 'img' => 'accounting.png',
                 'deskripsi' => 'Import dan data dari accurate',
-            ]
+            ],
+            [
+                'judul' => 'Detail Egg Production',
+                'route' => 'forecast.detailEggProduction',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Detail Egg Production',
+            ],
 
         ];
         $title = 'Pembelian';

@@ -34,6 +34,7 @@ use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\ExportRecordingController;
+use App\Http\Controllers\ForecastController;
 use App\Http\Controllers\Jurnal_aktivaController;
 use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\MedionController;
@@ -501,3 +502,10 @@ Route::controller(LaporanLabarugiKandangController::class)->group(function () {
     Route::get('/saveLabaRugiKandang', 'saveLabaRugiKandang')->name('saveLabaRugiKandang');
     Route::get('/detailLabaRugiKandang', 'detailLabaRugiKandang')->name('detailLabaRugiKandang');
 });
+
+Route::controller(ForecastController::class)
+    ->prefix('forecast')
+    ->name('forecast.')
+    ->group(function () {
+        Route::get('/detailEggProduction', 'detailEggProduction')->name('detailEggProduction');
+    });
