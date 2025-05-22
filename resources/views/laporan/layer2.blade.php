@@ -880,8 +880,6 @@
                                     class="{{ $tpl_hari_ini - $tpl_kemarin < 0 ? 'text-danger' : '' }}">{{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}</span>
                                 <br>
                             </td>
-
-
                         </tr>
                     @endforeach
                 </tbody>
