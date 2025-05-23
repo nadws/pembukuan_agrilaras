@@ -23,16 +23,12 @@ class LaporanLabarugiKandangController extends Controller
             ->orderByDesc('tgl')
             ->first();
 
-        // Kalau tidak ada data, ambil data terbaru secara global
         if (!$harga) {
-            // Ambil harga sebelum tanggal 1 bulan tsb
             $harga = DB::table('harga_telur')
                 ->where('tgl', '<', $tanggalBatas)
                 ->orderByDesc('tgl')
                 ->first();
         }
-
-
         $data = [
             'kandang' => LabarugiKandang::kandang($bulan, $tahun, $tgl_sebelum),
             'biaya_pokok' => LabarugiKandang::biaya_pokok($bulan, $tahun),

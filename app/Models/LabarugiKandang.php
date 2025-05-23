@@ -12,18 +12,26 @@ class LabarugiKandang extends Model
 
     public static function kandang($bulan, $tahun, $tgl_sebelum)
     {
-        return DB::select("SELECT a.id_kandang, b.nm_kandang, sum(a.pcs) as pcs , sum(a.kg) as kg, (COALESCE(b.stok_awal,0) - COALESCE(c.mati,0) -COALESCE(c.jual,0) - COALESCE(c.afkir,0)) as ttl_ayam, (COALESCE(c.jual,0) + COALESCE(c.afkir,0)) as jual
-            FROM stok_telur as a 
-            left join kandang as b on b.id_kandang = a.id_kandang
-            left join (
-            	SELECT c.id_kandang, sum(c.mati) as mati, sum(c.jual) as jual, sum(c.afkir) as afkir
-                FROM populasi as c
-                where c.tgl <= '$tgl_sebelum'
-                group by c.id_kandang
-            ) as c on c.id_kandang = a.id_kandang
-            where Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun' and a.pcs != 0 and a.id_gudang = '1' and a.id_kandang != '0'
-            group by a.id_kandang
-            order by b.nm_kandang ASC;");
+        return DB::select("SELECT a.id_kandang, b.nm_kandang, d.pcs, d.kg,(COALESCE(b.stok_awal,0) - COALESCE(e.mati,0) -COALESCE(e.jual,0) - COALESCE(e.afkir,0)) as ttl_ayam, (COALESCE(e.jual,0) + COALESCE(e.afkir,0)) as jual
+        FROM stok_produk_perencanaan as a
+        left join kandang as b on b.id_kandang = a.id_kandang
+        left join tb_produk_perencanaan as c on c.id_produk = a.id_pakan
+        left join (
+            SELECT d.id_kandang, sum(d.pcs) as pcs , sum(d.kg) as kg
+            FROM stok_telur as d
+            Where Month(d.tgl) = '$bulan' and Year(d.tgl) = '$tahun' and d.pcs != 0 and d.id_gudang = '1' and d.id_kandang != '0'
+            group by d.id_kandang
+        ) as d on d.id_kandang = a.id_kandang
+        left join (
+        SELECT e.id_kandang, sum(e.mati) as mati, sum(e.jual) as jual, sum(e.afkir) as afkir
+        FROM populasi as e
+        where e.tgl <= '$tgl_sebelum'
+        group by e.id_kandang
+        ) as e on e.id_kandang = a.id_kandang
+
+        where Month(a.tgl) = '$bulan' and Year(a.tgl) = '$tahun' and c.kategori ='pakan' and a.id_kandang != '0'
+        group by a.id_kandang
+        order by b.nm_kandang ASC;");
     }
     public static function ayam1($bulan, $tahun, $kandang)
     {

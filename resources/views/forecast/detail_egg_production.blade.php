@@ -16,22 +16,47 @@
                     </tr>
                 </thead>
                 <tbody>
+
                     @foreach ($kandang as $k)
                         <tr>
-                            <td colspan="2">{{ $k->nm_kandang }}</td>
+                            <td colspan="2">
+                                {{ $k->nm_kandang }}
+                            </td>
+                            <td></td>
+
+                            @foreach ($bulan as $b)
+                                @php
+
+                                    $tgl_awal = "$tahun-$b->bulan-01";
+                                    $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
+
+                                    $umurawal = \Carbon\Carbon::parse($k->chick_in)->diffInWeeks(
+                                        \Carbon\Carbon::parse('2025-04-26'),
+                                    );
+                                    $umursampai = \Carbon\Carbon::parse($k->chick_in)->diffInWeeks(
+                                        \Carbon\Carbon::parse($tgl_akhir),
+                                    );
+                                @endphp
+                                <td>{{ $umurawal }} - {{ $umursampai }}</td>
+                            @endforeach
                         </tr>
                         <tr>
                             <td colspan="2">Jumlah Ayam</td>
                             <td>Ayam (L)</td>
+                            <td class="text-end">
+                                {{ number_format($k->populasi - $k->populasi * 0.01 - $k->populasi * 0.002, 0) }}
+                            </td>
                         </tr>
                         <tr>
                             <td class="text-end">{{ number_format($k->populasi, 0) }}</td>
                             <td>Ekor</td>
                             <td>Ayam (D)</td>
+                            <td class="text-end">{{ number_format($k->populasi * 0.01, 0) }}</td>
                         </tr>
                         <tr>
                             <td colspan="2"></td>
                             <td>Ayam (C)</td>
+                            <td class="text-end">{{ number_format($k->populasi * 0.002, 0) }}</td>
                         </tr>
                     @endforeach
 
