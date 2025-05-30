@@ -186,10 +186,10 @@
                         </th>
                         <th class="dhead freeze-cell_th1 table_layer ">Umur <br> 85 mgg</th>
                         <th class="dhead table_layer th_atas" width="5%" colspan="2">Populasi</th>
-                        <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
+                        <th class="dhead table_layer th_atas" colspan="7">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                        <th class="dhead table_layer th_atas" colspan="7">KUML</th>
+                        <th class="dhead table_layer th_atas" colspan="6">KUML</th>
                     </tr>
                     <tr>
                         {{-- Umur --}}
@@ -261,6 +261,7 @@
                             <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
                                 style="cursor: pointer"></i>
                         </th>
+                        <th class="dhead table_layer th_atas2">Telur(%)</th>
                         {{-- Data Telur --}}
 
                         {{-- pakan --}}
@@ -272,7 +273,7 @@
                         </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
-                        <th class="dhead table_layer th_atas2">Telur(%)</th>
+
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
@@ -636,6 +637,68 @@
                                     {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week_plus, 2), 0) }}
                                 </span>
                             </td>
+                            <td class="td_layer">
+                                @php
+                                    $telur = DB::select("SELECT a.id_telur, b.nm_telur, sum(a.pcs) as pcs, sum(a.kg) FROM stok_telur as a
+                                    left join telur_produk as b on b.id_produk_telur = a.id_telur
+                                    where a.tgl ='$tgl' and a.id_kandang = '$k->id_kandang'
+                                    group by a.id_telur , a.id_kandang
+                                    ");
+                                @endphp
+                                <table>
+                                    <tr>
+                                        <th>grd</th>
+                                        <th>:</th>
+                                        <th>d1</th>
+                                        <th>&nbsp;</th>
+                                        <th>d7</th>
+                                        <th>&nbsp;</th>
+                                        <th>d7+</th>
+                                        <th>&nbsp;</th>
+                                        <th>dkk</th>
+                                        <th>&nbsp;</th>
+                                        <th>rpp</th>
+                                    </tr>
+                                    @foreach ($telur as $t)
+                                        @php
+                                            $d7 = DB::selectOne("SELECT a.id_kandang, sum(a.pcs) as pcs7, sum(a.kg) as kg7, CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) AS mgg_hd_week_past
+                                            FROM stok_telur as a 
+                                            left JOIN kandang as b on b.id_kandang = a.id_kandang
+                                            where a.id_kandang = '$k->id_kandang' and a.id_telur = '$t->id_telur' and 
+                                            CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) = ($k->mgg - 1)
+                                            group by CEIL(DATEDIFF(a.tgl, b.chick_in) / 7), a.id_kandang, a.id_telur;");
+
+                                            $d7_plus = DB::selectOne("SELECT a.id_kandang, sum(a.pcs) as pcs7, sum(a.kg) as kg7, CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) AS mgg_hd_week_past
+                                            FROM stok_telur as a 
+                                            left JOIN kandang as b on b.id_kandang = a.id_kandang
+                                            where a.id_kandang = '$k->id_kandang' and a.id_telur = '$t->id_telur' and 
+                                            CEIL(DATEDIFF(a.tgl, b.chick_in) / 7) = ($k->mgg - 2)
+                                            group by CEIL(DATEDIFF(a.tgl, b.chick_in) / 7), a.id_kandang, a.id_telur;");
+
+                                            $dkk = DB::selectOne("SELECT sum(a.pcs) as pcs_kk, sum(a.kg) as kg_kk
+                                            FROM stok_telur as a
+                                            where  a.id_kandang = '$k->id_kandang' and a.id_telur = '$t->id_telur'
+                                            and a.tgl between '2020-01-01' and '$tgl'
+                                            group by a.id_kandang, a.id_telur
+                                            ");
+
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $t->nm_telur }}</td>
+                                            <td>:</td>
+                                            <td>{{ number_format(($t->pcs / $k->pcs) * 100, 0) }}%</td>
+                                            <th>&nbsp;</th>
+                                            <td>{{ number_format(($d7->pcs7 / $k->pcs_telur_week_past) * 100, 0) }}%
+                                            </td>
+                                            <th>&nbsp;</th>
+                                            <td>{{ number_format(($d7_plus->pcs7 / $k->pcs_telur_week_past_plus) * 100, 0) }}%
+                                            </td>
+                                            <td>&nbsp;</td>
+                                            <td>{{ number_format(($dkk->pcs_kk / $k->kuml_pcs) * 100, 0) }}%</td>
+                                        </tr>
+                                    @endforeach
+                                </table>
+                            </td>
 
 
 
@@ -661,6 +724,7 @@
                                 {{ number_format(empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000, 1) }}
                                 <br>
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
+
                                 <br>
                                 {{-- {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
                                 {{ number_format($k->rata, 0) }}
@@ -709,20 +773,7 @@
                                         Kg</a> <br>
                                 @endforeach
                             </td>
-                            <td class="td_layer">
-                                @php
-                                    $telur = DB::select("SELECT b.nm_telur, sum(a.pcs) as pcs, sum(a.kg) FROM stok_telur as a
-                                    left join telur_produk as b on b.id_produk_telur = a.id_telur
-                                    where a.tgl ='$tgl' and a.id_kandang = '$k->id_kandang' and a.pcs != 0
-                                    group by a.id_telur , a.id_kandang
-                                    ");
-                                @endphp
-                                @foreach ($telur as $t)
-                                    <span>{{ $t->nm_telur }} : {{ number_format(($t->pcs / $k->pcs) * 100, 0) }}%
-                                    </span>
-                                    <br>
-                                @endforeach
-                            </td>
+
                             {{-- vitamin --}}
                             <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
                                 @php
@@ -738,9 +789,6 @@
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
-
-
-
                                 <br>
 
 
@@ -941,13 +989,16 @@
                             @endphp
                             {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
                         </th>
+                        <th class="dhead table_layer">
+
+                        </th>
                         <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th>
 
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
                             {{ number_format($telur_kuml, 2) }} </th>
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
-                        <th class="dhead table_layer"></th>
+
                         {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                         <th class="dhead table_layer">
                             {{ number_format($pakan_kuml / $telur_kuml, 1) }}
