@@ -58,7 +58,15 @@ class LabarugiKandang extends Model
         return DB::select("SELECT a.kode, b.nama, sum(a.debit) as debit
             FROM jurnal_accurate as a 
             left join akun_accurate as b on b.kode = a.kode
-            where a.buku = '1' and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun' and a.nm_departemen is null and a.debit != 0
+            where a.buku = '1' and a.kode != '5101-01' and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun' and a.nm_departemen is null and a.debit != 0
+            group by a.kode;");
+    }
+    public static function biaya_pokok3($bulan, $tahun)
+    {
+        return DB::select("SELECT a.kode, b.nama, sum(a.debit) as debit
+            FROM jurnal_accurate as a 
+            left join akun_accurate as b on b.kode = a.kode
+            where a.buku = '1' and a.kode = '5101-01' and MONTH(a.tgl) = '$bulan' and YEAR(a.tgl) = '$tahun' and a.nm_departemen is null and a.debit != 0
             group by a.kode;");
     }
     public static function operasional($bulan, $tahun)

@@ -189,7 +189,7 @@
                         <th class="dhead table_layer th_atas" colspan="6">Data Telur</th>
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                        <th class="dhead table_layer th_atas" colspan="6">KUML</th>
+                        <th class="dhead table_layer th_atas" colspan="7">KUML</th>
                     </tr>
                     <tr>
                         {{-- Umur --}}
@@ -272,6 +272,7 @@
                         </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
+                        <th class="dhead table_layer th_atas2">Telur(%)</th>
                         {{-- <th class="dhead table_layer">telur(kg)</th> --}}
                         <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
                             ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
@@ -708,6 +709,20 @@
                                         Kg</a> <br>
                                 @endforeach
                             </td>
+                            <td class="td_layer">
+                                @php
+                                    $telur = DB::select("SELECT b.nm_telur, sum(a.pcs) as pcs, sum(a.kg) FROM stok_telur as a
+                                    left join telur_produk as b on b.id_produk_telur = a.id_telur
+                                    where a.tgl ='$tgl' and a.id_kandang = '$k->id_kandang' and a.pcs != 0
+                                    group by a.id_telur , a.id_kandang
+                                    ");
+                                @endphp
+                                @foreach ($telur as $t)
+                                    <span>{{ $t->nm_telur }} : {{ number_format(($t->pcs / $k->pcs) * 100, 0) }}%
+                                    </span>
+                                    <br>
+                                @endforeach
+                            </td>
                             {{-- vitamin --}}
                             <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
                                 @php
@@ -932,6 +947,7 @@
                             {{ number_format($telur_kuml, 2) }} </th>
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
+                        <th class="dhead table_layer"></th>
                         {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                         <th class="dhead table_layer">
                             {{ number_format($pakan_kuml / $telur_kuml, 1) }}

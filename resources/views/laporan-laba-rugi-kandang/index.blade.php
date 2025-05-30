@@ -315,9 +315,11 @@
                             @php
                                 $total_per_kandang = [];
                                 $ttl_ayam = 0;
+                                $ttl_pcs = 0;
                                 foreach ($kandang as $k) {
                                     $total_per_kandang[$k->nm_kandang] = 0;
                                     $ttl_ayam += $k->ttl_ayam;
+                                    $ttl_pcs += $k->pcs;
                                 }
 
                             @endphp
@@ -383,16 +385,45 @@
                                     <td class="text-end fw-bold">{{ number_format($total_pokok, 0) }}</td>
                                 </tr>
                             @endforeach
+                            @php
+                                $total_per_kandang_pokok3 = [];
+                                foreach ($kandang as $k) {
+                                    $total_per_kandang_pokok3[$k->nm_kandang] = 0;
+                                }
+
+                            @endphp
+                            @foreach ($biaya_pokok3 as $o)
+                                <tr>
+                                    <td class="freeze-cell1_td">{{ $o->nama }}</td>
+                                    @php
+                                        $total_pokok3 = 0;
+                                    @endphp
+                                    @foreach ($kandang as $k)
+                                        @php
+                                            $total_pokok3 += ($o->debit / $ttl_ayam) * $k->ttl_ayam;
+                                            $ttl_rak = ($ttl_pcs / 180) * 9;
+                                            $rak = ($k->pcs / 180) * 9;
+                                            $nilai2 = empty($k->pcs) ? 0 : ($o->debit / $ttl_rak) * $rak;
+                                            $total_per_kandang_pokok3[$k->nm_kandang] += $nilai2;
+                                        @endphp
+                                        <td class="text-end" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Pcs : {{ number_format($k->pcs, 0) }} | Rak : {{ number_format($rak, 0) }}">
+                                            {{ number_format(empty($k->pcs) ? 0 : ($o->debit / $ttl_rak) * $rak, 0) }}
+                                        </td>
+                                    @endforeach
+                                    <td class="text-end fw-bold">{{ number_format($total_pokok3, 0) }}</td>
+                                </tr>
+                            @endforeach
 
                             <tr>
                                 <th class="freeze-cell1_td ">Jumlah Beban Pokok Penjualan</th>
                                 @foreach ($kandang as $k)
                                     <th class="text-end">
-                                        {{ number_format(($total_per_kandang[$k->nm_kandang] ?? 0) + ($total_per_kandang_pokok[$k->nm_kandang] ?? 0), 0) }}
+                                        {{ number_format(($total_per_kandang[$k->nm_kandang] ?? 0) + ($total_per_kandang_pokok[$k->nm_kandang] ?? 0) + ($total_per_kandang_pokok3[$k->nm_kandang] ?? 0), 0) }}
                                     </th>
                                 @endforeach
                                 <th class="text-end fw-bold">
-                                    {{ number_format(array_sum($total_per_kandang) + array_sum($total_per_kandang_pokok), 0) }}
+                                    {{ number_format(array_sum($total_per_kandang) + array_sum($total_per_kandang_pokok) + array_sum($total_per_kandang_pokok3), 0) }}
                                 </th>
                             </tr>
 

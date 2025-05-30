@@ -33,6 +33,7 @@ class LaporanLabarugiKandangController extends Controller
             'kandang' => LabarugiKandang::kandang($bulan, $tahun, $tgl_sebelum),
             'biaya_pokok' => LabarugiKandang::biaya_pokok($bulan, $tahun),
             'biaya_pokok2' => LabarugiKandang::biaya_pokok2($bulan, $tahun),
+            'biaya_pokok3' => LabarugiKandang::biaya_pokok3($bulan, $tahun),
             'bulan' => $bulan,
             'tahun' => $tahun,
             'harga_telur' => $harga,

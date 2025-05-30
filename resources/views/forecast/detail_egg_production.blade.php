@@ -27,15 +27,14 @@
                             @foreach ($bulan as $b)
                                 @php
 
-                                    $tgl_awal = "$tahun-$b->bulan-01";
-                                    $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
+                                    $tgl_awal = new DateTime("$tahun-$b->bulan-01");
+                                    $tgl_akhir = new DateTime(date('Y-m-t', strtotime("$tahun-$b->bulan-01")));
+                                    $checkIn = new DateTime($k->chick_in);
+                                    $diffInDays = $tgl_awal->diff($checkIn)->days;
+                                    $umurawal = ceil($diffInDays / 7);
+                                    $diffInDays2 = $tgl_akhir->diff($checkIn)->days;
+                                    $umursampai = ceil($diffInDays2 / 7);
 
-                                    $umurawal = \Carbon\Carbon::parse($k->chick_in)->diffInWeeks(
-                                        \Carbon\Carbon::parse('2025-04-26'),
-                                    );
-                                    $umursampai = \Carbon\Carbon::parse($k->chick_in)->diffInWeeks(
-                                        \Carbon\Carbon::parse($tgl_akhir),
-                                    );
                                 @endphp
                                 <td>{{ $umurawal }} - {{ $umursampai }}</td>
                             @endforeach
@@ -43,20 +42,52 @@
                         <tr>
                             <td colspan="2">Jumlah Ayam</td>
                             <td>Ayam (L)</td>
-                            <td class="text-end">
-                                {{ number_format($k->populasi - $k->populasi * 0.01 - $k->populasi * 0.002, 0) }}
-                            </td>
+
+                            @php
+                                $populasi = $k->populasi; // populasi awal, sesuaikan jika diambil dari $k->populasi
+                            @endphp
+                            @foreach ($bulan as $b)
+                                @php
+                                    // kurangi populasi karena mati dan dijual (1.2% total)
+                                    $populasi -= $populasi * 0.012;
+                                @endphp
+                                <td class="text-end">
+                                    {{ number_format($populasi, 0) }}
+                                </td>
+                            @endforeach
+
+
                         </tr>
+
                         <tr>
                             <td class="text-end">{{ number_format($k->populasi, 0) }}</td>
                             <td>Ekor</td>
                             <td>Ayam (D)</td>
-                            <td class="text-end">{{ number_format($k->populasi * 0.01, 0) }}</td>
+                            @php
+                                $populasi = $k->populasi;
+                            @endphp
+                            @foreach ($bulan as $b)
+                                @php
+                                    $ayam_mati = $populasi * 0.01; // 1% dari populasi bulan sebelumnya
+                                    $populasi -= $populasi * 0.012; // Update populasi setelah dikurangi 1.2%
+                                @endphp
+                                <td class="text-end">{{ number_format($ayam_mati, 0) }}</td>
+                            @endforeach
                         </tr>
                         <tr>
                             <td colspan="2"></td>
                             <td>Ayam (C)</td>
-                            <td class="text-end">{{ number_format($k->populasi * 0.002, 0) }}</td>
+                            @php
+                                $populasi = $k->populasi;
+                            @endphp
+                            @foreach ($bulan as $b)
+                                @php
+                                    $ayam_jual = $populasi * 0.002; // 1% dari populasi bulan sebelumnya
+                                    $populasi -= $populasi * 0.012; // Update populasi setelah dikurangi 1.2%
+                                @endphp
+                                <td class="text-end">{{ number_format($ayam_jual, 0) }}</td>
+                            @endforeach
+
                         </tr>
                     @endforeach
 
