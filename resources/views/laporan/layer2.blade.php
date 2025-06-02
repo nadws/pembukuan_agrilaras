@@ -711,8 +711,6 @@
                                 {{ number_format($k->kg_pakan / 1000, 1) }} <br>
                                 {{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}
                                 <br> {{ empty($k->feed) ? 'NA' : $k->feed }}
-
-
                             </td>
                             <!-- pakan -->
 
