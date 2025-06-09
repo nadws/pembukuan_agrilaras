@@ -249,13 +249,13 @@ class NavbarController extends Controller
         $data = [
             [
                 'judul' => 'Penjualan',
-                'route' => 'jual.index',
+                'route' => 'penjualan_agrilaras',
                 'img' => 'invoice.png',
                 'deskripsi' => 'membuat nota penjualan dari produk dagangan',
             ],
 
         ];
-        $title = 'Penjualan Umum';
+        $title = 'Penjualan Telur';
         return view('navbar.data_master', compact(['data', 'title']));
     }
 

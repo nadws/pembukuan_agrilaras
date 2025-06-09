@@ -485,7 +485,8 @@
                         <tr>
                             <th>#</th>
                             <th>Tanggal</th>
-                            <th>Harga rata-rata</th>
+                            <th>Grade</th>
+                            <th class="text-end">Harga rata-rata</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -494,10 +495,14 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ tanggal($h->tgl) }}</td>
-                                <td>Rp {{ number_format($h->harga, 0) }}</td>
+                                <td>{{ $h->nm_telur }}</td>
+                                <td class="text-end">Rp {{ number_format($h->harga, 0) }}</td>
                                 <td>
-                                    <a href="" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
-                                    <a href="" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#edit_harga_telur"
+                                        class="btn btn-warning btn-sm edit_harga_telur" data_id="{{ $h->id }}"><i
+                                            class="fas fa-edit"></i></button>
+                                    <a href="{{ route('delete_harga_telur', ['id' => $h->id]) }}"
+                                        class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>
                         @endforeach
@@ -521,18 +526,69 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="row">
-                                        <div class="col-lg-6">
+                                        <div class="col-lg-4 mb-4">
                                             <label for="">Tanggal</label>
-                                            <input type="date" name="tgl" id="" class="form-control">
+                                            <input type="date" name="tgl" id="" class="form-control"
+                                                required>
                                         </div>
+                                    </div>
+                                    @foreach ($telur_produk as $t)
+                                        <div class="row">
 
-                                        <div class="col-lg-6">
-                                            <label for="">Harga Rata-rata</label>
-                                            <input type="text" name="harga" class="form-control">
+                                            <div class="col-lg-6 mt-2">
+                                                <label for="">Kategori</label>
+                                                <input type="text" value="{{ $t->nm_telur }}" readonly
+                                                    class="form-control">
+                                                <input type="hidden" name="id_telur[]"
+                                                    value="{{ $t->id_produk_telur }}">
+                                            </div>
+
+                                            <div class="col-lg-6 mt-2">
+                                                <label for="">Harga Rata-rata</label>
+                                                <input type="text" name="harga[]" class="form-control"
+                                                    value="0">
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <hr>
+                                            </div>
+
+
                                         </div>
+                                    @endforeach
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Tutup</button>
+                                    <button type="submit" class="btn btn-primary button-save">Simpan</button>
+                                    <button class="float-end btn btn-primary button-save-modal-loading" type="button"
+                                        disabled hidden>
+                                        <span class="spinner-border spinner-border-sm " role="status"
+                                            aria-hidden="true"></span>
+                                        Loading...
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <form action="{{ route('edit_harga_telur') }}" method="post">
+                    @csrf
+
+                    <div class="modal fade" id="edit_harga_telur" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Edit Harga Telur</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="load-edit-harga-telur">
 
                                     </div>
-                                    <div id="tbh_baris_hrga_pakan"></div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
@@ -551,6 +607,9 @@
                 </form>
 
             </div>
+
+
+
         </section>
 
         <x-theme.modal btnSave='T' title="History Telur Martdah" size="modal-lg-max" idModal="history_mtd">
@@ -928,6 +987,20 @@
                         success: function(response) {
                             $("#load_edit_harga_pakan").html(response)
                             $(".select").select2();
+                        }
+                    });
+
+                });
+                $(document).on("click", ".edit_harga_telur", function() {
+                    var data_id = $(this).attr("data_id");
+                    $.ajax({
+                        type: "get",
+                        url: "{{ route('get_edit_hrga_telur') }}",
+                        data: {
+                            data_id: data_id
+                        },
+                        success: function(response) {
+                            $("#load-edit-harga-telur").html(response)
                         }
                     });
 

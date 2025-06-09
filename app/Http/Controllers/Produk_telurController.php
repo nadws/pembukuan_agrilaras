@@ -78,10 +78,37 @@ class Produk_telurController extends Controller
                   where a.cek ='T' and a.lokasi ='opname'
                   group by a.no_nota
                 ) as a;"),
-            'harga_telur' => DB::table('harga_telur')->orderBy('tgl', 'DESC')->get()
+            'harga_telur' => DB::table('harga_telur')
+                ->leftJoin('telur_produk', 'telur_produk.id_produk_telur', '=', 'harga_telur.produk_telur_id')
+                ->orderBy('tgl', 'DESC')->get(),
+            'telur_produk' => DB::table('telur_produk')->get(),
 
         ];
         return view('produk_telur.dashboard', $data);
+    }
+
+    public function get_edit_hrga_telur(Request $r)
+    {
+
+        $data = [
+            'get' => DB::table('harga_telur')
+                ->leftJoin('telur_produk', 'telur_produk.id_produk_telur', '=', 'harga_telur.produk_telur_id')
+                ->where('harga_telur.id', $r->data_id)
+                ->first(),
+            'id' => $r->data_id,
+        ];
+        return view('produk_telur.edit_hrga_telur', $data);
+    }
+
+    public function edit_harga_telur(Request $r)
+    {
+        $data = [
+            'tgl' => $r->tgl,
+            'harga' => $r->harga,
+            'admin' => Auth::user()->name
+        ];
+        DB::table('harga_telur')->where('id', $r->id)->update($data);
+        return redirect()->route('produk_telur', ['tgl' => $r->tgl])->with('sukses', 'Data Berhasil Di Simpan');
     }
     // public function index(Request $r)
     // {
@@ -309,12 +336,27 @@ class Produk_telurController extends Controller
 
     public function saveHargaTelur(Request $r)
     {
-        $data = [
-            'tgl' => $r->tgl,
-            'harga' => $r->harga,
-            'admin' => Auth::user()->name
-        ];
-        DB::table('harga_telur')->insert($data);
+        $invoice = DB::table('harga_telur')->orderBy('invoice', 'desc')->first();
+        for ($i = 0; $i < count($r->id_telur); $i++) {
+            if ($r->harga[$i] == 0) {
+            } else {
+                $data = [
+                    'tgl' => $r->tgl,
+                    'invoice' => empty($invoice->invoice) ? 1001 : $invoice->invoice + 1,
+                    'harga' => $r->harga[$i],
+                    'produk_telur_id' => $r->id_telur[$i],
+                    'admin' => Auth::user()->name
+                ];
+                DB::table('harga_telur')->insert($data);
+            }
+        }
+
         return redirect()->route('produk_telur', ['tgl' => $r->tgl])->with('sukses', 'Data Berhasil Di Simpan');
+    }
+
+    public function delete_harga_telur(Request $r)
+    {
+        DB::table('harga_telur')->where('id', $r->id)->delete();
+        return redirect()->route('produk_telur', ['tgl' => $r->tgl])->with('sukses', 'Data Berhasil Di Hapus');
     }
 }

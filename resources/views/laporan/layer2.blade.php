@@ -682,6 +682,11 @@
                                             group by a.id_kandang, a.id_telur
                                             ");
 
+                                            $harga_telur = DB::table('harga_telur')
+                                                ->where('produk_telur_id', $t->id_telur)
+                                                ->orderBy('invoice', 'desc')
+                                                ->first();
+
                                         @endphp
                                         <tr>
                                             <td>{{ $t->nm_telur }}</td>
@@ -695,6 +700,8 @@
                                             </td>
                                             <td>&nbsp;</td>
                                             <td>{{ number_format(($dkk->pcs_kk / $k->kuml_pcs) * 100, 0) }}%</td>
+                                            <td>&nbsp;</td>
+                                            <td>{{ $harga_telur ? number_format($harga_telur->harga, 0) : '-' }}</td>
                                         </tr>
                                     @endforeach
                                 </table>

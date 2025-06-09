@@ -71,7 +71,7 @@ class PenjualanController extends Controller
                 group by d.no_nota
             ) as d on d.no_nota = a.no_nota
             
-            where a.tgl between '$tgl1' and '$tgl2' and a.lokasi ='mtd'
+            where a.tgl between '$tgl1' and '$tgl2' and a.lokasi ='alpa'
             group by a.no_nota
             order by a.urutan DESC;
             "),

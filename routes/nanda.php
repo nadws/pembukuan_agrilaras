@@ -385,6 +385,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit_telur_dashboard', 'edit_telur_dashboard')->name('edit_telur_dashboard');
         Route::get('/export_telur', 'export')->name('export_telur');
         Route::get('/HistoryAlpa', 'HistoryAlpa')->name('HistoryAlpa');
+        Route::get('/get_edit_hrga_telur', 'get_edit_hrga_telur')->name('get_edit_hrga_telur');
+        Route::get('/delete_harga_telur', 'delete_harga_telur')->name('delete_harga_telur');
+        Route::post('/edit_harga_telur', 'edit_harga_telur')->name('edit_harga_telur');
         Route::post('/import_biaya', 'import_biaya')->name('import_biaya');
         Route::post('/import_biaya_hpp', 'import_biaya_hpp')->name('import_biaya_hpp');
         Route::post('/saveHargaTelur', 'saveHargaTelur')->name('saveHargaTelur');
