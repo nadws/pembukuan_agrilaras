@@ -689,19 +689,27 @@
 
                                         @endphp
                                         <tr>
-                                            <td>{{ $t->nm_telur }}</td>
+                                            <td>{{ $t->nm_telur ?? '-' }}</td>
                                             <td>:</td>
-                                            <td>{{ number_format(($t->pcs / $k->pcs) * 100, 0) }}%</td>
-                                            <th>&nbsp;</th>
-                                            <td>{{ number_format(($d7->pcs7 / $k->pcs_telur_week_past) * 100, 0) }}%
+                                            <td>
+                                                {{ ($k->pcs ?? 0) != 0 ? number_format((($t->pcs ?? 0) / $k->pcs) * 100, 0) . '%' : '0%' }}
                                             </td>
                                             <th>&nbsp;</th>
-                                            <td>{{ number_format(($d7_plus->pcs7 / $k->pcs_telur_week_past_plus) * 100, 0) }}%
+                                            <td>
+                                                {{ ($k->pcs_telur_week_past ?? 0) != 0 ? number_format((($d7->pcs7 ?? 0) / $k->pcs_telur_week_past) * 100, 0) . '%' : '0%' }}
+                                            </td>
+                                            <th>&nbsp;</th>
+                                            <td>
+                                                {{ ($k->pcs_telur_week_past_plus ?? 0) != 0 ? number_format((($d7_plus->pcs7 ?? 0) / $k->pcs_telur_week_past_plus) * 100, 0) . '%' : '0%' }}
                                             </td>
                                             <td>&nbsp;</td>
-                                            <td>{{ number_format(($dkk->pcs_kk / $k->kuml_pcs) * 100, 0) }}%</td>
+                                            <td>
+                                                {{ ($k->kuml_pcs ?? 0) != 0 ? number_format((($dkk->pcs_kk ?? 0) / $k->kuml_pcs) * 100, 0) . '%' : '0%' }}
+                                            </td>
                                             <td>&nbsp;</td>
-                                            <td>{{ $harga_telur ? number_format($harga_telur->harga, 0) : '-' }}</td>
+                                            <td>
+                                                {{ $harga_telur?->harga ? number_format($harga_telur->harga, 0) : '0' }}
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </table>
@@ -956,47 +964,39 @@
                         <th class="dhead freeze-cell1_td table_layer" colspan="2">Total</th>
                         <th class="dhead text-end table_layer">{{ $mati }} <br> {{ $jual }} <br>
                             {{ $dc_week }}</th>
-                        <th class="dhead table_layer">{{ number_format($ayam_awal, 0) }}
-                            <br>{{ number_format($ayam_akhir, 0) }} <br>
-                            {{ number_format(($ayam_akhir / $ayam_awal) * 100, 0) }} %
+                        <th class="dhead table_layer">
+                            {{ number_format($ayam_awal, 0) }} <br>
+                            {{ number_format($ayam_akhir, 0) }} <br>
+                            {{ $ayam_awal != 0 ? number_format(($ayam_akhir / $ayam_awal) * 100, 0) . ' %' : '0 %' }}
                         </th>
 
                         <th class="dhead text-end table_layer">
-                            {{ number_format($kg_total, 2) }}
-                            <br>
-                            {{ number_format($pcs, 0) }}
-                            <br>
+                            {{ number_format($kg_total, 2) }}<br>
+                            {{ number_format($pcs, 0) }}<br>
                             {{ number_format($kg_kotor, 2) }}
                         </th>
                         <th class="dhead table_layer">{{ $gr_butir / 4 }}</th>
                         <th class="dhead text-end table_layer">
-                            {{ number_format($kg_today, 1) }}
-                            <br>
+                            {{ number_format($kg_today, 1) }}<br>
                             {{ number_format($butir, 0) }}
                         </th>
-                        {{-- <th class="dhead text-end table_layer">
-                            {{ number_format($kg_minggu, 1) }}
-                            <br>
-                            {{ number_format($butir_minggu, 0) }}
-                        </th> --}}
-                        {{-- <th class="dhead"></th> --}}
 
-                        <th class="dhead table_layer">{{ number_format(($pcs / $ayam_akhir) * 100, 0) }} <br> <br>
-                            {{ number_format(($pcs / $ayam_awal) * 100, 0) }}</th>
                         <th class="dhead table_layer">
-
+                            {{ $ayam_akhir != 0 ? number_format(($pcs / $ayam_akhir) * 100, 0) : '0' }} <br><br>
+                            {{ $ayam_awal != 0 ? number_format(($pcs / $ayam_awal) * 100, 0) : '0' }}
                         </th>
-                        {{-- <th class="dhead"></th> --}}
+                        <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">
                             @php
-                                $fcr_day_total = number_format($pakan / $kg_total, 1);
-                                $fcr_day_total_plus = number_format(($pakan + $rp_vitamin + $rp_vaksin) / $kg_total, 1);
+                                $fcr_day_total = $kg_total != 0 ? number_format($pakan / $kg_total, 1) : '0';
+                                $fcr_day_total_plus =
+                                    $kg_total != 0
+                                        ? number_format(($pakan + $rp_vitamin + $rp_vaksin) / $kg_total, 1)
+                                        : '0';
                             @endphp
                             {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
                         </th>
-                        <th class="dhead table_layer">
-
-                        </th>
+                        <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th>
 
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
@@ -1004,14 +1004,12 @@
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
 
-                        {{-- <th class="dhead">{{ number_format($telur_kuml, 2) }}</th> --}}
                         <th class="dhead table_layer">
-                            {{ number_format($pakan_kuml / $telur_kuml, 1) }}
-                            <br>
+                            {{ $telur_kuml != 0 ? number_format($pakan_kuml / $telur_kuml, 1) : '0' }}<br>
                             @php
                                 $plus = ($obat_kuml + $vaksin_kuml + $rp_ayam) / 7000;
                             @endphp
-                            {{ number_format($pakan_kuml + $plus / $telur_kuml, 1) }}
+                            {{ $telur_kuml != 0 ? number_format(($pakan_kuml + $plus) / $telur_kuml, 1) : '0' }}
                         </th>
 
                         <th class="dhead table_layer">
@@ -1022,6 +1020,7 @@
                         <th class="dhead table_layer">{{ number_format($ttl_tpl, 2) }}</th>
                     </tr>
                 </tfoot>
+
 
             </table>
         </div>
