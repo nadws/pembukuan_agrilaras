@@ -496,27 +496,122 @@
                                 <br> &nbsp;
                             </td> --}}
                             <td align="center" class="hd perday (%) td_layer">
-                                {{-- {{$k->pcs}} --}}
-                                &nbsp; <br>
                                 @php
-                                    $hd =
-                                        $k->stok_awal - $k->pop_kurang == 0
-                                            ? 0
-                                            : ($k->pcs / ($k->stok_awal - $k->pop_kurang)) * 100;
+                                    $hd7 = DB::selectOne("SELECT 
+                                    CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) AS mgg,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 1 DAY) AS hari_ke_1,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 2 DAY) AS hari_ke_2,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 3 DAY) AS hari_ke_3,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 4 DAY) AS hari_ke_4,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 5 DAY) AS hari_ke_5,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 6 DAY) AS hari_ke_6,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 7 DAY) AS hari_ke_7
+                                    FROM kandang
+                                    WHERE id_kandang = '$k->id_kandang';");
+
+                                    $tanggal_harian = [
+                                        $hd7->hari_ke_1,
+                                        $hd7->hari_ke_2,
+                                        $hd7->hari_ke_3,
+                                        $hd7->hari_ke_4,
+                                        $hd7->hari_ke_5,
+                                        $hd7->hari_ke_6,
+                                        $hd7->hari_ke_7,
+                                    ];
+
+                                    $pop_kurang_per_hari = [];
+                                    $h_kuml = [];
+
+                                    foreach ($tanggal_harian as $tgl_hari) {
+                                        if ($tgl_hari <= $tgl) {
+                                            $result = DB::selectOne(
+                                                "SELECT SUM(mati + jual + afkir) AS total
+                                                    FROM populasi
+                                                    WHERE id_kandang = ?
+                                                    AND tgl BETWEEN ? AND ?
+                                                ",
+                                                [$k->id_kandang, $k->chick_in, $tgl_hari],
+                                            );
+
+                                            $tlr = DB::selectOne(
+                                                "SELECT h.id_kandang , sum(h.pcs) as pcs, sum(h.kg) as kg FROM stok_telur as h  where h.tgl = ? and h.id_kandang = '$k->id_kandang'  group by h.id_kandang",
+                                                [$tgl_hari],
+                                            );
+
+                                            $t_kuml = DB::selectOne(
+                                                "SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h  where h.tgl between '2020-01-01' and '$tgl_hari' and h.pcs != 0 and h.id_kandang = '$k->id_kandang' group by h.id_kandang",
+                                            );
+
+                                            $pop_kurang_per_hari[$tgl_hari] =
+                                                ($tlr->pcs / ($k->stok_awal - $result->total)) * 100 ?? 0;
+
+                                            $h_kuml[$tgl_hari] =
+                                                (($t_kuml->kuml_kg - $t_kuml->kuml_pcs / 180) / $k->stok_awal) * 100 ??
+                                                0;
+                                        } else {
+                                            $pop_kurang_per_hari[$tgl_hari] = 0;
+                                            $h_kuml[$tgl_hari] = 0;
+                                        }
+                                    }
                                 @endphp
-                                <span
-                                    class="{{ empty($k->p_hd) ? '' : ($k->p_hd - $hd > 3 ? 'text-danger fw-bold' : '') }}">
-                                    {{ number_format($hd, 0) }}
-                                </span>
-                                <br>
-                                {{ empty($k->p_hd) ? 'NA' : $k->p_hd }}
-                                <br>
-                                {{ number_format((($k->kuml_kg - $k->kuml_pcs / 180) / $k->stok_awal) * 100, 1) }}
+                                <table width="100%">
+                                    <tr>
+                                        <th class="text-center">Ket</th>
+                                        <th class="text-center">:</th>
+                                        <th class="text-center">1/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">2/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">3/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">4/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">5/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">6/7</th>
+                                        <th>&nbsp;</th>
+                                        <th class="text-center">7/7</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">hd</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td
+                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == '0' ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
+                                                {{ $pop_kurang_per_hari[$tgl_hari] == '0' ? '-' : number_format($pop_kurang_per_hari[$tgl_hari], 0) }}
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">p</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td class="text-center">{{ empty($k->p_hd) ? 'NA' : $k->p_hd }}</td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">hh</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td class="text-center">
+                                                {{ $h_kuml[$tgl_hari] == '0' ? '-' : number_format($h_kuml[$tgl_hari], 1) }}
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+
+                                    </tr>
+                                </table>
+
+
 
                             </td>
 
 
-                            <td align="center" class="hd week td_layer">
+                            <td align="center" class="hd week td_layer" width="10%">
                                 {{-- ({{$k->pcs_telur_week}} {{$k->jlh_hari}}) --}}
                                 &nbsp; <br>
                                 {{ empty($k->pcs_telur_week) ||
@@ -982,8 +1077,8 @@
                         </th>
 
                         <th class="dhead table_layer">
-                            {{ $ayam_akhir != 0 ? number_format(($pcs / $ayam_akhir) * 100, 0) : '0' }} <br><br>
-                            {{ $ayam_awal != 0 ? number_format(($pcs / $ayam_awal) * 100, 0) : '0' }}
+                            {{-- {{ $ayam_akhir != 0 ? number_format(($pcs / $ayam_akhir) * 100, 0) : '0' }} <br><br>
+                            {{ $ayam_awal != 0 ? number_format(($pcs / $ayam_awal) * 100, 0) : '0' }} --}}
                         </th>
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">
