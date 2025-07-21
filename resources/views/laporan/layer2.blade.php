@@ -208,7 +208,7 @@
                         {{-- Populasi --}}
 
                         {{-- Data Telur --}}
-                        <th class="dhead table_layer th_atas2">kg bersih <br> butir <br> kg kotor
+                        <th class="dhead table_layer th_atas2"> butir <br> kg bersih <br> kg kotor
 
                         </th>
                         <th class="dhead table_layer th_atas2">gr / p <br> (butir) <br>
@@ -452,8 +452,9 @@
                             <!-- mencari ikat  1 ikat = 1kg  -->
                             <td align="center" class="kg telur td_layer">
                                 &nbsp; <br>
-                                {{ number_format($k->kg - $k->pcs / 180, 1) }}<br>
                                 {{ number_format($k->pcs, 0) }} <br>
+                                {{ number_format($k->kg - $k->pcs / 180, 1) }}
+                                <br>
                                 {{ number_format($k->kg, 1) }}
                             </td>
                             @php
@@ -1066,8 +1067,9 @@
                         </th>
 
                         <th class="dhead text-end table_layer">
-                            {{ number_format($kg_total, 2) }}<br>
-                            {{ number_format($pcs, 0) }}<br>
+                            {{ number_format($pcs, 0) }} <br>
+                            {{ number_format($kg_total, 2) }}
+                            <br>
                             {{ number_format($kg_kotor, 2) }}
                         </th>
                         <th class="dhead table_layer">{{ $gr_butir / 4 }}</th>
