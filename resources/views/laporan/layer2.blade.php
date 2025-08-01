@@ -412,14 +412,14 @@
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="perkiran afkir 99 minggu sama semua kandang">
-                                    99
+                                    {{ $k->mgg_afkir }}
                                 </span>
 
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="hitungan persen minggu menuju 99 minggu">
 
-                                    ({{ number_format(($k->mgg / 99) * 100, 0) }}%) <br>
+                                    ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>
                                 </span>
 
                             </td>
