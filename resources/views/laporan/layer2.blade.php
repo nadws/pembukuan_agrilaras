@@ -499,16 +499,16 @@
                             <td align="center" class="hd perday (%) td_layer">
                                 @php
                                     $hd7 = DB::selectOne("SELECT 
-                                    CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) AS mgg,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 1 DAY) AS hari_ke_1,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 2 DAY) AS hari_ke_2,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 3 DAY) AS hari_ke_3,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 4 DAY) AS hari_ke_4,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 5 DAY) AS hari_ke_5,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 6 DAY) AS hari_ke_6,
-                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 7 DAY) AS hari_ke_7
-                                    FROM kandang
-                                    WHERE id_kandang = '$k->id_kandang';");
+            CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) AS mgg,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 1 DAY) AS hari_ke_1,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 2 DAY) AS hari_ke_2,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 3 DAY) AS hari_ke_3,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 4 DAY) AS hari_ke_4,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 5 DAY) AS hari_ke_5,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 6 DAY) AS hari_ke_6,
+            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 7 DAY) AS hari_ke_7
+            FROM kandang
+            WHERE id_kandang = '$k->id_kandang';");
 
                                     $tanggal_harian = [
                                         $hd7->hari_ke_1,
@@ -527,34 +527,50 @@
                                         if ($tgl_hari <= $tgl) {
                                             $result = DB::selectOne(
                                                 "SELECT SUM(mati + jual + afkir) AS total
-                                                    FROM populasi
-                                                    WHERE id_kandang = ?
-                                                    AND tgl BETWEEN ? AND ?
-                                                ",
+                        FROM populasi
+                        WHERE id_kandang = ?
+                        AND tgl BETWEEN ? AND ?",
                                                 [$k->id_kandang, $k->chick_in, $tgl_hari],
                                             );
 
                                             $tlr = DB::selectOne(
-                                                "SELECT h.id_kandang , sum(h.pcs) as pcs, sum(h.kg) as kg FROM stok_telur as h  where h.tgl = ? and h.id_kandang = '$k->id_kandang'  group by h.id_kandang",
-                                                [$tgl_hari],
+                                                "SELECT h.id_kandang, SUM(h.pcs) AS pcs, SUM(h.kg) AS kg
+                        FROM stok_telur AS h
+                        WHERE h.tgl = ? AND h.id_kandang = ?
+                        GROUP BY h.id_kandang",
+                                                [$tgl_hari, $k->id_kandang],
                                             );
 
                                             $t_kuml = DB::selectOne(
-                                                "SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h  where h.tgl between '2020-01-01' and '$tgl_hari' and h.pcs != 0 and h.id_kandang = '$k->id_kandang' group by h.id_kandang",
+                                                "SELECT h.id_kandang, COUNT(h.id_stok_telur) AS count_bagi, SUM(h.pcs) AS kuml_pcs, SUM(h.kg) AS kuml_kg
+                        FROM stok_telur AS h
+                        WHERE h.tgl BETWEEN '2020-01-01' AND ?
+                        AND h.pcs != 0 AND h.id_kandang = ?
+                        GROUP BY h.id_kandang",
+                                                [$tgl_hari, $k->id_kandang],
                                             );
 
+                                            $stok_awal = $k->stok_awal ?? 0;
+                                            $tlr_pcs = optional($tlr)->pcs ?? 0;
+                                            $result_total = optional($result)->total ?? 0;
+
                                             $pop_kurang_per_hari[$tgl_hari] =
-                                                ($tlr->pcs / ($k->stok_awal - $result->total)) * 100 ?? 0;
+                                                $stok_awal - $result_total > 0
+                                                    ? ($tlr_pcs / ($stok_awal - $result_total)) * 100
+                                                    : 0;
+
+                                            $kuml_kg = optional($t_kuml)->kuml_kg ?? 0;
+                                            $kuml_pcs = optional($t_kuml)->kuml_pcs ?? 0;
 
                                             $h_kuml[$tgl_hari] =
-                                                (($t_kuml->kuml_kg - $t_kuml->kuml_pcs / 180) / $k->stok_awal) * 100 ??
-                                                0;
+                                                $stok_awal > 0 ? (($kuml_kg - $kuml_pcs / 180) / $stok_awal) * 100 : 0;
                                         } else {
                                             $pop_kurang_per_hari[$tgl_hari] = 0;
                                             $h_kuml[$tgl_hari] = 0;
                                         }
                                     }
                                 @endphp
+
                                 <table width="100%">
                                     <tr>
                                         <th class="text-center">Ket</th>
@@ -578,12 +594,11 @@
                                         <td class="text-center">:</td>
                                         @foreach ($tanggal_harian as $tgl_hari)
                                             <td
-                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == '0' ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
-                                                {{ $pop_kurang_per_hari[$tgl_hari] == '0' ? '-' : number_format($pop_kurang_per_hari[$tgl_hari], 0) }}
+                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
+                                                {{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '-' : number_format($pop_kurang_per_hari[$tgl_hari], 0) }}
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
-
                                     </tr>
                                     <tr>
                                         <td class="text-center">p</td>
@@ -592,24 +607,20 @@
                                             <td class="text-center">{{ empty($k->p_hd) ? 'NA' : $k->p_hd }}</td>
                                             <td>&nbsp;</td>
                                         @endforeach
-
                                     </tr>
                                     <tr>
                                         <td class="text-center">hh</td>
                                         <td class="text-center">:</td>
                                         @foreach ($tanggal_harian as $tgl_hari)
                                             <td class="text-center">
-                                                {{ $h_kuml[$tgl_hari] == '0' ? '-' : number_format($h_kuml[$tgl_hari], 1) }}
+                                                {{ $h_kuml[$tgl_hari] == 0 ? '-' : number_format($h_kuml[$tgl_hari], 1) }}
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
-
                                     </tr>
                                 </table>
-
-
-
                             </td>
+
 
 
                             <td align="center" class="hd week td_layer" width="10%">
