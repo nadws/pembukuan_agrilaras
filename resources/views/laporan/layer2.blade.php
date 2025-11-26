@@ -139,7 +139,7 @@
             </a>
         </div>
     </nav>
-    <nav id="navbar-example2" class="navbar bg-body-tertiary px-3 mb-3">
+    {{-- <nav id="navbar-example2" class="navbar bg-body-tertiary px-3 mb-3">
         <ul class="nav nav-pills">
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
@@ -155,7 +155,7 @@
             </li>
 
         </ul>
-    </nav>
+    </nav> --}}
     <div class="container-fluid mt-2">
 
         <form action="">
@@ -371,7 +371,9 @@
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr>
-                            <td align="center" class="kandang freeze-cell1_td td_layer">{{ $k->nm_kandang }}
+                            <td align="center" class="kandang freeze-cell1_td td_layer">
+                                <a href="#"> {{ $k->nm_kandang }}</a>
+
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="tanggal chick in">
                                     {{ date('d/m/y', strtotime($k->chick_in)) }}
@@ -573,7 +575,7 @@
 
                                 <table width="100%">
                                     <tr>
-                                        <th class="text-center">Ket</th>
+                                        <th>Ket</th>
                                         <th class="text-center">:</th>
                                         <th class="text-center">1/7</th>
                                         <th>&nbsp;</th>
@@ -589,8 +591,38 @@
                                         <th>&nbsp;</th>
                                         <th class="text-center">7/7</th>
                                     </tr>
+                                    {{-- <tr>
+                                        <td>butir</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td>
+
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr>
                                     <tr>
-                                        <td class="text-center">hd</td>
+                                        <td>kg bersih</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td>
+
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr>
+                                    <tr>
+                                        <td>kg kotor</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td>
+
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr> --}}
+                                    <tr>
+                                        <td>hd</td>
                                         <td class="text-center">:</td>
                                         @foreach ($tanggal_harian as $tgl_hari)
                                             <td
@@ -601,7 +633,7 @@
                                         @endforeach
                                     </tr>
                                     <tr>
-                                        <td class="text-center">p</td>
+                                        <td>p</td>
                                         <td class="text-center">:</td>
                                         @foreach ($tanggal_harian as $tgl_hari)
                                             <td class="text-center">{{ empty($k->p_hd) ? 'NA' : $k->p_hd }}</td>
@@ -609,7 +641,7 @@
                                         @endforeach
                                     </tr>
                                     <tr>
-                                        <td class="text-center">hh</td>
+                                        <td>hh</td>
                                         <td class="text-center">:</td>
                                         @foreach ($tanggal_harian as $tgl_hari)
                                             <td class="text-center">

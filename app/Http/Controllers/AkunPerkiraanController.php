@@ -93,29 +93,45 @@ class AkunPerkiraanController extends Controller
         $tahun = $r->tahun;
         $tgl = $tahun . '-' . $bulan . '-01';
         $tgl = date('Y-m-t', strtotime($tgl));
-        DB::table('jurnal_accurate')->whereMonth('tgl', $bulan)->whereYear('tgl', $tahun)->where('buku', '2')->delete();
+
+        DB::table('jurnal_accurate')
+            ->whereMonth('tgl', $bulan)
+            ->whereYear('tgl', $tahun)
+            ->where('buku', '2')
+            ->delete();
+
         $file = $r->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
 
-        // Skip header
+        // Mulai dari baris ke-5 (skip header)
+        foreach (array_slice($rows, 4) as $row) {
 
+            $kode = trim($row[2] ?? '');
+            $debitRaw = $row[4] ?? '';
 
-        foreach (array_slice($rows, 1) as $row) {
-            $kode = $row[1];
-            $debit = floatval(str_replace(',', '', $row[4]));
+            // Jika kode kosong → skip
+            if ($kode === '' || $kode === null) {
+                continue;
+            }
 
+            // Bersihkan angka debit
+            $debit = floatval(str_replace(',', '', $debitRaw));
 
-            // Jika nilainya 'kosong', ubah jadi null
+            // Jika debit kosong / nol → skip
+            if ($debit == 0 || $debit === null) {
+                continue;
+            }
+
             DB::table('jurnal_accurate')->insert([
-                'tgl' => $tgl,
-                'kode' => $kode,
-                'debit' => $debit,
-                'kredit' => 0,
+                'tgl'        => $tgl,
+                'kode'       => $kode,
+                'debit'      => $debit,
+                'kredit'     => 0,
                 'tgl_import' => date('Y-m-d'),
-                'buku' => '2',
-                'admin' => auth()->user()->name
+                'buku'       => '2',
+                'admin'      => auth()->user()->name
             ]);
         }
 
