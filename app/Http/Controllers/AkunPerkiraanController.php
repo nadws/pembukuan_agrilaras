@@ -180,24 +180,16 @@ class AkunPerkiraanController extends Controller
             return "Kode OAuth tidak ditemukan!";
         }
 
-        // Exchange code for token
         $response = Http::asForm()->post('https://accurate.id/oauth/token', [
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'client_id' => env('500f19f7-e462-44a1-941e-45c90e66a2e4'),
-            'client_secret' => env('19384231ccdb6835005476a550828d37'),
+            'client_id' => env('ACCURATE_CLIENT_ID'),
+            'client_secret' => env('ACCURATE_CLIENT_SECRET'),
             'redirect_uri' => 'https://ternak.ptagafood.com/accurate/callback',
         ]);
 
         $tokenData = $response->json();
 
-        // Simpan token
-        // contoh simpan ke session
-        session([
-            'accurate_access_token' => $tokenData['access_token'],
-            'accurate_refresh_token' => $tokenData['refresh_token'],
-        ]);
-
-        return "Token berhasil diterima!";
+        return $tokenData;
     }
 }
