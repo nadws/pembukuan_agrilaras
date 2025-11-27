@@ -188,6 +188,7 @@ class AkunPerkiraanController extends Controller
             'redirect_uri' => 'https://ternak.ptagafood.com/accurate/callback',
         ]);
 
+
         if ($response->failed()) {
             return $response->body();
         }
