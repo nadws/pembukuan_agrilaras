@@ -201,4 +201,17 @@ class AkunPerkiraanController extends Controller
 
         return "Token berhasil diterima!";
     }
+    public function getDatabases()
+    {
+        $accessToken = session('accurate_access_token');
+
+        if (!$accessToken) {
+            return "Access token tidak ditemukan. Lakukan OAuth ulang.";
+        }
+
+        $response = Http::withToken($accessToken)
+            ->get('https://account.accurate.id/api/db-list.do');
+
+        return $response->json();
+    }
 }
