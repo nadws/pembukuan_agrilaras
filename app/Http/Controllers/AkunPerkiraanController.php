@@ -271,8 +271,11 @@ class AkunPerkiraanController extends Controller
                 'X-Session-ID' => $sessionId,
             ])
             ->get($host . '/accurate/api/purchase-invoice/list.do', [
-                'itemId' => 150
+                'fields' => 'id,number,transDate',
+                'page' => 1,
+                'pageSize' => 50
             ]);
+
 
         return $response->json();
     }
