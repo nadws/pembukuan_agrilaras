@@ -180,21 +180,31 @@ class AkunPerkiraanController extends Controller
             return "Kode OAuth tidak ditemukan!";
         }
 
-        $response = Http::asForm()->post('https://account.accurate.id/oauth/token', [
-            'grant_type' => 'authorization_code',
-            'code' => $code,
-            'client_id' => env('ACCURATE_CLIENT_ID'),
-            'client_secret' => env('ACCURATE_CLIENT_SECRET'),
-            'redirect_uri' => 'https://ternak.ptagafood.com/accurate/callback',
+        $basicAuth = base64_encode(env('ACCURATE_CLIENT_ID') . ':' . env('ACCURATE_CLIENT_SECRET'));
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Basic ' . $basicAuth,
+            'Content-Type' => 'application/x-www-form-urlencoded',
+        ])->asForm()->post('https://account.accurate.id/oauth/token', [
+            'grant_type'   => 'authorization_code',
+            'code'         => $code,
+            'redirect_uri' => env('ACCURATE_REDIRECT_URI'),
         ]);
 
-
         if ($response->failed()) {
-            return $response->body();
+            return $response->body(); // biar kelihatan errornya
         }
 
-        return $response->json();  // ⬅️ tampilkan hasil asli token
+        $token = $response->json();
+
+        session([
+            'accurate_access_token'  => $token['access_token'],
+            'accurate_refresh_token' => $token['refresh_token'],
+        ]);
+
+        return "Token berhasil diterima!";
     }
+
 
     public function getDatabases()
     {
