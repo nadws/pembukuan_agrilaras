@@ -503,6 +503,7 @@ Route::controller(AkunPerkiraanController::class)->group(function () {
     Route::get('/accurate/callback', 'accurate')->name('accurate');
     Route::get('/accurate/databases', 'getDatabases')->name('getDatabases');
     Route::get('/accurate/openDatabase', 'openDatabase')->name('openDatabase');
+    Route::get('/accurate/getItems', 'getItems')->name('getItems');
 });
 Route::controller(LaporanLabarugiKandangController::class)->group(function () {
     Route::get('/laporanlabakandang', 'index')->name('laporanlabakandang');

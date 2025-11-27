@@ -231,4 +231,15 @@ class AkunPerkiraanController extends Controller
 
         return $response->json();
     }
+    public function getItems()
+    {
+        $session = session('accurate_session');
+        $host = session('accurate_host');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $session
+        ])->get($host . '/items/list.do');
+
+        return $response->json();
+    }
 }
