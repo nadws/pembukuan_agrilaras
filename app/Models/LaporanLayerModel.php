@@ -349,4 +349,21 @@ class LaporanLayerModel extends Model
         order by a.nm_kandang ASC
         ");
     }
+
+    public static function rataRataTelur($idkandang)
+    {
+        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+
+        $hasil = DB::selectOne("SELECT sum(a.total_rp) as ttl_rp, sum(a.kg_jual) as kg_jual FROM invoice_telur as a where a.tgl BETWEEN '$tgl_periode->tgl_awal' and '$tgl_periode->tgl_akhir' and a.tipe ='kg';");
+
+        return $hasil;
+    }
+    public static function rataRataAyam($idkandang)
+    {
+        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+
+        $hasil = DB::selectOne("SELECT sum(`qty`) jumlah, sum(`qty`*`h_satuan`) total_harga FROM `invoice_ayam` WHERE `tgl`BETWEEN '$tgl_periode->tgl_awal' and '$tgl_periode->tgl_akhir';");
+
+        return $hasil;
+    }
 }

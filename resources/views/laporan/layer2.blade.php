@@ -372,7 +372,9 @@
                         @endphp
                         <tr>
                             <td align="center" class="kandang freeze-cell1_td td_layer">
-                                <a href="#"> {{ $k->nm_kandang }}</a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
+                                    class="laba-rugi" id_kandang="{{ $k->id_kandang }}">
+                                    {{ $k->nm_kandang }}</a>
 
                                 <br>
                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="tanggal chick in">
@@ -1192,6 +1194,19 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="laba-rugi" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Laba dan Rugi</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="laba-rugi_kandang"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 </body>
@@ -1237,6 +1252,19 @@
                     "autoWidth": true,
                     "paging": false,
                 });
+            }
+        });
+    });
+    $(document).on('click', '.laba-rugi', function() {
+        var id_kandang = $(this).attr('id_kandang');
+        $.ajax({
+            type: "get",
+            url: "{{ route('labaRugiKandang') }}",
+            data: {
+                id_kandang: id_kandang,
+            },
+            success: function(r) {
+                $('#laba-rugi_kandang').html(r)
             }
         });
     });

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LaporanLayerModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -136,5 +138,66 @@ class AkunPerkiraanController extends Controller
         }
 
         return redirect()->route('akun_perkiraan')->with('sukses', 'Data berhasil diimport');
+    }
+
+    public function labaRugiKandang(Request $r)
+    {
+        $kandang = DB::table('kandang')->where('id_kandang', $r->id_kandang)->first();
+        $total_telur = DB::selectOne("SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h  where h.id_kandang = '$r->id_kandang' and h.pcs != 0 group by h.id_kandang");
+        $populasi = DB::selectOne("SELECT sum(`mati`) as mati, sum(`jual`) as jual, sum(`afkir`) as afkir FROM `populasi` WHERE `id_kandang` ='$r->id_kandang';");
+
+        $rata_rata_telur = LaporanLayerModel::rataRataTelur($r->id_kandang);
+        $rata_rata_ayam = LaporanLayerModel::rataRataAyam($r->id_kandang);
+
+        $biaya_pakan_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori = 'pakan' and a.id_kandang = '$r->id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
+        $biaya_vitamin_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori != 'pakan' and a.id_kandang = '$r->id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
+
+        $vaksin = DB::selectOne("SELECT  sum(a.ttl_rp) as ttl_rp FROM tb_vaksin_perencanaan as a where a.id_kandang = '$r->id_kandang' ");
+
+        $biaya_pakan_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-04' and a.nm_departemen ='$kandang->nm_kandang'");
+        $biaya_vitamin_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-03' and a.nm_departemen ='$kandang->nm_kandang'");
+
+
+        $data = [
+            'kandang' => $kandang,
+            'total_telur' => $total_telur->kuml_kg - $total_telur->kuml_pcs / 180,
+            'rata_rata_telur' => $rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual,
+            'populasi' => $populasi,
+            'rata_rata_ayam' => $rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah,
+            'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
+            'biaya_vitamin' => $biaya_vitamin_accurate->ttl_rp + $biaya_vitamin_program->ttl_rp,
+            'vaksin' => $vaksin->ttl_rp,
+            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6
+        ];
+        return view('akun-perkiraan.laba-rugi-kandang', $data);
+    }
+
+    public function accurate(Request $request)
+    {
+        $code = $request->get('code');
+
+        if (!$code) {
+            return "Kode OAuth tidak ditemukan!";
+        }
+
+        // Exchange code for token
+        $response = Http::asForm()->post('https://accurate.id/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'client_id' => env('500f19f7-e462-44a1-941e-45c90e66a2e4'),
+            'client_secret' => env('19384231ccdb6835005476a550828d37'),
+            'redirect_uri' => 'https://ternak.ptagafood.com/accurate/callback',
+        ]);
+
+        $tokenData = $response->json();
+
+        // Simpan token
+        // contoh simpan ke session
+        session([
+            'accurate_access_token' => $tokenData['access_token'],
+            'accurate_refresh_token' => $tokenData['refresh_token'],
+        ]);
+
+        return "Token berhasil diterima!";
     }
 }

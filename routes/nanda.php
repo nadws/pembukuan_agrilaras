@@ -497,8 +497,10 @@ Route::controller(ExportRecordingController::class)->group(function () {
 });
 Route::controller(AkunPerkiraanController::class)->group(function () {
     Route::get('/akun_perkiraan', 'index')->name('akun_perkiraan');
+    Route::get('/labaRugiKandang', 'labaRugiKandang')->name('labaRugiKandang');
     Route::post('/importHpp', 'importHpp')->name('importHpp');
     Route::post('/importBiaya', 'importBiaya')->name('importBiaya');
+    Route::get('/accurate/callback', 'accurate')->name('accurate');
 });
 Route::controller(LaporanLabarugiKandangController::class)->group(function () {
     Route::get('/laporanlabakandang', 'index')->name('laporanlabakandang');
