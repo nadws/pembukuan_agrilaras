@@ -270,9 +270,7 @@ class AkunPerkiraanController extends Controller
             ->withHeaders([
                 'X-Session-ID' => $sessionId,
             ])
-            ->get($host . '/accurate/api/other-payment/list.do', [
-                'Scope' => 'other_payment_view'
-            ]);
+            ->get($host . '/accurate/api/item/list.do');
 
         return $response->json();
     }
