@@ -247,4 +247,23 @@ class AkunPerkiraanController extends Controller
 
         return $response->json();
     }
+
+    public function openDb(Request $request)
+    {
+        $accessToken = session('accurate_access_token');
+
+        if (!$accessToken) {
+            return "Access token tidak ditemukan. Lakukan OAuth ulang.";
+        }
+
+        $dbId = 1794095; // pilih salah satu ID database kamu
+
+        $response = Http::withToken($accessToken)
+            ->asForm()
+            ->post('https://account.accurate.id/api/open-db.do', [
+                'id' => $dbId
+            ]);
+
+        return $response->json();
+    }
 }
