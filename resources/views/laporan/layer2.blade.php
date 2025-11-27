@@ -1268,6 +1268,11 @@
             }
         });
     });
+    $(document).on('click', '#myTab a', function(e) {
+
+        e.preventDefault()
+        $(this).tab('show')
+    });
     $(document).on('submit', '#history_produk', function(e) {
         e.preventDefault();
         var id_kandang = $('#id_kandang').val();
