@@ -255,6 +255,7 @@ class AkunPerkiraanController extends Controller
     public function getItems()
     {
         $accessToken = session('accurate_access_token');
+        dd($accessToken);
 
         if (!$accessToken) {
             return "Access token tidak ditemukan.";
