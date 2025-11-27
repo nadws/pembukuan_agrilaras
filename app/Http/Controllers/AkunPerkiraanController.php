@@ -254,26 +254,20 @@ class AkunPerkiraanController extends Controller
 
     public function getItems()
     {
-        $accessToken = session('accurate_access_token');
-        $sessionId   = session('accurate_session');
-        $host        = session('accurate_host'); // contoh: https://iris.accurate.id
+        $session = session('accurate_session');
+        $host = session('accurate_host');
 
-        if (!$accessToken) {
-            return "Access token tidak ditemukan. Lakukan OAuth ulang.";
-        }
-
-        if (!$sessionId || !$host) {
+        if (!$session || !$host) {
             return "Belum membuka database Accurate.";
         }
 
-        $response = Http::withToken($accessToken)
-            ->withHeaders([
-                'X-Session-ID' => $sessionId,
-            ])
-            ->get($host . '/accurate/api/item/list.do');
+        $response = Http::withHeaders([
+            'X-Session-ID' => $session
+        ])->get($host . '/accurate/api/item/list.do');
 
         return $response->json();
     }
+
 
 
 
