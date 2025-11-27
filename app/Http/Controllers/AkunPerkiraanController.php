@@ -270,7 +270,7 @@ class AkunPerkiraanController extends Controller
             ->withHeaders([
                 'X-Session-ID' => $sessionId,
             ])
-            ->get($host . '/accurate/api/warehouse/list.do');
+            ->get($host . '/accurate/api/item/list-stock.do');
 
         return $response->json();
     }
