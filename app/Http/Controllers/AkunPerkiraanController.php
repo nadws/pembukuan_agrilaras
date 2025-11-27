@@ -270,7 +270,11 @@ class AkunPerkiraanController extends Controller
             ->withHeaders([
                 'X-Session-ID' => $sessionId,
             ])
-            ->get($host . '/accurate/api/other-payment/list.do');
+            ->get($host . '/accurate/api/other-payment/list.do', [
+                'fields' => 'id,name,no,averagePrice',
+
+                'pageSize' => 1000
+            ]);
 
         return $response->json();
     }
