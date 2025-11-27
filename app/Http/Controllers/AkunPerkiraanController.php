@@ -222,52 +222,28 @@ class AkunPerkiraanController extends Controller
 
     public function openDatabase(Request $request)
     {
-        $dbId = $request->db_id; // ID database Accurate
-
         $accessToken = session('accurate_access_token');
 
-        if (!$accessToken) {
-            return "Access token tidak ditemukan. Lakukan OAuth ulang.";
-        }
+        $dbId = 1794095; // ganti sesuai yang dipilih
 
-        // Panggil Accurate Open DB
         $response = Http::withToken($accessToken)
-            ->asForm()
-            ->post('https://account.accurate.id/api/open-db.do', [
-                'id' => $dbId
-            ]);
-
-        if ($response->failed()) {
-            return $response->body();
-        }
-
-        $data = $response->json();
-
-        // Simpan session dan host dari Accurate
-        session([
-            'accurate_session' => $data['session'],   // penting
-            'accurate_host' => $data['host'],         // penting
-        ]);
-
-        return "Database berhasil dibuka!";
-    }
-
-    public function getItems()
-    {
-        $host = session('accurate_host');
-        $sessionId = session('accurate_session');
-
-        if (!$host || !$sessionId) {
-            return "Belum membuka database Accurate.";
-        }
-
-        $response = Http::withHeaders([
-            'X-SESSION-ID' => $sessionId
-        ])->get($host . '/accurate/api/item/list.do');
+            ->post('https://account.accurate.id/api/open-db.do?id=' . $dbId);
 
         return $response->json();
     }
+    public function getItems()
+    {
+        $accessToken = session('accurate_access_token');
 
+        if (!$accessToken) {
+            return "Access token tidak ditemukan.";
+        }
+
+        $response = Http::withToken($accessToken)
+            ->get('https://account.accurate.id/api/item/list.do');
+
+        return $response->json();
+    }
 
 
     public function openDb(Request $request)
