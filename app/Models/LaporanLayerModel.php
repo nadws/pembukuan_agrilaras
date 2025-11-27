@@ -368,14 +368,27 @@ class LaporanLayerModel extends Model
     }
     public static function biayaOperasional($idkandang)
     {
-        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+        $tgl_periode = DB::selectOne("SELECT 
+            MIN(a.tgl) AS tgl_awal,
+            MAX(a.tgl) AS tgl_akhir
+        FROM tb_pakan_perencanaan a
+        WHERE a.id_kandang = '$idkandang'
+    ");
 
-        $hasil = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal_accurate as a 
-        left join akun_accurate as b on b.kode = a.kode
-        WHERE a.tgl BETWEEN '$tgl_periode->tgl_awal' and '$tgl_periode->tgl_akhir' and a.buku = '2';");
+        $tgl_akhir = date('Y-m-t', strtotime($tgl_periode->tgl_akhir));
+
+
+
+        $hasil = DB::selectOne("SELECT SUM(a.debit) AS debit
+        FROM jurnal_accurate a
+        LEFT JOIN akun_accurate b ON b.kode = a.kode
+        WHERE a.tgl  BETWEEN '2025-02-01' and '$tgl_akhir' AND a.buku = '2'
+    
+    ");
 
         return $hasil;
     }
+
 
     public static function populasi_periode($idkandang)
     {
