@@ -276,7 +276,11 @@ class AkunPerkiraanController extends Controller
                 'pageSize' => 20
             ]);
 
-        dd($response);
+        dd([
+            'accessToken' => Str::limit($accessToken, 20),
+            'sessionId'   => $sessionId,
+            'host'        => $host,
+        ]);
 
 
 
