@@ -500,7 +500,7 @@ Route::controller(AkunPerkiraanController::class)->group(function () {
     Route::get('/labaRugiKandang', 'labaRugiKandang')->name('labaRugiKandang');
     Route::post('/importHpp', 'importHpp')->name('importHpp');
     Route::post('/importBiaya', 'importBiaya')->name('importBiaya');
-    Route::get('/accurate/callback', 'accurate')->name('accurate');
+    Route::get('/accurate/callback', 'accurate')->name('accurate.callback');
     Route::get('/accurate/databases', 'getDatabases')->name('getDatabases');
     Route::post('/accurate/openDatabase', 'openDatabase')->name('openDatabase');
     Route::get('/accurate/getItems', 'getItems')->name('getItems');

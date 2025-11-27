@@ -7,7 +7,6 @@
         <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile"
             aria-selected="false">Buku besar</a>
     </li>
-
 </ul>
 <br>
 <div class="tab-content" id="myTabContent">
@@ -86,12 +85,33 @@
             </tr>
             <tr>
                 <td>Biaya operasional</td>
-                <td class="text-end"></td>
+                <td class="text-end">{{ number_format($biaya_operasional, 0) }}</td>
                 <td class="text-end"></td>
             </tr>
             <tr>
                 <th>Total Biaya</th>
+                <th class="text-end">
+                    {{ number_format($biaya_pakan_program + $biaya_vitamin + $vaksin + $kandang->rupiah + $rak_telur * 820 + $biaya_operasional, 0) }}
+                </th>
                 <th class="text-end"></th>
+            </tr>
+            <tr>
+                <th>Pendapatan Biaya</th>
+                <th class="text-end">
+                    @php
+                        $pendapatan =
+                            $total_telur * $rata_rata_telur + ($populasi->jual + $populasi->afkir) * $rata_rata_ayam;
+
+                        $biaya =
+                            $biaya_pakan_program +
+                            $biaya_vitamin +
+                            $vaksin +
+                            $kandang->rupiah +
+                            $rak_telur * 820 +
+                            $biaya_operasional;
+                    @endphp
+                    {{ number_format($pendapatan - $biaya, 0) }}
+                </th>
                 <th class="text-end"></th>
             </tr>
 

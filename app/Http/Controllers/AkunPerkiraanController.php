@@ -159,6 +159,17 @@ class AkunPerkiraanController extends Controller
         $biaya_vitamin_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-03' and a.nm_departemen ='$kandang->nm_kandang'");
 
 
+
+        $biaya_operasional = LaporanLayerModel::biayaOperasional($r->id_kandang);
+
+        $populasi_periode = LaporanLayerModel::populasi_periode($r->id_kandang);
+
+        $total = sumBk($populasi_periode, 'stok_awal');
+        $jurnal_periode = LaporanLayerModel::jurnal_periode($r->id_kandang);
+
+
+
+
         $data = [
             'kandang' => $kandang,
             'total_telur' => $total_telur->kuml_kg - $total_telur->kuml_pcs / 180,
@@ -168,7 +179,8 @@ class AkunPerkiraanController extends Controller
             'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
             'biaya_vitamin' => $biaya_vitamin_accurate->ttl_rp + $biaya_vitamin_program->ttl_rp,
             'vaksin' => $vaksin->ttl_rp,
-            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6
+            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
+            'biaya_operasional' => (($biaya_operasional->debit + $jurnal_periode->debit) / $total) * $kandang->stok_awal
         ];
         return view('akun-perkiraan.laba-rugi-kandang', $data);
     }

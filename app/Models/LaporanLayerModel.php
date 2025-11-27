@@ -366,4 +366,34 @@ class LaporanLayerModel extends Model
 
         return $hasil;
     }
+    public static function biayaOperasional($idkandang)
+    {
+        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+
+        $hasil = DB::selectOne("SELECT sum(a.debit) as debit FROM jurnal_accurate as a 
+        left join akun_accurate as b on b.kode = a.kode
+        WHERE a.tgl BETWEEN '$tgl_periode->tgl_awal' and '$tgl_periode->tgl_akhir' and a.buku = '2';");
+
+        return $hasil;
+    }
+
+    public static function populasi_periode($idkandang)
+    {
+        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+
+        $hasil = DB::select("SELECT b.nm_kandang, b.stok_awal, sum(a.mati), sum(a.jual) , sum(a.afkir), b.rupiah FROM populasi as a left join kandang as b on b.id_kandang = a.id_kandang where a.tgl BETWEEN '$tgl_periode->tgl_awal' and '$tgl_periode->tgl_akhir' group by a.id_kandang;");
+
+        return $hasil;
+    }
+    public static function jurnal_periode($idkandang)
+    {
+        $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
+
+        $hasil = DB::selectOne("SELECT sum(a.debit) as debit
+FROM jurnal as a
+left join akun as b on b.id_akun = a.id_akun
+where a.tgl BETWEEN '$tgl_periode->tgl_awal' and '2025-01-31' and a.id_akun in (112,98,70,91,2,14,15,18,20,21,33,36,42,3,44,45,55,4,5,8,10,11,12,51,58);");
+
+        return $hasil;
+    }
 }
