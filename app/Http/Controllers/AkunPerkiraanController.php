@@ -192,15 +192,9 @@ class AkunPerkiraanController extends Controller
             return $response->body();
         }
 
-        $tokenData = $response->json();
-
-        session([
-            'accurate_access_token' => $tokenData['access_token'],
-            'accurate_refresh_token' => $tokenData['refresh_token'],
-        ]);
-
-        return "Token berhasil diterima!";
+        return $response->json();  // ⬅️ tampilkan hasil asli token
     }
+
     public function getDatabases()
     {
         $accessToken = session('accurate_access_token');
