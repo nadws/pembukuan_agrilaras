@@ -219,4 +219,16 @@ class AkunPerkiraanController extends Controller
 
         return $response->json();
     }
+
+    public function openDatabase(Request $request)
+    {
+        $accessToken = session('accurate_access_token');
+
+        $dbId = 1794095; // ganti sesuai yang dipilih
+
+        $response = Http::withToken($accessToken)
+            ->post('https://account.accurate.id/api/open-db.do?id=' . $dbId);
+
+        return $response->json();
+    }
 }
