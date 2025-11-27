@@ -272,7 +272,7 @@ class AkunPerkiraanController extends Controller
             ])
             ->get($host . '/accurate/api/item/list.do', [
                 'fields' => 'id,name,no,averagePrice',
-                'page' => 1,
+
                 'pageSize' => 1000
             ]);
 
