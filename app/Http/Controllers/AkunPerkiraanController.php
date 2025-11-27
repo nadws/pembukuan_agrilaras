@@ -233,12 +233,17 @@ class AkunPerkiraanController extends Controller
     }
     public function getItems()
     {
-        $session = session('accurate_session');
-        $host = session('accurate_host');
+        $accessToken = session('accurate_access_token');
+        $sessionId   = session('accurate_session_id');
+        $host        = session('accurate_host');
+
+        if (!$accessToken) return "Access token tidak ditemukan!";
+        if (!$sessionId) return "Belum membuka database Accurate.";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $session
-        ])->get($host . '/items/list.do');
+            'Authorization' => 'Bearer ' . $accessToken,
+            'X-Session-ID' => $sessionId,
+        ])->get($host . '/item/list.do');
 
         return $response->json();
     }
