@@ -176,8 +176,8 @@ class AkunPerkiraanController extends Controller
             'rata_rata_telur' => $rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual,
             'populasi' => $populasi,
             'rata_rata_ayam' => $rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah,
-            'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
-            'biaya_vitamin' => $biaya_vitamin_accurate->ttl_rp + $biaya_vitamin_program->ttl_rp,
+            'biaya_pakan_program' => $biaya_pakan_program->ttl_rp,
+            'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp,
             'vaksin' => $vaksin->ttl_rp,
             'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
             'biaya_operasional' => (($biaya_operasional->debit + $jurnal_periode->debit) / $total) * $kandang->stok_awal
