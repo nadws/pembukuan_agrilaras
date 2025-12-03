@@ -87,7 +87,9 @@
             </tr>
             <tr>
                 <td>Biaya operasional</td>
-                <td class="text-end">{{ number_format($biaya_operasional, 0) }}</td>
+                <td class="text-end" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Total Periode Ayam : {{ number_format($total, 0) }} | stok_awal : {{ number_format($stok_awal, 0) }}">
+                    {{ number_format($biaya_operasional, 0) }}</td>
                 <td class="text-end"></td>
             </tr>
             <tr>
