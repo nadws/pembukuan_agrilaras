@@ -80,7 +80,8 @@
             </tr>
             <tr>
                 <td>Rak Telur</td>
-                <td class="text-end">{{ number_format($rak_telur * 820, 0) }}</td>
+                <td class="text-end" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $pcs_telur }}">
+                    {{ number_format($rak_telur * 820, 0) }}</td>
                 <td class="text-end">820</td>
             </tr>
             <tr>

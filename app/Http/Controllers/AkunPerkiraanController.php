@@ -177,7 +177,8 @@ class AkunPerkiraanController extends Controller
             'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp,
             'vaksin' => $vaksin->ttl_rp,
             'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
-            'biaya_operasional' => (($jurnal_periode->debit) / $total) * $kandang->stok_awal
+            'biaya_operasional' => (($jurnal_periode->debit) / $total) * $kandang->stok_awal,
+            'pcs_telur' => $total_telur->kuml_pcs
         ];
         return view('akun-perkiraan.laba-rugi-kandang', $data);
     }
