@@ -72,7 +72,7 @@
                         <label for="">File</label>
                         <input type="file" name="file" class="form-control" id="">
                     </div>
-                    <div class="col-lg-6 mt-2">
+                    {{-- <div class="col-lg-6 mt-2">
                         <label for="">Bulan</label>
                         <select name="bulan" class="form-control" id="">
                             <option value="">- Pilih Bulan -</option>
@@ -92,7 +92,7 @@
                             </option>
 
                         </select>
-                    </div>
+                    </div> --}}
                 </div>
             </x-theme.modal>
         </form>
@@ -104,7 +104,7 @@
                         <label for="">File</label>
                         <input type="file" name="file" class="form-control" id="">
                     </div>
-                    <div class="col-lg-6 mt-2">
+                    {{-- <div class="col-lg-6 mt-2">
                         <label for="">Bulan</label>
                         <select name="bulan" class="form-control" id="">
                             <option value="">- Pilih Bulan -</option>
@@ -113,18 +113,21 @@
                                 </option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="col-lg-6 mt-2">
+                    </div> --}}
+                    {{-- <div class="col-lg-6 mt-2">
                         <label for="">Tahun</label>
                         <select name="tahun" class="form-control" id="">
                             <option value="">- Pilih Tahun -</option>
+                            <option value="{{ date('Y', strtotime('-1 year')) }}">
+                                {{ date('Y', strtotime('-1 year')) }}
+                            </option>
                             <option value="{{ date('Y') }}">{{ date('Y') }}</option>
                             <option value="{{ date('Y', strtotime('+1 year')) }}">
                                 {{ date('Y', strtotime('+1 year')) }}
                             </option>
 
                         </select>
-                    </div>
+                    </div> --}}
                 </div>
             </x-theme.modal>
         </form>

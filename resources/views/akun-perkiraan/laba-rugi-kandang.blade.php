@@ -3,10 +3,10 @@
         <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home"
             aria-selected="true">Laba Rugi</a>
     </li>
-    {{-- <li class="nav-item">
+    <li class="nav-item">
         <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile"
             aria-selected="false">Buku besar</a>
-    </li> --}}
+    </li>
 </ul>
 <br>
 <div class="tab-content" id="myTabContent">
@@ -16,6 +16,11 @@
                 <th class="text-center">Kandang</th>
                 <th class="text-center">{{ $kandang->nm_kandang }}</th>
                 <th class="text-center">Rata-rata Penjualan</th>
+            </tr>
+            <tr>
+                <td>Ayam Awal</td>
+                <td class="text-end">{{ number_format($kandang->stok_awal, 0) }}</td>
+                <td class="text-end"></td>
             </tr>
             <tr>
                 <td>Total Telur</td>
@@ -121,6 +126,106 @@
 
         </table>
     </div>
-    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">...</div>
+    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Akun</th>
+                            <th>Debit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $total = 0;
+                        @endphp
+                        @foreach ($jurnal_periode_detail as $j)
+                            @php
+                                $total += $j->debit;
+                            @endphp
+                            <tr>
+                                <td>{{ $j->nm_akun }}</td>
+                                <td class="text-end">{{ number_format($j->debit, 0) }}
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total</th>
+                            <th class="text-end">{{ number_format($total, 0) }}
+                        </tr>
+                        <tr>
+                            <th>Total Biaya Jurnal Accurate</th>
+                            <th class="text-end">{{ number_format($operasional_acc, 0) }}
+                        </tr>
+                        <tr>
+                            <th>Grand Total</th>
+                            <th class="text-end">{{ number_format($total + $operasional_acc, 0) }}
+                        </tr>
+                    </tfoot>
+
+                </table>
+            </div>
+            <div class="col-lg-6">
+                <table class="table table-bordered table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Kandang</th>
+                            <th>Stok Awal</th>
+                            <th>Mati</th>
+                            <th>Jual</th>
+                            <th>Afkir</th>
+                            <th>Rupiah</th>
+                            <th>Operasional</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($populasi_periode as $p)
+                            <tr>
+                                <td
+                                    class="{{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ $p->nm_kandang }}</td>
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format($p->stok_awal, 0) }}</td>
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format($p->mati, 0) }}</td>
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format($p->jual, 0) }}</td>
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format($p->afkir, 0) }}</td>
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format($p->rupiah, 0) }}</td>
+
+                                <td
+                                    class="text-end {{ $kandang->nm_kandang == $p->nm_kandang ? 'bg-warning text-white' : '' }}">
+                                    {{ number_format((($total + $operasional_acc) / sumBk($populasi_periode, 'stok_awal')) * $p->stok_awal, 0) }}
+                                </td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total</th>
+                            <th class="text-end">{{ number_format(sumBk($populasi_periode, 'stok_awal'), 0) }}</th>
+                            <th class="text-end">{{ number_format(sumBk($populasi_periode, 'mati'), 0) }}</th>
+                            <th class="text-end">{{ number_format(sumBk($populasi_periode, 'jual'), 0) }}</th>
+                            <th class="text-end">{{ number_format(sumBk($populasi_periode, 'afkir'), 0) }}</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
 
 </div>

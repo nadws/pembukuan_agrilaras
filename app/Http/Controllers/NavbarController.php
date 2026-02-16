@@ -188,17 +188,24 @@ class NavbarController extends Controller
                 'deskripsi' => 'Import dan data dari accurate',
             ],
             [
-                'judul' => 'Egg Production Forecast',
-                'route' => 'akun_perkiraan',
+                'judul' => 'Biaya',
+                'route' => 'akun_perkiraan.biaya',
                 'img' => 'accounting.png',
                 'deskripsi' => 'Import dan data dari accurate',
             ],
             [
-                'judul' => 'Detail Egg Production',
-                'route' => 'forecast.detailEggProduction',
+                'judul' => 'Biaya Hpp dan Penjualan Pokok',
+                'route' => 'akun_perkiraan.biaya_hpp',
                 'img' => 'accounting.png',
-                'deskripsi' => 'Detail Egg Production',
+                'deskripsi' => 'Import dan data dari accurate',
             ],
+            [
+                'judul' => 'Kandang',
+                'route' => 'akun_perkiraan.kandang',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Import dan data dari accurate',
+            ],
+
 
         ];
         $title = 'Pembelian';

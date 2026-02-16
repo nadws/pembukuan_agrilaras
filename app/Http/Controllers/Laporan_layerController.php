@@ -32,17 +32,13 @@ class Laporan_layerController extends Controller
         left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
         where a.h_opname = 'T' and a.tgl BETWEEN '$tgl_awal_harga' and '$tgl' and b.kategori = 'pakan' and a.pcs != 0;");
 
-
-
-
-
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
             'tgl_sebelum' => $tgl_sebelumnya,
             'tgl_kemarin' => $tgl_kemarin,
             'harga' => $harga,
-            'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren, $tgl_awal_harga),
+            'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren),
         ];
         return view('laporan.layer2', $data);
     }
