@@ -3,8 +3,7 @@
         <h5 class="float-start mt-1">{{ $title }}</h5>
         <div class="row ">
             <div class="col-lg-12">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#importhpp"
-                    class="float-end btn btn-success me-2"><i class="fas fa-download"></i> Import hpp</a>
+
             </div>
         </div>
 
@@ -12,7 +11,7 @@
     </x-slot>
     <x-slot name="cardBody">
         <section class="row">
-            <table class="table table-hover table-bordered" id="table">
+            <table class="table table-hover table-bordered" id="nanda">
                 <thead>
                     <tr>
                         <th width="5">#</th>
@@ -22,7 +21,17 @@
                         <th class="text-end">Chick In2</th>
                         <th>Strain</th>
                         <th class="text-end">Pop Awal</th>
-                        <th class="text-end">Rupiah</th>
+                        <th class="text-end">Beli Pullet</th>
+                        <th class="text-end">Selesai</th>
+                        <th class=" table_layer">
+                            Total Pendapatan
+                            <br>
+                            Total Biaya
+                            <br>
+                            Pendapatan - Biaya
+                            <br>
+                            PNL / total kg telur
+                        </th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -44,6 +53,18 @@
                             </td>
                             <td class="text-end">
                                 Rp {{ number_format($a->rupiah, 0) }}
+                            </td>
+                            <td>
+                                {{ $a->selesai }}
+                            </td>
+                            <td class="baris-kandang text-end" data-id="{{ $a->id_kandang }}">
+                                <span class="txt-telur-kg"></span>
+                                <br>
+                                <span class="txt-t_biaya"></span>
+                                <br>
+                                <span class="txt-laba"></span>
+                                <br>
+                                <span class="txt-rata"></span>
                             </td>
                             <td>
                                 <button class="btn btn-primary btn-sm laba-rugi" data-bs-toggle="modal"
@@ -100,6 +121,34 @@
 
                 e.preventDefault()
                 $(this).tab('show')
+            });
+            $(document).ready(function() {
+
+                $('.baris-kandang').each(function() {
+
+                    var row = $(this); // 🔥 simpan elementnya dulu
+                    var id_kandang = row.data('id');
+
+                    $.ajax({
+                        type: "get",
+                        url: "{{ route('labaRugiKandang_view') }}",
+                        data: {
+                            id_kandang: id_kandang,
+                        },
+                        success: function(r) {
+
+                            row.find('.txt-telur-kg').text(r.penjualan_telur);
+                            row.find('.txt-t_biaya').text(r.total_biaya);
+                            row.find('.txt-laba').text(r.laba);
+                            row.find('.txt-rata').text(r.rata);
+
+
+
+                        }
+                    });
+
+                });
+
             });
         </script>
     @endsection

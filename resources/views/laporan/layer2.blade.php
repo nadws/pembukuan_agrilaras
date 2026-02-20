@@ -303,7 +303,7 @@
                             <br>
                             Pendapatan - Biaya
                             <br>
-                            Pendapatan - Biaya / total kg telur
+                            PNL / total kg telur
                         </th>
                         {{-- KUML --}}
                     </tr>
