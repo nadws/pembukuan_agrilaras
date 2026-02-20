@@ -1,4 +1,4 @@
-<x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
+<x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
         <h5 class="float-start mt-1">{{ $title }}</h5>
         <div class="row ">
@@ -22,7 +22,7 @@
                         <th>Strain</th>
                         <th class="text-end">Pop Awal</th>
                         <th class="text-end">Beli Pullet</th>
-                        <th class="text-end">Selesai</th>
+                        <th class="text-end">Status</th>
                         <th class=" table_layer">
                             Total Pendapatan
                             <br>
@@ -55,7 +55,7 @@
                                 Rp {{ number_format($a->rupiah, 0) }}
                             </td>
                             <td>
-                                {{ $a->selesai }}
+                                {{ $a->selesai = 'Y' ? 'Selesai' : 'Progress' }}
                             </td>
                             <td class="baris-kandang text-end" data-id="{{ $a->id_kandang }}">
                                 <span class="txt-telur-kg"></span>
