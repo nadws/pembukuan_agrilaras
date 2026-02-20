@@ -303,6 +303,7 @@
                             <br>
                             Pendapatan - Biaya
                             <br>
+                            Pendapatan - Biaya / total kg telur
                         </th>
                         {{-- KUML --}}
                     </tr>
@@ -1166,10 +1167,14 @@
                                     class="{{ $tpl_hari_ini - $tpl_kemarin < 0 ? 'text-danger' : '' }}">{{ number_format($tpl_hari_ini - $tpl_kemarin, 0) }}</span>
                                 <br>
                             </td>
-                            <td class="baris-kandang" data-id="{{ $k->id_kandang }}">
-                                <span class="txt-telur-kg">
-
-                                </span>
+                            <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}">
+                                <span class="txt-telur-kg"></span>
+                                <br>
+                                <span class="txt-t_biaya"></span>
+                                <br>
+                                <span class="txt-laba"></span>
+                                <br>
+                                <span class="txt-rata"></span>
                             </td>
                         </tr>
                     @endforeach
@@ -1234,6 +1239,7 @@
                             <br>{{ number_format($gjl_ttl, 0) }}
                         </th>
                         <th class="dhead table_layer">{{ number_format($ttl_tpl, 2) }}</th>
+                        <th class="dhead table_layer"></th>
                     </tr>
                 </tfoot>
 
@@ -1350,40 +1356,34 @@
     });
 
     $(document).ready(function() {
-        // 1. Cari semua elemen dengan class 'baris-kandang'
+
         $('.baris-kandang').each(function() {
 
-            // Simpan context 'this' (baris saat ini) ke dalam variabel $row
-            var $row = $(this);
+            var row = $(this); // 🔥 simpan elementnya dulu
+            var id_kandang = row.data('id');
 
-            // Ambil ID Kandang dari atribut data-id
-            var id_kandang = $row.data('id');
-
-            // 2. Jalankan AJAX untuk setiap baris
             $.ajax({
-                type: "GET",
-                url: "{{ route('labaRugiKandang_view') }}", // Sesuaikan dengan nama route di web.php
+                type: "get",
+                url: "{{ route('labaRugiKandang_view') }}",
                 data: {
-                    id_kandang: id_kandang
+                    id_kandang: id_kandang,
                 },
-                dataType: "json", // Pastikan mengharap balasan berupa JSON
-                success: function(res) {
+                success: function(r) {
 
-                    $row.find('.txt-telur-kg').html(res.total_telur_kg + " Kg");
-                    $row.addClass('table-success').delay(1000).queue(function(next) {
-                        $(this).removeClass('table-success');
-                        next();
-                    });
-                },
-                error: function(xhr, status, error) {
-                    // Jika error, beri tanda di baris tersebut
-                    $row.find('td').not(':first').html(
-                        "<span class='text-danger'>Gagal</span>");
-                    console.error("Error pada ID " + id_kandang + ": ", error);
+                    row.find('.txt-telur-kg').text(r.penjualan_telur);
+                    row.find('.txt-t_biaya').text(r.total_biaya);
+                    row.find('.txt-laba').text(r.laba);
+                    row.find('.txt-rata').text(r.rata);
+
+
+
                 }
             });
+
         });
+
     });
+
 
     $(document).on('click', '#myTab a', function(e) {
 

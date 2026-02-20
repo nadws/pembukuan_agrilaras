@@ -304,58 +304,67 @@ class AkunPerkiraanController extends Controller
 
     public function getLabaRugiData(Request $r)
     {
-        $id_kandang = $r->id_kandang;
+        $kandang = DB::table('kandang')->where('id_kandang', $r->id_kandang)->first();
+        $total_telur = DB::selectOne("SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h  where h.id_kandang = '$r->id_kandang' and h.pcs != 0 group by h.id_kandang");
+        $populasi = DB::selectOne("SELECT sum(`mati`) as mati, sum(`jual`) as jual, sum(`afkir`) as afkir FROM `populasi` WHERE `id_kandang` ='$r->id_kandang';");
 
-        // 1. Data Dasar & Telur
-        $kandang = DB::table('kandang')->where('id_kandang', $id_kandang)->first();
-        if (!$kandang) return response()->json(['error' => 'Not Found'], 404);
+        $rata_rata_telur = LaporanLayerModel::rataRataTelur($r->id_kandang);
+        $rata_rata_ayam = LaporanLayerModel::rataRataAyam($r->id_kandang);
 
-        $total_telur = DB::selectOne("SELECT h.id_kandang , count(h.id_st_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h where h.id_kandang = '$id_kandang' and h.pcs != 0 group by h.id_kandang");
+        $biaya_pakan_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori = 'pakan' and a.id_kandang = '$r->id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
+        $biaya_vitamin_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori != 'pakan' and a.id_kandang = '$r->id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
 
-        // 2. Populasi & Rata-rata
-        $populasi = DB::selectOne("SELECT sum(`mati`) as mati, sum(`jual`) as jual, sum(`afkir`) as afkir FROM `populasi` WHERE `id_kandang` ='$id_kandang';");
-        $rata_rata_telur = LaporanLayerModel::rataRataTelur($id_kandang);
-        $rata_rata_ayam = LaporanLayerModel::rataRataAyam($id_kandang);
-
-        // 3. Biaya Program & Accurate
-        $biaya_pakan_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori = 'pakan' and a.id_kandang = '$id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
-        $biaya_vitamin_program = DB::selectOne("SELECT sum(`total_rp`) as ttl_rp FROM `stok_produk_perencanaan` as a left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan where b.kategori != 'pakan' and a.id_kandang = '$id_kandang' and a.tgl BETWEEN '2020-01-01' and '2025-01-31';");
-
-        $vaksin = DB::selectOne("SELECT sum(a.ttl_rp) as ttl_rp FROM tb_vaksin_perencanaan as a where a.id_kandang = '$id_kandang' ");
+        $vaksin = DB::selectOne("SELECT  sum(a.ttl_rp) as ttl_rp FROM tb_vaksin_perencanaan as a where a.id_kandang = '$r->id_kandang' ");
 
         $biaya_pakan_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-04' and a.nm_departemen ='$kandang->nm_kandang'");
         $biaya_vitamin_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-03' and a.nm_departemen ='$kandang->nm_kandang'");
 
-        // 4. Operasional & Periode
-        $biaya_operasional = LaporanLayerModel::biayaOperasional($id_kandang);
-        $populasi_periode = LaporanLayerModel::populasi_periode($id_kandang);
-        $jurnal_periode = LaporanLayerModel::jurnal_periode($id_kandang);
 
-        // Perhitungan Total Populasi (sumBk manual)
-        $total_populasi_awal = 0;
-        foreach ($populasi_periode as $p) {
-            $total_populasi_awal += $p->stok_awal;
-        }
 
-        // --- KALKULASI AKHIR ---
-        $kg_bersih = ($total_telur->kuml_kg ?? 0) - (($total_telur->kuml_pcs ?? 0) / 180);
-        $harga_rata_telur = ($rata_rata_telur->kg_jual ?? 0) > 0 ? ($rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual) : 0;
+        $biaya_operasional = LaporanLayerModel::biayaOperasional($r->id_kandang);
 
-        $operasional_acc = 0;
-        if ($total_populasi_awal > 0) {
-            $operasional_acc = (($jurnal_periode->debit + $biaya_operasional->debit) / $total_populasi_awal) * $kandang->stok_awal;
-        }
+        $populasi_periode = LaporanLayerModel::populasi_periode($r->id_kandang);
+
+        $total = sumBk($populasi_periode, 'stok_awal');
+        $jurnal_periode = LaporanLayerModel::jurnal_periode($r->id_kandang);
+        $jurnal_periode_detail = LaporanLayerModel::jurnal_periode_detail($r->id_kandang);
+
+
+        $ttl_telur = $total_telur->kuml_kg - $total_telur->kuml_pcs / 180;
+        $r2_telur = $rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual;
+
+        $ayam_jual = ($populasi->jual + $populasi->afkir) * ($rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah);
+
+        $biaya_pakan = $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp;
+        $biaya_vitamin = $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp + $vaksin->ttl_rp;
+        $biaya_pullet = $kandang->rupiah;
+        $rak = (($total_telur->kuml_pcs / 180) * 6) * 820;
+        $biaya_oper = (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal;
+
+
+        $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper;
 
         // Return semua data dalam satu object JSON
         return response()->json([
-            'id_kandang'      => $id_kandang,
-            'total_telur_kg'  => number_format($kg_bersih, 2),
-            'rata_rata_harga' => number_format($harga_rata_telur, 0, ',', '.'),
-            'biaya_pakan'     => number_format(($biaya_pakan_program->ttl_rp ?? 0) + ($biaya_pakan_accurate->ttl_rp ?? 0), 0, ',', '.'),
-            'biaya_vitamin'   => number_format(($biaya_vitamin_program->ttl_rp ?? 0) + ($biaya_vitamin_accurate->ttl_rp ?? 0), 0, ',', '.'),
-            'operasional_acc' => number_format($operasional_acc, 0, ',', '.'),
-            'vaksin'          => number_format($vaksin->ttl_rp ?? 0, 0, ',', '.'),
-            'stok_awal'       => $kandang->stok_awal
+            'kandang' => $kandang,
+            'penjualan_telur' => number_format(($ttl_telur * $r2_telur) + $ayam_jual, 0),
+            'total_biaya' => number_format($total_biaya, 0),
+            'laba' => number_format((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya, 0),
+            'rata' => number_format(((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya) / $ttl_telur, 0),
+
+            'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
+            'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp,
+            // 'biaya_vitamin' => $biaya_vitamin_program->ttl_rp,
+            'vaksin' => $vaksin->ttl_rp,
+            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
+            'biaya_operasional' => (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal,
+            // 'biaya_operasional' => $jurnal_periode->debit,
+            'pcs_telur' => $total_telur->kuml_pcs,
+            'total' => $total,
+            'stok_awal' => $kandang->stok_awal,
+            'jurnal_periode_detail' => $jurnal_periode_detail,
+            'operasional_acc' => $biaya_operasional->debit,
+            'populasi_periode' => $populasi_periode
         ]);
     }
 
