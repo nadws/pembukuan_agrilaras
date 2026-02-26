@@ -336,35 +336,43 @@ class AkunPerkiraanController extends Controller
         $ayam_jual = ($populasi->jual + $populasi->afkir) * ($rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah);
 
         $biaya_pakan = $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp;
-        $biaya_vitamin = $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp + $vaksin->ttl_rp;
+        $biaya_vitamin = $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp;
+        $biaya_vaksin = $vaksin->ttl_rp;
         $biaya_pullet = $kandang->rupiah;
         $rak = (($total_telur->kuml_pcs / 180) * 6) * 820;
         $biaya_oper = (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal;
 
 
-        $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper;
+        $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper + $biaya_vaksin;
 
         // Return semua data dalam satu object JSON
         return response()->json([
             'kandang' => $kandang,
             'penjualan_telur' => number_format(($ttl_telur * $r2_telur) + $ayam_jual, 0),
             'total_biaya' => number_format($total_biaya, 0),
+            'biaya_pakan' => number_format($biaya_pakan, 0),
+            'biaya_vitamin' => number_format($biaya_vitamin, 0),
+            'biaya_vaksin' => number_format($biaya_vaksin, 0),
+            'biaya_pullet' => number_format($biaya_pullet, 0),
+            'biaya_rak' => number_format($rak, 0),
+            'biaya_oper' => number_format($biaya_oper, 0),
+
             'laba' => number_format((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya, 0),
             'rata' => number_format(((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya) / $ttl_telur, 0),
 
-            'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
-            'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp,
-            // 'biaya_vitamin' => $biaya_vitamin_program->ttl_rp,
-            'vaksin' => $vaksin->ttl_rp,
-            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
-            'biaya_operasional' => (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal,
-            // 'biaya_operasional' => $jurnal_periode->debit,
-            'pcs_telur' => $total_telur->kuml_pcs,
-            'total' => $total,
-            'stok_awal' => $kandang->stok_awal,
-            'jurnal_periode_detail' => $jurnal_periode_detail,
-            'operasional_acc' => $biaya_operasional->debit,
-            'populasi_periode' => $populasi_periode
+            // 'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
+            // 'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp,
+            // // 'biaya_vitamin' => $biaya_vitamin_program->ttl_rp,
+            // 'vaksin' => $vaksin->ttl_rp,
+            // 'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
+            // 'biaya_operasional' => (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal,
+            // // 'biaya_operasional' => $jurnal_periode->debit,
+            // 'pcs_telur' => $total_telur->kuml_pcs,
+            // 'total' => $total,
+            // 'stok_awal' => $kandang->stok_awal,
+            // 'jurnal_periode_detail' => $jurnal_periode_detail,
+            // 'operasional_acc' => $biaya_operasional->debit,
+            // 'populasi_periode' => $populasi_periode
         ]);
     }
 
