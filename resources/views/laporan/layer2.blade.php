@@ -175,7 +175,7 @@
 
         <div class="table-responsive table-container">
 
-            <table style="text-align: center; " class="table_layer">
+            <table style="text-align: center; " class="table_layer" width="100%">
                 <thead style="border: 1px solid white">
                     <tr>
                         <th class="dhead freeze-cell1_th table_layer " rowspan="2">Kdg <br> chick in <br>
