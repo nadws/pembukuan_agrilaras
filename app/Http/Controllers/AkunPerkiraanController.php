@@ -280,19 +280,19 @@ class AkunPerkiraanController extends Controller
 
         $data = [
             'kandang' => $kandang,
-            'total_telur' => $total_telur->kuml_kg - $total_telur->kuml_pcs / 180,
+            'total_telur' => empty($total_telur->kuml_kg) ? 0 : $total_telur->kuml_kg - $total_telur->kuml_pcs / 180,
             'rata_rata_telur' => $rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual,
             'populasi' => $populasi,
-            'rata_rata_ayam' => $rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah,
+            'rata_rata_ayam' => empty($rata_rata_ayam->jumlah) ? 0 : $rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah,
             // 'biaya_pakan_program' => $biaya_pakan_program->ttl_rp,
             'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
             'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp,
             // 'biaya_vitamin' => $biaya_vitamin_program->ttl_rp,
             'vaksin' => $vaksin->ttl_rp,
-            'rak_telur' => ($total_telur->kuml_pcs / 180) * 6,
+            'rak_telur' => empty($total_telur->kuml_pcs) ? 0 : ($total_telur->kuml_pcs / 180) * 6,
             'biaya_operasional' => (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal,
             // 'biaya_operasional' => $jurnal_periode->debit,
-            'pcs_telur' => $total_telur->kuml_pcs,
+            'pcs_telur' => $total_telur->kuml_pcs ?? 0,
             'total' => $total,
             'stok_awal' => $kandang->stok_awal,
             'jurnal_periode_detail' => $jurnal_periode_detail,
@@ -330,25 +330,26 @@ class AkunPerkiraanController extends Controller
         $jurnal_periode_detail = LaporanLayerModel::jurnal_periode_detail($r->id_kandang);
 
 
-        $ttl_telur = $total_telur->kuml_kg - $total_telur->kuml_pcs / 180;
+        $ttl_telur = empty($total_telur->kuml_kg) ? 0 : $total_telur->kuml_kg - $total_telur->kuml_pcs / 180;
         $r2_telur = $rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual;
 
-        $ayam_jual = ($populasi->jual + $populasi->afkir) * ($rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah);
+        $ayam_jual = ($populasi->jual + $populasi->afkir) * (empty($rata_rata_ayam->jumlah) ? 0 : $rata_rata_ayam->total_harga / $rata_rata_ayam->jumlah);
 
         $biaya_pakan = $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp;
         $biaya_vitamin = $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp;
         $biaya_vaksin = $vaksin->ttl_rp;
         $biaya_pullet = $kandang->rupiah;
-        $rak = (($total_telur->kuml_pcs / 180) * 6) * 820;
+        $rak = empty($total_telur->kuml_pcs) ? 0 : (($total_telur->kuml_pcs / 180) * 6) * 820;
         $biaya_oper = (($jurnal_periode->debit + $biaya_operasional->debit) / $total) * $kandang->stok_awal;
 
 
         $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper + $biaya_vaksin;
+        $penjualan_telur = empty($ttl_telur) ? 0 : ($ttl_telur * $r2_telur) + $ayam_jual;
 
         // Return semua data dalam satu object JSON
         return response()->json([
             'kandang' => $kandang,
-            'penjualan_telur' => number_format(($ttl_telur * $r2_telur) + $ayam_jual, 0),
+            'penjualan_telur' => number_format($penjualan_telur, 0),
             'total_biaya' => number_format($total_biaya, 0),
             'biaya_pakan' => number_format($biaya_pakan, 0),
             'biaya_vitamin' => number_format($biaya_vitamin, 0),
@@ -357,8 +358,8 @@ class AkunPerkiraanController extends Controller
             'biaya_rak' => number_format($rak, 0),
             'biaya_oper' => number_format($biaya_oper, 0),
 
-            'laba' => number_format((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya, 0),
-            'rata' => number_format(((($ttl_telur * $r2_telur) + $ayam_jual) - $total_biaya) / $ttl_telur, 0),
+            'laba' => number_format($penjualan_telur - $total_biaya, 0),
+            'rata' => number_format($ttl_telur == 0 ? 0 : ($penjualan_telur - $total_biaya) / $ttl_telur, 0),
 
             // 'biaya_pakan_program' => $biaya_pakan_program->ttl_rp + $biaya_pakan_accurate->ttl_rp,
             // 'biaya_vitamin' =>  $biaya_vitamin_program->ttl_rp + $biaya_vitamin_accurate->ttl_rp,
