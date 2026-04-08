@@ -1079,7 +1079,7 @@
                                             @endphp
 
                                             <td class="text-center">
-                                                {{ number_format($fcr_pw_7, 2) }}
+                                                {{ $fcr_pw_7 }}
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
