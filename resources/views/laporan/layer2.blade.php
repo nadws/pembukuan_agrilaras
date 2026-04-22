@@ -1526,7 +1526,12 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="dhead freeze-cell1_td table_layer" colspan="3">Total</th>
+                        <th class="dhead freeze-cell1_td table_layer" colspan="2">Total</th>
+                        <th class="dhead freeze-cell1_td table_layer">
+                            <span>butir : {{ number_format($pcs, 0) }}</span> <br>
+                            <span>kg : {{ number_format($kg_total, 0) }}</span> <br>
+                            <span>kg kotor : {{ number_format($kg_kotor, 0) }}</span>
+                        </th>
                         {{-- <th class="dhead text-end table_layer">{{ $mati }} <br> {{ $jual }} <br>
                             {{ $dc_week }}</th>
                         <th class="dhead table_layer">
