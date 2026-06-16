@@ -178,25 +178,28 @@
             <table style="text-align: center; " class="table_layer" width="100%">
                 <thead style="border: 1px solid white">
                     <tr>
-                        <th class="dhead freeze-cell1_th table_layer " rowspan="2">Kdg <br> chick in <br>
+                        <th class="dhead freeze-cell1_th table_layer " rowspan="2">
+                            {{-- Kdg <br> chick in <br>
                             Afkir <br>
                             chick in2
                             <br>
-                            {{ date('d/m/y') }}
+                            {{ date('d/m/y') }} --}}
+                            Kandang
                         </th>
-                        <th class="dhead freeze-cell_th1 table_layer ">Umur <br> 85 mgg <br> Populasi</th>
+                        <th class="dhead freeze-cell_th1 table_layer " colspan="3">&nbsp; <br> Data telur <br> &nbsp;
+                        </th>
                         {{-- <th class="dhead table_layer th_atas" width="5%"></th> --}}
-                        <th class="dhead table_layer th_atas" colspan="3">Data Telur</th>
+                        {{-- <th class="dhead table_layer freeze-cell_th1" colspan="3">Data Telur</th> --}}
                         <th class="dhead table_layer th_atas">Pakan</th>
                         {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
                         <th class="dhead table_layer th_atas" colspan="5">KUML</th>
                     </tr>
                     <tr>
                         {{-- Umur --}}
-                        <th class="dhead freeze-cell_th2 table_layer">
+                        {{-- <th class="dhead freeze-cell_th2 table_layer">
                             mgg/gjl <br> perkiraan afkir <br> persen afkir <br>pop awal <br> pop akhir <br> persen
                             populasi
-                        </th>
+                        </th> --}}
                         {{-- Umur --}}
 
                         <th class="dhead table_layer th_atas2">
@@ -357,6 +360,89 @@
                         @endphp
                         <tr>
                             <td align="center" class="kandang freeze-cell1_td td_layer">
+                                <table width="100%">
+                                    <tr>
+                                        <td>kandang</td>
+                                        <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
+                                                class="laba-rugi" id_kandang="{{ $k->id_kandang }}">
+                                                {{ $k->nm_kandang }}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>chick in</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="tanggal chick in">
+                                                {{ date('d/m/y', strtotime($k->chick_in)) }}
+                                            </span></td>
+                                    </tr>
+                                    @php
+                                        $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
+                                        $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
+                                        $tgl_hari_ini = date('Y-m-d');
+                                        $afkir = date('Y-m-d', strtotime($k->chick_in . ' +99 weeks'));
+                                        $afkir2 = date('Y-m-d', strtotime($afkir . ' -4 weeks'));
+
+                                        $ckin2 = date('Y-m-d', strtotime($k->chick_in . ' +80 weeks'));
+                                        $ckin21 = date('Y-m-d', strtotime($ckin2 . ' -4 weeks'));
+                                    @endphp
+                                    <tr>
+                                        <td>afkir</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="tanggal afkir hitung 99 minggu dari chick in"
+                                                class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
+                                                {{ date('d/m/y', strtotime($afkir)) }} </span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>chick in2</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="tanggal chick in 2 hitung 80 minggu dari chick in"
+                                                class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
+                                                {{ date('d/m/y', strtotime($ckin2)) }}
+                                            </span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>mgg/gjl</td>
+                                        <td>:
+                                            {{ $k->mgg }} / <span data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="gjl : total hari ayam makan / 7">{{ number_format($k->ttl_gjl / 7) }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>perkiraan afkir</td>
+                                        <td>:
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="perkiran afkir 99 minggu sama semua kandang">
+                                                {{ $k->mgg_afkir }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>persen afkir</td>
+                                        <td>:
+                                            ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>pop awal</td>
+                                        <td>:
+                                            {{ $k->stok_awal }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>pop akhir</td>
+                                        <td>:
+                                            {{ $k->stok_awal - $k->pop_kurang }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>persen populasi</td>
+                                        <td>:
+                                            {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            {{-- <td align="center" class="kandang freeze-cell1_td td_layer">
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi" class="laba-rugi"
                                     id_kandang="{{ $k->id_kandang }}">
                                     {{ $k->nm_kandang }}</a>
@@ -387,13 +473,12 @@
                                     class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
                                     {{ date('d/m/y', strtotime($ckin2)) }}
                                 </span>
-                                {{-- <br>
-                                {{ date('d/m/y', strtotime($k->tgl_masuk_kandang)) }} --}}
 
 
-                            </td>
+
+                            </td> --}}
                             <!-- Umur -->
-                            <td align="center"
+                            {{-- <td align="center"
                                 class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
                                 <br>
                                 {{ $k->mgg }} / <span data-bs-toggle="tooltip" data-bs-placement="top"
@@ -407,12 +492,13 @@
                                 <br>
                                 <span data-bs-toggle="tooltip">
 
-                                    ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) <br>{{ $k->stok_awal }}
+                                    ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) dsa
+                                    <br>{{ $k->stok_awal }}
                                     <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
                                     {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
                                 </span>
 
-                            </td>
+                            </td> --}}
                             {{-- <td align="center" class="hari">{{$k->hari}}</td>
                             <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
                             --}}
@@ -673,6 +759,17 @@
                                             <td
                                                 class="{{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
                                                 {{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '-' : number_format($pop_kurang_per_hari[$tgl_hari], 0) }}
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr>
+                                    <tr>
+                                        <td>hdl</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            <td
+                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
+                                                -
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
@@ -1526,7 +1623,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="dhead freeze-cell1_td table_layer" colspan="2">Total</th>
+                        <th class="dhead freeze-cell1_td table_layer">Total</th>
                         <th class="dhead freeze-cell1_td table_layer">
                             <span>butir : {{ number_format($pcs, 0) }}</span> <br>
                             <span>kg bersih : {{ number_format($kg_total, 0) }}</span> <br>
