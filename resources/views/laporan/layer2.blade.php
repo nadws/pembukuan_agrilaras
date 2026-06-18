@@ -1584,40 +1584,40 @@
                             <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}">
                                 <table width="100%">
                                     <tr>
-                                        <td>Total Pendapatan</td>
-                                        <td>:<span class="txt-telur-kg"></span></td>
+                                        <td align="left">Total Pendapatan</td>
+                                        <td align="left">:<span class="txt-telur-kg"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Pakan</td>
-                                        <td>:<span class="txt-b_pakan"></span></td>
+                                        <td align="left">Biaya Pakan</td>
+                                        <td align="left">:<span class="txt-b_pakan"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Vitamin</td>
-                                        <td>:<span class="txt-b_vitamin"></span></td>
+                                        <td align="left">Biaya Vitamin</td>
+                                        <td align="left">:<span class="txt-b_vitamin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Vaksin</td>
-                                        <td>:<span class="txt-b_vaksin"></span></td>
+                                        <td align="left">Biaya Vaksin</td>
+                                        <td align="left">:<span class="txt-b_vaksin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Pullet</td>
-                                        <td>:<span class="txt-b_pullet"></span></td>
+                                        <td align="left">Biaya Pullet</td>
+                                        <td align="left">:<span class="txt-b_pullet"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Rak</td>
-                                        <td>:<span class="txt-b_rak"></span></td>
+                                        <td align="left">Biaya Rak</td>
+                                        <td align="left">:<span class="txt-b_rak"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Biaya Operasional</td>
-                                        <td>:<span class="txt-b_oper"></span></td>
+                                        <td align="left">Biaya Operasional</td>
+                                        <td align="left">:<span class="txt-b_oper"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Pendapatan - Biaya</td>
-                                        <td>:<span class="txt-laba"></span></td>
+                                        <td align="left">Pendapatan - Biaya</td>
+                                        <td align="left">:<span class="txt-laba"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>PNL / total kg telur</td>
-                                        <td>:<span class="txt-rata"></span></td>
+                                        <td align="left">PNL / total kg telur</td>
+                                        <td align="left">:<span class="txt-rata"></span></td>
                                     </tr>
                                 </table>
 
