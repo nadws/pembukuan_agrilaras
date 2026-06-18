@@ -265,23 +265,7 @@
                             <br>
                         </th> --}}
                         <th class="dhead table_layer th_atas2">
-                            Total Pendapatan
-                            <br>
-                            Biaya Pakan
-                            <br>
-                            Biaya Vitamin
-                            <br>
-                            Biaya Vaksin
-                            <br>
-                            Biaya Pullet
-                            <br>
-                            Biaya Rak
-                            <br>
-                            Biaya Operasional
-                            <br>
-                            Pendapatan - Biaya
-                            <br>
-                            PNL / total kg telur
+                            PNL
                         </th>
                         {{-- KUML --}}
                     </tr>
@@ -1598,25 +1582,45 @@
                             </td> --}}
 
                             <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}">
-                                <span class="txt-telur-kg"></span>
-                                <br>
-                                {{-- <span class="txt-t_biaya"></span>
-                                <br> --}}
-                                <span class="txt-b_pakan"></span>
-                                <br>
-                                <span class="txt-b_vitamin"></span>
-                                <br>
-                                <span class="txt-b_vaksin"></span>
-                                <br>
-                                <span class="txt-b_pullet"></span>
-                                <br>
-                                <span class="txt-b_rak"></span>
-                                <br>
-                                <span class="txt-b_oper"></span>
-                                <br>
-                                <span class="txt-laba"></span>
-                                <br>
-                                <span class="txt-rata"></span>
+                                <table>
+                                    <tr>
+                                        <td>Total Pendapatan</td>
+                                        <td>: <span class="txt-telur-kg"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Pakan</td>
+                                        <td>: <span class="txt-b_pakan"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Vitamin</td>
+                                        <td>: <span class="txt-b_vitamin"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Vaksin</td>
+                                        <td>: <span class="txt-b_vaksin"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Pullet</td>
+                                        <td>: <span class="txt-b_pullet"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Rak</td>
+                                        <td>: <span class="txt-b_rak"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biaya Operasional</td>
+                                        <td>: <span class="txt-b_oper"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pendapatan - Biaya</td>
+                                        <td>: <span class="txt-laba"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PNL / total kg telur</td>
+                                        <td>: <span class="txt-rata"></span></td>
+                                    </tr>
+                                </table>
+
                             </td>
                         </tr>
                     @endforeach
