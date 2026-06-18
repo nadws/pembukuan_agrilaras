@@ -1582,7 +1582,7 @@
                             </td> --}}
 
                             <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}">
-                                <table>
+                                <table width="100%">
                                     <tr>
                                         <td>Total Pendapatan</td>
                                         <td>: <span class="txt-telur-kg"></span></td>
