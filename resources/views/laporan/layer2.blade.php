@@ -750,10 +750,37 @@
                                     <tr>
                                         <td>hdl</td>
                                         <td class="text-center">:</td>
+                                        @php
+                                            $hdl = [];
+                                        @endphp
                                         @foreach ($tanggal_harian as $tgl_hari)
+                                            @php
+                                                $tgl_hari_past = date('Y-m-d', strtotime($tgl_hari . ' -7 days'));
+                                                $result2 = DB::selectOne(
+                                                    "SELECT SUM(mati + jual + afkir) AS total
+                                                FROM populasi
+                                                WHERE id_kandang = ?
+                                                AND tgl BETWEEN ? AND ?",
+                                                    [$k->id_kandang, $k->chick_in, $tgl_hari_past],
+                                                );
+                                                $tlr2 = DB::selectOne(
+                                                    "SELECT h.id_kandang, SUM(h.pcs) AS pcs, SUM(h.kg) AS kg
+                                                FROM stok_telur AS h
+                                                WHERE h.tgl = ? AND h.id_kandang = ?
+                                                GROUP BY h.id_kandang",
+                                                    [$tgl_hari_past, $k->id_kandang],
+                                                );
+                                                $stok_awal2 = $k->stok_awal ?? 0;
+                                                $tlr_pcs2 = optional($tlr2)->pcs ?? 0;
+                                                $result_total2 = optional($result2)->total ?? 0;
+                                                $hdl[$tgl_hari_past] =
+                                                    $stok_awal2 - $result_total2 > 0
+                                                        ? ($tlr_pcs2 / ($stok_awal2 - $result_total2)) * 100
+                                                        : 0;
+                                            @endphp
                                             <td
-                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
-                                                -
+                                                class="{{ $hdl[$tgl_hari_past] == 0 ? '' : ($k->p_hd - $hdl[$tgl_hari_past] > 3 ? 'text-danger fw-bold' : '') }} text-center">
+                                                {{ $hdl[$tgl_hari_past] == 0 ? '-' : number_format($hdl[$tgl_hari_past], 0) }}
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
