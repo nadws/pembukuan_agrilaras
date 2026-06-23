@@ -1448,7 +1448,7 @@
                 <tfoot>
                     <tr>
                         <th class="dhead freeze-cell1_th table_layer">Total</th>
-                        <th class="dhead freeze-cell1_td table_layer">
+                        <th class="dhead  table_layer">
                             <span>butir : {{ number_format($pcs, 0) }}</span> <br>
                             <span>kg bersih : {{ number_format($kg_total, 0) }}</span> <br>
                             <span>kg kotor : {{ number_format($kg_kotor, 0) }}</span>
