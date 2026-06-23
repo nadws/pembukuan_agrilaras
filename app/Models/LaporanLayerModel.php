@@ -299,6 +299,7 @@ class LaporanLayerModel extends Model
             group by a.id_kandang
         ) as am on am.id_kandang = a.id_kandang
 
+        
         where a.selesai = 'T'
         group by a.id_kandang
         order by a.nm_kandang ASC

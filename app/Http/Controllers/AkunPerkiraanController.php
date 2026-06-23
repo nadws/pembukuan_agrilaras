@@ -266,7 +266,10 @@ class AkunPerkiraanController extends Controller
         $vaksin = DB::selectOne("SELECT  sum(a.ttl_rp) as ttl_rp FROM tb_vaksin_perencanaan as a where a.id_kandang = '$r->id_kandang' ");
 
         $biaya_pakan_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-04' and a.nm_departemen ='$kandang->nm_kandang'");
+
         $biaya_vitamin_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-03' and a.nm_departemen ='$kandang->nm_kandang'");
+
+
 
 
 
@@ -346,12 +349,28 @@ class AkunPerkiraanController extends Controller
         $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper + $biaya_vaksin;
         $penjualan_telur = empty($ttl_telur) ? 0 : ($ttl_telur * $r2_telur) + $ayam_jual;
 
+        $kg_pakan = DB::selectOne("SELECT d.id_kandang, sum(d.pcs_kredit) as kg_pakan_kuml
+            FROM stok_produk_perencanaan as d 
+            left join tb_produk_perencanaan as b on b.id_produk = d.id_pakan
+            where d.tgl between '2020-01-01' and '$r->tgl' and b.kategori = 'pakan' and d.id_kandang = '$r->id_kandang'
+            group by d.id_kandang");
+
+
+
+        $kg_pakan_kuml = $kg_pakan->kg_pakan_kuml / 1000;
+        $fcrk = $kg_pakan_kuml / $ttl_telur;
+        $fcrkplus = ($kg_pakan_kuml + (($biaya_vitamin + $biaya_vaksin + $biaya_pullet +  $biaya_oper + $rak) / ($biaya_pakan / $kg_pakan_kuml))) / $ttl_telur;
+
+
         // Return semua data dalam satu object JSON
         return response()->json([
             'kandang' => $kandang,
             'penjualan_telur' => number_format($penjualan_telur, 0),
             'total_biaya' => number_format($total_biaya, 0),
             'biaya_pakan' => number_format($biaya_pakan, 0),
+            'rata_pakan' => number_format($biaya_pakan / $kg_pakan_kuml, 0),
+            'fcrk' => number_format($fcrk, 1),
+            'fcrkplus' => number_format($fcrkplus, 1),
             'biaya_vitamin' => number_format($biaya_vitamin, 0),
             'biaya_vaksin' => number_format($biaya_vaksin, 0),
             'biaya_pullet' => number_format($biaya_pullet, 0),

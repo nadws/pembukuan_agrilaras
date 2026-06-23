@@ -139,23 +139,7 @@
             </a>
         </div>
     </nav>
-    {{-- <nav id="navbar-example2" class="navbar bg-body-tertiary px-3 mb-3">
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
-                    href="{{ route('laporan_layer') }}">
-                    Laporan Layer
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('laporanlabakandang') ? 'active' : '' }}"
-                    href="{{ route('saveLabaRugiKandang') }}">
-                    Laporan Laba Rugi Kandang
-                </a>
-            </li>
 
-        </ul>
-    </nav> --}}
     <div class="container-fluid mt-2">
 
         <form action="">
@@ -179,28 +163,18 @@
                 <thead style="border: 1px solid white">
                     <tr>
                         <th class="dhead freeze-cell1_th table_layer " rowspan="2">
-                            {{-- Kdg <br> chick in <br>
-                            Afkir <br>
-                            chick in2
-                            <br>
-                            {{ date('d/m/y') }} --}}
+
                             Kandang
                         </th>
                         <th class="dhead freeze-cell_th1 table_layer " colspan="3">&nbsp; <br> Data telur <br> &nbsp;
                         </th>
-                        {{-- <th class="dhead table_layer th_atas" width="5%"></th> --}}
-                        {{-- <th class="dhead table_layer freeze-cell_th1" colspan="3">Data Telur</th> --}}
+
                         <th class="dhead table_layer th_atas">Pakan</th>
-                        {{-- <th class="dhead" colspan="2">Berat Badan</th> --}}
-                        <th class="dhead table_layer th_atas" colspan="5">KUML</th>
+
+                        <th class="dhead table_layer th_atas" colspan="4">KUML</th>
                     </tr>
                     <tr>
-                        {{-- Umur --}}
-                        {{-- <th class="dhead freeze-cell_th2 table_layer">
-                            mgg/gjl <br> perkiraan afkir <br> persen afkir <br>pop awal <br> pop akhir <br> persen
-                            populasi
-                        </th> --}}
-                        {{-- Umur --}}
+
 
                         <th class="dhead table_layer th_atas2">
                             ket
@@ -208,28 +182,7 @@
                         <th class="dhead table_layer th_atas2">
                             Hd & Fcr
                         </th>
-                        {{-- <th class="dhead table_layer th_atas2">hd/ hd<br>present/past<br>week(%)
-                            <i class="fas text-white fa-question-circle rumus" rumus="hd_week"
-                                style="cursor: pointer"></i>
-                        </th> --}}
-                        {{-- <th class="dhead table_layer th_atas2">FCR <br> <span data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="D (fcr perday): total pakan hari ini / total kg bersih telur hari ini | D+ (fcr perday+): total pakan hari ini + vaksin + vitamin / total kg bersih telur hari ini">D
-                                / D+ </span>
-                            <br>
-                            <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="W (fcr perday): total pakan minggu ini / total kg bersih telur minggu ini | W+ (fcr perday+): total pakan minggu ini + vaksin + vitamin / total kg bersih telur minggu ini">
-                                W / W+
-                            </span>
 
-                            <br>
-                            <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="PW (fcr perday): total pakan minggu lalu / total kg bersih telur minggu lalu | PW+ (fcr perday+): total pakan minggu lalu + vaksin + vitamin / total kg bersih telur minggu lalu">
-                                PW / PW+
-                            </span>
-                            <i class="fas text-white fa-question-circle rumus" rumus="fcr_week"
-                                style="cursor: pointer"></i>
-                        </th> --}}
                         <th class="dhead table_layer th_atas2">Telur(%)</th>
                         {{-- Data Telur --}}
 
@@ -243,27 +196,9 @@
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
                         <th class="dhead table_layer th_atas2">Pakan</th>
 
-                        {{-- <th class="dhead table_layer">telur(kg)</th> --}}
-                        <th class="dhead table_layer th_atas2">fcr <br> k&k+ <br>
-                            ({{ number_format($harga->ttl_rupiah / $harga->pcs, 0) }}) </th>
-                        {{-- <th class="dhead table_layer th_atas2"> testing </th> --}}
-                        {{-- <th class="dhead table_layer th_atas2"> ttl rp pakan <br>obat/vit <br> vaksin <br> Ayam <br>
-                            <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="gjl : 185 * pop awal * total hari ayam makan">
-                                GjL
-                            </span>
 
 
-                        </th> --}}
-                        {{-- <th class="dhead table_layer th_atas2">
-                            <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="tpl : (rp telur - (fcr kuml * rp pakan)) * ttl kg telur">
-                                tpl
-                            </span>
-                            <br>
-                            <br>
-                            <br>
-                        </th> --}}
+
                         <th class="dhead table_layer th_atas2">
                             PNL
                         </th>
@@ -343,8 +278,23 @@
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr>
-                            <td align="center" class="kandang freeze-cell1_td td_layer">
+                            <td align="center" class="kandang baris-kandang2 freeze-cell1_td td_layer"
+                                data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
+
+                                    <tr>
+                                        <td>fcrk</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="fcrk = ttl kg pakan / ttl telur" class="txt-fcrk"></span></td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>fcrk+</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="fcrk+ = (ttl kg pakan + ((vitamin + vaksin + pullet + rak + operasional) / rata2 pakan)) / ttl telur"
+                                                class=" txt-fcrkplus"></span></td>
+
+                                    </tr>
                                     <tr>
                                         <td>kandang</td>
                                         <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
@@ -424,68 +374,13 @@
                                             {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td>rata2 pakan</td>
+                                        <td>: <span class="txt-rata-pakan"></span></td>
+                                    </tr>
                                 </table>
                             </td>
-                            {{-- <td align="center" class="kandang freeze-cell1_td td_layer">
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi" class="laba-rugi"
-                                    id_kandang="{{ $k->id_kandang }}">
-                                    {{ $k->nm_kandang }}</a>
 
-                                <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="tanggal chick in">
-                                    {{ date('d/m/y', strtotime($k->chick_in)) }}
-                                </span>
-                                <br>
-
-                                @php
-                                    $chick_in_next = date('Y-m-d', strtotime($k->chick_out . ' +1 month'));
-                                    $merah = date('Y-m-d', strtotime($chick_in_next . ' -15 weeks'));
-                                    $tgl_hari_ini = date('Y-m-d');
-                                    $afkir = date('Y-m-d', strtotime($k->chick_in . ' +99 weeks'));
-                                    $afkir2 = date('Y-m-d', strtotime($afkir . ' -4 weeks'));
-
-                                    $ckin2 = date('Y-m-d', strtotime($k->chick_in . ' +80 weeks'));
-                                    $ckin21 = date('Y-m-d', strtotime($ckin2 . ' -4 weeks'));
-                                @endphp
-
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="tanggal afkir hitung 99 minggu dari chick in"
-                                    class="{{ $tgl_hari_ini >= $afkir2 ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($afkir)) }} </span> <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="tanggal chick in 2 hitung 80 minggu dari chick in"
-                                    class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
-                                    {{ date('d/m/y', strtotime($ckin2)) }}
-                                </span>
-
-
-
-                            </td> --}}
-                            <!-- Umur -->
-                            {{-- <td align="center"
-                                class="freeze-cell_td td_layer mgg {{ $k->mgg >= '85' ? 'text-danger fw-bold' : '' }}">
-                                <br>
-                                {{ $k->mgg }} / <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="gjl : total hari ayam makan / 7">{{ number_format($k->ttl_gjl / 7) }}</span>
-                                <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="perkiran afkir 99 minggu sama semua kandang">
-                                    {{ $k->mgg_afkir }}
-                                </span>
-
-                                <br>
-                                <span data-bs-toggle="tooltip">
-
-                                    ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%) dsa
-                                    <br>{{ $k->stok_awal }}
-                                    <br> {{ $k->stok_awal - $k->pop_kurang }} <br>
-                                    {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
-                                </span>
-
-                            </td> --}}
-                            {{-- <td align="center" class="hari">{{$k->hari}}</td>
-                            <td align="center" class="afkir 80 minggu">{{number_format(($k->mgg / 80) * 100,0)}}%</td>
-                            --}}
                             <!-- umur -->
 
                             <!-- populasi -->
@@ -924,35 +819,7 @@
                                         <th class="text-center">7/7</th>
                                     </tr>
 
-                                    {{-- <tr>
-                                        <td>hd</td>
-                                        <td class="text-center">:</td>
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            <td
-                                                class="{{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '' : ($k->p_hd - $pop_kurang_per_hari[$tgl_hari] > 3 ? 'text-danger fw-bold' : '') }} text-center">
-                                                {{ $pop_kurang_per_hari[$tgl_hari] == 0 ? '-' : number_format($pop_kurang_per_hari[$tgl_hari], 0) }}
-                                            </td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr>
-                                    <tr>
-                                        <td>p</td>
-                                        <td class="text-center">:</td>
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            <td class="text-center">{{ empty($k->p_hd) ? 'NA' : $k->p_hd }}</td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr>
-                                    <tr>
-                                        <td>hh</td>
-                                        <td class="text-center">:</td>
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            <td class="text-center">
-                                                {{ $butir2[$tgl_hari] == 0 ? '0' : number_format(($butir2[$tgl_hari] / $k->stok_awal) * 100, 0) }}
-                                            </td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr> --}}
+
                                     <tr>
                                         <td>hd w</td>
                                         <td class="text-center">:</td>
@@ -1274,26 +1141,7 @@
 
 
 
-                            {{-- <td align="center" class="hd week td_layer" width="10%">
 
-                                &nbsp; <br>
-                                {{ empty($k->pcs_telur_week) ||
-                                empty($k->jlh_hari) ||
-                                empty($k->pop_kurang) ||
-                                $k->stok_awal - $k->pop_kurang == 0
-                                    ? '0'
-                                    : number_format(($k->pcs_telur_week / $k->jlh_hari / ($k->stok_awal - $k->pop_kurang)) * 100, 0) }}
-                                <br>
-                                {{ empty($k->pcs_telur_week_past) ||
-                                empty($k->jlh_hari_past) ||
-                                empty($k->pop_kurang_past) ||
-                                $k->stok_awal - $k->pop_kurang_past == 0
-                                    ? '0'
-                                    : number_format(($k->pcs_telur_week_past / $k->jlh_hari_past / ($k->stok_awal - $k->pop_kurang_past)) * 100, 0) }}
-                                <br> &nbsp;
-
-
-                            </td> --}}
 
                             <!-- (12777) / (3) / (2296) -->
                             @php
@@ -1361,40 +1209,7 @@
                                 $tl_rp_pakan = sumbK($pkn, 'ttl_rp');
                                 $tl_gr_pkn = sumBk($pkn, 'ttl_gr');
                             @endphp
-                            {{-- <td align="center" class="FCR(week)  td_layer">
-                                <br>
-                                @if ($k->mgg < 21)
-                                    0 / 0 <br> 0 / 0
-                                @else
-                                    <span
-                                        class="{{ $fcr_day >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ $fcr_day }}</span>
-                                    / <span class="{{ $fcr_plus >= 2.2 ? 'text-danger fw-bold' : '' }}">
-                                        {{ $fcr_plus }}</span>
-                                    <br>
-                                    <span
-                                        class="{{ $fcr >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr, 2) }}
-                                    </span>
-                                    /
-                                    <span
-                                        class="{{ $fcr_plus_week >= 2.2 ? 'text-danger fw-bold' : '' }}">{{ number_format($fcr_plus_week, 2) }}</span>
-                                @endif
-                                <br>
-                                {{ $k->jlh_hari }} / 7 <br>
-                                {{ number_format($fcr_past_week, 2) }} / {{ number_format($fcr_past_week_plus, 2) }}
 
-                                <br>
-                                @php
-                                    $hrga_stn_pkn = empty($tl_rp_pakan) ? 0 : $tl_rp_pakan / $tl_gr_pkn;
-                                @endphp
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="harga satuan pakan * fcr past week">
-                                    {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week, 2), 0) }}
-                                </span> /
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="harga satuan pakan * fcr past week plus">
-                                    {{ number_format(round($hrga_stn_pkn, 0) * round($fcr_past_week_plus, 2), 0) }}
-                                </span>
-                            </td> --}}
                             <td class="td_layer">
                                 @php
                                     $telur = DB::select("SELECT a.id_telur, b.nm_telur, sum(a.pcs) as pcs, sum(a.kg) FROM stok_telur as a
@@ -1554,13 +1369,13 @@
                             </td>
 
                             {{-- vitamin --}}
-                            <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
+                            {{-- <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
                                 @php
                                     $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
                                     $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
                                     $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
                                     $ayam = $k->rupiah / 7000;
-                                    // $gjl = ($k->ttl_gjl * 700000) / 7000;
+
                                     $gjl = (185 * $k->stok_awal * $k->ttl_gjl) / 7000;
                                 @endphp
 
@@ -1568,6 +1383,7 @@
                                 {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
                                     ? '0'
                                     : number_format($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
+
                                 <br>
 
 
@@ -1578,37 +1394,14 @@
                                         1,
                                     ) }}
                                 <br> &nbsp;
-                                {{-- {{ number_format($kg_pakan_kuml, 0) }} /
-                                {{ number_format($k->kuml_kg - $k->kuml_pcs / 180) }} --}}
-                            </td>
-
-
-                            <!--(144,502.2 , 60,920.9 , 864,183.0)-->
-                            {{-- <td align="center" class="obat/vit td_layer">
-
-                                &nbsp; <br>
-                                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="ttl rp pakan = ttl kg : {{ empty($k->kg_pakan_kuml) ? '0' : $k->kg_pakan_kuml / 1000 }} || rata2 pakan hari ini = {{ number_format($hrga_stn_pkn, 0) }} ">
-                                    {{ number_format(empty($k->kg_pakan_kuml) ? '0' : ($k->kg_pakan_kuml / 1000) * $hrga_stn_pkn, 1) }}
-                                </span>
-
-                                <br>
-
-                                {{ number_format($k->kuml_rp_vitamin, 0) }} <br>
-                                {{ number_format($k->kum_ttl_rp_vaksin, 0) }} <br>
-                                {{ number_format($k->rupiah, 0) }} <br>
-
-
-                                {{ number_format(185 * $k->stok_awal * $k->ttl_gjl, 0) }}
-
-                                @php
-                                    $gjl_new = 185 * $k->stok_awal * $k->ttl_gjl;
-                                    $gjl_new_kemarin = 185 * $k->stok_awal * ($k->ttl_gjl - 1);
-                                @endphp
 
                             </td> --}}
 
-                            <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}">
+
+
+
+                            <td class="baris-kandang td_layer" data-id="{{ $k->id_kandang }}"
+                                tgl="{{ $tgl }}">
                                 <table width="100%">
                                     <tr>
                                         <td align="left">Total Pendapatan</td>
@@ -1654,7 +1447,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="dhead freeze-cell1_td table_layer">Total</th>
+                        <th class="dhead freeze-cell1_th table_layer">Total</th>
                         <th class="dhead freeze-cell1_td table_layer">
                             <span>butir : {{ number_format($pcs, 0) }}</span> <br>
                             <span>kg bersih : {{ number_format($kg_total, 0) }}</span> <br>
@@ -1703,13 +1496,13 @@
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
 
-                        <th class="dhead table_layer">
+                        {{-- <th class="dhead table_layer">
                             {{ $telur_kuml != 0 ? number_format($pakan_kuml / $telur_kuml, 1) : '0' }}<br>
                             @php
                                 $plus = ($obat_kuml + $vaksin_kuml + $rp_ayam) / 7000;
                             @endphp
                             {{ $telur_kuml != 0 ? number_format(($pakan_kuml + $plus) / $telur_kuml, 1) : '0' }}
-                        </th>
+                        </th> --}}
 
                         {{-- <th class="dhead table_layer">
                             {{ number_format($obat_kuml, 0) }} <br>
@@ -1839,12 +1632,15 @@
 
             var row = $(this); // 🔥 simpan elementnya dulu
             var id_kandang = row.data('id');
+            var tgl = $(this).attr('tgl');
+
 
             $.ajax({
                 type: "get",
                 url: "{{ route('labaRugiKandang_view') }}",
                 data: {
                     id_kandang: id_kandang,
+                    tgl: tgl,
                 },
                 success: function(r) {
 
@@ -1862,6 +1658,30 @@
                     row.find('.txt-rata').text(r.rata);
 
 
+
+
+
+                }
+            });
+
+        });
+        $('.baris-kandang2').each(function() {
+            var row = $(this); // 🔥 simpan elementnya dulu
+            var id_kandang = row.data('id');
+            var tgl = $(this).attr('tgl');
+
+
+            $.ajax({
+                type: "get",
+                url: "{{ route('labaRugiKandang_view') }}",
+                data: {
+                    id_kandang: id_kandang,
+                    tgl: tgl,
+                },
+                success: function(r) {
+                    row.find('.txt-rata-pakan').text(r.rata_pakan)
+                    row.find('.txt-fcrk').text(r.fcrk)
+                    row.find('.txt-fcrkplus').text(r.fcrkplus)
 
                 }
             });
