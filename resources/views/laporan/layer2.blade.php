@@ -282,19 +282,7 @@
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
 
-                                    <tr>
-                                        <td>fcrk</td>
-                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                                title="fcrk = ttl kg pakan / ttl telur" class="txt-fcrk"></span></td>
 
-                                    </tr>
-                                    <tr>
-                                        <td>fcrk+</td>
-                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
-                                                title="fcrk+ = (ttl kg pakan + ((vitamin + vaksin + pullet + rak + operasional) / rata2 pakan)) / ttl telur"
-                                                class=" txt-fcrkplus"></span></td>
-
-                                    </tr>
                                     <tr>
                                         <td>kandang</td>
                                         <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
@@ -377,6 +365,19 @@
                                     <tr>
                                         <td>rata2 pakan</td>
                                         <td>: <span class="txt-rata-pakan"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>fcrk</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="fcrk = ttl kg pakan / ttl telur" class="txt-fcrk"></span></td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>fcrk+</td>
+                                        <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="fcrk+ = (ttl kg pakan + ((vitamin + vaksin + pullet + rak + operasional) / rata2 pakan)) / ttl telur"
+                                                class=" txt-fcrkplus"></span></td>
+
                                     </tr>
                                 </table>
                             </td>
