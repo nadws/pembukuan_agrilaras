@@ -314,6 +314,13 @@ class LaporanLayerModel extends Model
 
         return $hasil;
     }
+
+    public static function rataRataTelurtgl($tgl1, $tgl2)
+    {
+        $hasil = DB::selectOne("SELECT sum(a.total_rp) as ttl_rp, sum(a.kg_jual) as kg_jual FROM invoice_telur as a where a.tgl BETWEEN '$tgl1' and '$tgl2' and a.tipe ='kg';");
+
+        return $hasil;
+    }
     public static function rataRataAyam($idkandang)
     {
         $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
@@ -370,6 +377,18 @@ class LaporanLayerModel extends Model
         $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
 
         $hasil = DB::select("SELECT b.nm_akun, sum(a.debit) as debit FROM jurnal as a left join akun as b on b.id_akun = a.id_akun where a.tgl BETWEEN '$tgl_periode->tgl_awal' and '2025-01-31' and a.id_akun in (112,98,70,91,2,14,15,18,20,21,33,36,42,3,44,45,55,4,5,8,10,11,12,51,58) group by a.id_akun;");
+
+        return $hasil;
+    }
+
+    public static function biayaOperasional2($tgl1, $tgl2)
+    {
+        $hasil = DB::selectOne("SELECT SUM(a.debit) AS debit
+        FROM jurnal_accurate a
+        LEFT JOIN akun_accurate b ON b.kode = a.kode
+        WHERE a.tgl  BETWEEN '$tgl1' and '$tgl2' AND a.buku = '2'");
+
+
 
         return $hasil;
     }

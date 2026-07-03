@@ -7,6 +7,8 @@
                         class="fas fa-download"></i> Import biaya</a>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#importhpp"
                     class="float-end btn btn-success me-2"><i class="fas fa-download"></i> Import hpp</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#importpenjualan"
+                    class="float-end btn btn-success me-2"><i class="fas fa-download"></i> Import penjualan</a>
             </div>
         </div>
 
@@ -128,6 +130,18 @@
 
                         </select>
                     </div> --}}
+                </div>
+            </x-theme.modal>
+        </form>
+        <form action="{{ route('importPenjualan') }}" method="post" enctype="multipart/form-data">
+            @csrf
+            <x-theme.modal title="Import Penjualan" idModal="importpenjualan">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label for="">File</label>
+                        <input type="file" name="file" class="form-control" id="">
+                    </div>
+
                 </div>
             </x-theme.modal>
         </form>

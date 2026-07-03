@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use Carbon\Carbon;
 
 
@@ -156,6 +157,8 @@ class AkunPerkiraanController extends Controller
 
 
 
+
+
         // Gunakan Transaction agar aman (semua masuk atau tidak sama sekali)
         DB::beginTransaction();
 
@@ -250,11 +253,119 @@ class AkunPerkiraanController extends Controller
             return back()->with('error', 'Gagal Import: ' . $e->getMessage());
         }
     }
+    public function importPenjualan(Request $r)
+    {
+        $r->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $file = $r->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $highestRow = $sheet->getHighestRow();
+
+            $getCellValue = function ($cellCoordinate) use ($sheet) {
+                [$cellCol, $cellRow] = Coordinate::coordinateFromString($cellCoordinate);
+                $cellColIndex = Coordinate::columnIndexFromString($cellCol);
+
+                foreach ($sheet->getMergeCells() as $mergeRange) {
+                    [$startCell, $endCell] = Coordinate::rangeBoundaries($mergeRange);
+
+                    $startCol = $startCell[0];
+                    $startRow = $startCell[1];
+                    $endCol   = $endCell[0];
+                    $endRow   = $endCell[1];
+
+                    if (
+                        $cellColIndex >= $startCol &&
+                        $cellColIndex <= $endCol &&
+                        $cellRow >= $startRow &&
+                        $cellRow <= $endRow
+                    ) {
+                        $topLeftCell = Coordinate::stringFromColumnIndex($startCol) . $startRow;
+                        return $sheet->getCell($topLeftCell)->getValue();
+                    }
+                }
+
+                return $sheet->getCell($cellCoordinate)->getValue();
+            };
+
+            for ($row = 2; $row <= $highestRow; $row++) {
+                // Sesuai Excel:
+                // B = Nama Barang
+                // C = Kode #
+                // D = Tanggal
+                // E = Satuan
+                // F = Kuantitas
+                // G = Total Rp
+
+                $nama      = trim((string) ($getCellValue('B' . $row) ?? ''));
+                $kode      = trim((string) ($getCellValue('C' . $row) ?? ''));
+                $tglRaw    = $getCellValue('D' . $row);
+                $satuan    = trim((string) ($getCellValue('E' . $row) ?? ''));
+                $kuantitas = $getCellValue('F' . $row) ?? 0;
+                $totalRp   = $getCellValue('G' . $row) ?? 0;
+
+                if ($kode === '' || $nama === '' || empty($tglRaw)) {
+                    continue;
+                }
+
+                if ($tglRaw instanceof \DateTimeInterface) {
+                    $tanggal = $tglRaw->format('Y-m-d');
+                } elseif (is_numeric($tglRaw)) {
+                    $tanggal = Date::excelToDateTimeObject($tglRaw)->format('Y-m-d');
+                } else {
+                    $tglRaw = str_replace('/', '-', trim($tglRaw));
+                    $tanggal = date('Y-m-d', strtotime($tglRaw));
+                }
+
+                $kuantitas = is_numeric($kuantitas)
+                    ? (float) $kuantitas
+                    : (float) str_replace([',', 'Rp', ' '], '', $kuantitas);
+
+                $totalRp = is_numeric($totalRp)
+                    ? (float) $totalRp
+                    : (float) rtrim(str_replace([',', 'Rp', ' '], '', $totalRp), '.');
+
+                if ($totalRp == 0) {
+                    continue;
+                }
+
+                DB::table('penjualan_barang_accurate')
+                    ->where('tanggal', $tanggal)
+                    ->where('kode', $kode)
+                    ->delete();
+
+                DB::table('penjualan_barang_accurate')->insert([
+                    'kode'      => $kode,
+                    'tanggal'   => $tanggal,
+                    'nm_barang' => $nama,
+                    'satuan'    => $satuan,
+                    'kuantitas' => $kuantitas,
+                    'total_rp'  => $totalRp,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('akun_perkiraan')->with('sukses', 'Data berhasil diimport');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Gagal Import: ' . $e->getMessage());
+        }
+    }
 
     public function labaRugiKandang(Request $r)
     {
         $kandang = DB::table('kandang')->where('id_kandang', $r->id_kandang)->first();
+
         $total_telur = DB::selectOne("SELECT h.id_kandang , count(h.id_stok_telur) as count_bagi, sum(h.pcs) as kuml_pcs, sum(h.kg) as kuml_kg FROM stok_telur as h  where h.id_kandang = '$r->id_kandang' and h.pcs != 0 group by h.id_kandang");
+
         $populasi = DB::selectOne("SELECT sum(`mati`) as mati, sum(`jual`) as jual, sum(`afkir`) as afkir FROM `populasi` WHERE `id_kandang` ='$r->id_kandang';");
 
         $rata_rata_telur = LaporanLayerModel::rataRataTelur($r->id_kandang);
@@ -268,9 +379,6 @@ class AkunPerkiraanController extends Controller
         $biaya_pakan_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-04' and a.nm_departemen ='$kandang->nm_kandang'");
 
         $biaya_vitamin_accurate = DB::selectOne("SELECT sum(a.debit) as ttl_rp FROM jurnal_accurate as a where a.kode = '5101-03' and a.nm_departemen ='$kandang->nm_kandang'");
-
-
-
 
 
         $biaya_operasional = LaporanLayerModel::biayaOperasional($r->id_kandang);
@@ -303,6 +411,106 @@ class AkunPerkiraanController extends Controller
             'populasi_periode' => $populasi_periode
         ];
         return view('akun-perkiraan.laba-rugi-kandang', $data);
+    }
+    public function labaRugiKandang2(Request $r)
+    {
+        $tgl1 = $r->tgl1 ?? date('Y-m-01');
+        $tgl2 = $r->tgl2 ?? date('Y-m-t');
+
+        $kandang = DB::table('kandang')->where('selesai', 'T')->orderBy('nm_kandang', 'ASC')->get();
+
+        $totalTelur = DB::table('stok_telur')
+            ->select(
+                'id_kandang',
+                DB::raw('COUNT(id_stok_telur) as count_bagi'),
+                DB::raw('SUM(pcs) as kuml_pcs'),
+                DB::raw('SUM(kg) as kuml_kg')
+            )
+            ->where('pcs', '!=', 0)
+            ->whereBetween('tgl', [$tgl1, $tgl2])
+            ->groupBy('id_kandang')
+            ->get()
+            ->keyBy('id_kandang');
+
+
+        $populasi = DB::table('populasi as a')
+
+            ->select(
+                'a.id_kandang',
+                DB::raw('SUM(a.mati) as mati'),
+                DB::raw('SUM(a.jual) as jual'),
+                DB::raw('SUM(a.afkir) as afkir')
+            )
+            ->whereBetween('a.tgl', [$tgl1, $tgl2])
+            ->groupBy('a.id_kandang')
+            ->get()
+            ->keyBy('id_kandang');
+        $rata_rata_telur = LaporanLayerModel::rataRataTelurtgl($tgl1, $tgl2);
+        $biaya_pakan = DB::table('jurnal_accurate')
+            ->select(
+                'nm_departemen',
+                DB::raw('SUM(jurnal_accurate.debit) as ttl_rp')
+            )
+            ->where('jurnal_accurate.kode', '5101-04')
+            ->whereBetween('jurnal_accurate.tgl', [$tgl1, $tgl2])
+            ->groupBy('jurnal_accurate.nm_departemen')
+            ->get()
+            ->keyBy('nm_departemen');
+        $biaya_vitamin = DB::table('jurnal_accurate')
+            ->select(
+                'nm_departemen',
+                DB::raw('SUM(jurnal_accurate.debit) as ttl_rp')
+            )
+            ->where('jurnal_accurate.kode', '5101-03')
+            ->whereBetween('jurnal_accurate.tgl', [$tgl1, $tgl2])
+            ->groupBy('jurnal_accurate.nm_departemen')
+            ->get()
+            ->keyBy('nm_departemen');
+
+        $biaya_ayam = DB::table('penjualan_barang_accurate as a')
+            ->select(
+                DB::raw('SUM(a.total_rp) as ttl_rp'),
+                DB::raw('SUM(a.kuantitas) as qty'),
+            )
+            ->where('a.satuan', 'ekor')
+            ->whereBetween('a.tanggal', [$tgl1, $tgl2])
+            ->first();
+
+
+
+
+
+
+        $vaksin = DB::table('tb_vaksin_perencanaan')
+            ->select(
+                'id_kandang',
+                DB::raw('SUM(ttl_rp) as ttl_rp')
+            )->whereBetween('tgl', [$tgl1, $tgl2])
+            ->groupBy('id_kandang')
+            ->get()
+            ->keyBy('id_kandang');
+
+        $biaya_operasional = LaporanLayerModel::biayaOperasional2($tgl1, $tgl2);
+        $total_populasi = DB::table('kandang')->select(DB::raw('SUM(stok_awal) as stok_awal'))->where('selesai', 'T')->first();
+
+
+
+
+
+        return view('akun-perkiraan.laba-rugi-kandang2', compact(
+            'kandang',
+            'totalTelur',
+            'tgl1',
+            'tgl2',
+            'rata_rata_telur',
+            'populasi',
+            'biaya_pakan',
+            'biaya_vitamin',
+            'vaksin',
+            'biaya_operasional',
+            'total_populasi',
+            'biaya_ayam'
+        ));
     }
 
     public function getLabaRugiData(Request $r)

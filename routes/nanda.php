@@ -501,9 +501,11 @@ Route::controller(AkunPerkiraanController::class)->group(function () {
     Route::get('/akun_perkiraan.biaya_hpp', 'biaya_hpp')->name('akun_perkiraan.biaya_hpp');
     Route::get('/akun_perkiraan.kandang', 'kandang')->name('akun_perkiraan.kandang');
     Route::get('/labaRugiKandang', 'labaRugiKandang')->name('labaRugiKandang');
+    Route::get('/labaRugiKandang2', 'labaRugiKandang2')->name('labaRugiKandang2');
     Route::get('/labaRugiKandang_view', 'getLabaRugiData')->name('labaRugiKandang_view');
     Route::post('/importHpp', 'importHpp')->name('importHpp');
     Route::post('/importBiaya', 'importBiaya')->name('importBiaya');
+    Route::post('/importPenjualan', 'importPenjualan')->name('importPenjualan');
     Route::get('/accurate/callback', 'accurate')->name('accurate.callback');
     Route::get('/accurate/databases', 'getDatabases')->name('getDatabases');
     Route::post('/accurate/openDatabase', 'openDatabase')->name('openDatabase');

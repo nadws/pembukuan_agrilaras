@@ -153,6 +153,19 @@
                     <input type="date" class="form-control" name="tgl" value="{{ $tgl }}">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
                 </div>
+                <div class="col-lg-4 mb-2">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
+                                href="{{ route('laporan_layer') }}">Laporan layer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('labaRugiKandang2') ? 'active' : '' }}"
+                                href="{{ route('labaRugiKandang2') }}">Laba rugi kandang</a>
+                        </li>
+
+                    </ul>
+                </div>
 
             </div>
         </form>
@@ -1560,7 +1573,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="laba-rugi_kandang"></div>
+                    <div class="row">
+
+                        <div class="col-12">
+                            <div id="laba-rugi_kandang"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
