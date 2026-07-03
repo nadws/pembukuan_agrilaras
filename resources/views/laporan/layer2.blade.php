@@ -163,6 +163,10 @@
                             <a class="nav-link {{ request()->routeIs('labaRugiKandang2') ? 'active' : '' }}"
                                 href="{{ route('labaRugiKandang2') }}">Laba rugi kandang</a>
                         </li>
+                        {{-- <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('dokumentasi_laporan_layer') ? 'active' : '' }}"
+                                href="{{ route('dokumentasi_laporan_layer', request()->only('tgl')) }}">Dokumentasi rumus</a>
+                        </li> --}}
 
                     </ul>
                 </div>

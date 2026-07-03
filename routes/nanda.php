@@ -7,6 +7,7 @@ use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
 use App\Http\Controllers\CrudPermissionController;
+use App\Http\Controllers\DokumentasiLaporanLayerController;
 use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\JurnalController;
@@ -487,6 +488,9 @@ Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
     Route::get('/get_history_produk', 'get_history_produk')->name('get_history_produk');
+});
+Route::controller(DokumentasiLaporanLayerController::class)->group(function () {
+    Route::get('/dokumentasi_laporan_layer', 'index')->name('dokumentasi_laporan_layer');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');
