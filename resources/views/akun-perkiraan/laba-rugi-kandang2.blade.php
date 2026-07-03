@@ -253,7 +253,7 @@
                             </tr>
 
                             <tr>
-                                <th class="td_layer">Total Pendapatan</th>
+                                <th class="td_layer fw-bold">Total Pendapatan</th>
                                 @foreach ($kandang as $k)
                                     @php
                                         $telur = empty($totalTelur[$k->id_kandang]->kuml_pcs)
@@ -328,7 +328,7 @@
                             </tr>
 
                             <tr>
-                                <th class="td_layer">Total Biaya</th>
+                                <th class="td_layer fw-bold">Total Biaya</th>
                                 @foreach ($kandang as $k)
                                     @php
                                         $pakan = empty($biaya_pakan[$k->nm_kandang]->ttl_rp)
@@ -354,7 +354,7 @@
                             </tr>
 
                             <tr>
-                                <th class="td_layer">Pendapatan Biaya</th>
+                                <th class="td_layer fw-bold">Pendapatan Biaya</th>
                                 @foreach ($kandang as $k)
                                     @php
                                         $pakan = empty($biaya_pakan[$k->nm_kandang]->ttl_rp)
