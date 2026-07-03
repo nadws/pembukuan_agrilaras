@@ -201,7 +201,7 @@
                             </tr>
 
                             <tr>
-                                <th class="td_layer">Ayam</th>
+                                <th class="td_layer fw-bold">Ayam</th>
                                 <th colspan="100" class="td_layer"></th>
                             </tr>
 
