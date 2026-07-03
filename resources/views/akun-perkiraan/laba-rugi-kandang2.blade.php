@@ -201,7 +201,8 @@
                             </tr>
 
                             <tr>
-                                <th colspan="100" class="td_layer">Ayam</th>
+                                <th class="td_layer">Ayam</th>
+                                <th colspan="100" class="td_layer"></th>
                             </tr>
 
                             <tr>
@@ -227,7 +228,8 @@
                             </tr>
 
                             <tr>
-                                <th colspan="100" class="td_layer">Pendapatan</th>
+                                <th class="td_layer">Pendapatan</th>
+                                <th colspan="100" class="td_layer"></th>
                             </tr>
 
                             <tr>
@@ -271,7 +273,8 @@
                             </tr>
 
                             <tr>
-                                <th colspan="100" class="td_layer">Biaya</th>
+                                <th class="td_layer">Biaya</th>
+                                <th colspan="100" class="td_layer"></th>
                             </tr>
 
                             <tr>
