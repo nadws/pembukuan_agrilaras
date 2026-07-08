@@ -498,6 +498,8 @@
                                     $popC = [];
                                     $butir2 = [];
                                     $kg_kotor2 = [];
+                                    $kg_pakan_d = [];
+                                    $vi_fcr_d = [];
 
                                     foreach ($tanggal_harian as $tgl_hari) {
                                         if ($tgl_hari <= $tgl) {
@@ -533,6 +535,27 @@
                                                 [$tgl_hari, $k->id_kandang],
                                             );
 
+                                            $kg_pakan_fcr = DB::selectOne(
+                                                "SELECT d.id_kandang, sum(d.pcs_kredit) as kg_pakan
+                                                FROM stok_produk_perencanaan as d 
+                                                left join tb_produk_perencanaan as e on e.id_produk = d.id_pakan
+                                                where d.tgl = ? and e.kategori = 'pakan' and d.id_kandang = ?",
+                                                [$tgl_hari, $k->id_kandang],
+                                            );
+
+                                            $vitamin_acc = DB::selectOne(
+                                                "SELECT  sum(a.debit) as rp_vitamin
+                                                FROM jurnal_accurate as a
+                                                where a.tgl = ? and a.nm_departemen = ? and a.kode ='5101-03'",
+                                                [$tgl_hari, $k->nm_kandang],
+                                            );
+
+                                            $vi_fcr = optional($vitamin_acc)->rp_vitamin ?? 0;
+                                            $vi_fcr_d[$tgl_hari] = $vi_fcr / 7000;
+
+                                            $kg_pakan = optional($kg_pakan_fcr)->kg_pakan ?? 0;
+                                            $kg_pakan_d[$tgl_hari] = $kg_pakan;
+
                                             $stok_awal = $k->stok_awal ?? 0;
                                             $tlr_pcs = optional($tlr)->pcs ?? 0;
                                             $result_total = optional($result)->total ?? 0;
@@ -558,6 +581,8 @@
                                             $popC[$tgl_hari] = 0;
                                             $butir2[$tgl_hari] = 0;
                                             $kg_kotor2[$tgl_hari] = 0;
+                                            $kg_pakan_d[$tgl_hari] = 0;
+                                            $vi_fcr_d[$tgl_hari] = 0;
                                         }
                                     }
                                 @endphp
@@ -716,6 +741,55 @@
                                             <td>&nbsp;</td>
                                         @endforeach
                                     </tr>
+                                    <tr>
+                                        <td>fcr d</td>
+                                        <td class="text-center">:</td>
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            @php
+                                                $fcr_d_7 = empty($kg_kotor2[$tgl_hari])
+                                                    ? '0'
+                                                    : number_format(
+                                                        $kg_pakan_d[$tgl_hari] /
+                                                            1000 /
+                                                            ($kg_kotor2[$tgl_hari] - $butir2[$tgl_hari] / 180),
+                                                        2,
+                                                    );
+                                            @endphp
+                                            <td
+                                                class="text-center {{ $fcr_d_7 >= 2.5 ? 'text-danger fw-bold' : '' }}">
+                                                {{ $fcr_d_7 }}
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr>
+                                    <tr>
+                                        <td>fcr d+</td>
+                                        <td class="text-center">:</td>
+                                        @php
+                                            $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
+                                        @endphp
+
+                                        @foreach ($tanggal_harian as $tgl_hari)
+                                            @php
+                                                $fcr_d_plus_7 = empty($kg_kotor2[$tgl_hari])
+                                                    ? '0'
+                                                    : number_format(
+                                                        ($kg_pakan_d[$tgl_hari] / 1000 +
+                                                            $vi_fcr_d[$tgl_hari] +
+                                                            $vaksin) /
+                                                            ($kg_kotor2[$tgl_hari] - $butir2[$tgl_hari] / 180),
+                                                        2,
+                                                    );
+                                            @endphp
+                                            <td
+                                                class="text-center {{ $fcr_d_plus_7 >= 2.2 ? 'text-danger fw-bold' : '' }}">
+                                                {{ $fcr_d_plus_7 }}
+
+                                                {{-- <br> {{ $vi_fcr_d[$tgl_hari] }} --}}
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        @endforeach
+                                    </tr>
                                 </table>
                             </td>
                             <td align="center" class="hd perday (%) td_layer">
@@ -788,13 +862,13 @@
                                             $tlr_pcs = optional($tlr)->pcs ?? 0;
                                             $result_total = optional($result)->total ?? 0;
                                             $kg_pakan = optional($kg_pakan_fcr)->kg_pakan ?? 0;
+                                            $kg_pakan_d[$tgl_hari] = $kg_pakan;
                                             $vi_fcr = optional($vitamin_acc)->rp_vitamin ?? 0;
+                                            $vi_fcr_d[$tgl_hari] = $vi_fcr / 7000;
 
                                             $pop_akihir_week[$tgl_hari] = $result_total;
                                             $butir2[$tgl_hari] = $tlr_pcs;
                                             $kg_kotor2[$tgl_hari] = $tlr->kg ?? 0;
-                                            $kg_pakan_d[$tgl_hari] = $kg_pakan;
-                                            $vi_fcr_d[$tgl_hari] = $vi_fcr / 7000;
 
                                             $pop_kurang_per_hari[$tgl_hari] =
                                                 $stok_awal - $result_total > 0
@@ -904,56 +978,6 @@
 
                                             <td class="text-center">
                                                 {{ number_format($hd_past_display, 0) }}
-                                            </td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr>
-                                    <tr>
-                                        <td>fcr d</td>
-                                        <td class="text-center">:</td>
-
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            @php
-                                                $fcr_d_7 = empty($kg_kotor2[$tgl_hari])
-                                                    ? '0'
-                                                    : number_format(
-                                                        $kg_pakan_d[$tgl_hari] /
-                                                            1000 /
-                                                            ($kg_kotor2[$tgl_hari] - $butir2[$tgl_hari] / 180),
-                                                        2,
-                                                    );
-                                            @endphp
-                                            <td
-                                                class="text-center {{ $fcr_d_7 >= 2.5 ? 'text-danger fw-bold' : '' }}">
-                                                {{ $fcr_d_7 }}
-                                            </td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr>
-                                    <tr>
-                                        <td>fcr d+</td>
-                                        <td class="text-center">:</td>
-                                        @php
-                                            $vaksin = empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
-                                        @endphp
-
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            @php
-                                                $fcr_d_plus_7 = empty($kg_kotor2[$tgl_hari])
-                                                    ? '0'
-                                                    : number_format(
-                                                        ($kg_pakan_d[$tgl_hari] / 1000 +
-                                                            $vi_fcr_d[$tgl_hari] +
-                                                            $vaksin) /
-                                                            ($kg_kotor2[$tgl_hari] - $butir2[$tgl_hari] / 180),
-                                                        2,
-                                                    );
-                                            @endphp
-                                            <td
-                                                class="text-center {{ $fcr_d_plus_7 >= 2.2 ? 'text-danger fw-bold' : '' }}">
-                                                {{ $fcr_d_plus_7 }}
-
-                                                {{-- <br> {{ $vi_fcr_d[$tgl_hari] }} --}}
                                             </td>
                                             <td>&nbsp;</td>
                                         @endforeach
@@ -1382,7 +1406,9 @@
                                         data-bs-target="#history" class="history" id_produk="{{ $v->id_pakan }}"
                                         id_kandang="{{ $k->id_kandang }}">{{ $v->nm_produk }} :
                                         {{ number_format($v->pcs_kredit / 1000, 1) }}
-                                        Kg</a> <br>
+                                        Kg</a> :
+                                    {{ number_format(($harga_pakan[$v->id_pakan]->ttl_rp + $harga_pakan[$v->id_pakan]->rp_lain) / $harga_pakan[$v->id_pakan]->ttl_gr, 0) }}
+                                    <br>
                                 @endforeach
                             </td>
 

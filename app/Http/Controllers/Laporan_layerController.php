@@ -30,6 +30,12 @@ class Laporan_layerController extends Controller
         left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
         where a.h_opname = 'T' and a.tgl BETWEEN '$tgl_awal_harga' and '$tgl' and b.kategori = 'pakan' and a.pcs != 0;");
 
+        $harga_pakan = DB::table('harga_pakan as h1')
+            ->select('id_pakan', 'ttl_gr', 'ttl_rp', 'rp_lain')
+            ->whereRaw('id_harga_pakan = (select max(id_harga_pakan) from harga_pakan as h2 where h2.id_pakan = h1.id_pakan)')
+            ->get()
+            ->keyBy('id_pakan');
+
         $data = [
             'title' => 'Laporan Layer',
             'tgl' => $tgl,
@@ -37,6 +43,7 @@ class Laporan_layerController extends Controller
             'tgl_kemarin' => $tgl_kemarin,
             'harga' => $harga,
             'kandang' => LaporanLayerModel::getLaporanLayer($tgl, $tgl_sebelumnya, $tgl_kemarin, $tgl_minggu_sebelumnya, $tgl_minggu_kemaren),
+            'harga_pakan' => $harga_pakan
         ];
         return view('laporan.layer2', $data);
     }
