@@ -188,7 +188,7 @@
 
                         <th class="dhead table_layer th_atas">Pakan</th>
 
-                        <th class="dhead table_layer th_atas" colspan="4">KUML</th>
+                        <th class="dhead table_layer th_atas" colspan="3">KUML</th>
                     </tr>
                     <tr>
 
@@ -211,7 +211,7 @@
                                 title="Summary dari = (rata rata penjualan telur perhari * produksi telur perhari) / ttl kg bersih">R2Rp</span>
                         </th>
                         <th class="dhead table_layer th_atas2">Obat/vit</th>
-                        <th class="dhead table_layer th_atas2">Pakan</th>
+                        {{-- <th class="dhead table_layer th_atas2">Pakan</th> --}}
 
 
 
@@ -1377,7 +1377,7 @@
                                         {{ $v->nm_satuan }} </a> <br>
                                 @endforeach
                             </td>
-                            <td class="td_layer">
+                            {{-- <td class="td_layer">
                                 @php
                                     $vitamin = DB::select("SELECT a.id_pakan, b.nm_produk, c.nm_satuan, a.id_kandang, a.pcs_kredit, b.kategori,  a.total_rp
                                     FROM stok_produk_perencanaan as a
@@ -1401,7 +1401,7 @@
                                     {{ number_format(($harga_pakan[$v->id_pakan]->ttl_rp + $harga_pakan[$v->id_pakan]->rp_lain) / $harga_pakan[$v->id_pakan]->ttl_gr, 0) }}
                                     <br>
                                 @endforeach
-                            </td>
+                            </td> --}}
 
 
 
@@ -1473,7 +1473,7 @@
                         <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
                             {{ number_format($telur_kuml, 2) }} </th>
                         <th class="dhead table_layer"></th>
-                        <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
+                        {{-- <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th> --}}
 
 
                         <th class="dhead table_layer"></th>
