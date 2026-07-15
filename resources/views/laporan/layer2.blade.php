@@ -183,7 +183,7 @@
 
                             Kandang
                         </th>
-                        <th class="dhead freeze-cell_th1 table_layer " colspan="3">&nbsp; <br> Data telur <br> &nbsp;
+                        <th class="dhead table_layer th_atas " colspan="3">&nbsp; <br> Data telur <br> &nbsp;
                         </th>
 
                         <th class="dhead table_layer th_atas">Pakan</th>
