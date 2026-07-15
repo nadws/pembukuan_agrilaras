@@ -298,8 +298,6 @@
                             <td align="center" class="kandang baris-kandang2 freeze-cell1_td td_layer"
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
-
-
                                     <tr>
                                         <td>kandang</td>
                                         <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
@@ -407,80 +405,26 @@
                                 $tot_ayam_jual = empty($k->jual) ? '0' : $k->jual;
                                 $tot_ayam_semua_hilang = $tot_ayam_mati;
                             @endphp
-                            {{-- <td align="center rencana hapus"
-                                class="D/C td_layer {{ $tot_ayam_semua_hilang > 3 ? 'text-danger fw-bold' : '' }}">
-                                &nbsp; <br>
-                                {{ empty($k->mati) ? '0' : $k->mati }} <br> {{ empty($k->jual) ? '0' : $k->jual }}
-                                <br>
-                                {{ $k->mati_week + $k->jual_week }}
-                            </td> --}}
-                            {{-- <td align="center" class="pop awal td_layer">
-                                &nbsp; <br>
-                            </td> --}}
 
-                            <!-- populasi -->
-
-                            <!-- data telur -->
-                            <!-- mencari ikat  1 ikat = 1kg  -->
-                            {{-- <td align="center" class="kg telur td_layer">
-                                &nbsp; <br>
-                                {{ number_format($k->pcs, 0) }} <br>
-                                {{ number_format($k->kg - $k->pcs / 180, 1) }}
-                                <br>
-                                {{ number_format($k->kg, 1) }}
-                            </td> --}}
                             @php
                                 $gr_butir = empty($k->pcs)
                                     ? '0'
                                     : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 1);
                             @endphp
-                            {{-- <td align="center" class="td_layer ">
-                                <p style="margin: 0; padding: 0;">&nbsp;</p>
-                                <p style="margin: 0; padding: 0;">&nbsp;</p>
-                                <p style="margin: 0; padding: 0;"
-                                    class="{{ $gr_butir < 58 ? 'text-danger fw-bold' : '' }}">
-                                    {{ $gr_butir }}</p>
-                                <p style="margin: 0; padding: 0;">{{ empty($k->t_peforma) ? 'NA' : $k->t_peforma }}
-                                </p>
-                            </td>
-                            <td align="center" class="butir td_layer">
-                                @php
-                                    $kg = $k->kg - $k->pcs / 180 - ($k->kg_past - $k->pcs_past / 180);
-                                @endphp
-                                <p style="margin: 0; padding: 0;">&nbsp;</p>
-                                <p style="margin: 0; padding: 0;" class="{{ $kg < 0 ? 'text-danger fw-bold' : '' }}">
-                                    {{ number_format($kg, 1) }}
-                                </p>
-                                <p style="margin: 0; padding: 0;"
-                                    class="{{ $k->pcs - $k->pcs_past < 0 ? 'text-danger fw-bold' : '' }}">
-                                    {{ number_format($k->pcs - $k->pcs_past, 0) }}</p>
-                                <p style="margin: 0; padding: 0;">&nbsp;</p>
-                            </td> --}}
 
-                            {{-- <td align="center" class="butir td_layer">
-                                &nbsp; <br>
-
-                                {{ number_format(
-                                    $k->kg_satu_minggu - $k->pcs_satu_minggu / 180 - ($k->kg_minggu_sebelumnya - $k->pcs_minggu_sebelumnya / 180),
-                                    1,
-                                ) }}
-                                <br>
-                                {{ number_format($k->pcs_satu_minggu - $k->pcs_minggu_sebelumnya, 0) }}
-                                <br> &nbsp;
-                            </td> --}}
                             <td align="center" class="hd perday (%) td_layer">
                                 @php
                                     $hd7 = DB::selectOne("SELECT 
-            CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) AS mgg,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 1 DAY) AS hari_ke_1,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 2 DAY) AS hari_ke_2,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 3 DAY) AS hari_ke_3,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 4 DAY) AS hari_ke_4,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 5 DAY) AS hari_ke_5,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 6 DAY) AS hari_ke_6,
-            DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 7 DAY) AS hari_ke_7
-            FROM kandang
-            WHERE id_kandang = '$k->id_kandang';");
+                                    CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) AS mgg,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 1 DAY) AS hari_ke_1,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 2 DAY) AS hari_ke_2,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 3 DAY) AS hari_ke_3,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 4 DAY) AS hari_ke_4,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 5 DAY) AS hari_ke_5,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 6 DAY) AS hari_ke_6,
+                                    DATE_ADD(DATE('$k->chick_in'), INTERVAL (CEIL(TIMESTAMPDIFF(DAY, DATE('$k->chick_in'), '$tgl') / 7) - 1) * 7 + 7 DAY) AS hari_ke_7
+                                    FROM kandang
+                                    WHERE id_kandang = '$k->id_kandang';");
 
                                     $tanggal_harian = [
                                         $hd7->hari_ke_1,
@@ -500,6 +444,10 @@
                                     $kg_kotor2 = [];
                                     $kg_pakan_d = [];
                                     $vi_fcr_d = [];
+
+                                    $dt_kdng = DB::select(
+                                        "SELECT a.id_pakan, b.nm_produk, a.id_kandang FROM stok_produk_perencanaan as a left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan WHERE a.tgl BETWEEN '$hd7->hari_ke_1'  and '$hd7->hari_ke_7' and a.id_kandang = '$k->id_kandang' and b.kategori ='pakan' group by a.id_pakan",
+                                    );
 
                                     foreach ($tanggal_harian as $tgl_hari) {
                                         if ($tgl_hari <= $tgl) {
@@ -645,16 +593,7 @@
                                             <td>&nbsp;</td>
                                         @endforeach
                                     </tr>
-                                    {{-- <tr>
-                                        <td>kg kotor</td>
-                                        <td class="text-center">:</td>
-                                        @foreach ($tanggal_harian as $tgl_hari)
-                                            <td class="text-center">
-                                                {{ $kg_kotor2[$tgl_hari] == 0 ? '0' : number_format($kg_kotor2[$tgl_hari], 1) }}
-                                            </td>
-                                            <td>&nbsp;</td>
-                                        @endforeach
-                                    </tr> --}}
+
                                     <tr>
                                         <td>gr (butir)</td>
                                         <td class="text-center">:</td>
@@ -723,6 +662,60 @@
                                             <td>&nbsp;</td>
                                         @endforeach
                                     </tr>
+
+
+
+                                    @foreach ($dt_kdng as $d)
+                                        <tr>
+                                            <td>{{ $d->nm_produk }} </td>
+                                            <td class="text-center">:</td>
+                                            @foreach ($tanggal_harian as $tgl_hari)
+                                                @php
+                                                    $dt_pnk = DB::selectOne(
+                                                        "SELECT h.id_kandang, h.pcs_kredit
+                                                FROM stok_produk_perencanaan AS h
+                                                WHERE h.tgl = '$tgl_hari' AND h.id_kandang = '$k->id_kandang' AND h.id_pakan = '$d->id_pakan'
+                                                GROUP BY h.id_kandang , h.id_pakan",
+                                                    );
+                                                @endphp
+                                                <td class="text-center">
+                                                    {{ empty($dt_pnk->pcs_kredit) ? '0' : number_format($dt_pnk->pcs_kredit / 1000, 1) }}
+                                                </td>
+
+
+                                                <td>&nbsp;</td>
+                                            @endforeach
+                                        </tr>
+                                        <tr>
+                                            <td>harga pkn </td>
+                                            <td class="text-center">:</td>
+                                            @foreach ($tanggal_harian as $tgl_hari)
+                                                @php
+                                                    $harga_pakan2 = DB::table('harga_pakan as h1')
+                                                        ->select('id_pakan', 'ttl_gr', 'ttl_rp', 'rp_lain')
+                                                        ->whereRaw(
+                                                            "id_harga_pakan = (SELECT max(id_harga_pakan) from harga_pakan as h2 where h2.id_pakan = h1.id_pakan and h2.tgl between '2020-01-01' and '$tgl_hari'
+                                                            )",
+                                                        )
+                                                        ->where('id_pakan', $d->id_pakan)
+                                                        ->first();
+                                                    $dt_pnk = DB::selectOne(
+                                                        "SELECT h.id_kandang, h.pcs_kredit
+                                                FROM stok_produk_perencanaan AS h
+                                                WHERE h.tgl = '$tgl_hari' AND h.id_kandang = '$k->id_kandang' AND h.id_pakan = '$d->id_pakan'
+                                                GROUP BY h.id_kandang , h.id_pakan",
+                                                    );
+                                                @endphp
+                                                <td class="text-center">
+                                                    {{ empty($dt_pnk->pcs_kredit) ? '0' : number_format(($harga_pakan2->ttl_rp + $harga_pakan2->rp_lain) / $harga_pakan2->ttl_gr, 0) }}
+                                                </td>
+
+
+                                                <td>&nbsp;</td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+
                                     <tr>
                                         <td>p</td>
                                         <td class="text-center">:</td>
@@ -1180,11 +1173,6 @@
 
                                 </table>
                             </td>
-
-
-
-
-
                             <!-- (12777) / (3) / (2296) -->
                             @php
                                 $fcr =
@@ -1349,6 +1337,9 @@
                                 {{ number_format($k->kg_pakan / 1000, 1) }} <br>
                                 {{ $k->stok_awal - $k->pop_kurang == 0 ? 0 : number_format($k->kg_pakan / ($k->stok_awal - $k->pop_kurang), 0) }}
                                 <br> {{ empty($k->feed) ? 'NA' : $k->feed }}
+
+
+
                             </td>
                             <!-- pakan -->
 
@@ -1362,7 +1353,7 @@
                                 {{ number_format($k->kuml_kg - $k->kuml_pcs / 180, 1) }}
 
                                 <br>
-                                {{-- {{ empty($k->kg_bagi_y) ? '0' : number_format($k->rp_satuan_y / $k->kg_bagi_y, 0) }} --}}
+
                                 {{ number_format($k->rata, 0) }}
 
 
@@ -1412,34 +1403,7 @@
                                 @endforeach
                             </td>
 
-                            {{-- vitamin --}}
-                            {{-- <td align="center" class="fcr k / fcr k+ (7,458) td_layer">
-                                @php
-                                    $kg_pakan_kuml = $k->kg_pakan_kuml / 1000;
-                                    $kg_pakan_rp_vit = $k->kuml_rp_vitamin / 7000;
-                                    $kg_pakan_rp_vak = $k->kum_ttl_rp_vaksin / 7000;
-                                    $ayam = $k->rupiah / 7000;
 
-                                    $gjl = (185 * $k->stok_awal * $k->ttl_gjl) / 7000;
-                                @endphp
-
-                                &nbsp; <br>
-                                {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
-                                    ? '0'
-                                    : number_format($kg_pakan_kuml / ($k->kuml_kg - $k->kuml_pcs / 180), 1) }}
-
-                                <br>
-
-
-                                {{ empty($k->kg_pakan_kuml) || empty($k->kuml_pcs)
-                                    ? '0'
-                                    : number_format(
-                                        ($kg_pakan_kuml + $kg_pakan_rp_vit + $kg_pakan_rp_vak + $ayam + $gjl) / ($k->kuml_kg - $k->kuml_pcs / 180),
-                                        1,
-                                    ) }}
-                                <br> &nbsp;
-
-                            </td> --}}
 
 
 
@@ -1497,41 +1461,12 @@
                             <span>kg bersih : {{ number_format($kg_total, 0) }}</span> <br>
                             <span>kg kotor : {{ number_format($kg_kotor, 0) }}</span>
                         </th>
-                        {{-- <th class="dhead text-end table_layer">{{ $mati }} <br> {{ $jual }} <br>
-                            {{ $dc_week }}</th>
-                        <th class="dhead table_layer">
-                            {{ number_format($ayam_awal, 0) }} <br>
-                            {{ number_format($ayam_akhir, 0) }} <br>
-                            {{ $ayam_awal != 0 ? number_format(($ayam_akhir / $ayam_awal) * 100, 0) . ' %' : '0 %' }}
-                        </th> --}}
 
-                        {{-- <th class="dhead text-end table_layer">
-                            {{ number_format($pcs, 0) }} <br>
-                            {{ number_format($kg_total, 0) }}
-                            <br>
-                            {{ number_format($kg_kotor, 0) }}
-                        </th>
-                        <th class="dhead table_layer">{{ $gr_butir / 4 }}</th>
-                        <th class="dhead text-end table_layer">
-                            {{ number_format($kg_today, 1) }}<br>
-                            {{ number_format($butir, 0) }}
-                        </th> --}}
 
                         <th class="dhead table_layer">
-                            {{-- {{ $ayam_akhir != 0 ? number_format(($pcs / $ayam_akhir) * 100, 0) : '0' }} <br><br>
-                            {{ $ayam_awal != 0 ? number_format(($pcs / $ayam_awal) * 100, 0) : '0' }} --}}
+
                         </th>
-                        {{-- <th class="dhead table_layer"></th> --}}
-                        {{-- <th class="dhead table_layer">
-                            @php
-                                $fcr_day_total = $kg_total != 0 ? number_format($pakan / $kg_total, 1) : '0';
-                                $fcr_day_total_plus =
-                                    $kg_total != 0
-                                        ? number_format(($pakan + $rp_vitamin + $rp_vaksin) / $kg_total, 1)
-                                        : '0';
-                            @endphp
-                            {{ $fcr_day_total }} / {{ $fcr_day_total_plus }}
-                        </th> --}}
+
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th>
 
@@ -1540,20 +1475,7 @@
                         <th class="dhead table_layer"></th>
                         <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th>
 
-                        {{-- <th class="dhead table_layer">
-                            {{ $telur_kuml != 0 ? number_format($pakan_kuml / $telur_kuml, 1) : '0' }}<br>
-                            @php
-                                $plus = ($obat_kuml + $vaksin_kuml + $rp_ayam) / 7000;
-                            @endphp
-                            {{ $telur_kuml != 0 ? number_format(($pakan_kuml + $plus) / $telur_kuml, 1) : '0' }}
-                        </th> --}}
 
-                        {{-- <th class="dhead table_layer">
-                            {{ number_format($obat_kuml, 0) }} <br>
-                            {{ number_format($vaksin_kuml, 0) }} <br> {{ number_format($rp_ayam, 0) }}
-                            <br>{{ number_format($gjl_ttl, 0) }}
-                        </th>
-                        <th class="dhead table_layer">{{ number_format($ttl_tpl, 2) }}</th> --}}
                         <th class="dhead table_layer"></th>
                     </tr>
                 </tfoot>
@@ -1683,8 +1605,6 @@
             var row = $(this); // 🔥 simpan elementnya dulu
             var id_kandang = row.data('id');
             var tgl = $(this).attr('tgl');
-
-
             $.ajax({
                 type: "get",
                 url: "{{ route('labaRugiKandang_view') }}",
@@ -1693,7 +1613,6 @@
                     tgl: tgl,
                 },
                 success: function(r) {
-
                     row.find('.txt-telur-kg').text(r.penjualan_telur);
                     row.find('.txt-t_biaya').text(r.total_biaya);
                     row.find('.txt-b_pakan').text(r.biaya_pakan);
@@ -1702,15 +1621,8 @@
                     row.find('.txt-b_pullet').text(r.biaya_pullet);
                     row.find('.txt-b_rak').text(r.biaya_rak);
                     row.find('.txt-b_oper').text(r.biaya_oper);
-
-
                     row.find('.txt-laba').text(r.laba);
                     row.find('.txt-rata').text(r.rata);
-
-
-
-
-
                 }
             });
 
@@ -1719,8 +1631,6 @@
             var row = $(this); // 🔥 simpan elementnya dulu
             var id_kandang = row.data('id');
             var tgl = $(this).attr('tgl');
-
-
             $.ajax({
                 type: "get",
                 url: "{{ route('labaRugiKandang_view') }}",
@@ -1732,7 +1642,6 @@
                     row.find('.txt-rata-pakan').text(r.rata_pakan)
                     row.find('.txt-fcrk').text(r.fcrk)
                     row.find('.txt-fcrkplus').text(r.fcrkplus)
-
                 }
             });
 
@@ -1742,7 +1651,6 @@
 
 
     $(document).on('click', '#myTab a', function(e) {
-
         e.preventDefault()
         $(this).tab('show')
     });
