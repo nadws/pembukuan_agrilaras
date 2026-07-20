@@ -251,7 +251,22 @@
                 max-height: none !important;
             }
         }
+
+        @media screen and (max-width: 991.98px) {
+            .laporan-layer-page {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                height: 100dvh;
+            }
+
+            .table-container {
+                flex: 1 1 100%;
+                max-height: none !important;
+                height: 100%;
+            }
+        }
     </style>
+
 </head>
 
 <body>
@@ -265,7 +280,7 @@
 
     <div class="container-fluid mt-2 laporan-layer-page">
 
-        <form action="">
+        <form action="" class="d-none d-md-block">
             <div class="row ">
                 <div class="col-6 col-lg-9 elemen-hilang">
                     <h6 class="mb-2">Laporan Layer {{ tanggal($tgl) }}</h6>
