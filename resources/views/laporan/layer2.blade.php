@@ -413,13 +413,13 @@
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
                                     <tr>
-                                        <td>kandang</td>
+                                        <td>kndg</td>
                                         <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
                                                 class="laba-rugi" id_kandang="{{ $k->id_kandang }}">
                                                 {{ $k->nm_kandang }}</a></td>
                                     </tr>
                                     <tr>
-                                        <td>chick in</td>
+                                        <td>chk in</td>
                                         <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="tanggal chick in">
                                                 {{ date('d/m/y', strtotime($k->chick_in)) }}
@@ -443,7 +443,7 @@
                                                 {{ date('d/m/y', strtotime($afkir)) }} </span></td>
                                     </tr>
                                     <tr>
-                                        <td>chick in2</td>
+                                        <td>chk in2</td>
                                         <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="tanggal chick in 2 hitung 80 minggu dari chick in"
                                                 class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
@@ -459,7 +459,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>perkiraan afkir</td>
+                                        <td>afkir</td>
                                         <td>:
                                             <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="perkiran afkir 99 minggu sama semua kandang">
@@ -468,7 +468,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>persen afkir</td>
+                                        <td>afkir(%)</td>
                                         <td>:
                                             ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%)
                                         </td>
@@ -486,13 +486,13 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>persen populasi</td>
+                                        <td>pop(%)</td>
                                         <td>:
                                             {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>rata2 pakan</td>
+                                        <td>r2 pakan</td>
                                         <td>: <span class="txt-rata-pakan"></span></td>
                                     </tr>
                                     <tr>
@@ -509,39 +509,39 @@
 
                                     </tr>
                                     <tr>
-                                        <td align="left">Total Pendapatan</td>
+                                        <td align="left">ttl Profit</td>
                                         <td align="left">:<span class="txt-telur-kg"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Pakan</td>
+                                        <td align="left">B Pakan</td>
                                         <td align="left">:<span class="txt-b_pakan"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Vitamin</td>
+                                        <td align="left">B Vitamin</td>
                                         <td align="left">:<span class="txt-b_vitamin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Vaksin</td>
+                                        <td align="left">B Vaksin</td>
                                         <td align="left">:<span class="txt-b_vaksin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Pullet</td>
+                                        <td align="left">B Pullet</td>
                                         <td align="left">:<span class="txt-b_pullet"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Rak</td>
+                                        <td align="left">B Rak</td>
                                         <td align="left">:<span class="txt-b_rak"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Biaya Operasional</td>
+                                        <td align="left">B Operasional</td>
                                         <td align="left">:<span class="txt-b_oper"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Pendapatan - Biaya</td>
+                                        <td align="left">Profit - B</td>
                                         <td align="left">:<span class="txt-laba"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">PNL / total kg telur</td>
+                                        <td align="left">PNL / ttl kg</td>
                                         <td align="left">:<span class="txt-rata"></span></td>
                                     </tr>
                                 </table>

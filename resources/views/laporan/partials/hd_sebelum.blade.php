@@ -299,13 +299,13 @@
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
                                     <tr>
-                                        <td>kandang</td>
+                                        <td>kndg</td>
                                         <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
                                                 class="laba-rugi" id_kandang="{{ $k->id_kandang }}">
                                                 {{ $k->nm_kandang }}</a></td>
                                     </tr>
                                     <tr>
-                                        <td>chick in</td>
+                                        <td>chk in</td>
                                         <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="tanggal chick in">
                                                 {{ date('d/m/y', strtotime($k->chick_in)) }}
@@ -329,7 +329,7 @@
                                                 {{ date('d/m/y', strtotime($afkir)) }} </span></td>
                                     </tr>
                                     <tr>
-                                        <td>chick in2</td>
+                                        <td>chk in2</td>
                                         <td>: <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="tanggal chick in 2 hitung 80 minggu dari chick in"
                                                 class="{{ $tgl_hari_ini >= $ckin21 ? 'text-danger fw-bold' : '' }}">
@@ -345,7 +345,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>perkiraan afkir</td>
+                                        <td>afkir</td>
                                         <td>:
                                             <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                 title="perkiran afkir 99 minggu sama semua kandang">
@@ -354,7 +354,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>persen afkir</td>
+                                        <td>afkir(%)</td>
                                         <td>:
                                             ({{ number_format(($k->mgg / $k->mgg_afkir) * 100, 0) }}%)
                                         </td>
@@ -372,13 +372,13 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>persen populasi</td>
+                                        <td>pop(%)</td>
                                         <td>:
                                             {{ number_format((($k->stok_awal - $k->pop_kurang) / $k->stok_awal) * 100, 1) }}%
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>rata2 pakan</td>
+                                        <td>r2 pakan</td>
                                         <td>: <span class="txt-rata-pakan"></span></td>
                                     </tr>
                                     <tr>
