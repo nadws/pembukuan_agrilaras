@@ -488,6 +488,8 @@ Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
     Route::get('/get_history_produk', 'get_history_produk')->name('get_history_produk');
+    Route::get('/laporan-layer/hd-tiga-minggu', 'hdTigaMinggu')
+        ->name('laporan_layer.hd_tiga_minggu');
 });
 Route::controller(DokumentasiLaporanLayerController::class)->group(function () {
     Route::get('/dokumentasi_laporan_layer', 'index')->name('dokumentasi_laporan_layer');
