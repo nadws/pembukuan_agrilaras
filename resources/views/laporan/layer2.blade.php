@@ -253,16 +253,22 @@
         }
 
         @media screen and (max-width: 991.98px) {
-            .laporan-layer-page {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-                height: 100dvh;
+            .filter-laporan {
+                display: none !important;
             }
+        }
 
-            .table-container {
-                flex: 1 1 100%;
-                max-height: none !important;
-                height: 100%;
+        /* Perangkat sentuh, termasuk HP landscape */
+        @media (hover: none) and (pointer: coarse) {
+            .filter-laporan {
+                display: none !important;
+            }
+        }
+
+        /* Fallback khusus layar landscape yang pendek */
+        @media screen and (orientation: landscape) and (max-height: 700px) {
+            .filter-laporan {
+                display: none !important;
             }
         }
     </style>
@@ -280,7 +286,7 @@
 
     <div class="container-fluid mt-2 laporan-layer-page">
 
-        <form action="" class="d-none d-md-block">
+        <form action="" class="filter-laporan">
             <div class="row ">
                 <div class="col-6 col-lg-9 elemen-hilang">
                     <h6 class="mb-2">Laporan Layer {{ tanggal($tgl) }}</h6>
