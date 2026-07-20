@@ -253,21 +253,27 @@
         }
 
         @media screen and (max-width: 991.98px) {
-            .filter-laporan {
+
+            .filter-laporan,
+            .navbar-laporan {
                 display: none !important;
             }
         }
 
         /* Perangkat sentuh, termasuk HP landscape */
         @media (hover: none) and (pointer: coarse) {
-            .filter-laporan {
+
+            .filter-laporan,
+            .navbar-laporan {
                 display: none !important;
             }
         }
 
         /* Fallback khusus layar landscape yang pendek */
         @media screen and (orientation: landscape) and (max-height: 700px) {
-            .filter-laporan {
+
+            .filter-laporan,
+            .navbar-laporan {
                 display: none !important;
             }
         }
@@ -276,7 +282,7 @@
 </head>
 
 <body>
-    <nav class="navbar elemen-hilang" style="background: #FFFFFF; border: #435EBE">
+    <nav class="navbar navbar-laporan" style="background: #FFFFFF; border: #435EBE">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="40" height="40">
