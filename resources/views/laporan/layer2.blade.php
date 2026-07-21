@@ -544,11 +544,109 @@
             #data-telur-pane .hd-tiga-minggu {
                 margin-bottom: 0;
                 font-size: 11px;
+                font-variant-numeric: tabular-nums;
+                border-collapse: separate !important;
+                border-spacing: 0;
             }
 
             #data-telur-pane .hd-tiga-minggu th,
             #data-telur-pane .hd-tiga-minggu td {
-                padding: 7px 8px;
+                min-width: 48px;
+                padding: 8px 6px;
+                border-color: #e8ecf4;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            /* Kolom tanda ':' tidak dibutuhkan pada layar sempit. */
+            #data-telur-pane .hd-tiga-minggu thead tr:first-child>th:nth-child(2),
+            #data-telur-pane .hd-tiga-minggu tr>td:nth-child(2) {
+                display: none;
+            }
+
+            #data-telur-pane .hd-tiga-minggu .sticky-column {
+                left: 0 !important;
+                z-index: 25 !important;
+                width: 96px !important;
+                min-width: 96px !important;
+                max-width: 96px !important;
+                padding: 8px 7px;
+                overflow: hidden;
+                border-right: 1px solid #ced7ea !important;
+                background: #fbfcff !important;
+                color: #34415f;
+                font-weight: 700;
+                text-align: left;
+                text-overflow: ellipsis;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                box-shadow: 5px 0 10px rgba(42, 61, 110, 0.08);
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead th {
+                position: sticky;
+                top: 0;
+                z-index: 15;
+                min-width: 48px;
+                background: #f1f4fb;
+                color: #34415f;
+                font-size: 10px;
+                font-weight: 800;
+                box-shadow: inset 0 -1px 0 #dce3f0;
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead .sticky-column {
+                z-index: 35 !important;
+                background: #435ebe !important;
+                color: #fff;
+                box-shadow: 5px 0 10px rgba(31, 48, 108, 0.18);
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead small {
+                margin-top: 2px;
+                color: #7a869f;
+                font-size: 8px;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody tr:nth-child(even)>td:not(.sticky-column) {
+                background: #fafbfe;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody tr:hover>td {
+                background: #eef3ff;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody tr:hover>.sticky-column {
+                background: #e8eeff !important;
+                color: #2949ad;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody th[colspan],
+            #data-telur-pane .hd-tiga-minggu tbody th.sticky-column {
+                padding: 9px 10px;
+                border: 0;
+                background: linear-gradient(90deg, #435ebe, #617bd2) !important;
+                color: #fff;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 0.45px;
+                text-align: left;
+                text-transform: uppercase;
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead tr:nth-child(2) th:nth-child(7),
+            #data-telur-pane .hd-tiga-minggu thead tr:nth-child(2) th:nth-child(14),
+            #data-telur-pane .hd-tiga-minggu tbody tr>td:nth-child(9),
+            #data-telur-pane .hd-tiga-minggu tbody tr>td:nth-child(16) {
+                border-right: 3px solid #cbd5f1 !important;
+            }
+
+            #data-telur-pane .text-primary {
+                color: #315ddb !important;
+            }
+
+            #data-telur-pane .text-danger {
+                color: #e53e55 !important;
             }
 
             #laba-rugi-pane>.table,
