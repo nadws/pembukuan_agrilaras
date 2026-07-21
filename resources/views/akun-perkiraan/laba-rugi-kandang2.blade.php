@@ -493,26 +493,23 @@
             .report-toolbar {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: 5px;
                 align-items: stretch;
-                margin-bottom: 8px;
-                padding: 8px;
-                border-radius: 12px;
+                margin-bottom: 6px;
+                padding: 6px;
+                border-radius: 10px;
             }
 
-            .report-title h1 {
-                margin-bottom: 1px;
-                font-size: 15px;
-            }
-
-            .report-title p {
-                font-size: 10px;
+            .report-title {
+                display: none;
             }
 
             .report-toolbar .nav {
                 flex-wrap: nowrap;
                 overflow: visible;
-                padding: 3px;
+                gap: 3px;
+                padding: 2px;
+                border-radius: 8px;
             }
 
             .report-toolbar .nav-item {
@@ -521,30 +518,48 @@
 
             .report-toolbar .nav-link {
                 width: 100%;
-                min-height: 38px;
-                padding: 8px 6px;
-                font-size: 11px;
+                min-height: 32px;
+                padding: 6px 5px;
+                border-radius: 6px;
+                font-size: 10px;
             }
 
             .period-filter {
-                grid-template-columns: 1fr 1fr;
-                gap: 7px;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 62px;
+                gap: 5px;
             }
 
             .date-field label {
-                margin-bottom: 3px;
-                font-size: 9px;
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            .date-field {
+                min-width: 0;
             }
 
             .date-field .form-control {
-                height: 41px;
-                padding: 7px;
-                font-size: 16px;
+                width: 100%;
+                height: 36px;
+                min-width: 0;
+                padding: 5px 6px;
+                border-radius: 7px;
+                font-size: 13px;
             }
 
             .period-filter .btn {
-                grid-column: 1 / -1;
-                height: 40px;
+                grid-column: auto;
+                height: 36px;
+                padding: 5px 7px;
+                border-radius: 7px;
+                font-size: 10px;
             }
 
             .table-guide {
@@ -591,11 +606,7 @@
 
         @media screen and (max-width: 380px) {
             .report-toolbar {
-                padding: 7px;
-            }
-
-            .report-title p {
-                display: none;
+                padding: 5px;
             }
 
             .table_layer th:first-child,
