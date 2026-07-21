@@ -62,6 +62,51 @@
             color: white;
         }
 
+        .laba-rugi.detail-kandang-link {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 3px;
+            padding: 5px 7px;
+            border: 1px solid #cfd8f6;
+            border-radius: 8px;
+            background: #f4f7ff;
+            color: #2949ad;
+            text-decoration: none;
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .laba-rugi.detail-kandang-link:hover,
+        .laba-rugi.detail-kandang-link:focus-visible {
+            border-color: #435ebe;
+            background: #e9eeff;
+            color: #203d99;
+        }
+
+        .laba-rugi.detail-kandang-link:active {
+            transform: scale(0.98);
+        }
+
+        .detail-kandang-link .kandang-nama {
+            font-weight: 800;
+        }
+
+        .detail-kandang-link .detail-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #5369b7;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .detail-kandang-link .detail-hint::after {
+            content: '\203A';
+            font-size: 14px;
+            line-height: 0.7;
+        }
+
         @media screen and (max-width: 768px) {
             .elemen-hilang {
                 display: none;
@@ -198,83 +243,364 @@
             background-color: #f8f9fa !important;
         }
 
-        @media screen and (max-width: 768px) {
-
-            /*
-     * Hilangkan scroll besar milik halaman.
-     */
+        /* Tampilan tablet dan HP */
+        @media screen and (max-width: 991.98px) {
             html,
             body {
                 width: 100%;
                 height: 100%;
-                overflow: hidden !important;
+                overflow: hidden;
+                background: #f4f7fc;
             }
 
-            /*
-     * Halaman dibuat setinggi layar HP.
-     */
+            .elemen-hilang {
+                display: none !important;
+            }
+
+            .navbar-laporan {
+                display: flex !important;
+                height: 52px;
+                padding: 6px 12px;
+                border: 0 !important;
+                border-bottom: 1px solid #dfe5f2 !important;
+                box-shadow: 0 2px 10px rgba(42, 61, 110, 0.08);
+            }
+
+            .navbar-laporan .container {
+                max-width: none;
+                padding: 0;
+            }
+
+            .navbar-laporan .navbar-brand {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                margin: 0;
+                padding: 0;
+                color: #243b7a;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .navbar-laporan .navbar-brand img {
+                width: 36px;
+                height: 36px;
+            }
+
             .laporan-layer-page {
                 display: flex;
                 flex-direction: column;
                 width: 100%;
-                height: calc(100dvh - 0.5rem);
+                height: calc(100dvh - 52px);
                 min-height: 0;
-                overflow: hidden !important;
-                padding-bottom: env(safe-area-inset-bottom);
+                margin-top: 0 !important;
+                padding: 8px;
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+                overflow: hidden;
             }
 
-            /*
-     * Filter tanggal tidak ikut scroll.
-     */
-            .laporan-layer-page>form {
+            .filter-laporan {
+                display: block !important;
                 flex: 0 0 auto;
+                margin-bottom: 8px;
+                padding: 8px;
+                border: 1px solid #e1e7f2;
+                border-radius: 12px;
+                background: #fff;
+                box-shadow: 0 3px 12px rgba(42, 61, 110, 0.07);
             }
 
-            /*
-     * Hanya tabel ini yang dapat di-scroll.
-     */
+            .filter-laporan>.row {
+                gap: 8px;
+                margin: 0;
+            }
+
+            .filter-laporan .col-12,
+            .filter-laporan .col-lg-4 {
+                width: 100%;
+                padding: 0;
+                margin: 0 !important;
+            }
+
+            .filter-laporan input[type="date"] {
+                min-height: 42px;
+                border-color: #d9e0ee;
+                border-radius: 9px;
+                font-size: 16px;
+            }
+
+            .filter-laporan button[type="submit"] {
+                min-width: 72px;
+                min-height: 42px;
+                border-radius: 9px;
+                font-weight: 700;
+            }
+
+            .filter-laporan .nav {
+                flex-wrap: nowrap;
+                gap: 4px;
+                padding: 3px;
+                border-radius: 9px;
+                background: #f0f3fa;
+            }
+
+            .filter-laporan .nav-link {
+                min-height: 38px;
+                padding: 9px 8px;
+                border-radius: 7px;
+                color: #52617e;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .filter-laporan .nav-link.active {
+                background: #435ebe;
+                box-shadow: 0 2px 7px rgba(67, 94, 190, 0.25);
+            }
+
             .laporan-layer-page>.table-container {
                 flex: 1 1 auto;
                 width: 100%;
                 min-height: 0;
                 max-height: none !important;
                 overflow: auto !important;
+                border: 1px solid #dfe6f2;
+                border-radius: 12px;
+                background: #fff;
+                box-shadow: 0 5px 18px rgba(42, 61, 110, 0.09);
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer {
+                min-width: 660px;
+                border: 0;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>thead th {
+                padding: 11px 9px;
+                font-size: 11px;
+                letter-spacing: 0.15px;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tbody>tr>td {
+                padding: 9px;
+                font-size: 11px;
+                line-height: 1.45;
+                vertical-align: top;
+            }
+
+            .laporan-layer-page .freeze-cell1_th,
+            .laporan-layer-page .freeze-cell1_td {
+                width: 168px;
+                min-width: 168px;
+                max-width: 168px;
+            }
+
+            .laporan-layer-page .freeze-cell1_td {
+                white-space: normal;
+                box-shadow: 4px 0 9px rgba(32, 48, 88, 0.14);
+            }
+
+            .laporan-layer-page .kandang table {
+                table-layout: fixed;
+            }
+
+            .laporan-layer-page .kandang table td {
+                padding: 2px 1px;
+                border: 0;
+                line-height: 1.35;
+                overflow-wrap: anywhere;
+            }
+
+            .laporan-layer-page .kandang table td:first-child {
+                width: 47%;
+                color: #66738c;
+            }
+
+            .laporan-layer-page .laba-rugi {
+                width: 100%;
+                min-height: 44px;
+                justify-content: center;
+                padding: 7px 9px;
+                border-color: #bdcaf2;
+                background: #eef2ff;
+                box-shadow: 0 2px 6px rgba(47, 80, 189, 0.1);
+            }
+
+            .laporan-layer-page .detail-kandang-link .detail-hint {
+                font-size: 10px;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tbody>tr:nth-child(even)>td:not(.freeze-cell1_td) {
+                background: #f8faff;
+            }
+
+            .modal-dialog.modal-lg-max {
+                width: calc(100% - 12px);
+                max-width: none;
+                height: calc(100dvh - 12px);
+                margin: 6px auto;
+            }
+
+            #laba-rugi .modal-content {
+                height: 100%;
+                overflow: hidden;
+                border: 0;
+                border-radius: 15px;
+                box-shadow: 0 10px 35px rgba(26, 39, 75, 0.22);
+            }
+
+            #laba-rugi .modal-header {
+                flex: 0 0 auto;
+                min-height: 52px;
+                padding: 10px 12px;
+                border-bottom-color: #e5e9f2;
+            }
+
+            #laba-rugi .modal-title {
+                max-width: calc(100% - 44px);
+                overflow: hidden;
+                font-size: 15px !important;
+                font-weight: 800;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            #laba-rugi .modal-body {
+                display: flex;
+                flex: 1 1 auto;
+                flex-direction: column;
+                min-height: 0;
+                padding: 0 10px 10px;
+                overflow: hidden;
+            }
+
+            #detail-kandang-tab {
+                flex: 0 0 auto;
+                flex-wrap: nowrap;
+                margin: 0 -10px 8px !important;
+                padding: 7px 10px 0;
+                overflow-x: auto;
+                border-bottom-color: #dfe5f0;
+                background: #fff;
+                scrollbar-width: none;
+            }
+
+            #detail-kandang-tab::-webkit-scrollbar {
+                display: none;
+            }
+
+            #detail-kandang-tab .nav-item {
+                flex: 1 0 auto;
+            }
+
+            #detail-kandang-tab .nav-link {
+                width: 100%;
+                min-height: 43px;
+                padding: 10px 12px;
+                color: #5b6780;
+                font-size: 12px;
+                font-weight: 800;
+                white-space: nowrap;
+            }
+
+            #detail-kandang-tab .nav-link.active {
+                color: #3553b7;
+                background: #f5f7ff;
+                border-bottom-color: #f5f7ff;
+            }
+
+            #detail-kandang-tab-content,
+            #detail-kandang-tab-content>.tab-pane.active {
+                flex: 1 1 auto;
+                min-height: 0;
+                height: 100%;
+            }
+
+            #detail-kandang-tab-content>.tab-pane.active {
+                overflow: auto;
                 overscroll-behavior: contain;
                 -webkit-overflow-scrolling: touch;
             }
 
-            /*
-     * Tabel Ket tidak membuat scroll tambahan.
-     */
-            .table-container .hd-tiga-minggu-wrapper {
-                overflow: visible !important;
+            #data-telur-pane>.table-container {
+                height: 100%;
+                max-height: none;
+                overflow: auto !important;
+                border: 1px solid #e1e6f0;
+                border-radius: 10px;
+            }
+
+            #data-telur-pane .hd-tiga-minggu-wrapper {
                 max-height: none !important;
+                overflow: visible !important;
+            }
+
+            #data-telur-pane .hd-tiga-minggu {
+                margin-bottom: 0;
+                font-size: 11px;
+            }
+
+            #data-telur-pane .hd-tiga-minggu th,
+            #data-telur-pane .hd-tiga-minggu td {
+                padding: 7px 8px;
+            }
+
+            #laba-rugi-pane>.table,
+            #buku-besar-pane .table {
+                margin-bottom: 10px;
+                font-size: 12px;
             }
         }
 
-        @media screen and (max-width: 991.98px) {
+        @media screen and (max-width: 380px) {
+            .laporan-layer-page {
+                padding: 6px;
+            }
 
-            .filter-laporan,
-            .navbar-laporan {
-                display: none !important;
+            .filter-laporan {
+                padding: 6px;
+            }
+
+            .filter-laporan .nav-link,
+            #detail-kandang-tab .nav-link {
+                font-size: 11px;
+            }
+
+            .laporan-layer-page .freeze-cell1_th,
+            .laporan-layer-page .freeze-cell1_td {
+                width: 152px;
+                min-width: 152px;
+                max-width: 152px;
             }
         }
 
-        /* Perangkat sentuh, termasuk HP landscape */
-        @media (hover: none) and (pointer: coarse) {
-
-            .filter-laporan,
+        @media screen and (orientation: landscape) and (max-height: 520px) {
             .navbar-laporan {
                 display: none !important;
             }
-        }
 
-        /* Fallback khusus layar landscape yang pendek */
-        @media screen and (orientation: landscape) and (max-height: 700px) {
+            .laporan-layer-page {
+                height: 100dvh;
+            }
 
-            .filter-laporan,
-            .navbar-laporan {
-                display: none !important;
+            .filter-laporan {
+                padding: 5px 7px;
+            }
+
+            .filter-laporan>.row {
+                flex-direction: row;
+                flex-wrap: nowrap;
+            }
+
+            .filter-laporan .col-12,
+            .filter-laporan .col-lg-4 {
+                width: calc(50% - 4px);
             }
         }
     </style>
@@ -286,6 +612,7 @@
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="40" height="40">
+                <span class="d-lg-none">Laporan Layer</span>
             </a>
         </div>
     </nav>
@@ -332,9 +659,6 @@
                         <th class="dhead freeze-cell1_th table_layer ">
                             Kandang
                         </th>
-                        <th class="dhead table_layer th_atas "> Data telur
-                        </th>
-
                         {{-- <th class="dhead table_layer th_atas">Pakan</th> --}}
 
                         <th class="dhead table_layer th_atas">kg / (gr/ekor) / p /(day)</th>
@@ -441,9 +765,16 @@
                                 <table width="100%">
                                     <tr>
                                         <td>kndg</td>
-                                        <td>: <a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
-                                                class="laba-rugi" id_kandang="{{ $k->id_kandang }}">
-                                                {{ $k->nm_kandang }}</a></td>
+                                        <td><a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
+                                                class="laba-rugi detail-kandang-link"
+                                                id_kandang="{{ $k->id_kandang }}"
+                                                data-nama-kandang="{{ $k->nm_kandang }}"
+                                                data-tgl="{{ $tgl }}"
+                                                data-hd-url="{{ route('laporan_layer.hd_tiga_minggu') }}"
+                                                aria-label="Lihat detail kandang {{ $k->nm_kandang }}">
+                                                <span class="kandang-nama">{{ $k->nm_kandang }}</span>
+                                                <span class="detail-hint">Lihat detail</span>
+                                            </a></td>
                                     </tr>
                                     <tr>
                                         <td>chk in</td>
@@ -588,13 +919,6 @@
                                     : number_format((($k->kg - $k->pcs / 180) * 1000) / $k->pcs, 1);
                             @endphp
 
-                            <td align="center" class="hd perday td_layer">
-                                <div class="js-hd-tiga-minggu" data-url="{{ route('laporan_layer.hd_tiga_minggu') }}"
-                                    data-id-kandang="{{ $k->id_kandang }}" data-tgl="{{ $tgl }}">
-                                    <span class="text-muted">Memuat data...</span>
-                                </div>
-                            </td>
-
                             <!-- (12777) / (3) / (2296) -->
 
 
@@ -666,11 +990,6 @@
                 <tfoot>
                     <tr>
                         <th class="dhead freeze-cell1_th table_layer">Total</th>
-                        <th class="dhead  table_layer">
-                            <span>butir : {{ number_format($pcs, 0) }}</span> <br>
-                            <span>kg bersih : {{ number_format($kg_total, 0) }}</span> <br>
-                            <span>kg kotor : {{ number_format($kg_kotor, 0) }}</span>
-                        </th>
                         {{-- <th class="dhead table_layer"></th> --}}
                         {{-- <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th> --}}
 
@@ -725,17 +1044,54 @@
         <div class="modal-dialog modal-lg-max">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Laba dan Rugi</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">
+                        Detail Kandang <span id="modal-nama-kandang"></span>
+                    </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    <ul class="nav nav-tabs mb-3" id="detail-kandang-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="data-telur-tab" data-bs-toggle="tab"
+                                data-bs-target="#data-telur-pane" type="button" role="tab"
+                                aria-controls="data-telur-pane" aria-selected="true">
+                                Data Telur
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="laba-rugi-tab" data-bs-toggle="tab"
+                                data-bs-target="#laba-rugi-pane" type="button" role="tab"
+                                aria-controls="laba-rugi-pane" aria-selected="false">
+                                Laba Rugi
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="buku-besar-tab" data-bs-toggle="tab"
+                                data-bs-target="#buku-besar-pane" type="button" role="tab"
+                                aria-controls="buku-besar-pane" aria-selected="false">
+                                Buku Besar
+                            </button>
+                        </li>
+                    </ul>
 
-                        <div class="col-12">
+                    <div class="tab-content" id="detail-kandang-tab-content">
+                        <div class="tab-pane fade show active" id="data-telur-pane" role="tabpanel"
+                            aria-labelledby="data-telur-tab" tabindex="0">
+                            <div class="table-container">
+                                <div class="js-hd-tiga-minggu">
+                                    <span class="text-muted">Memuat data telur...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="laba-rugi-pane" role="tabpanel"
+                            aria-labelledby="laba-rugi-tab" tabindex="0">
                             <div id="laba-rugi_kandang"></div>
                         </div>
+                        <div class="tab-pane fade" id="buku-besar-pane" role="tabpanel"
+                            aria-labelledby="buku-besar-tab" tabindex="0">
+                            <div id="buku-besar_kandang"></div>
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -806,8 +1162,10 @@
          * LOAD TABEL HD TIGA MINGGU
          * =========================================================
          */
-        function loadHdTigaMinggu() {
-            $('.js-hd-tiga-minggu').each(function() {
+        function loadHdTigaMinggu(container) {
+            var $containers = container ? $(container) : $('.js-hd-tiga-minggu');
+
+            $containers.each(function() {
                 var $container = $(this);
 
                 /*
@@ -824,10 +1182,10 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: $container.data('url'),
+                    url: $container.attr('data-url'),
                     data: {
-                        id_kandang: $container.data('id-kandang'),
-                        tgl: $container.data('tgl')
+                        id_kandang: $container.attr('data-id-kandang'),
+                        tgl: $container.attr('data-tgl')
                     },
                     beforeSend: function() {
                         $container.html(
@@ -1053,14 +1411,56 @@
         $(document).on('click', '.laba-rugi', function(event) {
             event.preventDefault();
 
+            var $trigger = $(this);
+            var $dataTelur = $('#data-telur-pane .js-hd-tiga-minggu');
+
+            $('#modal-nama-kandang').text('- ' + $trigger.attr('data-nama-kandang'));
+            $dataTelur
+                .attr('data-url', $trigger.attr('data-hd-url'))
+                .attr('data-id-kandang', $trigger.attr('id_kandang'))
+                .attr('data-tgl', $trigger.attr('data-tgl'))
+                .removeData('loading loaded')
+                .html('<span class="text-muted">Memuat data telur...</span>');
+
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(
+                    document.getElementById('data-telur-tab')
+                ).show();
+            }
+
+            $('#laba-rugi_kandang').html(
+                '<div class="text-muted p-2">' +
+                '<span class="spinner-border spinner-border-sm me-1"></span>' +
+                'Memuat data laba rugi...' +
+                '</div>'
+            );
+            $('#buku-besar_kandang').html(
+                '<div class="text-muted p-2">' +
+                '<span class="spinner-border spinner-border-sm me-1"></span>' +
+                'Memuat data buku besar...' +
+                '</div>'
+            );
+
+            loadHdTigaMinggu($dataTelur);
+
             $.ajax({
                 type: 'GET',
                 url: "{{ route('labaRugiKandang') }}",
                 data: {
-                    id_kandang: $(this).attr('id_kandang')
+                    id_kandang: $trigger.attr('id_kandang')
                 },
                 success: function(response) {
-                    $('#laba-rugi_kandang').html(response);
+                    var $response = $('<div>').html(response);
+                    var labaRugi = $response.find('#home').html();
+                    var bukuBesar = $response.find('#profile').html();
+
+                    $('#laba-rugi_kandang').html(labaRugi || response);
+                    $('#buku-besar_kandang').html(
+                        bukuBesar ||
+                        '<div class="alert alert-warning">Data buku besar tidak tersedia.</div>'
+                    );
+
+                    aktifkanTooltip(document.getElementById('laba-rugi-pane'));
                 },
                 error: function() {
                     $('#laba-rugi_kandang').html(
@@ -1068,8 +1468,17 @@
                         'Gagal memuat data laba rugi.' +
                         '</div>'
                     );
+                    $('#buku-besar_kandang').html(
+                        '<div class="alert alert-danger">' +
+                        'Gagal memuat data buku besar.' +
+                        '</div>'
+                    );
                 }
             });
+        });
+
+        $(document).on('shown.bs.tab', '#data-telur-tab', function() {
+            loadHdTigaMinggu('#data-telur-pane .js-hd-tiga-minggu');
         });
 
         /*
@@ -1115,7 +1524,6 @@
         sesuaikanFreezeKet();
         aktifkanTooltip(document);
         loadRingkasanKandang();
-        loadHdTigaMinggu();
     });
 </script>
 
