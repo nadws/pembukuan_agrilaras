@@ -595,6 +595,21 @@
                 box-shadow: inset 0 -1px 0 #dce3f0;
             }
 
+            #data-telur-pane .hd-tiga-minggu thead tr:nth-child(2)>th {
+                top: 31px;
+            }
+
+            #data-telur-pane .hd-tiga-minggu .week-age-header {
+                height: 31px;
+                padding: 7px 8px;
+                border-bottom: 1px solid #cdd7ee;
+                background: linear-gradient(135deg, #e9eeff, #f5f7ff) !important;
+                color: #3553b7;
+                font-size: 10px;
+                font-weight: 900;
+                letter-spacing: 0.25px;
+            }
+
             #data-telur-pane .hd-tiga-minggu thead .sticky-column {
                 z-index: 35 !important;
                 background: #435ebe !important;

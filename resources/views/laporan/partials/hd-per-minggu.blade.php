@@ -27,6 +27,15 @@
     .hd-tiga-minggu tbody tr>td:nth-child(16) {
         border-right: 7px solid #e7e7e7 !important;
     }
+
+    .hd-tiga-minggu .week-age-header {
+        padding: 7px 10px;
+        background: #eef2ff !important;
+        color: #3652ad;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
 </style>
 <style>
     /*
@@ -83,7 +92,11 @@
                     :
                 </th>
 
-
+                @foreach ($dataMingguan as $minggu)
+                    <th colspan="{{ count($minggu['tanggal_harian']) }}" class="week-age-header text-center">
+                        Minggu ke-{{ $minggu['mgg'] }}
+                    </th>
+                @endforeach
             </tr>
 
             {{-- Header hari 1-7 --}}
@@ -375,7 +388,7 @@
                 @endforeach
             </tr>
             <tr>
-                <th class="sticky-column">HD & FCR</th>
+                <th class="sticky-column">HD & FCR WEEK</th>
                 <th colspan="29"></th>
             </tr>
             <tr>
