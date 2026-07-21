@@ -7,13 +7,22 @@
     <title>Laba rugi kandang</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         body {
-            font-family: "Nunito Sans", Arial, Helvetica, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             background: #f8f9fa;
+        }
+
+        button,
+        input,
+        select,
+        textarea,
+        .form-control,
+        .btn,
+        .nav-link,
+        .table_layer {
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .page-wrap {
