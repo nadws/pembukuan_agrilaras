@@ -182,6 +182,7 @@
             min-height: 0;
             margin-top: 0 !important;
             padding: 16px 20px 20px;
+            overflow: hidden;
         }
 
         .report-toolbar {
@@ -267,10 +268,19 @@
             font-weight: 800;
         }
 
-        #myTabContent,
-        #myTabContent>.tab-pane {
+        #myTabContent {
+            display: flex;
             flex: 1 1 auto;
+            flex-direction: column;
             min-height: 0;
+            overflow: hidden;
+        }
+
+        #myTabContent>.tab-pane {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
         }
 
         #myTabContent>.tab-pane.active {
@@ -303,14 +313,19 @@
 
         .table-container {
             flex: 1 1 auto;
+            width: 100%;
+            height: 100%;
             min-height: 0;
             max-height: none;
-            overflow: auto;
+            overflow-x: auto !important;
+            overflow-y: auto !important;
             border: 1px solid var(--report-border);
             border-radius: 14px;
             background: #fff;
             box-shadow: 0 7px 24px rgba(35, 52, 94, 0.08);
             overscroll-behavior: contain;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
             scrollbar-color: #bdc8df transparent;
             scrollbar-width: thin;
         }
