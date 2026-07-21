@@ -336,6 +336,7 @@ class Laporan_layerController extends Controller
         $kgKotor2 = [];
         $kgPakanD = [];
         $viFcrD = [];
+        $vaFcrD = [];
         $popAkhirWeek = [];
         $hdl = [];
 
@@ -356,6 +357,7 @@ class Laporan_layerController extends Controller
             $kgKotor2[$tanggal] = 0;
             $kgPakanD[$tanggal] = 0;
             $viFcrD[$tanggal] = 0;
+            $vaFcrD[$tanggal] = 0;
             $popAkhirWeek[$tanggal] = 0;
             $hdl[$tanggal] = 0;
 
@@ -458,6 +460,20 @@ class Laporan_layerController extends Controller
                 ]
             );
 
+            $vaksinHarian = DB::selectOne(
+                "
+                SELECT
+                    SUM(COALESCE(ttl_rp, 0)) AS rp_vaksin
+                FROM tb_vaksin_perencanaan
+                WHERE tgl = ?
+                    AND id_kandang = ?
+            ",
+                [
+                    $tanggal,
+                    $k->id_kandang,
+                ]
+            );
+
             $stokAwal = (float) ($k->stok_awal ?? 0);
             $totalPengurangan = (float) ($populasiKumulatif->total ?? 0);
             $populasiAkhir = $stokAwal - $totalPengurangan;
@@ -472,6 +488,7 @@ class Laporan_layerController extends Controller
             $kgKotor2[$tanggal] = $kgTelur;
             $kgPakanD[$tanggal] = (float) ($pakanHarian->kg_pakan ?? 0);
             $viFcrD[$tanggal] = ((float) ($vitaminHarian->rp_vitamin ?? 0)) / 7000;
+            $vaFcrD[$tanggal] = ((float) ($vaksinHarian->rp_vaksin ?? 0)) / 7000;
             $popAkhirWeek[$tanggal] = $totalPengurangan;
 
             $popKurangPerHari[$tanggal] = $populasiAkhir > 0
@@ -581,6 +598,7 @@ class Laporan_layerController extends Controller
             'kg_kotor2'           => $kgKotor2,
             'kg_pakan_d'          => $kgPakanD,
             'vi_fcr_d'            => $viFcrD,
+            'va_fcr_d'            => $vaFcrD,
             'pop_akihir_week'     => $popAkhirWeek,
             'hdl'                 => $hdl,
             'dt_kdng'             => $dtKdng,

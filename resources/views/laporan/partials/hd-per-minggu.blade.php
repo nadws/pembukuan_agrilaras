@@ -361,10 +361,6 @@
                 <td class="sticky-column">FCR D+</td>
                 <td class="text-center">:</td>
 
-                @php
-                    $vaksin = !empty($k->ttl_rp_vaksin) ? $k->ttl_rp_vaksin / 7000 : 0;
-                @endphp
-
                 @foreach ($dataMingguan as $minggu)
                     @foreach ($minggu['tanggal_harian'] as $tgl_hari)
                         @php
@@ -375,6 +371,8 @@
                             $kgPakan = (float) ($minggu['kg_pakan_d'][$tgl_hari] ?? 0);
 
                             $vitamin = (float) ($minggu['vi_fcr_d'][$tgl_hari] ?? 0);
+
+                            $vaksin = (float) ($minggu['va_fcr_d'][$tgl_hari] ?? 0);
 
                             $kgBersih = $kgKotor - $butir / 180;
 
@@ -483,10 +481,6 @@
                 <td class="sticky-column">FCR W+</td>
                 <td class="text-center">:</td>
 
-                @php
-                    $vaksin = (float) ($k->ttl_rp_vaksin ?? 0) / 7000;
-                @endphp
-
                 @foreach ($dataMingguan as $minggu)
                     @php
                         // Reset pada awal setiap minggu
@@ -494,6 +488,7 @@
                         $butirFcrWeek = 0;
                         $kgPakanFcrWeek = 0;
                         $vitaminFcrWeek = 0;
+                        $vaksinFcrWeek = 0;
                     @endphp
 
                     @foreach ($minggu['tanggal_harian'] as $tgl_hari)
@@ -508,18 +503,22 @@
 
                             $vitaminHarian = (float) ($minggu['vi_fcr_d'][$tgl_hari] ?? 0);
 
+                            $vaksinHarian = (float) ($minggu['va_fcr_d'][$tgl_hari] ?? 0);
+
                             if ($sudahTerjadi) {
                                 $kgKotorFcrWeek += $kgKotorHarian;
                                 $butirFcrWeek += $butirHarian;
                                 $kgPakanFcrWeek += $kgPakanHarian;
                                 $vitaminFcrWeek += $vitaminHarian;
+                                $vaksinFcrWeek += $vaksinHarian;
                             }
 
                             $kgBersihFcrWeek = $kgKotorFcrWeek - $butirFcrWeek / 180;
 
                             $fcrWeekPlus =
                                 $sudahTerjadi && $butirHarian > 0 && $kgBersihFcrWeek > 0
-                                    ? ($kgPakanFcrWeek / 1000 + $vitaminFcrWeek + $vaksin) / $kgBersihFcrWeek
+                                    ? ($kgPakanFcrWeek / 1000 + $vitaminFcrWeek + $vaksinFcrWeek) /
+                                        $kgBersihFcrWeek
                                     : 0;
                         @endphp
 
