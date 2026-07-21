@@ -337,6 +337,7 @@ class Laporan_layerController extends Controller
         $kgPakanD = [];
         $viFcrD = [];
         $vaFcrD = [];
+        $opFcrD = [];
         $popAkhirWeek = [];
         $hdl = [];
 
@@ -358,6 +359,7 @@ class Laporan_layerController extends Controller
             $kgPakanD[$tanggal] = 0;
             $viFcrD[$tanggal] = 0;
             $vaFcrD[$tanggal] = 0;
+            $opFcrD[$tanggal] = 0;
             $popAkhirWeek[$tanggal] = 0;
             $hdl[$tanggal] = 0;
 
@@ -474,6 +476,61 @@ class Laporan_layerController extends Controller
                 ]
             );
 
+            /*
+             * Biaya seperti listrik dibayar pada tanggal tertentu, tetapi
+             * manfaatnya berlaku sepanjang bulan. Ratakan total biaya bulan
+             * per hari agar FCR tidak melonjak hanya pada hari pembayaran.
+             * Untuk bulan berjalan, gunakan data sampai tanggal laporan.
+             */
+            $tanggalOperasional = Carbon::parse($tanggal);
+            $awalBulanOperasional = $tanggalOperasional->copy()->startOfMonth();
+            $akhirBulanOperasional = $tanggalOperasional->copy()->endOfMonth();
+            $akhirAlokasiOperasional = $tanggalLaporan->lt($akhirBulanOperasional)
+                ? $tanggalLaporan->copy()
+                : $akhirBulanOperasional;
+            $jumlahHariOperasional = $awalBulanOperasional
+                ->diffInDays($akhirAlokasiOperasional) + 1;
+
+            $operasionalHarian = DB::selectOne(
+                "SELECT
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM stok_produk_perencanaan AS aktivitas_target
+                            WHERE aktivitas_target.tgl = ?
+                                AND aktivitas_target.id_kandang = ?
+                        )
+                        THEN
+                            COALESCE((
+                                SELECT SUM(jurnal.debit)
+                                FROM jurnal_accurate AS jurnal
+                                WHERE jurnal.tgl BETWEEN ? AND ?
+                                    AND jurnal.buku = '2'
+                            ), 0) / ? * ? /
+                            NULLIF(COALESCE((
+                                SELECT SUM(kandang_aktif.stok_awal)
+                                FROM kandang AS kandang_aktif
+                                WHERE EXISTS (
+                                    SELECT 1
+                                    FROM stok_produk_perencanaan AS aktivitas
+                                    WHERE aktivitas.tgl = ?
+                                        AND aktivitas.id_kandang = kandang_aktif.id_kandang
+                                )
+                            ), 0), 0)
+                        ELSE 0
+                    END AS rp_operasional
+            ",
+                [
+                    $tanggal,
+                    $k->id_kandang,
+                    $awalBulanOperasional->format('Y-m-d'),
+                    $akhirAlokasiOperasional->format('Y-m-d'),
+                    $jumlahHariOperasional,
+                    (float) ($k->stok_awal ?? 0),
+                    $tanggal,
+                ]
+            );
+
             $stokAwal = (float) ($k->stok_awal ?? 0);
             $totalPengurangan = (float) ($populasiKumulatif->total ?? 0);
             $populasiAkhir = $stokAwal - $totalPengurangan;
@@ -489,6 +546,7 @@ class Laporan_layerController extends Controller
             $kgPakanD[$tanggal] = (float) ($pakanHarian->kg_pakan ?? 0);
             $viFcrD[$tanggal] = ((float) ($vitaminHarian->rp_vitamin ?? 0)) / 7000;
             $vaFcrD[$tanggal] = ((float) ($vaksinHarian->rp_vaksin ?? 0)) / 7000;
+            $opFcrD[$tanggal] = ((float) ($operasionalHarian->rp_operasional ?? 0)) / 7000;
             $popAkhirWeek[$tanggal] = $totalPengurangan;
 
             $popKurangPerHari[$tanggal] = $populasiAkhir > 0
@@ -599,6 +657,7 @@ class Laporan_layerController extends Controller
             'kg_pakan_d'          => $kgPakanD,
             'vi_fcr_d'            => $viFcrD,
             'va_fcr_d'            => $vaFcrD,
+            'op_fcr_d'            => $opFcrD,
             'pop_akihir_week'     => $popAkhirWeek,
             'hdl'                 => $hdl,
             'dt_kdng'             => $dtKdng,
