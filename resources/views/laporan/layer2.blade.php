@@ -245,6 +245,7 @@
 
         /* Tampilan tablet dan HP */
         @media screen and (max-width: 991.98px) {
+
             html,
             body {
                 width: 100%;
@@ -729,8 +730,8 @@
                 position: sticky;
                 top: 0;
                 z-index: 500;
-                min-height: 62px;
-                padding: 8px 20px;
+                min-height: 48px;
+                padding: 4px 16px;
                 border: 0 !important;
                 border-bottom: 1px solid #e0e6f1 !important;
                 box-shadow: 0 3px 14px rgba(35, 52, 94, 0.07);
@@ -744,29 +745,29 @@
             .navbar-laporan .navbar-brand {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 8px;
                 margin: 0;
                 padding: 0;
                 color: #2f478f;
-                font-size: 15px;
+                font-size: 13px;
                 font-weight: 800;
             }
 
             .navbar-laporan .navbar-brand img {
-                width: 42px;
-                height: 42px;
+                width: 34px;
+                height: 34px;
             }
 
             .laporan-layer-page {
-                padding: 16px 20px 22px;
+                padding: 10px 14px 14px;
                 margin-top: 0 !important;
             }
 
             .filter-laporan {
-                margin-bottom: 14px;
-                padding: 13px 15px;
+                margin-bottom: 9px;
+                padding: 8px 10px;
                 border: 1px solid #e0e6f1;
-                border-radius: 14px;
+                border-radius: 11px;
                 background: #fff;
                 box-shadow: 0 5px 18px rgba(35, 52, 94, 0.07);
             }
@@ -774,7 +775,7 @@
             .filter-laporan>.row {
                 display: grid;
                 grid-template-columns: minmax(190px, 1fr) minmax(250px, 310px) minmax(320px, 380px);
-                gap: 14px;
+                gap: 10px;
                 align-items: center;
                 margin: 0;
             }
@@ -793,36 +794,39 @@
             .filter-laporan h6 {
                 margin: 0 !important;
                 color: #263b78;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: 800;
             }
 
             .filter-laporan input[type="date"] {
-                height: 42px;
+                height: 36px;
                 border-color: #d9e1ef;
-                border-radius: 9px;
-                font-size: 14px;
+                border-radius: 7px;
+                font-size: 13px;
             }
 
             .filter-laporan button[type="submit"] {
-                height: 42px;
-                min-width: 78px;
-                border-radius: 9px;
+                height: 36px;
+                min-width: 70px;
+                border-radius: 7px;
+                padding: 6px 12px;
+                font-size: 12px;
                 font-weight: 700;
             }
 
             .filter-laporan .nav {
-                gap: 5px;
-                padding: 4px;
-                border-radius: 10px;
+                gap: 3px;
+                padding: 2px;
+                border-radius: 8px;
                 background: #f0f3f9;
             }
 
             .filter-laporan .nav-link {
-                padding: 9px 12px;
-                border-radius: 8px;
+                min-height: 34px;
+                padding: 7px 9px;
+                border-radius: 6px;
                 color: #59667e;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 700;
                 transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
             }
@@ -838,7 +842,7 @@
             }
 
             .laporan-layer-page>.table-container {
-                max-height: calc(100vh - 185px);
+                max-height: calc(100vh - 125px);
                 border: 1px solid #dfe5f0;
                 border-radius: 14px;
                 background: #fff;
@@ -1142,7 +1146,7 @@
                         </th>
                         {{-- <th class="dhead table_layer th_atas">Pakan</th> --}}
 
-                        <th class="dhead table_layer th_atas">kg / (gr/ekor) / p /(day)</th>
+                        <th class="dhead table_layer th_atas">pakan(kg) <br> telur(kg) <br> R2RP</th>
                         <th class="dhead table_layer th_atas">Obat/vit</th>
                     </tr>
                     {{-- <tr> --}}
@@ -1247,10 +1251,8 @@
                                     <tr>
                                         <td>kndg</td>
                                         <td><a href="#" data-bs-toggle="modal" data-bs-target="#laba-rugi"
-                                                class="laba-rugi detail-kandang-link"
-                                                id_kandang="{{ $k->id_kandang }}"
-                                                data-nama-kandang="{{ $k->nm_kandang }}"
-                                                data-tgl="{{ $tgl }}"
+                                                class="laba-rugi detail-kandang-link" id_kandang="{{ $k->id_kandang }}"
+                                                data-nama-kandang="{{ $k->nm_kandang }}" data-tgl="{{ $tgl }}"
                                                 data-hd-url="{{ route('laporan_layer.hd_tiga_minggu') }}"
                                                 aria-label="Lihat detail kandang {{ $k->nm_kandang }}">
                                                 <span class="kandang-nama">{{ $k->nm_kandang }}</span>
