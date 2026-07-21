@@ -375,7 +375,7 @@
                 @endforeach
             </tr>
             <tr>
-                <th colspan="100">HD & FCR</th>
+                <th colspan="100" class="sticky-column">HD & FCR</th>
             </tr>
             <tr>
                 <td class="sticky-column">HD W</td>
