@@ -716,6 +716,373 @@
                 width: calc(50% - 4px);
             }
         }
+
+        /* Tampilan laptop dan desktop */
+        @media screen and (min-width: 992px) {
+            body {
+                min-height: 100vh;
+                background: #f4f7fc;
+                color: #26334d;
+            }
+
+            .navbar-laporan {
+                position: sticky;
+                top: 0;
+                z-index: 500;
+                min-height: 62px;
+                padding: 8px 20px;
+                border: 0 !important;
+                border-bottom: 1px solid #e0e6f1 !important;
+                box-shadow: 0 3px 14px rgba(35, 52, 94, 0.07);
+            }
+
+            .navbar-laporan .container {
+                max-width: none;
+                padding: 0;
+            }
+
+            .navbar-laporan .navbar-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 0;
+                padding: 0;
+                color: #2f478f;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .navbar-laporan .navbar-brand img {
+                width: 42px;
+                height: 42px;
+            }
+
+            .laporan-layer-page {
+                padding: 16px 20px 22px;
+                margin-top: 0 !important;
+            }
+
+            .filter-laporan {
+                margin-bottom: 14px;
+                padding: 13px 15px;
+                border: 1px solid #e0e6f1;
+                border-radius: 14px;
+                background: #fff;
+                box-shadow: 0 5px 18px rgba(35, 52, 94, 0.07);
+            }
+
+            .filter-laporan>.row {
+                display: grid;
+                grid-template-columns: minmax(190px, 1fr) minmax(250px, 310px) minmax(320px, 380px);
+                gap: 14px;
+                align-items: center;
+                margin: 0;
+            }
+
+            .filter-laporan .elemen-hilang,
+            .filter-laporan .col-12,
+            .filter-laporan .col-lg-3,
+            .filter-laporan .col-lg-4,
+            .filter-laporan .col-lg-9 {
+                width: auto;
+                max-width: none;
+                margin: 0 !important;
+                padding: 0;
+            }
+
+            .filter-laporan h6 {
+                margin: 0 !important;
+                color: #263b78;
+                font-size: 16px;
+                font-weight: 800;
+            }
+
+            .filter-laporan input[type="date"] {
+                height: 42px;
+                border-color: #d9e1ef;
+                border-radius: 9px;
+                font-size: 14px;
+            }
+
+            .filter-laporan button[type="submit"] {
+                height: 42px;
+                min-width: 78px;
+                border-radius: 9px;
+                font-weight: 700;
+            }
+
+            .filter-laporan .nav {
+                gap: 5px;
+                padding: 4px;
+                border-radius: 10px;
+                background: #f0f3f9;
+            }
+
+            .filter-laporan .nav-link {
+                padding: 9px 12px;
+                border-radius: 8px;
+                color: #59667e;
+                font-size: 13px;
+                font-weight: 700;
+                transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+            }
+
+            .filter-laporan .nav-link:hover {
+                color: #3652ad;
+                background: #e8edfb;
+            }
+
+            .filter-laporan .nav-link.active {
+                background: #435ebe;
+                box-shadow: 0 3px 9px rgba(67, 94, 190, 0.25);
+            }
+
+            .laporan-layer-page>.table-container {
+                max-height: calc(100vh - 185px);
+                border: 1px solid #dfe5f0;
+                border-radius: 14px;
+                background: #fff;
+                box-shadow: 0 7px 24px rgba(35, 52, 94, 0.08);
+                scrollbar-color: #bdc8df transparent;
+                scrollbar-width: thin;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer {
+                border: 0;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>thead th {
+                min-height: 48px;
+                padding: 12px 14px;
+                border-color: #566fc4;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.25px;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tbody>tr>td {
+                padding: 12px 14px;
+                border-color: #e6ebf3;
+                font-size: 11px;
+                line-height: 1.5;
+                vertical-align: top;
+                transition: background-color 0.15s ease;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tbody>tr:nth-child(even)>td:not(.freeze-cell1_td) {
+                background: #fafbfe;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tbody>tr:hover>td:not(.freeze-cell1_td) {
+                background: #f0f4ff;
+            }
+
+            .laporan-layer-page .freeze-cell1_th,
+            .laporan-layer-page .freeze-cell1_td {
+                width: 255px;
+                min-width: 255px;
+                max-width: 255px;
+            }
+
+            .laporan-layer-page .freeze-cell1_td {
+                white-space: normal;
+                box-shadow: 5px 0 12px rgba(30, 46, 87, 0.1);
+            }
+
+            .laporan-layer-page .kandang table {
+                table-layout: fixed;
+            }
+
+            .laporan-layer-page .kandang table td {
+                padding: 2px 3px;
+                border: 0;
+                line-height: 1.4;
+            }
+
+            .laporan-layer-page .kandang table td:first-child {
+                width: 43%;
+                color: #6a758b;
+            }
+
+            .laporan-layer-page .detail-kandang-link {
+                width: 100%;
+                margin-bottom: 3px;
+                padding: 7px 9px;
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tfoot th {
+                position: sticky;
+                bottom: 0;
+                z-index: 80;
+                padding: 11px 14px;
+                border-color: #566fc4;
+                box-shadow: 0 -3px 10px rgba(35, 52, 94, 0.08);
+            }
+
+            .laporan-layer-page>.table-container>.table_layer>tfoot .freeze-cell1_th {
+                z-index: 130 !important;
+            }
+
+            .modal-dialog.modal-lg-max {
+                width: min(96vw, 1500px);
+                max-width: none;
+                margin: 22px auto;
+            }
+
+            #laba-rugi .modal-content {
+                overflow: hidden;
+                border: 0;
+                border-radius: 16px;
+                box-shadow: 0 18px 55px rgba(26, 39, 75, 0.2);
+            }
+
+            #laba-rugi .modal-header {
+                padding: 14px 18px;
+                border-bottom-color: #e2e7f0;
+                background: #fff;
+            }
+
+            #laba-rugi .modal-title {
+                color: #293e7b;
+                font-size: 17px !important;
+                font-weight: 800;
+            }
+
+            #laba-rugi .modal-body {
+                padding: 0 18px 18px;
+                background: #fbfcff;
+            }
+
+            #detail-kandang-tab {
+                gap: 6px;
+                margin: 0 -18px 14px !important;
+                padding: 10px 18px 0;
+                border-bottom-color: #dde4f0;
+                background: #fff;
+            }
+
+            #detail-kandang-tab .nav-link {
+                min-width: 135px;
+                padding: 10px 18px;
+                border-radius: 9px 9px 0 0;
+                color: #606d84;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            #detail-kandang-tab .nav-link:hover {
+                color: #3553b7;
+                background: #f3f6ff;
+            }
+
+            #detail-kandang-tab .nav-link.active {
+                color: #3553b7;
+                background: #eef2ff;
+                border-color: #d8e0f6 #d8e0f6 #eef2ff;
+            }
+
+            #data-telur-pane>.table-container {
+                max-height: calc(100vh - 230px);
+                overflow: auto !important;
+                border: 1px solid #dfe5f0;
+                border-radius: 11px;
+                background: #fff;
+            }
+
+            #data-telur-pane .hd-tiga-minggu-wrapper {
+                overflow: visible !important;
+            }
+
+            #data-telur-pane .hd-tiga-minggu {
+                margin-bottom: 0;
+                font-size: 11px;
+                font-variant-numeric: tabular-nums;
+            }
+
+            #data-telur-pane .hd-tiga-minggu th,
+            #data-telur-pane .hd-tiga-minggu td {
+                padding: 8px 10px;
+                border-color: #e5eaf2;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            #data-telur-pane .hd-tiga-minggu .sticky-column {
+                left: 0 !important;
+                z-index: 35 !important;
+                width: 140px;
+                min-width: 140px;
+                background: #fbfcff !important;
+                color: #33415f;
+                font-weight: 700;
+                text-align: left;
+                box-shadow: 5px 0 10px rgba(35, 52, 94, 0.08);
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead th {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                background: #f2f5fb;
+                color: #34415f;
+                font-weight: 800;
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead tr:nth-child(2)>th {
+                top: 34px;
+            }
+
+            #data-telur-pane .hd-tiga-minggu .week-age-header {
+                height: 34px;
+                background: linear-gradient(135deg, #e9eeff, #f5f7ff) !important;
+                color: #3553b7;
+                font-weight: 900;
+            }
+
+            #data-telur-pane .hd-tiga-minggu thead .sticky-column {
+                z-index: 45 !important;
+                background: #435ebe !important;
+                color: #fff;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody tr:nth-child(even)>td:not(.sticky-column) {
+                background: #fafbfe;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody tr:hover>td {
+                background: #eef3ff;
+            }
+
+            #data-telur-pane .hd-tiga-minggu tbody th[colspan],
+            #data-telur-pane .hd-tiga-minggu tbody th.sticky-column {
+                padding: 9px 11px;
+                border: 0;
+                background: linear-gradient(90deg, #435ebe, #617bd2) !important;
+                color: #fff;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 0.4px;
+                text-align: left;
+                text-transform: uppercase;
+            }
+
+            #laba-rugi-pane,
+            #buku-besar-pane {
+                max-height: calc(100vh - 230px);
+                overflow: auto;
+                border: 1px solid #e1e6ef;
+                border-radius: 11px;
+                background: #fff;
+            }
+
+            #laba-rugi-pane>.table,
+            #buku-besar-pane .table {
+                margin-bottom: 0;
+                font-size: 12px;
+            }
+        }
     </style>
 
 </head>
@@ -726,6 +1093,7 @@
             <a class="navbar-brand" href="#">
                 <img src="/assets/login/img/agri_laras2.png" alt="Bootstrap" width="40" height="40">
                 <span class="d-lg-none">Laporan Layer</span>
+                <span class="d-none d-lg-inline">Agri Laras &middot; Laporan Layer</span>
             </a>
         </div>
     </nav>

@@ -120,20 +120,497 @@
             }
         }
     </style>
+
+    <style>
+        :root {
+            --report-primary: #435ebe;
+            --report-primary-dark: #2d478f;
+            --report-bg: #f3f6fb;
+            --report-border: #dfe5f0;
+            --report-text: #293750;
+            --report-muted: #6d7890;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background: var(--report-bg);
+            color: var(--report-text);
+        }
+
+        .navbar-laporan {
+            flex: 0 0 60px;
+            height: 60px;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--report-border);
+            background: #fff;
+            box-shadow: 0 3px 14px rgba(35, 52, 94, 0.07);
+        }
+
+        .navbar-laporan .container-fluid {
+            height: 100%;
+            padding: 0;
+        }
+
+        .navbar-laporan .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            color: var(--report-primary-dark);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .navbar-laporan .navbar-brand img {
+            width: 42px;
+            height: 42px;
+        }
+
+        .page-wrap {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+            margin-top: 0 !important;
+            padding: 16px 20px 20px;
+        }
+
+        .report-toolbar {
+            display: grid;
+            flex: 0 0 auto;
+            grid-template-columns: minmax(220px, 1fr) minmax(320px, 380px) minmax(430px, 520px);
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 14px;
+            padding: 13px 15px;
+            border: 1px solid var(--report-border);
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 5px 18px rgba(35, 52, 94, 0.07);
+        }
+
+        .report-title h1 {
+            margin: 0 0 3px;
+            color: #263b78;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .report-title p {
+            margin: 0;
+            color: var(--report-muted);
+            font-size: 11px;
+        }
+
+        .report-toolbar .nav {
+            gap: 5px;
+            padding: 4px;
+            border-radius: 10px;
+            background: #f0f3f9;
+        }
+
+        .report-toolbar .nav-link {
+            min-height: 38px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            color: #59667e;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .report-toolbar .nav-link:hover {
+            color: #3652ad;
+            background: #e8edfb;
+        }
+
+        .report-toolbar .nav-link.active {
+            background: var(--report-primary);
+            box-shadow: 0 3px 9px rgba(67, 94, 190, 0.25);
+        }
+
+        .period-filter {
+            display: grid;
+            grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) 86px;
+            gap: 8px;
+            align-items: end;
+        }
+
+        .date-field label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--report-muted);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .date-field .form-control {
+            height: 40px;
+            border-color: #d9e1ef;
+            border-radius: 9px;
+            font-size: 13px;
+        }
+
+        .period-filter .btn {
+            height: 40px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        #myTabContent,
+        #myTabContent>.tab-pane {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        #myTabContent>.tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .table-guide {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+            margin: 0 2px 7px;
+            color: var(--report-muted);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .table-guide .guide-icon {
+            display: inline-grid;
+            width: 22px;
+            height: 22px;
+            place-items: center;
+            border-radius: 7px;
+            background: #e9eeff;
+            color: var(--report-primary);
+            font-size: 14px;
+        }
+
+        .table-container {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            overflow: auto;
+            border: 1px solid var(--report-border);
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 7px 24px rgba(35, 52, 94, 0.08);
+            overscroll-behavior: contain;
+            scrollbar-color: #bdc8df transparent;
+            scrollbar-width: thin;
+        }
+
+        .table_layer {
+            border: 0;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .table_layer th,
+        .table_layer td {
+            min-width: 135px;
+            padding: 10px 12px;
+            border-color: #e4e9f2;
+        }
+
+        .table_layer thead th {
+            height: 46px;
+            border-color: #566fc4;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+            box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .table_layer th:first-child,
+        .table_layer td:first-child {
+            width: 190px;
+            min-width: 190px;
+            max-width: 190px;
+            color: #34415f;
+            box-shadow: 5px 0 11px rgba(35, 52, 94, 0.09);
+        }
+
+        .table_layer thead th:first-child {
+            color: #fff;
+        }
+
+        .table_layer thead th:last-child,
+        .table_layer tbody td:last-child,
+        .table_layer tbody th:last-child {
+            min-width: 170px;
+        }
+
+        .table_layer tbody tr:nth-child(even):not(.section-row)>td {
+            background: #fafbfe;
+        }
+
+        .table_layer tbody tr:hover:not(.section-row)>td {
+            background: #eef3ff;
+        }
+
+        .table_layer tbody tr:hover:not(.section-row)>td:first-child {
+            background: #e8eeff;
+            color: #2949ad;
+        }
+
+        .table_layer .section-row th {
+            padding: 9px 12px;
+            border-color: #536dc3;
+            background: linear-gradient(90deg, #435ebe, #617bd2) !important;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .table_layer .section-row th:first-child {
+            z-index: 16;
+        }
+
+        .table_layer .summary-row th {
+            border-color: #d5def3;
+            background: #eef2ff;
+            color: #2e478e;
+            font-weight: 900;
+        }
+
+        .table_layer .summary-row th:first-child {
+            background: #e5ebff;
+        }
+
+        .table_layer .profit-row th {
+            position: sticky;
+            bottom: 0;
+            z-index: 18;
+            border-color: #304b9d;
+            background: #354f9e;
+            color: #fff;
+            font-weight: 900;
+            box-shadow: 0 -4px 12px rgba(35, 52, 94, 0.13);
+        }
+
+        .table_layer .profit-row th:first-child {
+            z-index: 19;
+            background: #294383;
+            color: #fff;
+        }
+
+        .profit-value {
+            display: inline-block;
+            min-width: 92px;
+            padding: 5px 8px;
+            border-radius: 7px;
+            text-align: right;
+        }
+
+        .profit-value.is-positive {
+            background: #dff8e9;
+            color: #157347;
+        }
+
+        .profit-value.is-negative {
+            background: #ffe4e8;
+            color: #c52b42;
+        }
+
+        @media screen and (max-width: 1199.98px) and (min-width: 769px) {
+            .report-toolbar {
+                grid-template-columns: minmax(200px, 1fr) minmax(290px, 340px);
+            }
+
+            .report-title {
+                grid-column: 1;
+            }
+
+            .report-toolbar .report-nav {
+                grid-column: 2;
+            }
+
+            .period-filter {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 12px;
+            }
+
+            .navbar-laporan {
+                display: flex !important;
+                flex-basis: 52px;
+                height: 52px;
+                padding: 6px 10px;
+            }
+
+            .navbar-laporan .navbar-brand {
+                font-size: 14px;
+            }
+
+            .navbar-laporan .navbar-brand img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .page-wrap {
+                padding: 7px;
+                padding-bottom: max(7px, env(safe-area-inset-bottom));
+            }
+
+            .report-toolbar {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+                margin-bottom: 8px;
+                padding: 8px;
+                border-radius: 12px;
+            }
+
+            .report-title h1 {
+                margin-bottom: 1px;
+                font-size: 15px;
+            }
+
+            .report-title p {
+                font-size: 10px;
+            }
+
+            .report-toolbar .nav {
+                flex-wrap: nowrap;
+                overflow: visible;
+                padding: 3px;
+            }
+
+            .report-toolbar .nav-item {
+                flex: 1 1 50%;
+            }
+
+            .report-toolbar .nav-link {
+                width: 100%;
+                min-height: 38px;
+                padding: 8px 6px;
+                font-size: 11px;
+            }
+
+            .period-filter {
+                grid-template-columns: 1fr 1fr;
+                gap: 7px;
+            }
+
+            .date-field label {
+                margin-bottom: 3px;
+                font-size: 9px;
+            }
+
+            .date-field .form-control {
+                height: 41px;
+                padding: 7px;
+                font-size: 16px;
+            }
+
+            .period-filter .btn {
+                grid-column: 1 / -1;
+                height: 40px;
+            }
+
+            .table-guide {
+                justify-content: flex-start;
+                margin-bottom: 5px;
+                font-size: 9px;
+            }
+
+            .table-container {
+                border-radius: 11px;
+            }
+
+            .table_layer {
+                font-size: 10px;
+            }
+
+            .table_layer th,
+            .table_layer td {
+                min-width: 112px;
+                padding: 8px 7px;
+            }
+
+            .table_layer th:first-child,
+            .table_layer td:first-child {
+                width: 116px;
+                min-width: 116px;
+                max-width: 116px;
+                white-space: normal;
+            }
+
+            .table_layer thead th:last-child,
+            .table_layer tbody td:last-child,
+            .table_layer tbody th:last-child {
+                min-width: 138px;
+            }
+
+            .table_layer .section-row th,
+            .table_layer .summary-row th,
+            .table_layer .profit-row th {
+                padding: 8px 7px;
+                font-size: 9px;
+            }
+        }
+
+        @media screen and (max-width: 380px) {
+            .report-toolbar {
+                padding: 7px;
+            }
+
+            .report-title p {
+                display: none;
+            }
+
+            .table_layer th:first-child,
+            .table_layer td:first-child {
+                width: 106px;
+                min-width: 106px;
+                max-width: 106px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar elemen-hilang" style="background: #FFFFFF; border: #435EBE">
-        <div class="container">
+    <nav class="navbar navbar-laporan">
+        <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="/assets/login/img/agri_laras2.png" alt="Agri Laras" width="40" height="40">
+                <span>Agri Laras &middot; Laba Rugi Kandang</span>
             </a>
         </div>
     </nav>
 
-    <div class="container-fluid mt-2 page-wrap">
-        <div class="row filter-row mb-2">
-            <div class="col-lg-4 col-12">
+    <div class="container-fluid page-wrap">
+        <div class="report-toolbar">
+            <div class="report-title">
+                <h1>Laba Rugi Kandang</h1>
+                <p>Periode {{ tanggal($tgl1) }} sampai {{ tanggal($tgl2) }}</p>
+            </div>
+
+            <div class="report-nav">
                 <ul class="nav nav-pills nav-fill">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('laporan_layer') ? 'active' : '' }}"
@@ -146,27 +623,25 @@
                 </ul>
             </div>
 
-            <div class="col-lg-8 col-12">
-                <form action="{{ route('labaRugiKandang2') }}" method="get">
-                    <div class="row filter-row">
-                        <div class="col-md-4 col-6">
-                            <input type="date" class="form-control form-control-sm" name="tgl1"
-                                value="{{ $tgl1 }}">
-                        </div>
-                        <div class="col-md-4 col-6">
-                            <input type="date" class="form-control form-control-sm" name="tgl2"
-                                value="{{ $tgl2 }}">
-                        </div>
-                        <div class="col-md-4 col-12">
-                            <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            <form action="{{ route('labaRugiKandang2') }}" method="get" class="period-filter">
+                <div class="date-field">
+                    <label for="tgl1">Dari tanggal</label>
+                    <input type="date" id="tgl1" class="form-control" name="tgl1" value="{{ $tgl1 }}">
+                </div>
+                <div class="date-field">
+                    <label for="tgl2">Sampai tanggal</label>
+                    <input type="date" id="tgl2" class="form-control" name="tgl2" value="{{ $tgl2 }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
         </div>
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="table-guide">
+                    <span class="guide-icon">&#8596;</span>
+                    Geser tabel untuk melihat seluruh kandang
+                </div>
                 <div class="table-container">
                     <table class="table_layer">
                         <thead>
@@ -200,7 +675,7 @@
                                 </td>
                             </tr>
 
-                            <tr>
+                            <tr class="section-row">
                                 <th class="td_layer fw-bold">Ayam</th>
                                 <th colspan="100" class="td_layer"></th>
                             </tr>
@@ -227,7 +702,7 @@
                                 </td>
                             </tr>
 
-                            <tr>
+                            <tr class="section-row">
                                 <th class="td_layer">Pendapatan</th>
                                 <th colspan="100" class="td_layer"></th>
                             </tr>
@@ -252,7 +727,7 @@
                                 <td class="text-end td_layer"></td>
                             </tr>
 
-                            <tr>
+                            <tr class="summary-row">
                                 <th class="td_layer fw-bold">Total Pendapatan</th>
                                 @foreach ($kandang as $k)
                                     @php
@@ -272,7 +747,7 @@
                                 <th class="text-end td_layer"></th>
                             </tr>
 
-                            <tr>
+                            <tr class="section-row">
                                 <th class="td_layer">Biaya</th>
                                 <th colspan="100" class="td_layer"></th>
                             </tr>
@@ -327,7 +802,7 @@
                                 <td class="text-end td_layer"></td>
                             </tr>
 
-                            <tr>
+                            <tr class="summary-row">
                                 <th class="td_layer fw-bold">Total Biaya</th>
                                 @foreach ($kandang as $k)
                                     @php
@@ -353,7 +828,7 @@
                                 <th class="text-end td_layer"></th>
                             </tr>
 
-                            <tr>
+                            <tr class="profit-row">
                                 <th class="td_layer fw-bold">Pendapatan Biaya</th>
                                 @foreach ($kandang as $k)
                                     @php
@@ -386,7 +861,12 @@
                                         $ttl_biaya =
                                             $telur + $ayam - ($pakan + $vitamin + $vaksinValue + $rak + $operasional);
                                     @endphp
-                                    <th class="td_layer text-end">{{ number_format($ttl_biaya, 0) }}</th>
+                                    <th class="td_layer text-end">
+                                        <span
+                                            class="profit-value {{ $ttl_biaya >= 0 ? 'is-positive' : 'is-negative' }}">
+                                            {{ number_format($ttl_biaya, 0) }}
+                                        </span>
+                                    </th>
                                 @endforeach
                                 <th class="text-end td_layer"></th>
                             </tr>
