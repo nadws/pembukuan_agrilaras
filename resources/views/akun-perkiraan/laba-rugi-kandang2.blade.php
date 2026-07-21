@@ -706,7 +706,7 @@
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer">
-                                    {{ number_format($rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual, 0) }}
+                                    {{ number_format($hargaRataTelur, 0) }}
                                 </td>
                             </tr>
 
@@ -733,7 +733,7 @@
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer">
-                                    {{ number_format($biaya_ayam->ttl_rp / $biaya_ayam->qty, 0) }}
+                                    {{ number_format($hargaRataAyam, 0) }}
                                 </td>
                             </tr>
 
@@ -746,7 +746,7 @@
                                 <td class="td_layer">Jual Telur</td>
                                 @foreach ($kandang as $k)
                                     <td class="td_layer text-end">
-                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_kg - $totalTelur[$k->id_kandang]->kuml_pcs / 180) * ($rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual), 0) }}
+                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_kg - $totalTelur[$k->id_kandang]->kuml_pcs / 180) * $hargaRataTelur, 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer"></td>
@@ -756,7 +756,7 @@
                                 <td class="td_layer">Jual Ayam</td>
                                 @foreach ($kandang as $k)
                                     <td class="td_layer text-end">
-                                        {{ empty($biaya_ayam->ttl_rp) ? 0 : number_format(($biaya_ayam->ttl_rp / $biaya_ayam->qty) * ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir), 0) }}
+                                        {{ number_format($hargaRataAyam * ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir), 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer"></td>
@@ -770,12 +770,11 @@
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_kg -
                                                     $totalTelur[$k->id_kandang]->kuml_pcs / 180) *
-                                                ($rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual);
+                                                $hargaRataTelur;
 
-                                        $ayam = empty($biaya_ayam->ttl_rp)
-                                            ? 0
-                                            : ($biaya_ayam->ttl_rp / $biaya_ayam->qty) *
-                                                ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
+                                        $ayam =
+                                            $hargaRataAyam *
+                                            ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
                                     @endphp
                                     <th class="td_layer text-end">{{ number_format($telur + $ayam, 0) }}</th>
                                 @endforeach
@@ -831,7 +830,7 @@
                                 <td class="td_layer">Biaya operasional</td>
                                 @foreach ($kandang as $k)
                                     <td class="td_layer text-end">
-                                        {{ number_format(($biaya_operasional->debit / $total_populasi->stok_awal) * $k->stok_awal, 0) }}
+                                        {{ number_format($stokAwalTotal > 0 ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal : 0, 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer"></td>
@@ -854,7 +853,9 @@
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 6 * 820;
                                         $operasional =
-                                            ($biaya_operasional->debit / $total_populasi->stok_awal) * $k->stok_awal;
+                                            $stokAwalTotal > 0
+                                                ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
+                                                : 0;
 
                                         $ttl_biaya = $pakan + $vitamin + $vaksinValue + $rak + $operasional;
                                     @endphp
@@ -880,18 +881,19 @@
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 6 * 820;
                                         $operasional =
-                                            ($biaya_operasional->debit / $total_populasi->stok_awal) * $k->stok_awal;
+                                            $stokAwalTotal > 0
+                                                ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
+                                                : 0;
 
                                         $telur = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_kg -
                                                     $totalTelur[$k->id_kandang]->kuml_pcs / 180) *
-                                                ($rata_rata_telur->ttl_rp / $rata_rata_telur->kg_jual);
+                                                $hargaRataTelur;
 
-                                        $ayam = empty($biaya_ayam->ttl_rp)
-                                            ? 0
-                                            : ($biaya_ayam->ttl_rp / $biaya_ayam->qty) *
-                                                ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
+                                        $ayam =
+                                            $hargaRataAyam *
+                                            ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
 
                                         $ttl_biaya =
                                             $telur + $ayam - ($pakan + $vitamin + $vaksinValue + $rak + $operasional);

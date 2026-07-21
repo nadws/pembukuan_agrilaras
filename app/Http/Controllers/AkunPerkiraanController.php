@@ -417,7 +417,21 @@ class AkunPerkiraanController extends Controller
         $tgl1 = $r->tgl1 ?? date('Y-m-01');
         $tgl2 = $r->tgl2 ?? date('Y-m-t');
 
-        $kandang = DB::table('kandang')->where('selesai', 'T')->orderBy('nm_kandang', 'ASC')->get();
+        /*
+         * Tampilkan hanya kandang yang memiliki pemakaian produk pada
+         * periode laporan. Kandang baru tanpa data periode tidak perlu
+         * menjadi kolom kosong di laporan laba rugi.
+         */
+        $kandang = DB::table('kandang as k')
+            ->whereExists(function ($query) use ($tgl1, $tgl2) {
+                $query->select(DB::raw(1))
+                    ->from('stok_produk_perencanaan as spp')
+                    ->whereColumn('spp.id_kandang', 'k.id_kandang')
+                    ->whereBetween('spp.tgl', [$tgl1, $tgl2]);
+            })
+            ->select('k.*')
+            ->orderBy('k.nm_kandang', 'ASC')
+            ->get();
 
         $totalTelur = DB::table('stok_telur')
             ->select(
@@ -491,11 +505,71 @@ class AkunPerkiraanController extends Controller
             ->keyBy('id_kandang');
 
         $biaya_operasional = LaporanLayerModel::biayaOperasional2($tgl1, $tgl2);
-        $total_populasi = DB::table('kandang')->select(DB::raw('SUM(stok_awal) as stok_awal'))->where('selesai', 'T')->first();
+        $total_populasi = DB::table('kandang')
+            ->select(DB::raw('SUM(stok_awal) as stok_awal'))
+            ->whereIn('id_kandang', $kandang->pluck('id_kandang'))
+            ->first();
 
+        /*
+         * Kandang baru bisa belum memiliki transaksi pada periode laporan.
+         * Lengkapi semua collection agar view selalu menerima nilai nol.
+         */
+        foreach ($kandang as $item) {
+            $idKandang = $item->id_kandang;
+            $namaKandang = $item->nm_kandang;
 
+            if (!$totalTelur->has($idKandang)) {
+                $totalTelur->put($idKandang, (object) [
+                    'id_kandang' => $idKandang,
+                    'count_bagi' => 0,
+                    'kuml_pcs' => 0,
+                    'kuml_kg' => 0,
+                ]);
+            }
 
+            if (!$populasi->has($idKandang)) {
+                $populasi->put($idKandang, (object) [
+                    'id_kandang' => $idKandang,
+                    'mati' => 0,
+                    'jual' => 0,
+                    'afkir' => 0,
+                ]);
+            }
 
+            if (!$vaksin->has($idKandang)) {
+                $vaksin->put($idKandang, (object) [
+                    'id_kandang' => $idKandang,
+                    'ttl_rp' => 0,
+                ]);
+            }
+
+            if (!$biaya_pakan->has($namaKandang)) {
+                $biaya_pakan->put($namaKandang, (object) [
+                    'nm_departemen' => $namaKandang,
+                    'ttl_rp' => 0,
+                ]);
+            }
+
+            if (!$biaya_vitamin->has($namaKandang)) {
+                $biaya_vitamin->put($namaKandang, (object) [
+                    'nm_departemen' => $namaKandang,
+                    'ttl_rp' => 0,
+                ]);
+            }
+        }
+
+        $kgJualTelur = (float) ($rata_rata_telur->kg_jual ?? 0);
+        $hargaRataTelur = $kgJualTelur > 0
+            ? (float) ($rata_rata_telur->ttl_rp ?? 0) / $kgJualTelur
+            : 0;
+
+        $qtyAyam = (float) ($biaya_ayam->qty ?? 0);
+        $hargaRataAyam = $qtyAyam > 0
+            ? (float) ($biaya_ayam->ttl_rp ?? 0) / $qtyAyam
+            : 0;
+
+        $stokAwalTotal = (float) ($total_populasi->stok_awal ?? 0);
+        $biayaOperasionalTotal = (float) ($biaya_operasional->debit ?? 0);
 
         return view('akun-perkiraan.laba-rugi-kandang2', compact(
             'kandang',
@@ -509,7 +583,11 @@ class AkunPerkiraanController extends Controller
             'vaksin',
             'biaya_operasional',
             'total_populasi',
-            'biaya_ayam'
+            'biaya_ayam',
+            'hargaRataTelur',
+            'hargaRataAyam',
+            'stokAwalTotal',
+            'biayaOperasionalTotal'
         ));
     }
 
