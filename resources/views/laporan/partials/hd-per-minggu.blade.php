@@ -295,7 +295,7 @@
                 {{-- Harga pakan --}}
                 <tr>
                     <td class="sticky-column">
-                        Harga {{ $produk->nm_produk }}
+                        Harga
                     </td>
 
                     <td class="text-center">:</td>
