@@ -259,14 +259,25 @@ class Laporan_layerController extends Controller
                 $sheet->mergeCells('A' . $row . ':' . $lastColumn . $row);
                 $sheet->setCellValue('A' . $row, $metric['section']);
                 $sheet->getStyle('A' . $row . ':' . $lastColumn . $row)->applyFromArray([
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '435EBE']],
-                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '233E82']],
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
                 ]);
                 $row++;
                 continue;
             }
 
             $sheet->fromArray(array_merge([$metric['label'], ':'], $metric['values']), null, 'A' . $row);
+            if ($row % 2 === 0) {
+                $sheet->getStyle('A' . $row . ':' . $lastColumn . $row)
+                    ->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F5F7FC');
+            }
+            $sheet->getStyle('A' . $row . ':B' . $row)
+                ->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('E5EBF6');
             $sheet->getStyle('C' . $row . ':' . $lastColumn . $row)
                 ->getNumberFormat()->setFormatCode($metric['format'] ?? '#,##0.00');
 
@@ -279,7 +290,7 @@ class Laporan_layerController extends Controller
                 foreach ($metric['values'] as $index => $value) {
                     if ((float) $value >= $metric['danger']) {
                         $cell = Coordinate::stringFromColumnIndex($index + 3) . $row;
-                        $sheet->getStyle($cell)->getFont()->setBold(true)->getColor()->setRGB('E53E55');
+                        $sheet->getStyle($cell)->getFont()->setBold(true)->getColor()->setRGB('C6283D');
                     }
                 }
             }
@@ -289,16 +300,20 @@ class Laporan_layerController extends Controller
 
         $lastRow = $row - 1;
         $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D478F']],
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 14],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F397D']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 15],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
         $this->styleHeaderExcel($sheet, 'A6:' . $lastColumn . '7');
         $sheet->getStyle('C7:' . $lastColumn . '7')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN)
-            ->getColor()->setRGB('E1E6F0');
+            ->getColor()->setRGB('98A8C2');
+        $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getBorders()->getOutline()
+            ->setBorderStyle(Border::BORDER_MEDIUM)
+            ->getColor()->setRGB('53698F');
         $sheet->getStyle('A6:A' . $lastRow)->getFont()->setBold(true);
+        $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getFont()->setSize(10);
         $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getAlignment()
             ->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->freezePane('C8');
@@ -308,9 +323,9 @@ class Laporan_layerController extends Controller
         for ($column = 3; $column <= $lastColumnIndex; $column++) {
             $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($column))->setWidth(11);
         }
-        $sheet->getRowDimension(1)->setRowHeight(26);
-        $sheet->getRowDimension(6)->setRowHeight(24);
-        $sheet->getRowDimension(7)->setRowHeight(32);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+        $sheet->getRowDimension(6)->setRowHeight(26);
+        $sheet->getRowDimension(7)->setRowHeight(36);
         $sheet->getPageSetup()->setOrientation('landscape');
         $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
     }
@@ -346,17 +361,17 @@ class Laporan_layerController extends Controller
         $sheet->setCellValue('C4', $jenisAyam);
 
         $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D478F']],
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 14],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F397D']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 15],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
         $sheet->getStyle('A2:A4')->getFont()->setBold(true);
         $sheet->getStyle('A2:C4')->applyFromArray([
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEF2FF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E3EAF7']],
             'borders' => [
                 'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => 'D5DDEF'],
+                    'borderStyle' => Border::BORDER_MEDIUM,
+                    'color' => ['rgb' => '7184A8'],
                 ],
             ],
             'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
@@ -490,8 +505,14 @@ class Laporan_layerController extends Controller
     private function styleHeaderExcel(Worksheet $sheet, string $range): void
     {
         $sheet->getStyle($range)->applyFromArray([
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '435EBE']],
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '29468F']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_MEDIUM,
+                    'color' => ['rgb' => 'D6DEEF'],
+                ],
+            ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
                 'vertical' => Alignment::VERTICAL_CENTER,
