@@ -337,6 +337,18 @@
                 font-weight: 700;
             }
 
+            .filter-laporan .btn-export-layer {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 74px;
+                min-height: 42px;
+                border-radius: 9px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
             .filter-laporan .nav {
                 flex-wrap: nowrap;
                 gap: 4px;
@@ -814,6 +826,19 @@
                 font-weight: 700;
             }
 
+            .filter-laporan .btn-export-layer {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                height: 36px;
+                min-width: 92px;
+                padding: 6px 10px;
+                border-radius: 7px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
             .filter-laporan .nav {
                 gap: 3px;
                 padding: 2px;
@@ -1114,6 +1139,11 @@
 
                     <input type="date" class="form-control" name="tgl" value="{{ $tgl }}">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#export-layer-modal"
+                        class="btn btn-success btn-sm ms-2 btn-export-layer">
+                        <span class="d-none d-xl-inline">Export Excel</span>
+                        <span class="d-xl-none">Excel</span>
+                    </button>
                 </div>
                 <div class="col-lg-4 mb-2">
                     <ul class="nav nav-pills nav-fill">
@@ -1135,6 +1165,43 @@
 
             </div>
         </form>
+
+        <div class="modal fade" id="export-layer-modal" tabindex="-1"
+            aria-labelledby="export-layer-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="{{ route('laporan_layer.export') }}" method="GET">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="export-layer-modal-label">Pilih Periode Export</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Tutup"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small mb-3">
+                                Pilih tanggal awal dan akhir data yang ingin dimasukkan ke Excel.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="export-tgl-mulai" class="form-label small fw-bold">Tanggal awal</label>
+                                    <input type="date" id="export-tgl-mulai" name="tgl_mulai"
+                                        class="form-control"
+                                        value="{{ date('Y-m-d', strtotime($tgl . ' -20 days')) }}" required>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="export-tgl-selesai" class="form-label small fw-bold">Tanggal akhir</label>
+                                    <input type="date" id="export-tgl-selesai" name="tgl_selesai"
+                                        class="form-control" value="{{ $tgl }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Download Excel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <div class="table-responsive table-container">
 
@@ -2004,6 +2071,21 @@
          * JALANKAN SAAT HALAMAN SIAP
          * =========================================================
          */
+        var $exportMulai = $('#export-tgl-mulai');
+        var $exportSelesai = $('#export-tgl-selesai');
+
+        function sinkronkanPeriodeExport() {
+            $exportSelesai.attr('min', $exportMulai.val());
+            $exportMulai.attr('max', $exportSelesai.val());
+
+            if ($exportSelesai.val() < $exportMulai.val()) {
+                $exportSelesai.val($exportMulai.val());
+            }
+        }
+
+        $exportMulai.add($exportSelesai).on('change', sinkronkanPeriodeExport);
+        sinkronkanPeriodeExport();
+
         sesuaikanFreezeKet();
         aktifkanTooltip(document);
         loadRingkasanKandang();

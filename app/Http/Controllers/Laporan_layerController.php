@@ -6,6 +6,14 @@ use App\Models\LaporanLayerModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Laporan_layerController extends Controller
 {
@@ -47,6 +55,454 @@ class Laporan_layerController extends Controller
             'harga_pakan' => $harga_pakan
         ];
         return view('laporan.layer2', $data);
+    }
+
+    public function export(Request $request)
+    {
+        $request->validate([
+            'tgl' => ['nullable', 'date'],
+            'tgl_mulai' => ['nullable', 'date'],
+            'tgl_selesai' => ['nullable', 'date', 'after_or_equal:tgl_mulai'],
+        ]);
+
+        $tgl = $request->tgl_selesai ?: ($request->tgl ?: date('Y-m-d', strtotime('-1 day')));
+        $tglMulai = $request->tgl_mulai
+            ?: Carbon::parse($tgl)->subDays(20)->format('Y-m-d');
+        $tglSebelumnya = date('Y-m-d', strtotime($tgl . ' -6 days'));
+        $tglKemarin = date('Y-m-d', strtotime($tgl . ' -1 day'));
+        $tglMingguKemarin = date('Y-m-d', strtotime($tglSebelumnya . ' -1 day'));
+        $tglMingguSebelumnya = date('Y-m-d', strtotime($tglMingguKemarin . ' -6 days'));
+
+        $kandang = collect(LaporanLayerModel::getLaporanLayer(
+            $tgl,
+            $tglSebelumnya,
+            $tglKemarin,
+            $tglMingguSebelumnya,
+            $tglMingguKemarin
+        ));
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        foreach ($kandang as $item) {
+            $namaSheet = $this->namaSheetTelur($item);
+            $sheet = new Worksheet($spreadsheet, $namaSheet);
+            $spreadsheet->addSheet($sheet);
+            $this->buatSheetDataTelur($sheet, $item, $tglMulai, $tgl);
+        }
+
+        if ($spreadsheet->getSheetCount() === 0) {
+            $sheet = new Worksheet($spreadsheet, 'Data Telur');
+            $spreadsheet->addSheet($sheet);
+            $sheet->setCellValue('A1', 'Data telur tidak tersedia pada tanggal laporan.');
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $writer = new Xlsx($spreadsheet);
+        $namaFile = 'Laporan Layer ' . date('d-m-Y', strtotime($tglMulai)) . ' s.d. ' .
+            date('d-m-Y', strtotime($tgl)) . '.xlsx';
+
+        return response()->streamDownload(
+            function () use ($writer, $spreadsheet) {
+                $writer->save('php://output');
+                $spreadsheet->disconnectWorksheets();
+            },
+            $namaFile,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]
+        );
+    }
+
+    private function buatSheetDataTelur(
+        Worksheet $sheet,
+        object $kandang,
+        string $tglMulai,
+        string $tglSelesai
+    ): void
+    {
+        $sheet->setShowGridlines(false);
+
+        $jenisAyam = DB::table('kandang as a')
+            ->leftJoin('strain as b', 'b.id_strain', '=', 'a.id_strain')
+            ->where('a.id_kandang', $kandang->id_kandang)
+            ->value('b.nm_strain') ?: '-';
+
+        if (Carbon::parse($tglSelesai)->lt(Carbon::parse($kandang->chick_in))) {
+            $this->isiIdentitasSheetTelur(
+                $sheet,
+                $kandang,
+                $jenisAyam,
+                'F',
+                $tglMulai,
+                $tglSelesai
+            );
+            $sheet->mergeCells('A6:F6');
+            $sheet->setCellValue('A6', 'Data belum tersedia pada tanggal laporan.');
+            return;
+        }
+
+        $tanggalAwal = Carbon::parse($tglMulai)->startOfDay();
+        $tanggalLaporan = Carbon::parse($tglSelesai)->startOfDay();
+        $awalDataKandang = $tanggalAwal->copy()->max(
+            Carbon::parse($kandang->chick_in)->startOfDay()
+        );
+        $tanggalReferensi = collect();
+        $cursorTanggal = $tanggalLaporan->copy();
+
+        while ($cursorTanggal->gte($awalDataKandang)) {
+            $tanggalReferensi->prepend($cursorTanggal->format('Y-m-d'));
+            $cursorTanggal->subWeeks(3);
+        }
+
+        $dataMingguan = [];
+        $produkPakan = collect();
+        $pemakaianPakan = [];
+        $hargaPakan = [];
+
+        foreach ($tanggalReferensi as $tanggalReferensiExport) {
+            $view = $this->hdTigaMinggu(Request::create('/', 'GET', [
+                'id_kandang' => $kandang->id_kandang,
+                'tgl' => $tanggalReferensiExport,
+                'tgl_batas_data' => $tglSelesai,
+            ]));
+            $data = $view->getData();
+
+            $dataMingguan = array_merge($dataMingguan, $data['dataMingguan']);
+            $produkPakan = $produkPakan
+                ->concat($data['produkPakan'])
+                ->unique('id_pakan')
+                ->sortBy('nm_produk')
+                ->values();
+            $pemakaianPakan = array_replace($pemakaianPakan, $data['pemakaianPakan']);
+            $hargaPakan = array_replace($hargaPakan, $data['hargaPakan']);
+        }
+
+        $dataMingguan = collect($dataMingguan)
+            ->unique('mgg')
+            ->sortBy('mgg')
+            ->map(function ($minggu) use ($tanggalAwal, $tanggalLaporan) {
+                $minggu['tanggal_harian'] = collect($minggu['tanggal_harian'])
+                    ->filter(function ($tanggal) use ($tanggalAwal, $tanggalLaporan) {
+                        return Carbon::parse($tanggal)->betweenIncluded(
+                            $tanggalAwal,
+                            $tanggalLaporan
+                        );
+                    })
+                    ->values()
+                    ->all();
+
+                return $minggu;
+            })
+            ->filter(fn ($minggu) => !empty($minggu['tanggal_harian']))
+            ->values()
+            ->all();
+
+        $tanggal = [];
+        $urutanHariMinggu = [];
+        foreach ($dataMingguan as $minggu) {
+            $awalMinggu = Carbon::parse($kandang->chick_in)
+                ->startOfDay()
+                ->addDays((($minggu['mgg'] - 1) * 7) + 1);
+
+            foreach ($minggu['tanggal_harian'] as $tglHari) {
+                $tanggal[] = $tglHari;
+                $urutanHariMinggu[] = max(
+                    1,
+                    min(7, $awalMinggu->diffInDays(Carbon::parse($tglHari), false) + 1)
+                );
+            }
+        }
+
+        $lastColumnIndex = 2 + count($tanggal);
+        $lastColumn = Coordinate::stringFromColumnIndex($lastColumnIndex);
+        $this->isiIdentitasSheetTelur(
+            $sheet,
+            $kandang,
+            $jenisAyam,
+            $lastColumn,
+            $tglMulai,
+            $tglSelesai
+        );
+        $sheet->setCellValue('A6', 'Ket');
+        $sheet->setCellValue('B6', ':');
+
+        $columnIndex = 3;
+        foreach ($dataMingguan as $minggu) {
+            $startColumn = Coordinate::stringFromColumnIndex($columnIndex);
+            $endColumn = Coordinate::stringFromColumnIndex($columnIndex + count($minggu['tanggal_harian']) - 1);
+            $sheet->mergeCells($startColumn . '6:' . $endColumn . '6');
+            $sheet->setCellValue($startColumn . '6', 'Minggu ke-' . $minggu['mgg']);
+            $columnIndex += count($minggu['tanggal_harian']);
+        }
+
+        foreach ($tanggal as $index => $tglHari) {
+            $cell = Coordinate::stringFromColumnIndex($index + 3) . '7';
+            $sheet->setCellValue(
+                $cell,
+                $urutanHariMinggu[$index] . '/7' . PHP_EOL . date('d/m', strtotime($tglHari))
+            );
+        }
+
+        $metrics = $this->metrikDataTelurExport(
+            $kandang,
+            $dataMingguan,
+            $produkPakan,
+            $pemakaianPakan,
+            $hargaPakan,
+            $tanggalLaporan
+        );
+
+        $row = 8;
+        foreach ($metrics as $metric) {
+            if (!empty($metric['section'])) {
+                $sheet->mergeCells('A' . $row . ':' . $lastColumn . $row);
+                $sheet->setCellValue('A' . $row, $metric['section']);
+                $sheet->getStyle('A' . $row . ':' . $lastColumn . $row)->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '435EBE']],
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                ]);
+                $row++;
+                continue;
+            }
+
+            $sheet->fromArray(array_merge([$metric['label'], ':'], $metric['values']), null, 'A' . $row);
+            $sheet->getStyle('C' . $row . ':' . $lastColumn . $row)
+                ->getNumberFormat()->setFormatCode($metric['format'] ?? '#,##0.00');
+
+            if (!empty($metric['blue'])) {
+                $sheet->getStyle('C' . $row . ':' . $lastColumn . $row)
+                    ->getFont()->setBold(true)->getColor()->setRGB('315DDB');
+            }
+
+            if (isset($metric['danger'])) {
+                foreach ($metric['values'] as $index => $value) {
+                    if ((float) $value >= $metric['danger']) {
+                        $cell = Coordinate::stringFromColumnIndex($index + 3) . $row;
+                        $sheet->getStyle($cell)->getFont()->setBold(true)->getColor()->setRGB('E53E55');
+                    }
+                }
+            }
+
+            $row++;
+        }
+
+        $lastRow = $row - 1;
+        $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D478F']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 14],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        ]);
+        $this->styleHeaderExcel($sheet, 'A6:' . $lastColumn . '7');
+        $sheet->getStyle('C7:' . $lastColumn . '7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('E1E6F0');
+        $sheet->getStyle('A6:A' . $lastRow)->getFont()->setBold(true);
+        $sheet->getStyle('A6:' . $lastColumn . $lastRow)->getAlignment()
+            ->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->freezePane('C8');
+
+        $sheet->getColumnDimension('A')->setWidth(24);
+        $sheet->getColumnDimension('B')->setWidth(3);
+        for ($column = 3; $column <= $lastColumnIndex; $column++) {
+            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($column))->setWidth(11);
+        }
+        $sheet->getRowDimension(1)->setRowHeight(26);
+        $sheet->getRowDimension(6)->setRowHeight(24);
+        $sheet->getRowDimension(7)->setRowHeight(32);
+        $sheet->getPageSetup()->setOrientation('landscape');
+        $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+    }
+
+    private function isiIdentitasSheetTelur(
+        Worksheet $sheet,
+        object $kandang,
+        string $jenisAyam,
+        string $lastColumn,
+        string $tglMulai,
+        string $tglSelesai
+    ): void {
+        $sheet->mergeCells('A1:' . $lastColumn . '1');
+        $sheet->setCellValue(
+            'A1',
+            'DATA TELUR PERIODE ' . date('d/m/Y', strtotime($tglMulai)) . ' - ' .
+                date('d/m/Y', strtotime($tglSelesai))
+        );
+
+        $sheet->setCellValue('A2', 'Kandang');
+        $sheet->setCellValue('B2', ':');
+        $sheet->setCellValue('C2', $kandang->nm_kandang ?? '-');
+        $sheet->setCellValue('A3', 'Chick In');
+        $sheet->setCellValue('B3', ':');
+        $sheet->setCellValue('C3', !empty($kandang->chick_in)
+            ? ExcelDate::dateTimeToExcel(Carbon::parse($kandang->chick_in))
+            : '-');
+        if (!empty($kandang->chick_in)) {
+            $sheet->getStyle('C3')->getNumberFormat()->setFormatCode('dd/mm/yyyy');
+        }
+        $sheet->setCellValue('A4', 'Jenis Ayam');
+        $sheet->setCellValue('B4', ':');
+        $sheet->setCellValue('C4', $jenisAyam);
+
+        $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D478F']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 14],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        ]);
+        $sheet->getStyle('A2:A4')->getFont()->setBold(true);
+        $sheet->getStyle('A2:C4')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEF2FF']],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => 'D5DDEF'],
+                ],
+            ],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle('C2:C4')->getFont()->setBold(true)->getColor()->setRGB('2D478F');
+    }
+
+    private function metrikDataTelurExport(
+        object $kandang,
+        array $dataMingguan,
+        $produkPakan,
+        array $pemakaianPakan,
+        array $hargaPakan,
+        Carbon $tanggalLaporan
+    ): array {
+        $metrics = [];
+        $d = [];
+        $c = [];
+        $butir = [];
+        $kgBersih = [];
+        $gramButir = [];
+        $targetBerat = [];
+        $hd = [];
+        $hdl = [];
+        $targetHd = [];
+        $fcrD = [];
+        $fcrDPlus = [];
+        $hdW = [];
+        $fcrW = [];
+        $fcrWPlus = [];
+
+        foreach ($dataMingguan as $minggu) {
+            $telurPcsHdWeek = 0;
+            $jumlahHari = 0;
+            $kgKotorFcrWeek = 0;
+            $butirFcrWeek = 0;
+            $kgPakanFcrWeek = 0;
+            $vitaminFcrWeek = 0;
+            $vaksinFcrWeek = 0;
+            $operasionalFcrWeek = 0;
+
+            foreach ($minggu['tanggal_harian'] as $tglHari) {
+                $butirHarian = (float) ($minggu['butir2'][$tglHari] ?? 0);
+                $kgKotorHarian = (float) ($minggu['kg_kotor2'][$tglHari] ?? 0);
+                $kgPakanHarian = (float) ($minggu['kg_pakan_d'][$tglHari] ?? 0);
+                $vitaminHarian = (float) ($minggu['vi_fcr_d'][$tglHari] ?? 0);
+                $vaksinHarian = (float) ($minggu['va_fcr_d'][$tglHari] ?? 0);
+                $operasionalHarian = (float) ($minggu['op_fcr_d'][$tglHari] ?? 0);
+                $bersihHarian = $kgKotorHarian - $butirHarian / 180;
+                $sudahTerjadi = Carbon::parse($tglHari)->lte($tanggalLaporan);
+
+                $d[] = (float) ($minggu['popD'][$tglHari] ?? 0);
+                $c[] = (float) ($minggu['popC'][$tglHari] ?? 0);
+                $butir[] = $butirHarian;
+                $kgBersih[] = $bersihHarian;
+                $gramButir[] = $butirHarian > 0 ? ($bersihHarian * 1000) / $butirHarian : 0;
+                $targetBerat[] = (float) data_get($minggu, 'peformance.berat_telur', 0);
+                $hd[] = (float) ($minggu['pop_kurang_per_hari'][$tglHari] ?? 0);
+                $hdl[] = (float) ($minggu['hdl'][$tglHari] ?? 0);
+                $targetHd[] = (float) data_get($minggu, 'peformance.telur', 0);
+                $fcrD[] = $bersihHarian > 0 ? ($kgPakanHarian / 1000) / $bersihHarian : 0;
+                $fcrDPlus[] = $bersihHarian > 0
+                    ? ($kgPakanHarian / 1000 + $vitaminHarian + $vaksinHarian + $operasionalHarian) /
+                        $bersihHarian
+                    : 0;
+
+                if ($sudahTerjadi) {
+                    $telurPcsHdWeek += $butirHarian;
+                    $jumlahHari++;
+                    $kgKotorFcrWeek += $kgKotorHarian;
+                    $butirFcrWeek += $butirHarian;
+                    $kgPakanFcrWeek += $kgPakanHarian;
+                    $vitaminFcrWeek += $vitaminHarian;
+                    $vaksinFcrWeek += $vaksinHarian;
+                    $operasionalFcrWeek += $operasionalHarian;
+                }
+
+                $populasiAktif = (float) ($kandang->stok_awal ?? 0) -
+                    (float) ($minggu['pop_akihir_week'][$tglHari] ?? 0);
+                $kgBersihWeek = $kgKotorFcrWeek - $butirFcrWeek / 180;
+
+                $hdW[] = $sudahTerjadi && $jumlahHari > 0 && $populasiAktif > 0
+                    ? ($telurPcsHdWeek / $jumlahHari / $populasiAktif) * 100
+                    : 0;
+                $fcrW[] = $sudahTerjadi && $butirHarian > 0 && $kgBersihWeek > 0
+                    ? ($kgPakanFcrWeek / 1000) / $kgBersihWeek
+                    : 0;
+                $fcrWPlus[] = $sudahTerjadi && $butirHarian > 0 && $kgBersihWeek > 0
+                    ? ($kgPakanFcrWeek / 1000 +
+                            $vitaminFcrWeek +
+                            $vaksinFcrWeek +
+                            $operasionalFcrWeek) /
+                        $kgBersihWeek
+                    : 0;
+            }
+        }
+
+        $metrics[] = ['label' => 'D', 'values' => $d, 'format' => '#,##0'];
+        $metrics[] = ['label' => 'C', 'values' => $c, 'format' => '#,##0'];
+        $metrics[] = ['label' => 'Butir', 'values' => $butir, 'format' => '#,##0'];
+        $metrics[] = ['label' => 'Kg bersih', 'values' => $kgBersih, 'format' => '#,##0.0'];
+        $metrics[] = ['label' => 'Gr (butir)', 'values' => $gramButir, 'format' => '#,##0.0'];
+        $metrics[] = ['label' => 'Target berat telur', 'values' => $targetBerat, 'format' => '0.0', 'blue' => true];
+        $metrics[] = ['label' => 'HD', 'values' => $hd, 'format' => '0.0'];
+        $metrics[] = ['label' => 'HDL', 'values' => $hdl, 'format' => '0.0'];
+        $metrics[] = ['label' => 'Target HD', 'values' => $targetHd, 'format' => '0.0', 'blue' => true];
+
+        $allDates = collect($dataMingguan)->flatMap(fn ($minggu) => $minggu['tanggal_harian'])->values();
+        foreach ($produkPakan as $produk) {
+            $pemakaian = [];
+            $harga = [];
+            foreach ($allDates as $tglHari) {
+                $key = $produk->id_pakan . '|' . $tglHari;
+                $pemakaian[] = (float) ($pemakaianPakan[$key] ?? 0) / 1000;
+                $harga[] = (float) ($hargaPakan[$key] ?? 0);
+            }
+            $metrics[] = ['label' => $produk->nm_produk . ' (kg)', 'values' => $pemakaian, 'format' => '#,##0.0'];
+            $metrics[] = ['label' => 'Harga ' . $produk->nm_produk, 'values' => $harga, 'format' => '#,##0'];
+        }
+
+        $metrics[] = ['label' => 'FCR D', 'values' => $fcrD, 'format' => '0.00', 'danger' => 2.5];
+        $metrics[] = ['label' => 'FCR D+ Biaya', 'values' => $fcrDPlus, 'format' => '0.00', 'danger' => 2.2];
+        $metrics[] = ['section' => 'HD & FCR WEEK'];
+        $metrics[] = ['label' => 'HD W', 'values' => $hdW, 'format' => '0.0'];
+        $metrics[] = ['label' => 'FCR W', 'values' => $fcrW, 'format' => '0.00', 'danger' => 2.5];
+        $metrics[] = ['label' => 'FCR W+ Biaya', 'values' => $fcrWPlus, 'format' => '0.00', 'danger' => 2.5];
+
+        return $metrics;
+    }
+
+    private function styleHeaderExcel(Worksheet $sheet, string $range): void
+    {
+        $sheet->getStyle($range)->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '435EBE']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+    }
+
+    private function namaSheetTelur(object $kandang): string
+    {
+        $nama = preg_replace('/[\\\\\/\?\*\[\]:]/', '-', 'Telur ' . $kandang->nm_kandang);
+        return mb_substr($nama . ' ' . $kandang->id_kandang, 0, 31);
     }
 
     public function rumus_layer(Request $r)
@@ -133,7 +589,8 @@ class Laporan_layerController extends Controller
     {
         $request->validate([
             'id_kandang' => ['required'],
-            'tgl'        => ['required', 'date'],
+            'tgl' => ['required', 'date'],
+            'tgl_batas_data' => ['nullable', 'date'],
         ]);
 
         /*
@@ -147,6 +604,9 @@ class Laporan_layerController extends Controller
         abort_if(!$k, 404, 'Data kandang tidak ditemukan.');
 
         $tgl = Carbon::parse($request->tgl)->startOfDay();
+        $tanggalBatasData = Carbon::parse(
+            $request->tgl_batas_data ?: $request->tgl
+        )->startOfDay();
         $chickIn = Carbon::parse($k->chick_in)->startOfDay();
 
         $selisihHari = $chickIn->diffInDays($tgl, false);
@@ -186,7 +646,7 @@ class Laporan_layerController extends Controller
                 $k,
                 $nomorMinggu,
                 $awalMinggu,
-                $tgl
+                $tanggalBatasData
             );
         }
 
