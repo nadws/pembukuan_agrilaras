@@ -73,12 +73,23 @@ class Laporan_layerController extends Controller
         $tglMingguKemarin = date('Y-m-d', strtotime($tglSebelumnya . ' -1 day'));
         $tglMingguSebelumnya = date('Y-m-d', strtotime($tglMingguKemarin . ' -6 days'));
 
+        $idKandangPeriode = DB::table('stok_produk_perencanaan')
+            ->whereBetween('tgl', [$tglMulai, $tgl])
+            ->whereNotNull('id_kandang')
+            ->where('id_kandang', '!=', 0)
+            ->distinct()
+            ->pluck('id_kandang')
+            ->map(fn ($idKandang) => (int) $idKandang)
+            ->values()
+            ->all();
+
         $kandang = collect(LaporanLayerModel::getLaporanLayer(
             $tgl,
             $tglSebelumnya,
             $tglKemarin,
             $tglMingguSebelumnya,
-            $tglMingguKemarin
+            $tglMingguKemarin,
+            $idKandangPeriode
         ));
 
         $spreadsheet = new Spreadsheet();
