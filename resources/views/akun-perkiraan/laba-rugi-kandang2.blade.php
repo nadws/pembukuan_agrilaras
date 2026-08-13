@@ -661,11 +661,13 @@
             <form action="{{ route('labaRugiKandang2') }}" method="get" class="period-filter">
                 <div class="date-field">
                     <label for="tgl1">Dari tanggal</label>
-                    <input type="date" id="tgl1" class="form-control" name="tgl1" value="{{ $tgl1 }}">
+                    <input type="date" id="tgl1" class="form-control" name="tgl1"
+                        value="{{ $tgl1 }}">
                 </div>
                 <div class="date-field">
                     <label for="tgl2">Sampai tanggal</label>
-                    <input type="date" id="tgl2" class="form-control" name="tgl2" value="{{ $tgl2 }}">
+                    <input type="date" id="tgl2" class="form-control" name="tgl2"
+                        value="{{ $tgl2 }}">
                 </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
             </form>
@@ -851,7 +853,7 @@
                                             : $vaksin[$k->id_kandang]->ttl_rp;
                                         $rak = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
-                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 6 * 820;
+                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * 820;
                                         $operasional =
                                             $stokAwalTotal > 0
                                                 ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
