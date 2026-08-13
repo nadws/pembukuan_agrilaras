@@ -822,7 +822,7 @@
                                 <td class="td_layer">Rak Telur</td>
                                 @foreach ($kandang as $k)
                                     <td class="td_layer text-end">
-                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 6 * 820, 0) }}
+                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * 820, 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer">820</td>
