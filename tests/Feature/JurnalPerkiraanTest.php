@@ -120,6 +120,24 @@ class JurnalPerkiraanTest extends TestCase
         $service->pratinjau($file);
     }
 
+    public function test_same_number_with_different_transaction_types_is_valid(): void
+    {
+        $cash = $this->account('1101', 'Kas', 'BANK');
+        $revenue = $this->account('4001', 'Pendapatan', 'REVE');
+        $preview = app(ImporJurnalPerkiraanService::class)->pratinjau($this->workbook([
+            ['2025-02-01', 'SI.2025.02.00040', 'Faktur Penjualan', '1101', 'Kas', null, 100, 0],
+            ['2025-02-01', 'SI.2025.02.00040', 'Faktur Penjualan', '4001', 'Pendapatan', null, 0, 100],
+            ['2025-02-01', 'SI.2025.02.00040', 'Penerimaan Penjualan', '1101', 'Kas', null, 50, 0],
+            ['2025-02-01', 'SI.2025.02.00040', 'Penerimaan Penjualan', '4001', 'Pendapatan', null, 0, 50],
+        ]));
+
+        $this->assertSame([], $preview['errors']);
+        $this->assertSame(2, $preview['jumlah_transaksi']);
+        $this->assertSame(['Faktur Penjualan' => 1, 'Penerimaan Penjualan' => 1], $preview['ringkasan_tipe']);
+        $this->assertNotNull($cash);
+        $this->assertNotNull($revenue);
+    }
+
     public function test_batch_detail_uses_server_side_pagination_and_search(): void
     {
         $user = User::factory()->create();
