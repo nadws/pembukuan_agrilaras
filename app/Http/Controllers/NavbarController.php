@@ -182,10 +182,10 @@ class NavbarController extends Controller
     {
         $data = [
             [
-                'judul' => 'Akun Perkiraan',
+                'judul' => 'Import Transaksi Accurate',
                 'route' => 'akun_perkiraan',
                 'img' => 'accounting.png',
-                'deskripsi' => 'Import dan data dari accurate',
+                'deskripsi' => 'Import biaya, HPP, dan penjualan dari Accurate.',
             ],
             [
                 'judul' => 'Biaya',
@@ -209,6 +209,33 @@ class NavbarController extends Controller
 
         ];
         $title = 'Pembelian';
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
+    public function akuntansi_baru()
+    {
+        $data = [
+            [
+                'judul' => 'Akun Perkiraan',
+                'route' => 'master.akun-perkiraan.index',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Mengelola master akun perkiraan baru.',
+            ],
+            [
+                'judul' => 'Jurnal Perkiraan',
+                'route' => 'jurnal-perkiraan.index',
+                'img' => 'accounting.png',
+                'deskripsi' => 'Import jurnal datar, melihat batch, dan membatalkan import.',
+            ],
+            [
+                'judul' => 'Laba Rugi',
+                'route' => 'jurnal-perkiraan.laba-rugi',
+                'img' => 'finance.png',
+                'deskripsi' => 'Laporan laba rugi dari jurnal dan master akun perkiraan.',
+            ],
+        ];
+        $title = 'Akuntansi Baru';
+
         return view('navbar.data_master', compact(['data', 'title']));
     }
     public function pembayaran()
