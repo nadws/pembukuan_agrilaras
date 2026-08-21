@@ -92,14 +92,9 @@ class ImporJurnalPerkiraanService
                 continue;
             }
 
-            $key = $tanggal.'|'.$nomor;
+            $key = $tanggal.'|'.$nomor.'|'.$tipe;
             $order = ($transaksi[$key]['jumlah_detail'] ?? 0) + 1;
             $transaksi[$key] ??= ['tipe' => $tipe, 'debit' => '0.000000000000', 'kredit' => '0.000000000000', 'jumlah_detail' => 0];
-            if ($transaksi[$key]['tipe'] !== $tipe) {
-                $errors[] = ['baris' => $line, 'kode' => $nomor, 'pesan' => 'Tipe transaksi berbeda dalam nomor transaksi yang sama.'];
-
-                continue;
-            }
             $transaksi[$key]['debit'] = bcadd($transaksi[$key]['debit'], $debit, 12);
             $transaksi[$key]['kredit'] = bcadd($transaksi[$key]['kredit'], $kredit, 12);
             $transaksi[$key]['jumlah_detail'] = $order;
@@ -123,7 +118,7 @@ class ImporJurnalPerkiraanService
             $difference = bcsub($totals['debit'], $totals['kredit'], 12);
             $absolute = ltrim($difference, '-');
             if (bccomp($absolute, '0.000001000000', 12) === 1) {
-                [$tanggal, $nomor] = explode('|', $key, 2);
+                [$tanggal, $nomor] = explode('|', $key, 3);
                 $errors[] = [
                     'baris' => '-',
                     'kode' => $nomor,
