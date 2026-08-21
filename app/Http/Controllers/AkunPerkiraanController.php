@@ -460,6 +460,11 @@ class AkunPerkiraanController extends Controller
             ->get()
             ->keyBy('id_kandang');
         $rata_rata_telur = LaporanLayerModel::rataRataTelurtgl($tgl1, $tgl2);
+        $total_jual_telur_bulan = LaporanLayerModel::rataRataTelurtgl2($tgl1, $tgl2, '111');
+        $total_jual_ayam_bulan = LaporanLayerModel::rataRataTelurtgl2($tgl1, $tgl2, '112');
+        $total_beban_rak = LaporanLayerModel::rataRataTelurtgl2($tgl1, $tgl2, '122');
+
+
         $biaya_pakan = DB::table('jurnal_accurate')
             ->select(
                 'nm_departemen',
@@ -489,16 +494,10 @@ class AkunPerkiraanController extends Controller
             ->where('a.satuan', 'ekor')
             ->whereBetween('a.tanggal', [$tgl1, $tgl2])
             ->first();
-
-
-
-
-
-
         $vaksin = DB::table('tb_vaksin_perencanaan')
             ->select(
                 'id_kandang',
-                DB::raw('SUM(ttl_rp) as ttl_rp')
+                DB::raw('SUM(ttl_rp + biaya_dll) as ttl_rp')
             )->whereBetween('tgl', [$tgl1, $tgl2])
             ->groupBy('id_kandang')
             ->get()
@@ -577,6 +576,9 @@ class AkunPerkiraanController extends Controller
             'tgl1',
             'tgl2',
             'rata_rata_telur',
+            'total_jual_telur_bulan',
+            'total_jual_ayam_bulan',
+            'total_beban_rak',
             'populasi',
             'biaya_pakan',
             'biaya_vitamin',

@@ -11,8 +11,7 @@
                 <thead>
                     <tr>
                         <th width="5">#</th>
-                        <th>Foto</th>
-                        <th>NPWP</th>
+                        {{-- <th>NPWP</th> --}}
                         <th>Nama</th>
                         <th>Alamat</th>
                         <th>Email</th>
@@ -24,11 +23,7 @@
                     @foreach ($suplier as $no => $d)
                         <tr>
                             <td>{{ $no + 1 }}</td>
-                            <td>
-                                <img width="90" height="90" src="{{ asset('upload/suplier/' . $d->dokumen) }}"
-                                    alt="">
-                            </td>
-                            <td>{{ $d->npwp }}</td>
+                            {{-- <td>{{ $d->npwp }}</td> --}}
                             <td>{{ ucwords($d->nm_suplier) }}</td>
                             <td>{{ ucwords($d->alamat) }}</td>
                             <td>{{ $d->email }}</td>

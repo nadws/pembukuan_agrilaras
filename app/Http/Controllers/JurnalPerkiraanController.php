@@ -59,6 +59,18 @@ class JurnalPerkiraanController extends Controller
     public function batalkan(ImporJurnalPerkiraan $impor_jurnal_perkiraan): RedirectResponse
     {
         DB::transaction(function () use ($impor_jurnal_perkiraan) {
+            DB::update(
+                '
+                    UPDATE stok_produk_perencanaan AS s
+                    INNER JOIN jurnal_perkiraan_stok_perencanaan AS m
+                        ON m.id_stok_telur = s.id_stok_telur
+                    SET s.`check` = m.check_sebelum,
+                        s.cek_admin = m.cek_admin_sebelum
+                    WHERE m.id_impor_jurnal_perkiraan = ?
+                ',
+                [$impor_jurnal_perkiraan->getKey()]
+            );
+
             $impor_jurnal_perkiraan->detail()->delete();
             $impor_jurnal_perkiraan->delete();
         });

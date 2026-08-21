@@ -6,9 +6,17 @@ use Illuminate\Support\Facades\DB;
 if (!function_exists('tanggal')) {
     function tanggal($tgl)
     {
+        if (empty($tgl)) {
+            return '-';
+        }
+
         $date = explode("-", $tgl);
 
-        $bln  = $date[1];
+        if (count($date) < 3) {
+            return '-';
+        }
+
+        $bln = $date[1];
 
         switch ($bln) {
             case '01':
@@ -47,7 +55,11 @@ if (!function_exists('tanggal')) {
             case '12':
                 $bulan = "Desember";
                 break;
+            default:
+                $bulan = "-";
+                break;
         }
+
         $tanggal = $date[2];
         $tahun   = $date[0];
 

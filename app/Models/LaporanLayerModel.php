@@ -17,8 +17,7 @@ class LaporanLayerModel extends Model
         $tgl_minggu_sebelumnya,
         $tgl_minggu_kemaren,
         ?array $idKandangPeriode = null
-    )
-    {
+    ) {
         if ($idKandangPeriode === null) {
             $filterKandang = "a.selesai = 'T'";
         } else {
@@ -341,6 +340,13 @@ class LaporanLayerModel extends Model
 
         return $hasil;
     }
+    public static function rataRataTelurtgl2($tgl1, $tgl2, $kategori)
+    {
+
+        $hasil = DB::selectOne("SELECT sum(`debit`) as ttl_rp_debit, sum(`kredit`) as ttl_rp FROM `jurnal_perkiraan` WHERE `id_akun_perkiraan`='$kategori' and `tanggal`BETWEEN '$tgl1' and '$tgl2';");
+
+        return $hasil;
+    }
     public static function rataRataAyam($idkandang)
     {
         $tgl_periode = DB::selectOne("SELECT min(a.tgl) as tgl_awal , max(a.tgl) as tgl_akhir FROM tb_pakan_perencanaan as a WHERE a.id_kandang ='$idkandang';");
@@ -403,12 +409,57 @@ class LaporanLayerModel extends Model
 
     public static function biayaOperasional2($tgl1, $tgl2)
     {
-        $hasil = DB::selectOne("SELECT SUM(a.debit) AS debit
-        FROM jurnal_accurate a
-        LEFT JOIN akun_accurate b ON b.kode = a.kode
-        WHERE a.tgl  BETWEEN '$tgl1' and '$tgl2' AND a.buku = '2'");
+        $akunBiaya = DB::table('akun_perkiraan')
+            ->where('aktif', true)
+            ->whereIn('tipe_akun', ['COGS', 'EXPS', 'OEXP'])
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'id_akun_induk']);
 
+        $akunByParent = $akunBiaya->groupBy('id_akun_induk');
+        $akunByKode = $akunBiaya->keyBy('kode_perkiraan');
 
+        $subtreeIds = function ($id) use (&$subtreeIds, $akunByParent) {
+            $ids = [(int) $id];
+
+            foreach ($akunByParent->get($id, collect()) as $child) {
+                $ids = array_merge($ids, $subtreeIds($child->id_akun_perkiraan));
+            }
+
+            return $ids;
+        };
+
+        $akunYangSudahAdaBarisSendiri = [
+            '5101-01', // Rak telur
+            '5101-03', // Vitamin/obat
+            '5101-04', // Pakan
+            '5102-02', // Vaksin
+        ];
+
+        $excludeIds = [];
+        foreach ($akunYangSudahAdaBarisSendiri as $kode) {
+            $akun = $akunByKode->get($kode);
+
+            if ($akun) {
+                $excludeIds = array_merge($excludeIds, $subtreeIds($akun->id_akun_perkiraan));
+            }
+        }
+
+        $accountIds = $akunBiaya
+            ->pluck('id_akun_perkiraan')
+            ->map(fn ($id) => (int) $id)
+            ->diff(array_unique($excludeIds))
+            ->values();
+
+        if ($accountIds->isEmpty()) {
+            return (object) ['debit' => 0];
+        }
+
+        $hasil = DB::table('jurnal_perkiraan as a')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'a.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->whereBetween('a.tanggal', [$tgl1, $tgl2])
+            ->whereIn('a.id_akun_perkiraan', $accountIds)
+            ->selectRaw('COALESCE(SUM(a.debit - a.kredit), 0) AS debit')
+            ->first();
 
         return $hasil;
     }

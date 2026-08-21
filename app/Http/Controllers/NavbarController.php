@@ -9,42 +9,42 @@ class NavbarController extends Controller
     public function data_master()
     {
         $data = [
-            [
-                'judul' => 'Data User',
-                'route' => 'user.index',
-                'img' => 'team.png',
-                'deskripsi' => 'ini adalah data user',
-            ],
-            [
-                'judul' => 'Gudang',
-                'route' => 'gudang.index',
-                'img' => 'gudang.png',
-                'deskripsi' => 'membuat dan mengelola data gudang',
-            ],
-            [
-                'judul' => 'Data Proyek',
-                'route' => 'proyek',
-                'img' => 'clipboard.png',
-                'deskripsi' => 'Membuat dan mengelola data proyek beserta anggaran pendapatan dan biaya.',
-            ],
+            // [
+            //     'judul' => 'Data User',
+            //     'route' => 'user.index',
+            //     'img' => 'team.png',
+            //     'deskripsi' => 'ini adalah data user',
+            // ],
+            // [
+            //     'judul' => 'Gudang',
+            //     'route' => 'gudang.index',
+            //     'img' => 'gudang.png',
+            //     'deskripsi' => 'membuat dan mengelola data gudang',
+            // ],
+            // [
+            //     'judul' => 'Data Proyek',
+            //     'route' => 'proyek',
+            //     'img' => 'clipboard.png',
+            //     'deskripsi' => 'Membuat dan mengelola data proyek beserta anggaran pendapatan dan biaya.',
+            // ],
             [
                 'judul' => 'Data Suplier',
                 'route' => 'suplier.index',
                 'img' => 'suplier.png',
                 'deskripsi' => 'membuat dan menyunting data rekening',
             ],
-            [
-                'judul' => 'Data Customer',
-                'route' => 'customer.index',
-                'img' => 'customer-feedback.png',
-                'deskripsi' => 'membuat dan menyunting data rekening',
-            ],
-            [
-                'judul' => 'Data Satuan',
-                'route' => 'user.index',
-                'img' => 'measure-cup.png',
-                'deskripsi' => 'Mengelola harta tetap, akun berkaitan, dan penyusutannya menurut metode yang tersedia.',
-            ],
+            // [
+            //     'judul' => 'Data Customer',
+            //     'route' => 'customer.index',
+            //     'img' => 'customer-feedback.png',
+            //     'deskripsi' => 'membuat dan menyunting data rekening',
+            // ],
+            // [
+            //     'judul' => 'Data Satuan',
+            //     'route' => 'user.index',
+            //     'img' => 'measure-cup.png',
+            //     'deskripsi' => 'Mengelola harta tetap, akun berkaitan, dan penyusutannya menurut metode yang tersedia.',
+            // ],
         ];
         $title = 'Data Master';
         return view('navbar.data_master', compact(['data', 'title']));
@@ -161,6 +161,21 @@ class NavbarController extends Controller
 
         ];
         $title = 'Buku Besar';
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
+    public function transaksi()
+    {
+        $data = [
+            [
+                'judul' => 'Faktur Pembelian',
+                'route' => 'transaksi.faktur-pembelian.index',
+                'img' => 'invoice.png',
+                'deskripsi' => 'Mencatat dan mengelola faktur pembelian dari pemasok.',
+            ],
+        ];
+        $title = 'Transaksi';
+
         return view('navbar.data_master', compact(['data', 'title']));
     }
 

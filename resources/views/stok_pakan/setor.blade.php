@@ -10,12 +10,27 @@
 
     <x-slot name="cardBody">
         <style>
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                color: #000000;
-                line-height: 36px;
-                /* font-size: 12px; */
-                width: 170px;
+            .account-field .select2-container {
+                width: 100% !important;
+            }
 
+            .account-field .select2-container--default .select2-selection--single {
+                min-height: 44px;
+                height: auto;
+            }
+
+            .account-field .select2-container--default .select2-selection--single .select2-selection__rendered {
+                color: #000000;
+                line-height: 1.35;
+                padding: 11px 34px 11px 12px;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-break: break-word;
+            }
+
+            .account-field .select2-container--default .select2-selection--single .select2-selection__arrow {
+                top: 8px;
             }
         </style>
         <style>
@@ -116,26 +131,33 @@
                             <h6 class="total float-end">Rp {{number_format($total,0,',','.')}}</h6>
                             <input type="hidden" class="total_semua_biasa" name="total_penjualan" value="{{$total}}">
                         </div>
-                        <div class="col-lg-5 mt-2">
-                            <label for="">Pilih Akun Pembayaran</label>
-                            <select disabled name="id_akun[]" id="" class="select2_add" required>
+                        <div class="col-lg-8 mt-2 account-field">
+                            <label for="">Akun Biaya</label>
+                            <select disabled name="id_akun[]" class="select2_add w-100" required
+                                title="Akun otomatis berdasarkan kategori {{ $kategori }}">
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
-                                <option value="{{$a->id_akun}}" {{$id_akun==$a->id_akun ? 'SELECTED' :
-                                    ''}}>{{$a->nm_akun}}</option>
+                                <option value="{{ $a->id_akun_perkiraan }}"
+                                    {{ $id_akun == $a->id_akun_perkiraan ? 'selected' : '' }}>
+                                    {{ $a->kode_perkiraan }} - {{ $a->nama }}
+                                </option>
                                 @endforeach
                             </select>
+                            <input type="hidden" name="id_akun_perkiraan" value="{{ $id_akun }}">
+                            <small class="text-muted d-block mt-1">
+                                Akun otomatis:
+                                {{ $kategori === 'pakan' ? '5101-04 - Biaya Pokok Penjualan Telur (Pakan)' : '5101-03 - Biaya Pokok Penjualan Telur (Vitamin/Obat)' }}
+                            </small>
                         </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Debit</label>
-                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right">
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1" value="0">
-                        </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Kredit</label>
-                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
-                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
-                                value="0">
+                        <div class="col-lg-4 mt-2">
+                            <label>Nominal Otomatis</label>
+                            <div class="form-control bg-light fw-bold text-end">
+                                Rp {{ number_format($total, 0, ',', '.') }}
+                            </div>
+                            <input type="hidden" name="debit[]" class="debit_biasa debit_biasa1"
+                                value="{{ round($total, 0) }}">
+                            <input type="hidden" name="kredit[]" class="kredit_biasa kredit_biasa1" value="0">
+                            <small class="text-muted d-block mt-1">Otomatis dicatat sebagai debit akun biaya.</small>
                         </div>
                         {{-- <div class="col-lg-1 mt-2">
                             <label for="">aksi</label> <br>
@@ -154,7 +176,7 @@
                             <h6>Total Pembayaran</h6>
                         </div>
                         <div class="col-lg-3">
-                            <h6 class="total_debit float-end">Rp 0</h6>
+                            <h6 class="total_debit float-end">Rp {{ number_format($total, 0, ',', '.') }}</h6>
                         </div>
                         <div class="col-lg-4">
                             <h6 class="total_kredit float-end">Rp {{number_format($total,0)}} </h6>
@@ -165,7 +187,7 @@
                         <div class="col-lg-3">
                         </div>
                         <div class="col-lg-4">
-                            <h6 class="selisih float-end cselisih">Rp 0</h6>
+                            <h6 class="selisih float-end cselisih text-success">Rp 0</h6>
                         </div>
                     </div>
 
@@ -175,7 +197,7 @@
             </section>
     </x-slot>
     <x-slot name="cardFooter">
-        <button type="submit" class="float-end btn btn-primary button-save" hidden>Simpan</button>
+        <button type="submit" class="float-end btn btn-primary button-save">Simpan</button>
         <button class="float-end btn btn-primary btn_save_loading" type="button" disabled hidden>
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...

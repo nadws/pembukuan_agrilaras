@@ -8,7 +8,9 @@ use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
 use App\Http\Controllers\CrudPermissionController;
 use App\Http\Controllers\DokumentasiLaporanLayerController;
+use App\Http\Controllers\DashboardJurnalPerkiraanController;
 use App\Http\Controllers\FakturPenjualanController;
+use App\Http\Controllers\FakturPembelianController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\JurnalPenyesuaianController;
@@ -61,9 +63,9 @@ Route::get('/template2', function () {
 
 
 
-Route::get('/dashboard', function () {
-    return redirect()->route('produk_telur');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardJurnalPerkiraanController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     // 
@@ -81,7 +83,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/kandang', 'kandang')->name('kandang');
         Route::get('/accurate', 'accurate')->name('accurate');
         Route::get('/akuntansi-baru', 'akuntansi_baru')->name('akuntansi_baru');
+        Route::get('/transaksi', 'transaksi')->name('transaksi');
     });
+
+    Route::controller(FakturPembelianController::class)
+        ->prefix('transaksi/faktur-pembelian')
+        ->name('transaksi.faktur-pembelian.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+        });
 
     Route::prefix('master/akun-perkiraan')->name('master.akun-perkiraan.')->controller(MasterAkunPerkiraanController::class)->group(function () {
         Route::get('/', 'index')->name('index');
@@ -535,6 +547,7 @@ Route::controller(AkunPerkiraanController::class)->group(function () {
     Route::get('/akun_perkiraan.kandang', 'kandang')->name('akun_perkiraan.kandang');
     Route::get('/labaRugiKandang', 'labaRugiKandang')->name('labaRugiKandang');
     Route::get('/labaRugiKandang2', 'labaRugiKandang2')->name('labaRugiKandang2');
+    Route::get('/laba-rugi-kandang2', 'labaRugiKandang2')->name('laba-rugi-kandang2');
     Route::get('/labaRugiKandang_view', 'getLabaRugiData')->name('labaRugiKandang_view');
     Route::post('/importHpp', 'importHpp')->name('importHpp');
     Route::post('/importBiaya', 'importBiaya')->name('importBiaya');

@@ -687,7 +687,7 @@
                                 @foreach ($kandang as $k)
                                     <th class="text-center dhead">{{ $k->nm_kandang }}</th>
                                 @endforeach
-                                <th class="text-center dhead">Rata-rata Penjualan</th>
+                                <th class="text-center dhead">Total</th>
                             </tr>
                         </thead>
 
@@ -702,13 +702,28 @@
 
                             <tr>
                                 <td class="td_layer">Total Telur</td>
+                                @php
+                                    $ttl_telur = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $ttl_telur += empty($totalTelur[$k->id_kandang]->kuml_pcs)
+                                            ? '0'
+                                            : $totalTelur[$k->id_kandang]->kuml_kg -
+                                                $totalTelur[$k->id_kandang]->kuml_pcs / 180;
+                                    @endphp
                                     <td class="td_layer text-end">
                                         {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format($totalTelur[$k->id_kandang]->kuml_kg - $totalTelur[$k->id_kandang]->kuml_pcs / 180, 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer">
-                                    {{ number_format($hargaRataTelur, 0) }}
+                                    @php
+                                        $rata_telur = empty($total_jual_telur_bulan->ttl_rp)
+                                            ? '0'
+                                            : $total_jual_telur_bulan->ttl_rp / $ttl_telur;
+                                    @endphp
+                                    Total Telur: {{ number_format($ttl_telur, 0) }} <br>
+                                    Rata-rata Penjualan: {{ number_format($rata_telur, 0) }}
                                 </td>
                             </tr>
 
@@ -729,13 +744,26 @@
 
                             <tr>
                                 <td class="td_layer">Culling</td>
+                                @php
+                                    $total_ayam_jual = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_ayam_jual +=
+                                            $populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir;
+                                    @endphp
                                     <td class="td_layer text-end">
                                         {{ number_format($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir, 0) }}
                                     </td>
                                 @endforeach
                                 <td class="text-end td_layer">
-                                    {{ number_format($hargaRataAyam, 0) }}
+                                    @php
+                                        $rata_ayam = empty($total_jual_ayam_bulan->ttl_rp)
+                                            ? '0'
+                                            : $total_jual_ayam_bulan->ttl_rp / $total_ayam_jual;
+                                    @endphp
+                                    Ayam Jual: {{ $total_ayam_jual }} <br>
+                                    Rata-rata Penjualan: {{ number_format($rata_ayam, 0) }}
                                 </td>
                             </tr>
 
@@ -746,41 +774,65 @@
 
                             <tr>
                                 <td class="td_layer">Jual Telur</td>
+                                @php
+                                    $total_jual_telur = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_jual_telur += empty($totalTelur[$k->id_kandang]->kuml_pcs)
+                                            ? 0
+                                            : ($totalTelur[$k->id_kandang]->kuml_kg -
+                                                    $totalTelur[$k->id_kandang]->kuml_pcs / 180) *
+                                                $rata_telur;
+
+                                    @endphp
                                     <td class="td_layer text-end">
-                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_kg - $totalTelur[$k->id_kandang]->kuml_pcs / 180) * $hargaRataTelur, 0) }}
+                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_kg - $totalTelur[$k->id_kandang]->kuml_pcs / 180) * $rata_telur, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">{{ number_format($total_jual_telur, 0) }}</td>
                             </tr>
 
                             <tr>
                                 <td class="td_layer">Jual Ayam</td>
+                                @php
+                                    $total_jual_ayam = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_jual_ayam +=
+                                            $rata_ayam *
+                                            ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
+                                    @endphp
                                     <td class="td_layer text-end">
-                                        {{ number_format($hargaRataAyam * ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir), 0) }}
+                                        {{ number_format($rata_ayam * ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir), 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">{{ number_format($total_jual_ayam, 0) }}</td>
                             </tr>
 
                             <tr class="summary-row">
                                 <th class="td_layer fw-bold">Total Pendapatan</th>
+                                @php
+                                    $total_pendapatan = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
                                     @php
                                         $telur = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_kg -
                                                     $totalTelur[$k->id_kandang]->kuml_pcs / 180) *
-                                                $hargaRataTelur;
+                                                $rata_telur;
 
                                         $ayam =
-                                            $hargaRataAyam *
+                                            $rata_ayam *
                                             ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
+
+                                        $total_pendapatan += $telur + $ayam;
                                     @endphp
                                     <th class="td_layer text-end">{{ number_format($telur + $ayam, 0) }}</th>
                                 @endforeach
-                                <th class="text-end td_layer"></th>
+                                <th class="text-end td_layer">{{ number_format($total_pendapatan, 0) }}</th>
                             </tr>
 
                             <tr class="section-row">
@@ -790,56 +842,116 @@
 
                             <tr>
                                 <td class="td_layer">Pakan</td>
+                                @php
+                                    $total_pakan = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_pakan += empty($biaya_pakan[$k->nm_kandang]->ttl_rp)
+                                            ? 0
+                                            : $biaya_pakan[$k->nm_kandang]->ttl_rp;
+                                    @endphp
                                     <td class="td_layer text-end">
                                         {{ empty($biaya_pakan[$k->nm_kandang]->ttl_rp) ? 0 : number_format($biaya_pakan[$k->nm_kandang]->ttl_rp, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">{{ number_format($total_pakan, 0) }}</td>
                             </tr>
 
                             <tr>
                                 <td class="td_layer">Vitamin</td>
+                                @php
+                                    $total_vitamin = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_vitamin += empty($biaya_vitamin[$k->nm_kandang]->ttl_rp)
+                                            ? 0
+                                            : $biaya_vitamin[$k->nm_kandang]->ttl_rp;
+                                    @endphp
                                     <td class="td_layer text-end">
                                         {{ empty($biaya_vitamin[$k->nm_kandang]->ttl_rp) ? 0 : number_format($biaya_vitamin[$k->nm_kandang]->ttl_rp, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">{{ number_format($total_vitamin, 0) }}</td>
                             </tr>
 
                             <tr>
                                 <td class="td_layer">Vaksin</td>
+                                @php
+                                    $total_vaksin = 0;
+                                    $ttl_rak2 = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $total_vaksin += empty($vaksin[$k->id_kandang]->ttl_rp)
+                                            ? 0
+                                            : $vaksin[$k->id_kandang]->ttl_rp;
+
+                                        $ttl_rak2 += empty($totalTelur[$k->id_kandang]->kuml_pcs)
+                                            ? 0
+                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9;
+                                    @endphp
                                     <td class="td_layer text-end">
                                         {{ empty($vaksin[$k->id_kandang]->ttl_rp) ? 0 : number_format($vaksin[$k->id_kandang]->ttl_rp, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">{{ number_format($total_vaksin, 0) }}</td>
                             </tr>
 
                             <tr>
                                 <td class="td_layer">Rak Telur</td>
+                                @php
+                                    $ttl_rak = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $harga_rata_rak = empty($total_beban_rak->ttl_rp_debit)
+                                            ? 0
+                                            : $total_beban_rak->ttl_rp_debit / $ttl_rak2;
+                                        $ttl_rak += empty($totalTelur[$k->id_kandang]->kuml_pcs)
+                                            ? 0
+                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * $harga_rata_rak;
+
+                                    @endphp
                                     <td class="td_layer text-end">
-                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * 820, 0) }}
+                                        {{ empty($totalTelur[$k->id_kandang]->kuml_pcs) ? '0' : number_format(($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * $harga_rata_rak, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer">820</td>
+                                <td class="text-end td_layer">
+                                    {{ number_format($ttl_rak, 0) }} <br>
+                                    {{-- Rata2 Biaya Rak Telur:
+                                    {{ number_format(empty($total_beban_rak->ttl_rp_debit) ? 0 : $total_beban_rak->ttl_rp_debit / $ttl_rak, 0) }} --}}
+                                </td>
                             </tr>
 
                             <tr>
                                 <td class="td_layer">Biaya operasional</td>
+                                @php
+                                    $ttl_biaya_operasional = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
+                                    @php
+                                        $biaya_operasional =
+                                            $stokAwalTotal > 0
+                                                ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
+                                                : 0;
+                                        $ttl_biaya_operasional += $biaya_operasional;
+                                    @endphp
                                     <td class="td_layer text-end">
-                                        {{ number_format($stokAwalTotal > 0 ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal : 0, 0) }}
+                                        {{ number_format($biaya_operasional, 0) }}
                                     </td>
                                 @endforeach
-                                <td class="text-end td_layer"></td>
+                                <td class="text-end td_layer">
+                                    {{ number_format($ttl_biaya_operasional, 0) }}
+                                </td>
                             </tr>
 
                             <tr class="summary-row">
                                 <th class="td_layer fw-bold">Total Biaya</th>
+                                @php
+                                    $ttl_semua_biaya = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
                                     @php
                                         $pakan = empty($biaya_pakan[$k->nm_kandang]->ttl_rp)
@@ -853,21 +965,25 @@
                                             : $vaksin[$k->id_kandang]->ttl_rp;
                                         $rak = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
-                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * 820;
+                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * $harga_rata_rak;
                                         $operasional =
                                             $stokAwalTotal > 0
                                                 ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
                                                 : 0;
 
                                         $ttl_biaya = $pakan + $vitamin + $vaksinValue + $rak + $operasional;
+                                        $ttl_semua_biaya += $ttl_biaya;
                                     @endphp
                                     <th class="td_layer text-end">{{ number_format($ttl_biaya, 0) }}</th>
                                 @endforeach
-                                <th class="text-end td_layer"></th>
+                                <th class="text-end td_layer">{{ number_format($ttl_semua_biaya, 0) }}</th>
                             </tr>
 
                             <tr class="profit-row">
-                                <th class="td_layer fw-bold">Pendapatan Biaya</th>
+                                <th class="td_layer fw-bold">Pendapatan - Biaya</th>
+                                @php
+                                    $ttl_pnl = 0;
+                                @endphp
                                 @foreach ($kandang as $k)
                                     @php
                                         $pakan = empty($biaya_pakan[$k->nm_kandang]->ttl_rp)
@@ -881,24 +997,26 @@
                                             : $vaksin[$k->id_kandang]->ttl_rp;
                                         $rak = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
-                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 6 * 820;
+                                            : ($totalTelur[$k->id_kandang]->kuml_pcs / 180) * 9 * $harga_rata_rak;
                                         $operasional =
                                             $stokAwalTotal > 0
                                                 ? ($biayaOperasionalTotal / $stokAwalTotal) * $k->stok_awal
                                                 : 0;
 
+                                        $ttl_biaya1 = $pakan + $vitamin + $vaksinValue + $rak + $operasional;
+
                                         $telur = empty($totalTelur[$k->id_kandang]->kuml_pcs)
                                             ? 0
                                             : ($totalTelur[$k->id_kandang]->kuml_kg -
                                                     $totalTelur[$k->id_kandang]->kuml_pcs / 180) *
-                                                $hargaRataTelur;
+                                                $rata_telur;
 
                                         $ayam =
-                                            $hargaRataAyam *
+                                            $rata_ayam *
                                             ($populasi[$k->id_kandang]->jual + $populasi[$k->id_kandang]->afkir);
 
-                                        $ttl_biaya =
-                                            $telur + $ayam - ($pakan + $vitamin + $vaksinValue + $rak + $operasional);
+                                        $ttl_biaya = $telur + $ayam - $ttl_biaya1;
+                                        $ttl_pnl += $ttl_biaya;
                                     @endphp
                                     <th class="td_layer text-end">
                                         <span
@@ -907,7 +1025,10 @@
                                         </span>
                                     </th>
                                 @endforeach
-                                <th class="text-end td_layer"></th>
+                                <th class="text-end td_layer">
+                                    <span class="profit-value {{ $ttl_pnl >= 0 ? 'is-positive' : 'is-negative' }}">
+                                        {{ number_format($ttl_pnl, 0) }}</span>
+                                </th>
                             </tr>
                         </tbody>
                     </table>

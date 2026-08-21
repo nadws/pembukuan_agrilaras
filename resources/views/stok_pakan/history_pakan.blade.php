@@ -1,18 +1,86 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="10">
     <x-slot name="cardHeader">
-        <div class="row">
+        <div class="row align-items-center g-2">
             <div class="col-lg-6">
-                <h6 class="float-start mt-1">{{ $title }} {{$kategori}}</h6> <br><br>
+                <h6 class="mb-0">{{ $title }}</h6>
+                <small class="text-muted">Daftar biaya {{ $kategori }} yang belum dibukukan</small>
                 {{-- <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p> --}}
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 d-flex justify-content-lg-end gap-2">
 
-                <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Bukukan" />
-                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
+                <x-theme.button modal="T" icon="fa-plus" addClass="btn_bayar" teks="Bukukan" />
+                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" teks="" />
             </div>
         </div>
     </x-slot>
     <x-slot name="cardBody">
+        <style>
+            .kategori-nav {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 6px;
+                max-width: 420px;
+                padding: 5px;
+                margin-bottom: 18px;
+                border: 1px solid #dce3f2;
+                border-radius: 12px;
+                background: #f2f5fb;
+            }
+
+            .kategori-nav .nav-link {
+                padding: 10px 16px;
+                border-radius: 8px;
+                color: #52617a;
+                font-weight: 700;
+                text-align: center;
+                transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
+            }
+
+            .kategori-nav .nav-link:hover {
+                color: #29468f;
+                background: #e5ebf8;
+            }
+
+            .kategori-nav .nav-link.active {
+                color: #fff;
+                background: #29468f;
+                box-shadow: 0 5px 12px rgba(41, 70, 143, .24);
+            }
+
+            .history-table-wrap {
+                overflow-x: auto;
+                border: 1px solid #dce3f2;
+                border-radius: 10px;
+            }
+
+            .history-table-wrap .table {
+                min-width: 850px;
+                margin-bottom: 0;
+            }
+
+            @media (max-width: 576px) {
+                .kategori-nav {
+                    max-width: none;
+                    width: 100%;
+                }
+
+                .kategori-nav .nav-link {
+                    padding: 9px 10px;
+                    font-size: 12px;
+                }
+            }
+        </style>
+
+        <nav class="kategori-nav" aria-label="Kategori history perencanaan">
+            <a class="nav-link {{ $kategori === 'pakan' ? 'active' : '' }}"
+                href="{{ route('history_perencanaan_pakan', ['kategori' => 'pakan']) }}">
+                Pakan
+            </a>
+            <a class="nav-link {{ $kategori === 'vitamin' ? 'active' : '' }}"
+                href="{{ route('history_perencanaan_pakan', ['kategori' => 'vitamin']) }}">
+                Vitamin
+            </a>
+        </nav>
 
         <section class="row">
             <div class="col-lg-8"></div>
@@ -22,13 +90,15 @@
                     <td><input type="text" id="pencarian" class="form-control float-end"></td>
                 </table>
             </div>
-            <table class="table table-hover table-striped" id="tablealdi" width="100%">
+            <div class="col-12">
+                <div class="history-table-wrap">
+                    <table class="table table-hover table-striped" id="tablealdi" width="100%">
                 <thead>
                     <tr>
                         <th width="5">#</th>
                         <th>Tanggal </th>
                         <th>Kandang</th>
-                        <th>Nama Pakan</th>
+                        <th>{{ $kategori === 'pakan' ? 'Nama Pakan' : 'Nama Vitamin' }}</th>
                         <th>Pcs</th>
                         <th>Satuan</th>
                         <th>Total Rp</th>
@@ -60,7 +130,9 @@
                     @endforeach
                     <input type="text" style="display: none" class="kategori" value="{{$kategori}}">
                 </tbody>
-            </table>
+                    </table>
+                </div>
+            </div>
         </section>
 
 

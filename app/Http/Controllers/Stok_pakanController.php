@@ -323,7 +323,9 @@ class Stok_pakanController extends Controller
 
     public function history_perencanaan_pakan(Request $r)
     {
-        $kategori = $r->kategori;
+        $kategori = in_array($r->kategori, ['pakan', 'vitamin'], true)
+            ? $r->kategori
+            : 'pakan';
         if ($kategori == 'pakan') {
             $stok = DB::select("SELECT a.tgl, a.id_stok_telur, b.nm_produk, c.nm_kandang, a.pcs_kredit, a.total_rp, d.nm_satuan, a.admin
             FROM stok_produk_perencanaan as a
@@ -361,7 +363,7 @@ class Stok_pakanController extends Controller
 
 
         $data = [
-            'title' => 'Biaya',
+            'title' => 'History Perencanaan',
             'stok' => $stok,
             'kategori' => $kategori,
             'max_tgl' => $max_tgl->tgl
@@ -372,16 +374,17 @@ class Stok_pakanController extends Controller
 
     public function pembukuan_biaya_pv(Request $r)
     {
-        if ($r->kategori == 'pakan') {
-            $id_akun = 92;
-        } else {
-            $id_akun = 93;
-        }
+        $kategori = $r->kategori === 'vitamin' ? 'vitamin' : 'pakan';
+        $id_akun = $kategori === 'pakan' ? 125 : 124;
+
         $data = [
             'title' => 'Penerimaan Uang Penjualan Ayam',
             'nota' => $r->no_nota,
-            'akun' => DB::table('akun')->get(),
-            'kategori' => $r->kategori,
+            'akun' => DB::table('akun_perkiraan')
+                ->where('aktif', true)
+                ->orderBy('kode_perkiraan')
+                ->get(),
+            'kategori' => $kategori,
             'id_akun' => $id_akun
         ];
         return view('stok_pakan.setor', $data);
@@ -389,66 +392,169 @@ class Stok_pakanController extends Controller
 
     public function bukukan_pv(Request $r)
     {
-        if ($r->kategori == 'pakan') {
-            $id_akun_penualan_ayam = 1;
-            $id_akun = 92;
+        $kategori = $r->kategori === 'vitamin' ? 'vitamin' : 'pakan';
+
+        if ($kategori === 'pakan') {
+            $idAkunPersediaan = 25;
+            $idAkunBiaya = 125;
         } else {
-            $id_akun_penualan_ayam = 32;
-            $id_akun = 93;
+            $idAkunPersediaan = 26;
+            $idAkunBiaya = 124;
         }
 
-        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '4')->first();
+        $ids = collect($r->input('id_stok_telur', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
 
-        if (empty($max)) {
-            $nota_t = '1000';
+        abort_if($ids->isEmpty(), 422, 'Tidak ada transaksi yang dipilih.');
+
+        $stokQuery = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
+            ->whereIn('s.id_stok_telur', $ids)
+            ->where('s.check', 'T')
+            ->where('s.h_opname', 'T')
+            ->where('s.id_kandang', '!=', 0);
+
+        if ($kategori === 'pakan') {
+            $stokQuery->where('p.kategori', 'pakan');
         } else {
-            $nota_t = $max->nomor_nota + 1;
-        }
-        DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '4']);
-
-        for ($x = 0; $x < count($r->id_stok_telur); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun_penualan_ayam)->first();
-            $akun = DB::table('akun')->where('id_akun', $id_akun_penualan_ayam)->first();
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
-
-            $data = [
-                'tgl' => $r->tgl[$x],
-                'no_nota' => 'JUP-' . $nota_t,
-                'id_akun' => $id_akun_penualan_ayam,
-                'id_buku' => '4',
-                'ket' => 'Biaya Pengeluaran  ' . $r->nm_produk[$x] . " (kandang " . $r->nm_kandang[$x] . ")",
-                'debit' => '0',
-                'kredit' => $r->pembayaran[$x],
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
-
-            DB::table('stok_produk_perencanaan')->where('id_stok_telur', $r->id_stok_telur[$x])->update(['check' => 'Y', 'cek_admin' => auth()->user()->name]);
+            $stokQuery->whereIn('p.kategori', ['obat_pakan', 'obat_air', 'obat_ayam']);
         }
 
+        $stokDipilih = $stokQuery
+            ->select('s.id_stok_telur', 's.tgl', 's.total_rp', 'p.nm_produk', 'k.nm_kandang')
+            ->orderBy('s.id_stok_telur')
+            ->get();
 
-        for ($x = 0; $x < count($r->debit); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun)->first();
-            $akun = DB::table('akun')->where('id_akun', $id_akun)->first();
+        abort_if(
+            $stokDipilih->count() !== $ids->count(),
+            422,
+            'Sebagian transaksi sudah dibukukan atau tidak sesuai kategori.'
+        );
 
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
-            $data = [
-                'tgl' => $r->tgl[$x],
-                'no_nota' => 'JUP-' . $nota_t,
-                'id_akun' => $id_akun,
-                'id_buku' => '4',
-                'ket' => 'Biaya Pengeluaran ' . $r->kategori,
-                'debit' => $r->debit[$x],
-                'kredit' => $r->kredit[$x],
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
-        }
+        $batchId = DB::transaction(function () use (
+            $stokDipilih,
+            $idAkunPersediaan,
+            $idAkunBiaya,
+            $kategori
+        ) {
+            $max = DB::table('notas')
+                ->where('id_buku', '4')
+                ->orderByDesc('nomor_nota')
+                ->lockForUpdate()
+                ->first();
 
-        return redirect()->route('penyesuaian.index')->with('sukses', 'Data berhasil ditambahkan');
+            $nota_t = empty($max) ? 1000 : $max->nomor_nota + 1;
+            $noNota = 'JUP-' . $nota_t;
+
+            DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '4']);
+
+            abort_unless(
+                DB::table('akun_perkiraan')
+                    ->whereIn('id_akun_perkiraan', [$idAkunPersediaan, $idAkunBiaya])
+                    ->where('aktif', true)
+                    ->count() === 2,
+                422,
+                'Akun perkiraan untuk pembukuan tidak tersedia atau tidak aktif.'
+            );
+
+            $kelompokTanggal = $stokDipilih->groupBy('tgl');
+            $totalOtomatis = $stokDipilih->sum(
+                fn ($stok) => round((float) $stok->total_rp, 0)
+            );
+            $sekarang = now();
+
+            $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
+                'nama_file' => 'Pembukuan otomatis ' . $kategori . ' ' . $noNota,
+                'hash_file' => hash(
+                    'sha256',
+                    'history-perencanaan|' . $kategori . '|' . $noNota . '|' .
+                        $stokDipilih->pluck('id_stok_telur')->implode(',')
+                ),
+                'periode_awal' => $stokDipilih->min('tgl'),
+                'periode_akhir' => $stokDipilih->max('tgl'),
+                'jumlah_transaksi' => $kelompokTanggal->count(),
+                'jumlah_detail' => $stokDipilih->count() + $kelompokTanggal->count(),
+                'total_debit' => $totalOtomatis,
+                'total_kredit' => $totalOtomatis,
+                'status' => 'aktif',
+                'diimpor_oleh' => auth()->id(),
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
+            ]);
+
+            $detailJurnal = [];
+
+            foreach ($kelompokTanggal as $tanggal => $stokPerTanggal) {
+                $urutanDetail = 1;
+                $totalTanggal = 0;
+
+                foreach ($stokPerTanggal as $stok) {
+                    $nominal = round((float) $stok->total_rp, 0);
+                    $totalTanggal += $nominal;
+
+                    $detailJurnal[] = [
+                        'id_impor_jurnal_perkiraan' => $batchId,
+                        'id_akun_perkiraan' => $idAkunPersediaan,
+                        'tanggal' => $tanggal,
+                        'nomor_transaksi' => $noNota,
+                        'tipe_transaksi' => 'Pemakaian ' . ucfirst($kategori),
+                        'urutan_detail' => $urutanDetail++,
+                        'deskripsi' => 'Biaya Pengeluaran ' . $stok->nm_produk .
+                            ' (kandang ' . $stok->nm_kandang . ')',
+                        'debit' => 0,
+                        'kredit' => $nominal,
+                        'created_at' => $sekarang,
+                        'updated_at' => $sekarang,
+                    ];
+
+                    DB::table('jurnal_perkiraan_stok_perencanaan')->insert([
+                        'id_impor_jurnal_perkiraan' => $batchId,
+                        'id_stok_telur' => $stok->id_stok_telur,
+                        'check_sebelum' => 'T',
+                        'cek_admin_sebelum' => null,
+                        'created_at' => $sekarang,
+                        'updated_at' => $sekarang,
+                    ]);
+
+                    $diperbarui = DB::table('stok_produk_perencanaan')
+                        ->where('id_stok_telur', $stok->id_stok_telur)
+                        ->where('check', 'T')
+                        ->update([
+                            'check' => 'Y',
+                            'cek_admin' => auth()->user()->name,
+                        ]);
+
+                    abort_if($diperbarui !== 1, 422, 'Transaksi sudah dibukukan oleh pengguna lain.');
+                }
+
+                $detailJurnal[] = [
+                    'id_impor_jurnal_perkiraan' => $batchId,
+                    'id_akun_perkiraan' => $idAkunBiaya,
+                    'tanggal' => $tanggal,
+                    'nomor_transaksi' => $noNota,
+                    'tipe_transaksi' => 'Pemakaian ' . ucfirst($kategori),
+                    'urutan_detail' => $urutanDetail,
+                    'deskripsi' => 'Biaya Pengeluaran ' . $kategori,
+                    'debit' => $totalTanggal,
+                    'kredit' => 0,
+                    'created_at' => $sekarang,
+                    'updated_at' => $sekarang,
+                ];
+            }
+
+            collect($detailJurnal)
+                ->chunk(500)
+                ->each(fn ($detail) => DB::table('jurnal_perkiraan')->insert($detail->all()));
+
+            return $batchId;
+        });
+
+        return redirect()
+            ->route('jurnal-perkiraan.detail-batch', $batchId)
+            ->with('sukses', 'Data berhasil dibukukan ke Jurnal Perkiraan.');
     }
 }
