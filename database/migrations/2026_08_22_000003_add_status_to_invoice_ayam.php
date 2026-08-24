@@ -1,17 +1,26 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE invoice_ayam ADD status ENUM('paid', 'unpaid') NOT NULL DEFAULT 'paid' AFTER lokasi");
+        if (! Schema::hasColumn('invoice_ayam', 'status')) {
+            Schema::table('invoice_ayam', function (Blueprint $table) {
+                $table->enum('status', ['paid', 'unpaid'])->default('paid')->after('lokasi');
+            });
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE invoice_ayam DROP COLUMN status');
+        if (Schema::hasColumn('invoice_ayam', 'status')) {
+            Schema::table('invoice_ayam', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };
