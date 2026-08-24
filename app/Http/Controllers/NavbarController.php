@@ -9,12 +9,12 @@ class NavbarController extends Controller
     public function data_master()
     {
         $data = [
-            // [
-            //     'judul' => 'Data User',
-            //     'route' => 'user.index',
-            //     'img' => 'team.png',
-            //     'deskripsi' => 'ini adalah data user',
-            // ],
+            [
+                'judul' => 'Data User',
+                'route' => 'user.index',
+                'img' => 'team.png',
+                'deskripsi' => 'ini adalah data user',
+            ],
             // [
             //     'judul' => 'Gudang',
             //     'route' => 'gudang.index',
@@ -173,6 +173,43 @@ class NavbarController extends Controller
                 'img' => 'invoice.png',
                 'deskripsi' => 'Mencatat dan mengelola faktur pembelian dari pemasok.',
             ],
+            [
+                'judul' => 'Penerimaan Stok',
+                'route' => 'transaksi.penerimaan.index',
+                'img' => 'gudang.png',
+                'deskripsi' => 'Menerima stok pakan dan vitamin dari beberapa nota pembelian.',
+            ],
+            [
+                'judul' => 'Buku Hutang',
+                'route' => 'transaksi.buku-hutang.index',
+                'img' => 'payment.png',
+                'deskripsi' => 'Melihat hutang faktur pembelian dan mencatat pelunasannya.',
+            ],
+            [
+                'judul' => 'Piutang',
+                'route' => 'transaksi.piutang.index',
+                'img' => 'piutang.png',
+                'deskripsi' => 'Melihat piutang penjualan telur dan ayam.',
+            ],
+            [
+                'judul' => 'Penjualan Telur',
+                'route' => 'transaksi.penjualan-telur.index',
+                'img' => 'egg.png',
+                'deskripsi' => 'Membuat penjualan telur dengan beberapa jenis produk dalam satu nota.',
+            ],
+            [
+                'judul' => 'Penjualan Ayam',
+                'route' => 'transaksi.penjualan-ayam.index',
+                'img' => 'penjualan.png',
+                'deskripsi' => 'Mencatat dan mengelola penjualan ayam.',
+            ],
+            [
+                'judul' => 'Penjualan Umum',
+                'route' => 'transaksi.penjualan-umum.index',
+                'img' => 'shop.png',
+                'deskripsi' => 'Mencatat penjualan produk umum dari kategori produk umum.',
+            ],
+
         ];
         $title = 'Transaksi';
 
@@ -237,19 +274,35 @@ class NavbarController extends Controller
                 'deskripsi' => 'Mengelola master akun perkiraan baru.',
             ],
             [
-                'judul' => 'Jurnal Perkiraan',
-                'route' => 'jurnal-perkiraan.index',
-                'img' => 'accounting.png',
-                'deskripsi' => 'Import jurnal datar, melihat batch, dan membatalkan import.',
+                'judul' => 'Jurnal Umum',
+                'route' => 'pembukuan-baru.jurnal-umum.index',
+                'img' => 'newspaper.png',
+                'deskripsi' => 'Mencatat transaksi jurnal umum baru dengan alur per step.',
             ],
             [
-                'judul' => 'Laba Rugi',
+                'judul' => 'Aktiva',
+                'route' => 'aktiva',
+                'img' => 'buildings.png',
+                'deskripsi' => 'Melihat aktiva hasil pembalikan aktiva gantung dan memasukkan data aktiva lama.',
+            ],
+            [
+                'judul' => 'Jurnal Penyesuaian',
+                'route' => 'pembukuan-baru.jurnal-penyesuaian.index',
+                'img' => 'journalism.png',
+                'deskripsi' => 'Stok opname dan penyusutan aktiva dalam satu menu penyesuaian.',
+            ],
+            [
+                'judul' => 'Buku Besar', 'route' => 'pembukuan-baru.buku-besar.index', 'img' => 'ledger.png',
+                'deskripsi' => 'Ringkasan dan detail transaksi dari akun perkiraan serta jurnal perkiraan.',
+            ],
+            [
+                'judul' => 'Laporan Laba Rugi',
                 'route' => 'jurnal-perkiraan.laba-rugi',
                 'img' => 'finance.png',
                 'deskripsi' => 'Laporan laba rugi dari jurnal dan master akun perkiraan.',
             ],
         ];
-        $title = 'Akuntansi Baru';
+        $title = 'Pembukuan Baru';
 
         return view('navbar.data_master', compact(['data', 'title']));
     }

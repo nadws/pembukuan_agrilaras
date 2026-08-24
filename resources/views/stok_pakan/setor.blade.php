@@ -70,20 +70,9 @@
                         </thead>
                         <tbody>
                             @php
-                            $total = 0;
+                            $total = $totalSemua ?? 0;
                             @endphp
-                            @foreach ($nota as $no => $n)
-                            @php
-                            $stok = DB::selectOne("SELECT a.tgl, a.id_stok_telur, b.nm_produk, c.nm_kandang,
-                            a.pcs_kredit,
-                            a.total_rp, d.nm_satuan, a.admin
-                            FROM stok_produk_perencanaan as a
-                            left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
-                            left join kandang as c on c.id_kandang = a.id_kandang
-                            left join tb_satuan as d on d.id_satuan = b.dosis_satuan
-                            where a.id_stok_telur = '$n'");
-                            $total += round($stok->total_rp,0)
-                            @endphp
+                            @foreach ($stokItems as $no => $stok)
                             <tr>
                                 <td>{{$no + 1}}</td>
                                 <td>

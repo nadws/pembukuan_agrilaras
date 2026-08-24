@@ -15,6 +15,10 @@ use SettingHal;
 
 class JurnalPenyesuaianController extends Controller
 {
+    public function akuntansiBaru()
+    {
+        return view('pembukuan_baru.jurnal_penyesuaian.index', ['title' => 'Jurnal Penyesuaian']);
+    }
     protected $tgl1, $tgl2, $period;
     public function __construct(Request $r)
     {

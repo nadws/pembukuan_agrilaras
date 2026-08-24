@@ -21,11 +21,16 @@ use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\OpnamemtdController;
 use App\Http\Controllers\PembayaranBkController;
 use App\Http\Controllers\PembelianBahanBakuController;
+use App\Http\Controllers\PembukuanBaruJurnalUmumController;
+use App\Http\Controllers\PembukuanBaruJurnalPenyesuaianController;
+use App\Http\Controllers\PembukuanBaruBukuBesarController;
 use App\Http\Controllers\Penjualan_martadah_alpaController;
+use App\Http\Controllers\PenjualanUmumTransaksiController;
 use App\Http\Controllers\Penjualan_umum_cekController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\Penyetoran_telurController;
 use App\Http\Controllers\PiutangtelurController;
+use App\Http\Controllers\PiutangTransaksiController;
 use App\Http\Controllers\Produk_telurController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +49,8 @@ use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\MedionController;
 use App\Http\Controllers\MasterAkunPerkiraanController;
 use App\Http\Controllers\PenjualanAyamController;
+use App\Http\Controllers\PenjualanAyamTransaksiController;
+use App\Http\Controllers\PenjualanTelurTransaksiController;
 use App\Http\Controllers\Saldo_penutup;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\UserController;
@@ -93,6 +100,64 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/create', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
+            Route::get('/{faktur_pembelian}/detail', 'detail')->name('detail');
+            Route::get('/{faktur_pembelian}/edit', 'edit')->name('edit');
+            Route::put('/{faktur_pembelian}', 'update')->name('update');
+            Route::get('/{faktur_pembelian}/terima', 'terima')->name('terima');
+            Route::post('/{faktur_pembelian}/terima', 'storeTerima')->name('terima.store');
+        });
+
+    Route::controller(FakturPembelianController::class)
+        ->prefix('transaksi/penerimaan')
+        ->name('transaksi.penerimaan.')
+        ->group(function () {
+            Route::get('/', 'penerimaanIndex')->name('index');
+            Route::get('/terima', 'terimaBatch')->name('terima');
+            Route::post('/terima', 'storeTerimaBatch')->name('terima.store');
+        });
+
+    Route::controller(FakturPembelianController::class)
+        ->prefix('transaksi/buku-hutang')
+        ->name('transaksi.buku-hutang.')
+        ->group(function () {
+            Route::get('/', 'bukuHutangIndex')->name('index');
+            Route::get('/{faktur_pembelian}/pelunasan', 'pelunasan')->name('pelunasan');
+            Route::post('/{faktur_pembelian}/pelunasan', 'storePelunasan')->name('pelunasan.store');
+        });
+
+    Route::controller(PembukuanBaruJurnalUmumController::class)
+        ->prefix('pembukuan-baru/jurnal-umum')
+        ->name('pembukuan-baru.jurnal-umum.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::get('/biaya/create', 'createBiaya')->name('biaya.create');
+            Route::post('/biaya', 'storeBiaya')->name('biaya.store');
+            Route::get('/biaya/{nomor_transaksi}/edit', 'editBiaya')->name('biaya.edit');
+            Route::put('/biaya/{nomor_transaksi}', 'updateBiaya')->name('biaya.update');
+            Route::delete('/biaya/{nomor_transaksi}', 'destroyBiaya')->name('biaya.destroy');
+
+            Route::get('/aktiva-gantung/create', 'createAktivaGantung')->name('aktiva-gantung.create');
+            Route::post('/aktiva-gantung', 'storeAktivaGantung')->name('aktiva-gantung.store');
+            Route::get('/aktiva-gantung/transaksi/{nomor_transaksi}/edit', 'editAktivaGantungTransaksi')->name('aktiva-gantung.transaksi.edit');
+            Route::put('/aktiva-gantung/transaksi/{nomor_transaksi}', 'updateAktivaGantungTransaksi')->name('aktiva-gantung.transaksi.update');
+            Route::delete('/aktiva-gantung/transaksi/{nomor_transaksi}', 'destroyAktivaGantungTransaksi')->name('aktiva-gantung.transaksi.destroy');
+            Route::put('/aktiva-gantung/aset/{id}', 'updateAktivaGantungAset')->name('aktiva-gantung.aset.update');
+            Route::delete('/aktiva-gantung/aset/{id}', 'destroyAktivaGantungAset')->name('aktiva-gantung.aset.destroy');
+
+            Route::get('/pembalik-aktiva-gantung/create', 'createPembalikAktivaGantung')->name('pembalik-aktiva-gantung.create');
+            Route::post('/pembalik-aktiva-gantung', 'storePembalikAktivaGantung')->name('pembalik-aktiva-gantung.store');
+            Route::get('/pembalik-aktiva-gantung/{nomor_transaksi}/edit', 'editPembalikAktivaGantung')->name('pembalik-aktiva-gantung.edit');
+            Route::put('/pembalik-aktiva-gantung/{nomor_transaksi}', 'updatePembalikAktivaGantung')->name('pembalik-aktiva-gantung.update');
+            Route::delete('/pembalik-aktiva-gantung/{nomor_transaksi}', 'destroyPembalikAktivaGantung')->name('pembalik-aktiva-gantung.destroy');
+
+            Route::get('/pembelian-umum/create', 'createPembelianUmum')->name('pembelian-umum.create');
+            Route::post('/pembelian-umum', 'storePembelianUmum')->name('pembelian-umum.store');
+            Route::get('/pembelian-umum/{nomor_transaksi}/edit', 'editPembelianUmum')->name('pembelian-umum.edit');
+            Route::put('/pembelian-umum/{nomor_transaksi}', 'updatePembelianUmum')->name('pembelian-umum.update');
+            Route::delete('/pembelian-umum/{nomor_transaksi}', 'destroyPembelianUmum')->name('pembelian-umum.destroy');
         });
 
     Route::prefix('master/akun-perkiraan')->name('master.akun-perkiraan.')->controller(MasterAkunPerkiraanController::class)->group(function () {
@@ -105,6 +170,50 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/data', 'export')->name('export');
         Route::get('/export/template', 'template')->name('template');
     });
+    Route::controller(PenjualanTelurTransaksiController::class)
+        ->prefix('transaksi/penjualan-telur')
+        ->name('transaksi.penjualan-telur.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{noNota}/detail', 'detail')->name('detail');
+            Route::get('/{noNota}/edit', 'edit')->name('edit');
+            Route::put('/{noNota}', 'update')->name('update');
+            Route::delete('/{noNota}', 'destroy')->name('destroy');
+        });
+    Route::controller(PenjualanAyamTransaksiController::class)
+        ->prefix('transaksi/penjualan-ayam')
+        ->name('transaksi.penjualan-ayam.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{noNota}/detail', 'detail')->name('detail');
+            Route::get('/{noNota}/edit', 'edit')->name('edit');
+            Route::put('/{noNota}', 'update')->name('update');
+            Route::delete('/{noNota}', 'destroy')->name('destroy');
+        });
+    Route::controller(PenjualanUmumTransaksiController::class)
+        ->prefix('transaksi/penjualan-umum')
+        ->name('transaksi.penjualan-umum.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{urutan}/detail', 'detail')->name('detail');
+            Route::get('/{urutan}/edit', 'edit')->name('edit');
+            Route::put('/{urutan}', 'update')->name('update');
+            Route::delete('/{urutan}', 'destroy')->name('destroy');
+        });
+    Route::controller(PiutangTransaksiController::class)
+        ->prefix('transaksi/piutang')
+        ->name('transaksi.piutang.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/pelunasan', 'pelunasan')->name('pelunasan');
+            Route::post('/pelunasan', 'storePelunasan')->name('pelunasan.store');
+        });
 
     Route::prefix('jurnal-perkiraan')->name('jurnal-perkiraan.')->controller(JurnalPerkiraanController::class)->group(function () {
         Route::get('/', 'index')->name('index');
@@ -267,6 +376,8 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(AktivaController::class)->group(function () {
         Route::get('/aktiva', 'index')->name('aktiva');
+        Route::get('/aktiva/import/template', 'templateImport')->name('aktiva.import.template');
+        Route::post('/aktiva/import', 'import')->name('aktiva.import');
         Route::get('/aktiva.add', 'add')->name('aktiva.add');
         Route::get('/load_aktiva', 'load_aktiva')->name('load_aktiva');
         Route::get('/tambah_baris_aktiva', 'tambah_baris_aktiva')->name('tambah_baris_aktiva');
@@ -279,6 +390,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/jurnal_penyesuaian', 'index')->name('jurnal_penyesuaian');
         Route::get('/jurnal_aktiva', 'jurnal')->name('jurnal_aktiva');
         Route::post('/save_penyesuaian_aktiva', 'save_penyesuaian_aktiva')->name('save_penyesuaian_aktiva');
+    });
+    Route::prefix('pembukuan-baru/jurnal-penyesuaian')->name('pembukuan-baru.jurnal-penyesuaian.')->controller(PembukuanBaruJurnalPenyesuaianController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/stok-opname', 'stokOpname')->name('stok-opname');
+        Route::post('/stok-opname', 'simpanStokOpname')->name('stok-opname.store');
+        Route::get('/penyusutan-aktiva', 'penyusutanAktiva')->name('penyusutan-aktiva');
+        Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
+    });
+    Route::prefix('pembukuan-baru/buku-besar')->name('pembukuan-baru.buku-besar.')->controller(PembukuanBaruBukuBesarController::class)->group(function () {
+        Route::get('/', 'index')->name('index'); Route::get('/{id}', 'detail')->name('detail');
     });
     Route::controller(PembelianBahanBakuController::class)->group(function () {
         Route::get('/pembelian_bk', 'index')->name('pembelian_bk');

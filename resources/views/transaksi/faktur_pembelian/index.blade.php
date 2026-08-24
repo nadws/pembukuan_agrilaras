@@ -160,12 +160,17 @@
                             {{-- <th>Jatuh Tempo</th> --}}
                             <th class="text-end">Total</th>
                             <th>Status</th>
-                            <th width="90" class="text-center">Aksi</th>
+                            <th>Status Stok</th>
+                            <th width="110" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($faktur as $nomor => $item)
                             <tr>
+                                @php
+                                    $qtyDiterima = (float) ($penerimaanFaktur[$item->no_faktur] ?? 0);
+                                    $stokSelesai = $qtyDiterima >= (float) $item->total_qty;
+                                @endphp
                                 <td>{{ $faktur->firstItem() + $nomor }}</td>
                                 <td>{{ tanggal($item->tanggal_faktur) }}</td>
                                 <td>{{ $item->no_faktur }}</td>
@@ -183,9 +188,29 @@
                                         {{ str_replace('_', ' ', $item->status_bayar) }}
                                     </span>
                                 </td>
+                                <td>
+                                    @if ($stokSelesai)
+                                        <span class="status-badge status-lunas">
+                                            Selesai
+                                        </span>
+                                    @elseif ($qtyDiterima > 0)
+                                        <span class="status-badge status-sebagian">
+                                            Sebagian
+                                        </span>
+                                    @else
+                                        <span class="status-badge status-belum_lunas">
+                                            Belum
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
-                                    <a href="#" class="btn btn-outline-primary btn-sm" title="Lihat detail">
+                                    <a href="{{ route('transaksi.faktur-pembelian.detail', $item) }}"
+                                        class="btn btn-outline-primary btn-sm" title="Detail">
                                         <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('transaksi.faktur-pembelian.edit', $item) }}"
+                                        class="btn btn-outline-warning btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </a>
                                 </td>
                             </tr>

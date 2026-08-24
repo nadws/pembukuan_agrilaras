@@ -64,8 +64,13 @@
     })
     // ----
 
-    $('.select2').select2({
-        dropdownParent: $('#tambah .modal-content')
+    $('.select2').each(function() {
+        var $select = $(this);
+        var $modal = $select.closest('.modal-content');
+        $select.select2({
+            width: '100%',
+            dropdownParent: $modal.length ? $modal : $('body')
+        });
     });
     $('.select2-tambah2').select2({
         dropdownParent: $('#tambah2 .modal-content')

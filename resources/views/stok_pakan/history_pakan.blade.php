@@ -99,9 +99,10 @@
                         <th>Tanggal </th>
                         <th>Kandang</th>
                         <th>{{ $kategori === 'pakan' ? 'Nama Pakan' : 'Nama Vitamin' }}</th>
-                        <th>Pcs</th>
+                        <th class="text-end">Pcs</th>
                         <th>Satuan</th>
-                        <th>Total Rp</th>
+                        <th class="text-end">HPP / Gr</th>
+                        <th class="text-end">Total Rp</th>
                         <th>Admin</th>
                         <th style="text-align: center">Cek <br>
                             <input type="checkbox" class="check-all">
@@ -115,9 +116,10 @@
                         <td>{{tanggal($s->tgl)}}</td>
                         <td>{{$s->nm_kandang}}</td>
                         <td>{{$s->nm_produk}}</td>
-                        <td>{{number_format($s->pcs_kredit,1)}} </td>
+                        <td class="text-end">{{number_format($s->pcs_kredit,1)}} </td>
                         <td>{{$s->nm_satuan}}</td>
-                        <td>{{number_format($s->total_rp,0)}}</td>
+                        <td class="text-end">Rp {{number_format($s->hpp_per_gr ?? ($s->pcs_kredit > 0 ? $s->total_rp / $s->pcs_kredit : 0), 2)}}</td>
+                        <td class="text-end">Rp {{number_format($s->total_rp,0)}}</td>
                         <td>{{$s->admin}}</td>
                         <td align="center">
                             <input type="checkbox" name="" no_nota="{{ $s->id_stok_telur }}"

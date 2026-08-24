@@ -321,65 +321,153 @@ class Stok_pakanController extends Controller
         return view('stok_pakan.tbh_baris_stok', $data);
     }
 
+    public function getHppPerGramMap(): array
+    {
+        $latestFaktur = DB::table('faktur_pembelian_detail as fpd')
+            ->join('faktur_pembelian as fp', 'fp.id', '=', 'fpd.faktur_pembelian_id')
+            ->whereIn('fpd.id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('faktur_pembelian_detail')
+                    ->groupBy('pakan_id');
+            })
+            ->get(['fpd.pakan_id', 'fpd.satuan', 'fpd.harga_satuan', 'fp.no_faktur', 'fp.tanggal_faktur']);
+
+        $map = [];
+        foreach ($latestFaktur as $f) {
+            $satuan = strtolower(trim($f->satuan ?? ''));
+            $hargaSatuan = (float) $f->harga_satuan;
+
+            if ($satuan === 'zak') {
+                $hppPerGr = $hargaSatuan / 50000;
+            } elseif ($satuan === 'kg') {
+                $hppPerGr = $hargaSatuan / 1000;
+            } else {
+                $hppPerGr = $hargaSatuan;
+            }
+
+            $map[$f->pakan_id] = [
+                'hpp_per_gr' => $hppPerGr,
+                'satuan_faktur' => $f->satuan,
+                'harga_satuan_faktur' => $hargaSatuan,
+                'no_faktur' => $f->no_faktur,
+                'tanggal_faktur' => $f->tanggal_faktur,
+            ];
+        }
+
+        return $map;
+    }
+
     public function history_perencanaan_pakan(Request $r)
     {
         $kategori = in_array($r->kategori, ['pakan', 'vitamin'], true)
             ? $r->kategori
             : 'pakan';
+
+        $hppMap = $this->getHppPerGramMap();
+
         if ($kategori == 'pakan') {
-            $stok = DB::select("SELECT a.tgl, a.id_stok_telur, b.nm_produk, c.nm_kandang, a.pcs_kredit, a.total_rp, d.nm_satuan, a.admin
+            $stok = DB::select("SELECT a.tgl, a.id_stok_telur, a.id_pakan, b.nm_produk, c.nm_kandang, a.pcs_kredit, a.total_rp, d.nm_satuan, a.admin
             FROM stok_produk_perencanaan as a
-            left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
+            left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
             left join tb_satuan as d on d.id_satuan = b.dosis_satuan
             where a.`check` ='T' and b.kategori = 'pakan' and a.h_opname = 'T' and a.id_kandang != '0'
-            order by a.tgl , a.id_kandang ASC
+            order by a.tgl, a.id_kandang ASC
             ");
-
 
             $max_tgl = DB::selectOne("SELECT min(a.tgl) as tgl
             FROM stok_produk_perencanaan as a
-            left join tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
+            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             where a.`check` ='T' and b.kategori = 'pakan' and a.id_kandang != '0'
             ");
         } else {
-            $stok = DB::select("SELECT a.tgl, a.id_stok_telur, b.nm_produk, c.nm_kandang, a.pcs_kredit, a.total_rp, d.nm_satuan, a.admin
+            $stok = DB::select("SELECT a.tgl, a.id_stok_telur, a.id_pakan, b.nm_produk, c.nm_kandang, a.pcs_kredit, a.total_rp, d.nm_satuan, a.admin
             FROM stok_produk_perencanaan as a
-            left JOIN tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
+            left JOIN tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             left join kandang as c on c.id_kandang = a.id_kandang
             left join tb_satuan as d on d.id_satuan = b.dosis_satuan
             where a.`check` ='T' and b.kategori in ('obat_pakan','obat_air','obat_ayam') and a.h_opname = 'T' and a.id_kandang != '0'
-            order by a.tgl , a.id_kandang ASC");
+            order by a.tgl, a.id_kandang ASC");
+
             $max_tgl = DB::selectOne("SELECT min(a.tgl) as tgl
             FROM stok_produk_perencanaan as a
-            left join tb_produk_perencanaan  as b on b.id_produk = a.id_pakan
+            left join tb_produk_perencanaan as b on b.id_produk = a.id_pakan
             where a.`check` ='T' and b.kategori in ('obat_pakan','obat_air','obat_ayam') and a.id_kandang != '0'
             ");
         }
 
-
-
-
-
+        foreach ($stok as $s) {
+            $pcs = (float) $s->pcs_kredit;
+            if (isset($hppMap[$s->id_pakan])) {
+                $s->hpp_per_gr = $hppMap[$s->id_pakan]['hpp_per_gr'];
+                $s->total_rp = round($pcs * $s->hpp_per_gr, 0);
+            } else {
+                $s->hpp_per_gr = $pcs > 0 ? ((float) $s->total_rp / $pcs) : 0;
+                $s->total_rp = round((float) $s->total_rp, 0);
+            }
+        }
 
         $data = [
             'title' => 'History Perencanaan',
             'stok' => $stok,
             'kategori' => $kategori,
-            'max_tgl' => $max_tgl->tgl
+            'max_tgl' => $max_tgl->tgl ?? null
         ];
         return view('stok_pakan.history_pakan', $data);
     }
-
 
     public function pembukuan_biaya_pv(Request $r)
     {
         $kategori = $r->kategori === 'vitamin' ? 'vitamin' : 'pakan';
         $id_akun = $kategori === 'pakan' ? 125 : 124;
 
+        $notaIds = collect($r->no_nota ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values();
+
+        $hppMap = $this->getHppPerGramMap();
+
+        $stokItems = collect();
+        $totalSemua = 0;
+
+        if ($notaIds->isNotEmpty()) {
+            $rawStok = DB::table('stok_produk_perencanaan as a')
+                ->leftJoin('tb_produk_perencanaan as b', 'b.id_produk', '=', 'a.id_pakan')
+                ->leftJoin('kandang as c', 'c.id_kandang', '=', 'a.id_kandang')
+                ->leftJoin('tb_satuan as d', 'd.id_satuan', '=', 'b.dosis_satuan')
+                ->whereIn('a.id_stok_telur', $notaIds)
+                ->get([
+                    'a.tgl',
+                    'a.id_stok_telur',
+                    'a.id_pakan',
+                    'b.nm_produk',
+                    'c.nm_kandang',
+                    'a.pcs_kredit',
+                    'a.total_rp',
+                    'd.nm_satuan',
+                    'a.admin'
+                ]);
+
+            foreach ($rawStok as $s) {
+                $pcs = (float) $s->pcs_kredit;
+                if (isset($hppMap[$s->id_pakan])) {
+                    $s->hpp_per_gr = $hppMap[$s->id_pakan]['hpp_per_gr'];
+                    $s->total_rp = round($pcs * $s->hpp_per_gr, 0);
+                } else {
+                    $s->hpp_per_gr = $pcs > 0 ? ((float) $s->total_rp / $pcs) : 0;
+                    $s->total_rp = round((float) $s->total_rp, 0);
+                }
+                $totalSemua += $s->total_rp;
+                $stokItems->push($s);
+            }
+        }
+
         $data = [
             'title' => 'Penerimaan Uang Penjualan Ayam',
             'nota' => $r->no_nota,
+            'stokItems' => $stokItems,
+            'totalSemua' => $totalSemua,
             'akun' => DB::table('akun_perkiraan')
                 ->where('aktif', true)
                 ->orderBy('kode_perkiraan')
@@ -425,7 +513,7 @@ class Stok_pakanController extends Controller
         }
 
         $stokDipilih = $stokQuery
-            ->select('s.id_stok_telur', 's.tgl', 's.total_rp', 'p.nm_produk', 'k.nm_kandang')
+            ->select('s.id_stok_telur', 's.id_pakan', 's.pcs_kredit', 's.tgl', 's.total_rp', 'p.nm_produk', 'k.nm_kandang')
             ->orderBy('s.id_stok_telur')
             ->get();
 
@@ -434,6 +522,17 @@ class Stok_pakanController extends Controller
             422,
             'Sebagian transaksi sudah dibukukan atau tidak sesuai kategori.'
         );
+
+        $hppMap = $this->getHppPerGramMap();
+
+        foreach ($stokDipilih as $stok) {
+            $pcs = (float) $stok->pcs_kredit;
+            if (isset($hppMap[$stok->id_pakan])) {
+                $stok->total_rp = round($pcs * $hppMap[$stok->id_pakan]['hpp_per_gr'], 0);
+            } else {
+                $stok->total_rp = round((float) $stok->total_rp, 0);
+            }
+        }
 
         $batchId = DB::transaction(function () use (
             $stokDipilih,
@@ -526,6 +625,7 @@ class Stok_pakanController extends Controller
                         ->update([
                             'check' => 'Y',
                             'cek_admin' => auth()->user()->name,
+                            'total_rp' => $nominal,
                         ]);
 
                     abort_if($diperbarui !== 1, 422, 'Transaksi sudah dibukukan oleh pengguna lain.');
