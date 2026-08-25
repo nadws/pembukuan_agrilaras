@@ -32,7 +32,7 @@ class PiutangTransaksiController extends Controller
         } else {
             $piutang = DB::table('invoice_telur as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereBetween('i.tgl', [$awal, $akhir])
+                ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')->whereBetween('i.tgl', [$awal, $akhir])
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
                 ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer')
@@ -56,10 +56,13 @@ class PiutangTransaksiController extends Controller
         if ($jenis === 'umum') {
             $rows = DB::table('penjualan_agl as i')->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereIn('i.urutan', $notaIds)->select('i.*', DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'c.nm_customer')->orderBy('i.tgl')->orderBy('i.urutan')->get();
         } else {
-            $rows = DB::table($table . ' as i')
+            $query = DB::table($table . ' as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereIn('i.no_nota', $nota)
-                ->select('i.*', 'c.nm_customer')->orderBy('i.tgl')->orderBy('i.no_nota')->get();
+                ->where('i.status', 'unpaid')->whereIn('i.no_nota', $nota);
+            $jenis === 'telur'
+                ? $query->whereIn('i.lokasi', ['alpa', 'mtd'])
+                : $query->where('i.lokasi', 'alpa');
+            $rows = $query->select('i.*', 'c.nm_customer')->orderBy('i.tgl')->orderBy('i.no_nota')->get();
         }
 
         if ($rows->isEmpty() || $rows->pluck('no_nota')->unique()->count() !== count($nota) || $rows->pluck('id_customer')->unique()->count() !== 1) {
@@ -99,7 +102,14 @@ class PiutangTransaksiController extends Controller
         if ($validated['jenis'] === 'umum') {
             $rows = DB::table('penjualan_agl as i')->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereIn('i.urutan', $notaIds)->select('i.*', DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'c.nm_customer')->get();
         } else {
-            $rows = DB::table($table . ' as i')->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereIn('i.no_nota', $nota)->select('i.*', 'c.nm_customer')->get();
+            $query = DB::table($table . ' as i')
+                ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+                ->where('i.status', 'unpaid')
+                ->whereIn('i.no_nota', $nota);
+            $validated['jenis'] === 'telur'
+                ? $query->whereIn('i.lokasi', ['alpa', 'mtd'])
+                : $query->where('i.lokasi', 'alpa');
+            $rows = $query->select('i.*', 'c.nm_customer')->get();
         }
 
         if ($rows->isEmpty() || $rows->pluck('no_nota')->unique()->count() !== count($nota)) {
@@ -172,7 +182,11 @@ class PiutangTransaksiController extends Controller
             if ($validated['jenis'] === 'umum') {
                 DB::table($table)->where('lokasi', 'alpa')->whereIn('urutan', array_map(fn ($value) => (int) str_replace('PU-', '', $value), $nota))->update(['status' => 'paid']);
             } else {
-                DB::table($table)->where('lokasi', 'alpa')->whereIn('no_nota', $nota)->update(['status' => 'paid']);
+                $update = DB::table($table)->whereIn('no_nota', $nota);
+                $validated['jenis'] === 'telur'
+                    ? $update->whereIn('lokasi', ['alpa', 'mtd'])
+                    : $update->where('lokasi', 'alpa');
+                $update->update(['status' => 'paid']);
             }
         });
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardKandangController;
+use App\Http\Controllers\GudangPersediaanController;
 use App\Http\Controllers\DataKandangController;
 use App\Http\Controllers\JualController;
 use App\Http\Controllers\JurnalPenyesuaianController;
@@ -18,6 +19,8 @@ use App\Http\Controllers\PeralatanController;
 use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PoController;
 use App\Http\Controllers\ProfitController;
+use App\Http\Controllers\ProdukPerencanaanController;
+use App\Http\Controllers\ProdukTelurMasterController;
 use App\Http\Controllers\RakController;
 use App\Http\Controllers\StokTelurMtdController;
 use App\Http\Controllers\SuplierController;
@@ -28,6 +31,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/403', function () {
         view('error.403');
     })->name('403');
+
+    Route::controller(GudangPersediaanController::class)
+        ->prefix('gudang/stok')
+        ->name('gudang-persediaan.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/opname', 'opname')->name('opname');
+            Route::post('/opname', 'storeOpname')->name('opname.store');
+            Route::get('/riwayat-opname', 'riwayat')->name('riwayat');
+        });
 
     Route::controller(PoController::class)
         ->prefix('po')
@@ -133,6 +146,8 @@ Route::middleware('auth')->group(function () {
         ->name('suplier.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/template-import', 'templateImport')->name('template-import');
+            Route::post('/import', 'import')->name('import');
             Route::post('/', 'create')->name('create');
             Route::post('/update', 'update')->name('update');
             Route::get('/delete/{id_suplier}', 'delete')->name('delete');
@@ -144,10 +159,32 @@ Route::middleware('auth')->group(function () {
         ->name('customer.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/template-import', 'templateImport')->name('template-import');
+            Route::post('/import', 'import')->name('import');
             Route::post('/', 'create')->name('create');
             Route::post('/update', 'update')->name('update');
             Route::get('/delete/{id_customer}', 'delete')->name('delete');
             Route::get('/edit/{id_customer}', 'edit')->name('edit');
+        });
+
+    Route::controller(ProdukPerencanaanController::class)
+        ->prefix('data-master/produk-perencanaan')
+        ->name('produk-perencanaan.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{idProduk}', 'update')->name('update');
+            Route::delete('/{idProduk}', 'destroy')->name('destroy');
+        });
+
+    Route::controller(ProdukTelurMasterController::class)
+        ->prefix('data-master/produk-telur')
+        ->name('produk-telur-master.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{idProdukTelur}', 'update')->name('update');
+            Route::delete('/{idProdukTelur}', 'destroy')->name('destroy');
         });
 
     Route::controller(JurnalPenyesuaianController::class)

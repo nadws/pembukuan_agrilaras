@@ -91,6 +91,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/accurate', 'accurate')->name('accurate');
         Route::get('/akuntansi-baru', 'akuntansi_baru')->name('akuntansi_baru');
         Route::get('/transaksi', 'transaksi')->name('transaksi');
+        Route::get('/gudang-persediaan', 'gudang_persediaan')->name('gudang_persediaan');
+        Route::get('/penjualan-martadah', 'penjualan_martadah')->name('penjualan_martadah');
+        Route::get('/penjualan-martadah/telur', 'penjualan_martadah_telur')->name('penjualan_martadah_telur');
     });
 
     Route::controller(FakturPembelianController::class)
@@ -603,6 +606,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan_martadah_cek', 'index')->name('penjualan_martadah_cek');
         Route::get('/detail_penjualan_mtd', 'detail_penjualan_mtd')->name('detail_penjualan_mtd');
         Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
+        Route::get('/tbh_pembayaran_martadah', 'tbh_pembayaran_martadah')->name('tbh_pembayaran_martadah');
         Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
     });
     Route::controller(Stok_ayam::class)->group(function () {

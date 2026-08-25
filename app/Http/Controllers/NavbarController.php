@@ -33,12 +33,24 @@ class NavbarController extends Controller
                 'img' => 'suplier.png',
                 'deskripsi' => 'membuat dan menyunting data rekening',
             ],
-            // [
-            //     'judul' => 'Data Customer',
-            //     'route' => 'customer.index',
-            //     'img' => 'customer-feedback.png',
-            //     'deskripsi' => 'membuat dan menyunting data rekening',
-            // ],
+            [
+                'judul' => 'Master Customer',
+                'route' => 'customer.index',
+                'img' => 'customer-feedback.png',
+                'deskripsi' => 'Membuat, mengimpor, dan menyunting data customer.',
+            ],
+            [
+                'judul' => 'Produk Perencanaan',
+                'route' => 'produk-perencanaan.index',
+                'img' => 'product.png',
+                'deskripsi' => 'Mengelola produk pakan, obat, satuan dosis, dan kegunaannya.',
+            ],
+            [
+                'judul' => 'Produk Telur',
+                'route' => 'produk-telur-master.index',
+                'img' => 'eggs.png',
+                'deskripsi' => 'Mengelola kode dan nama produk telur untuk stok serta penjualan.',
+            ],
             // [
             //     'judul' => 'Data Satuan',
             //     'route' => 'user.index',
@@ -216,6 +228,48 @@ class NavbarController extends Controller
         return view('navbar.data_master', compact(['data', 'title']));
     }
 
+    public function gudang_persediaan()
+    {
+        $data = [
+            [
+                'judul' => 'Stok Pakan & Vitamin',
+                'route' => 'gudang-persediaan.index',
+                'img' => 'gudang.png',
+                'deskripsi' => 'Melihat saldo berjalan seluruh produk pakan dan obat di gudang.',
+            ],
+
+        ];
+        $title = 'Gudang';
+
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
+    public function penjualan_martadah()
+    {
+        $data = [
+            [
+                'judul' => 'Penjualan Telur',
+                'route' => 'penjualan_martadah_telur',
+                'img' => 'egg.png',
+                'deskripsi' => 'Melihat dan mengelola penjualan telur Martadah.',
+            ],
+            [
+                'judul' => 'Penjualan Ayam',
+                'route' => 'penjualan_ayam.index',
+                'img' => 'penjualan.png',
+                'deskripsi' => 'Melihat, memeriksa, dan mengelola penjualan ayam Martadah.',
+            ],
+        ];
+        $title = 'Penjualan Martadah';
+
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
+    public function penjualan_martadah_telur()
+    {
+        return redirect()->route('penjualan_martadah_cek', ['lokasi' => 'mtd']);
+    }
+
     public function pembelian()
     {
         $data = [
@@ -292,7 +346,9 @@ class NavbarController extends Controller
                 'deskripsi' => 'Stok opname dan penyusutan aktiva dalam satu menu penyesuaian.',
             ],
             [
-                'judul' => 'Buku Besar', 'route' => 'pembukuan-baru.buku-besar.index', 'img' => 'ledger.png',
+                'judul' => 'Buku Besar',
+                'route' => 'pembukuan-baru.buku-besar.index',
+                'img' => 'ledger.png',
                 'deskripsi' => 'Ringkasan dan detail transaksi dari akun perkiraan serta jurnal perkiraan.',
             ],
             [

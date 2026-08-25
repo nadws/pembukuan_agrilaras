@@ -1,9 +1,22 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
-        <x-theme.button modal="Y" idModal="tambah" icon="fa-plus" addClass="float-end" teks="Tambah" />
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+            <a href="{{ route('customer.template-import') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-file-excel me-1"></i> Format Import
+            </a>
+            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#importCustomer">
+                <i class="fas fa-file-import me-1"></i> Import Data
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#tambah">
+                <i class="fas fa-plus me-1"></i> Tambah Customer
+            </button>
+        </div>
     </x-slot>
 
     <x-slot name="cardBody">
+        @if ($errors->any())
+            <div class="alert alert-danger"><strong>Data belum dapat disimpan.</strong><br>{{ $errors->first() }}</div>
+        @endif
         <section class="row">
 
 
@@ -11,11 +24,13 @@
                 <thead>
                     <tr>
                         <th width="5">#</th>
+                        <th>Kode</th>
                         <th>NPWP</th>
                         <th>KTP</th>
                         <th>Nama</th>
                         <th>Alamat</th>
                         <th>Telepon</th>
+                        <th>Status</th>
                         <th width="20%">Aksi</th>
                     </tr>
                 </thead>
@@ -23,12 +38,13 @@
                     @foreach ($customer as $no => $d)
                         <tr>
                             <td>{{ $no + 1 }}</td>
-
+                            <td>{{ $d->kode_customer ?: '-' }}</td>
                             <td>{{ $d->npwp }}</td>
                             <td>{{ $d->ktp }}</td>
                             <td>{{ ucwords($d->nm_customer) }}</td>
                             <td>{{ ucwords($d->alamat) }}</td>
                             <td>{{ $d->no_telp }}</td>
+                            <td><span class="badge {{ $d->active === 'Y' ? 'bg-success' : 'bg-secondary' }}">{{ $d->active === 'Y' ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td align="center">
                                 <div class="btn-group dropstart mb-1">
                                     <span class="btn btn-lg" data-bs-toggle="dropdown">
@@ -54,6 +70,19 @@
                 </tbody>
             </table>
         </section>
+        <form action="{{ route('customer.import') }}" method="post" enctype="multipart/form-data">
+            @csrf
+            <x-theme.modal title="Import Master Customer" idModal="importCustomer">
+                <div class="alert alert-info py-2">
+                    Unduh <a href="{{ route('customer.template-import') }}" class="fw-bold">Format Import</a>, isi sheet Data Customer, lalu unggah kembali di sini.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">File Excel atau CSV</label>
+                    <input type="file" name="file_customer" class="form-control" accept=".xlsx,.xls,.csv,.txt" required>
+                    <small class="text-muted">Kode customer boleh dikosongkan agar dibuat otomatis. Ukuran maksimal 5 MB.</small>
+                </div>
+            </x-theme.modal>
+        </form>
         {{-- tambah customer --}}
         <form action="{{ route('customer.create') }}" method="post" enctype="multipart/form-data">
             @csrf
@@ -62,7 +91,7 @@
                     <div class="col-lg-6">
                         <div class="form-group">
                             <label for="">Nama</label>
-                            <input type="text" name="nm_customer" class="form-control">
+                            <input type="text" name="nm_customer" class="form-control" required>
                         </div>
                     </div>
                     <div class="col-lg-6">

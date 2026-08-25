@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -38,6 +39,7 @@ class AktivaController extends Controller
                 $row->nm_aktiva = trim($nama) ?: $row->deskripsi;
                 $row->biaya_depresiasi = 0;
                 $row->beban = 0;
+                $row->umur_aktiva_bulan = null;
                 return $row;
             });
         $namaManual = $aktivaManual->pluck('nm_aktiva')->map(fn($n) => mb_strtolower(trim($n)));
@@ -73,19 +75,33 @@ class AktivaController extends Controller
 
     public function templateImport()
     {
+        $akunAset = DB::table('akun_perkiraan')
+            ->where('aktif', 1)->where('tipe_akun', 'FASS')
+            ->whereNotNull('id_akun_induk')->orderBy('kode_perkiraan')
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+        $contohAkun = $akunAset->firstWhere('kode_perkiraan', '120002') ?? $akunAset->first();
+
         $workbook = new Spreadsheet();
         $dataSheet = $workbook->getActiveSheet();
         $dataSheet->setTitle('Data Aktiva');
-        $headers = ['id_akun_aset', 'id_kelompok', 'nama_aktiva', 'tanggal_perolehan', 'nilai_perolehan', 'sisa_umur_bulan'];
+        $headers = ['id_akun_aset', 'nama_aktiva', 'tanggal_perolehan', 'nilai_perolehan', 'nilai_sisa_aset', 'umur_tahun', 'umur_bulan'];
         $dataSheet->fromArray($headers, null, 'A1');
-        $dataSheet->fromArray([74, 1, 'Contoh Aktiva', '2024-01-15', 12000000, 24], null, 'A2');
-        $dataSheet->getStyle('A1:F1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
-        $dataSheet->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF304F9E');
-        $dataSheet->getStyle('D2:D1000')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
-        $dataSheet->getStyle('E2:E1000')->getNumberFormat()->setFormatCode('#,##0');
+        $dataSheet->fromArray([
+            $contohAkun?->id_akun_perkiraan,
+            'Contoh Aktiva',
+            '2024-01-15',
+            12000000,
+            8000000,
+            2,
+            3,
+        ], null, 'A2');
+        $dataSheet->getStyle('A1:G1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
+        $dataSheet->getStyle('A1:G1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF304F9E');
+        $dataSheet->getStyle('C2:C1000')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $dataSheet->getStyle('D2:E1000')->getNumberFormat()->setFormatCode('#,##0');
         $dataSheet->freezePane('A2');
-        $dataSheet->setAutoFilter('A1:F1');
-        foreach (['A' => 17, 'B' => 15, 'C' => 30, 'D' => 21, 'E' => 20, 'F' => 19] as $column => $width) {
+        $dataSheet->setAutoFilter('A1:G1');
+        foreach (['A' => 17, 'B' => 30, 'C' => 21, 'D' => 20, 'E' => 20, 'F' => 15, 'G' => 15] as $column => $width) {
             $dataSheet->getColumnDimension($column)->setWidth($width);
         }
 
@@ -93,33 +109,34 @@ class AktivaController extends Controller
         $referenceSheet->setTitle('Referensi');
         $referenceSheet->setCellValue('A1', 'REFERENSI AKUN ASET TETAP TUJUAN');
         $referenceSheet->fromArray(['id_akun_aset', 'kode_perkiraan', 'nama_akun'], null, 'A3');
-        $akunRows = DB::table('akun_perkiraan')
-            ->where('aktif', 1)->where('tipe_akun', 'FASS')
-            ->whereNotNull('id_akun_induk')->orderBy('kode_perkiraan')
-            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama'])
-            ->map(fn ($akun) => [$akun->id_akun_perkiraan, $akun->kode_perkiraan, $akun->nama])->all();
+        $akunRows = $akunAset->map(fn ($akun) => [$akun->id_akun_perkiraan, $akun->kode_perkiraan, $akun->nama])->all();
         if ($akunRows) $referenceSheet->fromArray($akunRows, null, 'A4');
 
-        $referenceSheet->setCellValue('E1', 'REFERENSI KELOMPOK AKTIVA');
-        $referenceSheet->fromArray(['id_kelompok', 'nama_kelompok', 'umur_tahun', 'tarif_tahunan'], null, 'E3');
-        $kelompokRows = DB::table('kelompok_aktiva')->orderBy('id_kelompok')->get()
-            ->map(fn ($kelompok) => [$kelompok->id_kelompok, $kelompok->nm_kelompok, $kelompok->umur, $kelompok->tarif])->all();
-        if ($kelompokRows) $referenceSheet->fromArray($kelompokRows, null, 'E4');
+        $referenceSheet->setCellValue('E1', 'PETUNJUK PENGISIAN');
+        $referenceSheet->setCellValue('E3', 'Kolom');
+        $referenceSheet->setCellValue('F3', 'Keterangan');
+        $referenceSheet->fromArray([
+            ['id_akun_aset', 'Salin ID dari daftar akun aset tetap di sebelah kiri.'],
+            ['tanggal_perolehan', 'Gunakan format YYYY-MM-DD atau DD/MM/YYYY.'],
+            ['nilai_perolehan', 'Nilai awal/perolehan aset, hanya angka.'],
+            ['nilai_sisa_aset', 'Boleh 0 jika nilai buku aset sudah habis; tidak boleh melebihi nilai perolehan.'],
+            ['umur_tahun', 'Bagian tahun dari umur aktiva, minimal total umur 1 bulan.'],
+            ['umur_bulan', 'Bagian bulan, isi angka 0 sampai 11.'],
+        ], null, 'E4');
 
-        foreach (['A1:C1', 'E1:H1'] as $range) {
+        foreach (['A1:C1', 'E1:F1'] as $range) {
             $referenceSheet->mergeCells($range);
             $referenceSheet->getStyle($range)->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
             $referenceSheet->getStyle($range)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF304F9E');
             $referenceSheet->getStyle($range)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         }
-        foreach (['A3:C3', 'E3:H3'] as $range) {
+        foreach (['A3:C3', 'E3:F3'] as $range) {
             $referenceSheet->getStyle($range)->getFont()->setBold(true);
             $referenceSheet->getStyle($range)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFDCE6F8');
         }
-        foreach (['A' => 17, 'B' => 20, 'C' => 30, 'E' => 15, 'F' => 22, 'G' => 15, 'H' => 17] as $column => $width) {
+        foreach (['A' => 17, 'B' => 20, 'C' => 30, 'E' => 24, 'F' => 70] as $column => $width) {
             $referenceSheet->getColumnDimension($column)->setWidth($width);
         }
-        $referenceSheet->getStyle('H4:H100')->getNumberFormat()->setFormatCode('0.00%');
         $referenceSheet->freezePane('A4');
         $workbook->setActiveSheetIndex(0);
 
@@ -140,7 +157,9 @@ class AktivaController extends Controller
         try {
             $sheet = IOFactory::load($request->file('file_aktiva')->getRealPath())
                 ->getActiveSheet();
-            $rows = $sheet->toArray(null, true, true, false);
+            // Ambil nilai mentah. Jika format tampilan Excel ikut dibaca, angka
+            // seperti 12.000.000 dapat berubah menjadi teks dan gagal divalidasi.
+            $rows = $sheet->toArray(null, true, false, false);
         } catch (\Throwable $e) {
             return back()->withErrors(['file_aktiva' => 'File tidak dapat dibaca. Pastikan memakai format CSV atau Excel yang valid.']);
         }
@@ -149,8 +168,11 @@ class AktivaController extends Controller
             return back()->withErrors(['file_aktiva' => 'File tidak memiliki data aktiva.']);
         }
 
-        $requiredHeaders = ['id_akun_aset', 'id_kelompok', 'nama_aktiva', 'tanggal_perolehan', 'nilai_perolehan', 'sisa_umur_bulan'];
-        $headers = array_map(fn ($value) => strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string) $value))), $rows[0]);
+        $requiredHeaders = ['id_akun_aset', 'nama_aktiva', 'tanggal_perolehan', 'nilai_perolehan', 'nilai_sisa_aset', 'umur_tahun', 'umur_bulan'];
+        $headers = array_map(function ($value) {
+            $header = strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string) $value)));
+            return preg_replace('/\s+/', '_', $header);
+        }, $rows[0]);
         $indexes = array_flip($headers);
         $missing = array_values(array_diff($requiredHeaders, $headers));
 
@@ -160,9 +182,32 @@ class AktivaController extends Controller
 
         $akunAset = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'FASS')
             ->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->all();
-        $kelompokMap = DB::table('kelompok_aktiva')->get()->keyBy(fn ($row) => (int) $row->id_kelompok);
         $dataImport = [];
         $errors = [];
+        $normalisasiAngka = function ($value) {
+            if (is_int($value) || is_float($value)) return $value;
+            $value = preg_replace('/[^0-9,.-]/', '', trim((string) $value));
+            if ($value === '') return null;
+
+            $jumlahTitik = substr_count($value, '.');
+            $jumlahKoma = substr_count($value, ',');
+            if ($jumlahTitik > 0 && $jumlahKoma > 0) {
+                $pemisahDesimal = strrpos($value, '.') > strrpos($value, ',') ? '.' : ',';
+                $pemisahRibuan = $pemisahDesimal === '.' ? ',' : '.';
+                $hasil = str_replace($pemisahRibuan, '', $value);
+                return $pemisahDesimal === ',' ? str_replace(',', '.', $hasil) : $hasil;
+            }
+            if ($jumlahTitik > 1 || $jumlahKoma > 1) {
+                return str_replace(['.', ','], '', $value);
+            }
+            if ($jumlahTitik === 1 || $jumlahKoma === 1) {
+                $pemisah = $jumlahTitik === 1 ? '.' : ',';
+                $bagian = explode($pemisah, $value);
+                if (strlen($bagian[1] ?? '') === 3) return implode('', $bagian);
+                return str_replace(',', '.', $value);
+            }
+            return $value;
+        };
 
         foreach (array_slice($rows, 1) as $offset => $row) {
             $rowNumber = $offset + 2;
@@ -174,6 +219,19 @@ class AktivaController extends Controller
             foreach ($requiredHeaders as $header) {
                 $raw[$header] = $row[$indexes[$header]] ?? null;
             }
+            $raw['nilai_perolehan'] = $normalisasiAngka($raw['nilai_perolehan']);
+            $raw['nilai_sisa_aset'] = $normalisasiAngka($raw['nilai_sisa_aset']);
+            // Nilai buku tidak boleh negatif. File lama sering memakai tanda '-'
+            // untuk nol atau rumus penyusutan yang menghasilkan angka minus.
+            if ($raw['nilai_sisa_aset'] === '-' || $raw['nilai_sisa_aset'] === null) {
+                $raw['nilai_sisa_aset'] = 0;
+            } elseif (is_numeric($raw['nilai_sisa_aset']) && (float) $raw['nilai_sisa_aset'] < 0) {
+                $raw['nilai_sisa_aset'] = 0;
+            }
+            // Excel dapat mengembalikan sel angka 0 sebagai null. Untuk bagian
+            // umur, sel kosong memang bermakna 0 tahun atau 0 bulan.
+            $raw['umur_tahun'] = $raw['umur_tahun'] === null || $raw['umur_tahun'] === '' ? 0 : $raw['umur_tahun'];
+            $raw['umur_bulan'] = $raw['umur_bulan'] === null || $raw['umur_bulan'] === '' ? 0 : $raw['umur_bulan'];
 
             try {
                 if ($raw['tanggal_perolehan'] instanceof \DateTimeInterface) {
@@ -195,16 +253,18 @@ class AktivaController extends Controller
 
             $validator = Validator::make([
                 'id_akun_aset' => $raw['id_akun_aset'],
-                'id_kelompok' => $raw['id_kelompok'],
                 'nama_aktiva' => trim((string) $raw['nama_aktiva']),
                 'nilai_perolehan' => $raw['nilai_perolehan'],
-                'sisa_umur_bulan' => $raw['sisa_umur_bulan'],
+                'nilai_sisa_aset' => $raw['nilai_sisa_aset'],
+                'umur_tahun' => $raw['umur_tahun'],
+                'umur_bulan' => $raw['umur_bulan'],
             ], [
                 'id_akun_aset' => ['required', 'integer', 'in:' . implode(',', $akunAset)],
-                'id_kelompok' => ['required', 'integer', 'in:' . implode(',', $kelompokMap->keys()->all())],
                 'nama_aktiva' => ['required', 'string', 'max:255'],
                 'nilai_perolehan' => ['required', 'numeric', 'min:0.01'],
-                'sisa_umur_bulan' => ['nullable', 'integer', 'min:1'],
+                'nilai_sisa_aset' => ['required', 'numeric', 'min:0', 'lte:nilai_perolehan'],
+                'umur_tahun' => ['required', 'integer', 'min:0'],
+                'umur_bulan' => ['required', 'integer', 'min:0', 'max:11'],
             ]);
 
             if ($validator->fails()) {
@@ -212,21 +272,26 @@ class AktivaController extends Controller
                 continue;
             }
 
-            $idKelompok = (int) $raw['id_kelompok'];
             $nilai = round((float) $raw['nilai_perolehan'], 2);
-            $sisa = $raw['sisa_umur_bulan'] === null || trim((string) $raw['sisa_umur_bulan']) === '' ? null : (int) $raw['sisa_umur_bulan'];
-            $kelompok = $kelompokMap[$idKelompok];
-            $penyusutanBulanan = $sisa ? $nilai / $sisa : ($nilai * (float) $kelompok->tarif) / 12;
+            $nilaiSisa = round((float) $raw['nilai_sisa_aset'], 2);
+            $umurAktiva = ((int) $raw['umur_tahun'] * 12) + (int) $raw['umur_bulan'];
+            if ($umurAktiva < 1) {
+                $errors[] = "Baris {$rowNumber}: umur aktiva minimal 1 bulan.";
+                continue;
+            }
+            $penyusutanBulanan = $nilaiSisa / $umurAktiva;
 
             $dataImport[] = [
                 'id_akun_aset' => (int) $raw['id_akun_aset'],
-                'id_kelompok' => $idKelompok,
+                'id_kelompok' => null,
                 'nm_aktiva' => trim((string) $raw['nama_aktiva']),
                 'tgl' => $tanggal,
                 'h_perolehan' => $nilai,
+                'nilai_buku_awal' => $nilaiSisa,
                 'biaya_depresiasi' => round($penyusutanBulanan, 2),
-                'sisa_umur_bulan' => $sisa,
-                'akumulasi_penyusutan' => 0,
+                'umur_aktiva_bulan' => $umurAktiva,
+                'sisa_umur_bulan' => $umurAktiva,
+                'akumulasi_penyusutan' => round($nilai - $nilaiSisa, 2),
                 'admin' => Auth::user()->name,
                 'sumber' => 'import',
                 'created_at' => now(),
@@ -250,7 +315,7 @@ class AktivaController extends Controller
     {
         $data =  [
             'title' => 'Add Aktiva',
-            'kelompok' => DB::table('kelompok_aktiva')->get(), 'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get()
+            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get()
         ];
         return view('aktiva.load_aktiva', $data);
     }
@@ -258,7 +323,7 @@ class AktivaController extends Controller
     public function tambah_baris_aktiva(Request $r)
     {
         $data =  [
-            'kelompok' => DB::table('kelompok_aktiva')->get(), 'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get(),
+            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get(),
             'count' => $r->count
 
         ];
@@ -278,34 +343,61 @@ class AktivaController extends Controller
 
     public function save_aktiva(Request $r)
     {
-        $id_kelompok = $r->id_kelompok;
+        $r->validate([
+            'id_akun_aset' => ['required', 'array', 'min:1'],
+            'id_akun_aset.*' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'nm_aktiva.*' => ['required', 'string', 'max:255'],
+            'tgl.*' => ['required', 'date'],
+            'h_perolehan.*' => ['required', 'numeric', 'min:0.01'],
+            'nilai_sisa_aset.*' => ['required', 'numeric', 'min:0'],
+            'umur_tahun.*' => ['required', 'integer', 'min:0'],
+            'umur_bulan.*' => ['required', 'integer', 'min:0', 'max:11'],
+        ]);
+
         $nm_aktiva = $r->nm_aktiva;
         $tgl = $r->tgl;
         $h_perolehan = $r->h_perolehan;
-        $sisaUmur = $r->sisa_umur_bulan ?? [];
+        $nilaiSisaAset = $r->nilai_sisa_aset;
+        $umurTahun = $r->umur_tahun ?? [];
+        $umurBulan = $r->umur_bulan ?? [];
         $akunAset = $r->id_akun_aset ?? [];
 
-        for ($x = 0; $x < count($id_kelompok); $x++) {
-            $kelompok =  DB::table('kelompok_aktiva')->where('id_kelompok', $id_kelompok[$x])->first();
-            $biaya_depresiasi = ($h_perolehan[$x] * $kelompok->tarif) / 12;
-            $sisa = (int) ($sisaUmur[$x] ?? 0);
-            if ($sisa > 0) {
-                $biaya_depresiasi = $h_perolehan[$x] / $sisa;
+        DB::transaction(function () use ($akunAset, $nm_aktiva, $tgl, $h_perolehan, $nilaiSisaAset, $umurTahun, $umurBulan) {
+        for ($x = 0; $x < count($akunAset); $x++) {
+            $nilaiPerolehan = round((float) $h_perolehan[$x], 2);
+            $nilaiBuku = round((float) $nilaiSisaAset[$x], 2);
+            if ($nilaiBuku > $nilaiPerolehan) {
+                throw ValidationException::withMessages([
+                    "nilai_sisa_aset.{$x}" => 'Nilai Buku Saat Ini tidak boleh melebihi Nilai Perolehan.',
+                ]);
             }
+            $umurAktiva = ((int) ($umurTahun[$x] ?? 0) * 12) + (int) ($umurBulan[$x] ?? 0);
+            if ($umurAktiva < 1) {
+                throw ValidationException::withMessages([
+                    "umur_tahun.{$x}" => 'Umur aktiva minimal 1 bulan.',
+                ]);
+            }
+            $biaya_depresiasi = $nilaiBuku / $umurAktiva;
 
             $data = [
-                'id_kelompok' => $id_kelompok[$x],
+                'id_kelompok' => null,
                 'id_akun_aset' => $akunAset[$x] ?? null,
                 'nm_aktiva' => $nm_aktiva[$x],
                 'tgl' => $tgl[$x],
-                'h_perolehan' => $h_perolehan[$x],
-                'biaya_depresiasi' => $biaya_depresiasi,
-                'sisa_umur_bulan' => $sisa ?: null,
-                'akumulasi_penyusutan' => $sisa > 0 ? max(0, $h_perolehan[$x] - ($biaya_depresiasi * $sisa)) : 0,
+                'h_perolehan' => $nilaiPerolehan,
+                'nilai_buku_awal' => $nilaiBuku,
+                'biaya_depresiasi' => round($biaya_depresiasi, 2),
+                'umur_aktiva_bulan' => $umurAktiva,
+                'sisa_umur_bulan' => $umurAktiva,
+                'akumulasi_penyusutan' => round($nilaiPerolehan - $nilaiBuku, 2),
                 'admin' => Auth::user()->name,
+                'sumber' => 'manual',
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
                 DB::table('aktiva_pembukuan_baru')->insert($data);
         }
+        });
 
         return redirect()->route('aktiva')->with('sukses', 'Data berhasil ditambahkan');
     }

@@ -1,10 +1,12 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="11">
 
     <x-slot name="cardHeader">
-        <div class="row justify-content-end">
-            <div class="col-lg-2">
-
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5 class="mb-1 text-primary">Setor Penjualan Telur Martadah</h5>
+                <small class="text-muted">Periksa detail nota lalu tentukan akun penerimaan setoran.</small>
             </div>
+            <span class="badge bg-light text-primary px-3 py-2">{{ $nota }}</span>
         </div>
 
     </x-slot>
@@ -12,21 +14,35 @@
 
     <x-slot name="cardBody">
         <style>
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
+            .martadah-receipt .select2-container--default .select2-selection--single .select2-selection__rendered {
                 color: #000000;
-                line-height: 36px;
-                /* font-size: 12px; */
-                width: 170px;
-
+                line-height: 40px;
             }
-        </style>
-        <style>
+            .martadah-receipt .select2-container{width:100%!important}
+            .martadah-receipt .select2-selection--single{height:42px!important;border-color:#dce4f2!important;border-radius:8px!important}
+            .martadah-receipt .select2-selection__arrow{height:40px!important}
             .dhead {
                 background-color: #435EBE !important;
                 color: white;
             }
+            .martadah-receipt .invoice-card{overflow:hidden;border:1px solid #dce4f2;border-radius:14px;box-shadow:none}
+            .martadah-receipt .invoice-header{padding:18px;background:#f7f9fd;border-bottom:1px solid #dce4f2}
+            .martadah-receipt .invoice-meta{font-size:13px}
+            .martadah-receipt .invoice-meta td{padding:4px 6px!important}
+            .martadah-receipt .invoice-title{margin:18px 0 8px;color:#18366f;font-weight:700}
+            .martadah-receipt .invoice-table-wrap{overflow-x:auto;border:1px solid #dce4f2;border-radius:10px}
+            .martadah-receipt .invoice-table{min-width:1100px;margin-bottom:0!important}
+            .martadah-receipt .invoice-table th{vertical-align:middle;font-size:12px;white-space:nowrap}
+            .martadah-receipt .invoice-table td{vertical-align:middle;font-size:13px}
+            .martadah-receipt .invoice-totals{width:100%;max-width:440px;margin-top:16px;margin-left:auto;background:#f7f9fd;border-radius:10px}
+            .martadah-receipt .invoice-totals td{padding:7px 12px}
+            .martadah-receipt .payment-panel{margin-top:4px;padding:20px;border:1px solid #dce4f2;border-radius:14px;background:#f8faff}
+            .martadah-receipt .payment-panel label{margin-bottom:5px;color:#536078;font-size:12px;font-weight:700}
+            .martadah-receipt .payment-panel .form-control{min-height:42px;border-color:#dce4f2;border-radius:8px}
+            .martadah-receipt .payment-panel hr{border-color:#cad5ea!important;opacity:1}
+            @media(max-width:767px){.martadah-receipt .invoice-header img{width:75px!important}.martadah-receipt .invoice-meta{float:none!important;margin-top:12px}.martadah-receipt .payment-panel{padding:14px}}
         </style>
-        <form action="{{ route('save_terima_invoice') }}" method="post" class="save_jurnal">
+        <form action="{{ route('save_terima_invoice') }}" method="post" class="save_jurnal martadah-receipt">
             @csrf
             <input type="hidden" name="no_nota" value="{{ $nota }}">
             <input type="hidden" name="tgl" value="{{ $invoice2->tgl }}">
@@ -44,15 +60,15 @@
                     <hr style="border: 1px solid black">
                 </div>
                 <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
+                    <div class="card invoice-card">
+                        <div class="card-header invoice-header">
                             <div class="row">
                                 <div class="col-lg-5">
-                                    <img src="https://agrilaras.putrirembulan.com/assets/img/logo.png" alt="Logo"
-                                        width="150px">
+                                    <img src="https://ternak.ptagafood.com/assets/login/img/agri_laras2.png"
+                                        alt="Logo" width="95px">
                                 </div>
                                 <div class="col-lg-7">
-                                    <table class="float-end">
+                                    <table class="float-end invoice-meta">
                                         <tr>
                                             <td style="padding: 5px">Tanggal</td>
                                             <td style="padding: 5px">:</td>
@@ -81,11 +97,12 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="text-center">
+                        <h6 class="text-center invoice-title">
                             Nota Penjualan Telur Martadah
                         </h6>
                         <div class="card-body">
-                            <table class="table  table-bordered" style="white-space: nowrap;">
+                            <div class="invoice-table-wrap">
+                            <table class="table table-bordered invoice-table" style="white-space: nowrap;">
                                 <thead>
                                     <tr>
                                         <th class="dhead" width="10%" rowspan="2">Produk </th>
@@ -130,52 +147,49 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                    $total_semua = 0;
-                                    $ttl_pcs = 0;
-                                    $ttl_kg_kotor = 0;
-                                    $ttl_kg_bersih = 0;
+                                        $total_semua = 0;
+                                        $ttl_pcs = 0;
+                                        $ttl_kg_kotor = 0;
+                                        $ttl_kg_bersih = 0;
                                     @endphp
                                     @foreach ($invoice as $i)
-                                    <tr>
+                                        <tr>
 
-                                        <td>{{ $i->nm_telur }}</td>
-                                        <td align="right">{{ $i->pcs_pcs }}</td>
-                                        <td align="right">{{ $i->kg_pcs }}</td>
-                                        <td align="right">Rp. {{ number_format($i->rp_pcs, 0) }}</td>
-                                        <!-- Jual Ikat -->
-                                        <td align="right">{{ $i->ikat }}</td>
-                                        <td align="right">{{ $i->kg_ikat }}</td>
-                                        <td align="right">Rp. {{ number_format($i->rp_ikat, 0) }}</td>
-                                        <!-- Jual Ikat -->
-                                        <!-- Jual Kg -->
-                                        <td align="right">{{ $i->pcs_kg }}</td>
-                                        <td align="right">{{ $i->kg_kg_kotor }}</td>
-                                        <td align="right">{{ $i->kg_kg }}</td>
-                                        {{-- <td align="right">{{$i->rak_kg}}</td> --}}
-                                        <td align="right">Rp. {{ number_format($i->rp_kg, 0) }}</td>
-                                        <!-- Jual Kg -->
-                                        <td align="right">
-                                            @php
-                                            $rp_pcs = $i->pcs_pcs * $i->rp_pcs;
-                                            $rp_ikat = ($i->kg_ikat - $i->ikat) * $i->rp_ikat;
-                                            // $rak_kali = round($i->rak_kg * 0.12,1);
-                                            $rak_kotor = round(($i->pcs_kg / 15) * 0.12, 1);
-                                            $kg_rak_kotor = $i->kg_kg + $rak_kotor;
-                                            $rp_kg = $i->kg_kg * $i->rp_kg;
-                                            $total_rp = $rp_pcs + $rp_ikat + $rp_kg;
+                                            <td>{{ $i->nm_telur }}</td>
+                                            <td align="right">{{ $i->pcs_pcs }}</td>
+                                            <td align="right">{{ $i->kg_pcs }}</td>
+                                            <td align="right">Rp. {{ number_format($i->rp_pcs, 0) }}</td>
+                                            <!-- Jual Ikat -->
+                                            <td align="right">{{ $i->ikat }}</td>
+                                            <td align="right">{{ $i->kg_ikat }}</td>
+                                            <td align="right">Rp. {{ number_format($i->rp_ikat, 0) }}</td>
+                                            <!-- Jual Ikat -->
+                                            <!-- Jual Kg -->
+                                            <td align="right">{{ $i->pcs_kg }}</td>
+                                            <td align="right">{{ $i->kg_kg_kotor }}</td>
+                                            <td align="right">{{ $i->kg_kg }}</td>
+                                            {{-- <td align="right">{{$i->rak_kg}}</td> --}}
+                                            <td align="right">Rp. {{ number_format($i->rp_kg, 0) }}</td>
+                                            <!-- Jual Kg -->
+                                            <td align="right">
+                                                @php
+                                                    // $rak_kali = round($i->rak_kg * 0.12,1);
+                                                    $rak_kotor = round(($i->pcs_kg / 15) * 0.12, 1);
+                                                    $kg_rak_kotor = $i->kg_kg + $rak_kotor;
+                                                    $total_rp = $i->total_rp;
 
-                                            $ikat_kg_bersih = $i->kg_ikat - $i->ikat;
+                                                    $ikat_kg_bersih = $i->kg_ikat - $i->ikat;
 
-                                            @endphp
-                                            Rp. {{ number_format($total_rp, 0) }}
-                                        </td>
-                                    </tr>
-                                    @php
-                                    $total_semua += $total_rp;
-                                    $ttl_pcs += $i->pcs_pcs + $i->ikat * 180 + $i->pcs_kg;
-                                    $ttl_kg_kotor += $i->kg_pcs + $i->kg_ikat + $i->kg_kg_kotor;
-                                    $ttl_kg_bersih += $ikat_kg_bersih + $i->kg_kg;
-                                    @endphp
+                                                @endphp
+                                                Rp. {{ number_format($total_rp, 0) }}
+                                            </td>
+                                        </tr>
+                                        @php
+                                            $total_semua += $total_rp;
+                                            $ttl_pcs += $i->pcs_pcs + $i->ikat * 180 + $i->pcs_kg;
+                                            $ttl_kg_kotor += $i->kg_pcs + $i->kg_ikat + $i->kg_kg_kotor;
+                                            $ttl_kg_bersih += $ikat_kg_bersih + $i->kg_kg;
+                                        @endphp
                                     @endforeach
 
 
@@ -188,7 +202,8 @@
                                     </tr>
                                 </tfoot> --}}
                             </table>
-                            <table width="50%">
+                            </div>
+                            <table class="invoice-totals">
                                 <tr>
 
                                     <td>Total Pcs</td>
@@ -224,10 +239,10 @@
                 <div class="col-lg-12">
                     <hr style="border: 1px solid blue">
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-4 d-none">
 
                 </div>
-                <div class="col-lg-8">
+                <div class="col-lg-12 payment-panel">
 
                     <hr style="border: 1px solid blue">
 
@@ -241,139 +256,144 @@
                             <input type="hidden" class="total_semua_biasa" name="total_penjualan"
                                 value="{{ $total_semua }}">
                         </div>
-                        @if (empty($jurnal))
-                        <div class="col-lg-5 mt-2">
-                            <label for="">Pilih Akun Setor</label>
-                            <select name="id_akun[]" id="" class="select2_add" required>
-                                <option value="">-Pilih Akun-</option>
-                                @foreach ($akun as $a)
-                                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Debit</label>
-                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
-                                value="Rp {{ number_format($total_semua, 2, ',', '.') }}">
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
-                                value="{{ $total_semua }}">
-                        </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Kredit</label>
-                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
-                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
-                                value="0">
-                        </div>
-                        <div class="col-lg-1 mt-2">
-                            <label for="">aksi</label> <br>
-                            <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
-                                <i class="fas fa-plus text-success"></i>
-                            </button>
-                        </div>
+                        @if ($jurnal->isEmpty())
+                            <div class="col-lg-5 mt-2">
+                                <label for="">Pilih Akun Setor</label>
+                                <select name="id_akun[]" id="" class="select2_add" required>
+                                    <option value="">-Pilih Akun-</option>
+                                    @foreach ($akun as $a)
+                                        <option value="{{ $a->id_akun_perkiraan }}">{{ $a->kode_perkiraan }} - {{ $a->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-lg-3 mt-2">
+                                <label for="">Debit</label>
+                                <input type="text" class="form-control debit debit1" count="1"
+                                    style="text-align: right"
+                                    value="Rp {{ number_format($total_semua, 2, ',', '.') }}">
+                                <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                                    value="{{ $total_semua }}">
+                            </div>
+                            <div class="col-lg-3 mt-2">
+                                <label for="">Kredit</label>
+                                <input type="text" class="form-control kredit kredit1" count="1"
+                                    style="text-align: right">
+                                <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
+                                    value="0">
+                            </div>
+                            <div class="col-lg-1 mt-2">
+                                <label for="">aksi</label> <br>
+                                <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
+                                    <i class="fas fa-plus text-success"></i>
+                                </button>
+                            </div>
 
-                        <div id="load_pembayaran"></div>
+                            <div id="load_pembayaran"></div>
 
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <hr style="border: 1px solid blue">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <hr style="border: 1px solid blue">
+                                </div>
+                                <div class="col-lg-5">
+                                    <h6>Total Setor</h6>
+                                </div>
+                                <div class="col-lg-3">
+                                    <h6 class="total_debit float-end">Rp {{ number_format($total_semua, 0) }}</h6>
+                                </div>
+                                <div class="col-lg-4">
+                                    <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
+                                </div>
+                                <div class="col-lg-5">
+                                    <h6 class="cselisih">Selisih</h6>
+                                </div>
+                                <div class="col-lg-3">
+                                </div>
+                                <div class="col-lg-4">
+                                    <h6 class="selisih float-end cselisih">Rp 0</h6>
+                                </div>
                             </div>
-                            <div class="col-lg-5">
-                                <h6>Total Setor</h6>
-                            </div>
-                            <div class="col-lg-3">
-                                <h6 class="total_debit float-end">Rp {{ number_format($total_semua, 0) }}</h6>
-                            </div>
-                            <div class="col-lg-4">
-                                <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
-                            </div>
-                            <div class="col-lg-5">
-                                <h6 class="cselisih">Selisih</h6>
-                            </div>
-                            <div class="col-lg-3">
-                            </div>
-                            <div class="col-lg-4">
-                                <h6 class="selisih float-end cselisih">Rp 0</h6>
-                            </div>
-                        </div>
                         @else
-                        @php
-                        $debit = 0;
-                        $kredit = 0;
-                        @endphp
-                        @foreach ($jurnal as $j)
-                        @php
-                        $debit += $j->debit;
-                        $kredit += $j->kredit;
-                        @endphp
-                        <div class="col-lg-5 mt-2">
-                            <label for="">Pilih Akun Setor</label>
-                            <select name="" id="" class="select2_add" required disabled>
-                                <option value="">-Pilih Akun-</option>
-                                @foreach ($akun as $a)
-                                <option value="{{ $a->id_akun }}" {{ $a->id_akun == $j->id_akun ? 'SELECTED' : '' }}>
-                                    {{ $a->nm_akun }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="id_akun[]" value="{{ $j->id_akun }}">
-                        </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Debit</label>
-                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right"
-                                value="Rp {{ number_format($j->debit, 2, ',', '.') }}" readonly>
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
-                                value="{{ $j->debit }}">
-                        </div>
-                        <div class="col-lg-3 mt-2">
-                            <label for="">Kredit</label>
-                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right"
-                                value="Rp {{ number_format($j->kredit, 2, ',', '.') }}" readonly>
-                            <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
-                                value="{{ $j->kredit }}">
-                        </div>
-                        {{-- <div class="col-lg-1 mt-2">
+                            @php
+                                $debit = 0;
+                                $kredit = 0;
+                            @endphp
+                            @foreach ($jurnal as $j)
+                                @php
+                                    $debit += $j->debit;
+                                    $kredit += $j->kredit;
+                                @endphp
+                                <div class="col-lg-5 mt-2">
+                                    <label for="">Pilih Akun Setor</label>
+                                    <select name="" id="" class="select2_add" required disabled>
+                                        <option value="">-Pilih Akun-</option>
+                                        @foreach ($akun as $a)
+                                            <option value="{{ $a->id_akun_perkiraan }}"
+                                                {{ $a->id_akun_perkiraan == $j->id_akun_perkiraan ? 'SELECTED' : '' }}>
+                                                {{ $a->kode_perkiraan }} - {{ $a->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <input type="hidden" name="id_akun[]" value="{{ $j->id_akun_perkiraan }}">
+                                </div>
+                                <div class="col-lg-3 mt-2">
+                                    <label for="">Debit</label>
+                                    <input type="text" class="form-control debit debit1" count="1"
+                                        style="text-align: right"
+                                        value="Rp {{ number_format($j->debit, 2, ',', '.') }}" readonly>
+                                    <input type="hidden" name="debit[]"
+                                        class="form-control debit_biasa debit_biasa1" value="{{ $j->debit }}">
+                                </div>
+                                <div class="col-lg-3 mt-2">
+                                    <label for="">Kredit</label>
+                                    <input type="text" class="form-control kredit kredit1" count="1"
+                                        style="text-align: right"
+                                        value="Rp {{ number_format($j->kredit, 2, ',', '.') }}" readonly>
+                                    <input type="hidden" name="kredit[]"
+                                        class="form-control kredit_biasa kredit_biasa1" value="{{ $j->kredit }}">
+                                </div>
+                                {{-- <div class="col-lg-1 mt-2">
                             <label for="">aksi</label> <br>
                             <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
                                 <i class="fas fa-plus text-success"></i>
                             </button>
                         </div> --}}
-                        @endforeach
-                        {{-- <div id="load_pembayaran"></div> --}}
+                            @endforeach
+                            {{-- <div id="load_pembayaran"></div> --}}
 
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <hr style="border: 1px solid blue">
-                            </div>
-                            <div class="col-lg-5">
-                                <h6>Total Setor</h6>
-                            </div>
-                            <div class="col-lg-3">
-                                <h6 class="total_debit float-end">Rp {{ number_format($debit, 0) }}</h6>
-                            </div>
-                            <div class="col-lg-4">
-                                <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
-                            </div>
-                            <div class="col-lg-5">
-                                <select name="id_akun_sisa" id="" class="select2_add" required>
-                                    <option value="">-Pilih Akun-</option>
-                                    @foreach ($akun as $a)
-                                    <option value="{{ $a->id_akun }}">
-                                        {{ $a->nm_akun }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                <input type="hidden" name="selisih" value="{{ $debit - $total_semua }}">
-                            </div>
-                            <div class="col-lg-3">
-                            </div>
-                            <div class="col-lg-4">
-                                <h6
-                                    class="selisih float-end cselisih {{ $debit - $total_semua != 0 ? 'text-danger' : 'text-success' }}">
-                                    Rp
-                                    {{ number_format($debit - $total_semua) }}</h6>
-                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <hr style="border: 1px solid blue">
+                                </div>
+                                <div class="col-lg-5">
+                                    <h6>Total Setor</h6>
+                                </div>
+                                <div class="col-lg-3">
+                                    <h6 class="total_debit float-end">Rp {{ number_format($debit, 0) }}</h6>
+                                </div>
+                                <div class="col-lg-4">
+                                    <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
+                                </div>
+                                <div class="col-lg-5">
+                                    <select name="id_akun_sisa" id="" class="select2_add">
+                                        <option value="">-Pilih Akun-</option>
+                                        @foreach ($akun as $a)
+                                            <option value="{{ $a->id_akun_perkiraan }}">
+                                                {{ $a->kode_perkiraan }} - {{ $a->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <input type="hidden" name="selisih" value="{{ $debit - $total_semua }}">
+                                </div>
+                                <div class="col-lg-3">
+                                </div>
+                                <div class="col-lg-4">
+                                    <h6
+                                        class="selisih float-end cselisih {{ $debit - $total_semua != 0 ? 'text-danger' : 'text-success' }}">
+                                        Rp
+                                        {{ number_format($debit - $total_semua) }}</h6>
+                                </div>
 
-                        </div>
+                            </div>
 
                         @endif
 
@@ -388,15 +408,16 @@
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
         </button>
-        <a href="{{ route('terima_invoice_mtd') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
+        <a href="{{ route('penjualan_martadah_cek', ['lokasi' => 'mtd']) }}"
+            class="float-end btn btn-outline-primary me-2">Batal</a>
         </form>
     </x-slot>
 
 
 
     @section('scripts')
-    <script>
-        $(document).ready(function() {
+        <script>
+            $(document).ready(function() {
                 $(document).on("keyup", ".debit", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
@@ -419,8 +440,8 @@
                     //     total_all += parseFloat($(this).val());
                     // });
 
-                    var  total_all = $('.total_semua_biasa').val()
-                   
+                    var total_all = $('.total_semua_biasa').val()
+
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -482,7 +503,7 @@
                     // $(".bayar_biasa").each(function() {
                     //     total_all += parseFloat($(this).val());
                     // });
-                    var  total_all = $('.total_semua_biasa').val()
+                    var total_all = $('.total_semua_biasa').val()
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -520,7 +541,7 @@
                 $(document).on("click", ".tbh_pembayaran", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "/tbh_pembayaran?count=" + count,
+                        url: "{{ route('tbh_pembayaran_martadah') }}?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#load_pembayaran").append(data);
@@ -538,7 +559,7 @@
                     // $(".bayar_biasa").each(function() {
                     //     total_all += parseFloat($(this).val());
                     // });
-                    var  total_all = $('.total_semua_biasa').val()
+                    var total_all = $('.total_semua_biasa').val()
 
                     var total_debit = 0;
                     $(".debit_biasa").each(function() {
@@ -594,6 +615,6 @@
 
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

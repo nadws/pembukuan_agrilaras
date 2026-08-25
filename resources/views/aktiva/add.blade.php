@@ -3,6 +3,11 @@
 
     </x-slot>
     <x-slot name="cardBody">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                {{ $errors->first() }}
+            </div>
+        @endif
         <form action="{{ route('save_aktiva') }}" method="post" class="save_jurnal">
             @csrf
             <section class="row">
@@ -45,7 +50,7 @@
                     });
                 }
 
-                var count = 3;
+                var count = 1;
                 $(document).on("click", ".tbh_baris_aktiva", function() {
                     count = count + 1;
                     $.ajax({
@@ -63,68 +68,36 @@
 
 
                 });
-                $(document).on("change", ".pilih_kelompok", function() {
+                function tampilRupiah(nilai) {
+                    return new Intl.NumberFormat('id-ID', {
+                        style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+                    }).format(Number(nilai) || 0);
+                }
+
+                function hitungPenyusutan(count) {
+                    var nilaiBuku = Number($('.nilai_sisa_biasa' + count).val()) || 0;
+                    var umurTahun = Number($('.umur_tahun' + count).val()) || 0;
+                    var umurBulan = Number($('.umur_bulan' + count).val()) || 0;
+                    var umurAktiva = (umurTahun * 12) + umurBulan;
+                    var penyusutan = umurAktiva > 0 ? nilaiBuku / umurAktiva : 0;
+                    $('.susut_bulan' + count).text(tampilRupiah(penyusutan));
+                }
+
+                $(document).on("input", ".nilai-uang", function() {
                     var count = $(this).attr("count");
-                    var id_kelompok = $('.pilih_kelompok' + count).val();
-                    var nilai = $('.nilai_perolehan_biasa' + count).val()
+                    var angka = String($(this).val()).replace(/\D/g, '');
+                    $($(this).data('target')).val(angka || 0);
+                    $(this).val(angka ? 'Rp ' + Number(angka).toLocaleString('id-ID') : '');
 
-                    $.ajax({
-                        type: "GET",
-                        url: "/get_data_kelompok?id_kelompok=" + id_kelompok,
-                        dataType: "json",
-                        success: function(data) {
-                            $('.nilai_persen' + count).text(data['nilai_persen'] * 100 + ' %');
-                            $('.inputnilai_persen' + count).val(data['nilai_persen']);
-                            $('.umur' + count).text(data['tahun'] + ' Tahun');
-
-                            var tarif = $('.inputnilai_persen' + count).val();
-                            var susut_bulan = (parseFloat(nilai) * parseFloat(tarif)) / 12;
-
-                            var susut_rupiah = susut_bulan.toLocaleString("id-ID", {
-                                style: "currency",
-                                currency: "IDR",
-                            });
-
-                            if (nilai === '') {
-                                $('.susut_bulan' + count).text('Rp.0');
-
-                            } else {
-                                $('.susut_bulan' + count).text(susut_rupiah);
-
-                            }
-
-                        }
-                    });
+                    if ($(this).hasClass('nilai_perolehan') && !$('.nilai_sisa' + count).val()) {
+                        $('.nilai_sisa_biasa' + count).val(angka || 0);
+                        $('.nilai_sisa' + count).val(angka ? 'Rp ' + Number(angka).toLocaleString('id-ID') : '');
+                    }
+                    hitungPenyusutan(count);
                 });
 
-                $(document).on("keyup", ".nilai_perolehan", function() {
-                    var count = $(this).attr("count");
-                    var input = $(this).val();
-                    input = input.replace(/[^\d\,]/g, "");
-                    input = input.replace(".", ",");
-                    input = input.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-
-                    if (input === "") {
-                        $(this).val("");
-                        var nilai = $('.nilai_perolehan_biasa' + count).val(0)
-                    } else {
-                        $(this).val("Rp " + input);
-                        input = input.replaceAll(".", "");
-                        input2 = input.replace(",", ".");
-                        var nilai = $('.nilai_perolehan_biasa' + count).val(input2)
-
-                    }
-                    var tarif = $('.inputnilai_persen' + count).val();
-                    var susut_bulan = (parseFloat(input2) * parseFloat(tarif)) / 12;
-
-                    var susut_rupiah = susut_bulan.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                    });
-
-                    $('.susut_bulan' + count).text(susut_rupiah);
-
-
+                $(document).on('input', '.umur_tahun, .umur_bulan', function() {
+                    hitungPenyusutan($(this).attr('count'));
                 });
                 aksiBtn("form");
             });

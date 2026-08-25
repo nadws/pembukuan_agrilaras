@@ -34,12 +34,11 @@
                         <th width="5">#</th>
                         <th>Tanggal Perolehan</th>
                         <th>Nama</th>
-                        <th>Kelompok</th>
-                        <th class="text-end">Nilai Perolehan</th>
+                        <th class="text-end">Nilai Aset/Perolehan</th>
                         <th class="text-end">Penysutan Perbulan</th>
                         <th class="text-end">Akumulasi Penyusutan</th>
-                        <th class="text-end">Nilai Buku</th>
-                        <th>Sisa Umur</th>
+                        <th class="text-end">Sisa Nilai Aset (Nilai Buku)</th>
+                        <th>Umur Aktiva</th>
                         {{-- <th>Aksi</th> --}}
                     </tr>
                 </thead>
@@ -49,48 +48,21 @@
                             <td>{{ $no + 1 }}</td>
                             <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
                             <td>{{ $a->nm_aktiva }}</td>
-                            <td>{{ $a->nm_kelompok }}</td>
                             <td align="right">Rp {{ number_format($a->h_perolehan, 0) }}</td>
                             <td align="right">Rp {{ number_format($a->biaya_depresiasi, 0) }}</td>
                             <td align="right">Rp {{ number_format($a->beban, 0) }}</td>
-                            <td align="right">Rp {{ number_format($a->h_perolehan - $a->beban, 0) }}</td>
-                            <td>{{ !empty($a->sisa_umur_bulan) ? $a->sisa_umur_bulan . ' bulan' : '-' }}</td>
-                            {{-- <td>
-                                <div class="btn-group" role="group">
-                                    <span class="btn btn-sm" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v text-primary"></i>
-                                    </span>
-                                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                        @php
-                                            $emptyKondisi = [$edit, $delete, $detail];
-                                        @endphp
-                                        <x-theme.dropdown_kosong :emptyKondisi="$emptyKondisi" />
-
-                                        @if (!empty($edit))
-                                            <li><a class="dropdown-item text-primary edit_akun" href=""><i
-                                                        class="me-2 fas fa-pen"></i>Edit</a>
-                                            </li>
-                                        @endif
-
-                                        @if (!empty($delete))
-                                            <li>
-                                                <a class="dropdown-item  text-danger delete_nota" no_nota=""
-                                                    href="#" data-bs-toggle="modal" data-bs-target="#delete"><i
-                                                        class="me-2 fas fa-trash"></i>Delete
-                                                </a>
-                                            </li>
-                                        @endif
-
-                                        @if (!empty($detail))
-                                            <li><a class="dropdown-item  text-info detail_nota" href="#"
-                                                    no_nota="" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#detail"><i
-                                                        class="me-2 fas fa-search"></i>Detail</a>
-                                            </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </td> --}}
+                            <td align="right">Rp {{ number_format(max(0, $a->h_perolehan - $a->beban), 0) }}</td>
+                            <td>
+                                @if (!empty($a->umur_aktiva_bulan))
+                                    @php
+                                        $tahunUmur = intdiv((int) $a->umur_aktiva_bulan, 12);
+                                        $bulanUmur = (int) $a->umur_aktiva_bulan % 12;
+                                    @endphp
+                                    {{ $tahunUmur > 0 ? $tahunUmur . ' tahun' : '' }}{{ $tahunUmur > 0 && $bulanUmur > 0 ? ' ' : '' }}{{ $bulanUmur > 0 ? $bulanUmur . ' bulan' : '' }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
