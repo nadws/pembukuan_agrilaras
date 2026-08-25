@@ -120,7 +120,7 @@ class AktivaController extends Controller
             ['tanggal_perolehan', 'Gunakan format YYYY-MM-DD atau DD/MM/YYYY.'],
             ['nilai_perolehan', 'Nilai awal/perolehan aset, hanya angka.'],
             ['nilai_sisa_aset', 'Boleh 0 jika nilai buku aset sudah habis; tidak boleh melebihi nilai perolehan.'],
-            ['umur_tahun', 'Bagian tahun dari umur aktiva, minimal total umur 1 bulan.'],
+            ['umur_tahun', 'Bagian tahun dari umur aktiva yang menjadi dasar penyusutan.'],
             ['umur_bulan', 'Bagian bulan, isi angka 0 sampai 11.'],
         ], null, 'E4');
 
@@ -279,7 +279,8 @@ class AktivaController extends Controller
                 $errors[] = "Baris {$rowNumber}: umur aktiva minimal 1 bulan.";
                 continue;
             }
-            $penyusutanBulanan = $nilaiSisa / $umurAktiva;
+            $penyusutanBulanan = $nilai / $umurAktiva;
+            $sisaPeriode = $penyusutanBulanan > 0 ? (int) ceil($nilaiSisa / $penyusutanBulanan) : 0;
 
             $dataImport[] = [
                 'id_akun_aset' => (int) $raw['id_akun_aset'],
@@ -290,7 +291,7 @@ class AktivaController extends Controller
                 'nilai_buku_awal' => $nilaiSisa,
                 'biaya_depresiasi' => round($penyusutanBulanan, 2),
                 'umur_aktiva_bulan' => $umurAktiva,
-                'sisa_umur_bulan' => $umurAktiva,
+                'sisa_umur_bulan' => $sisaPeriode,
                 'akumulasi_penyusutan' => round($nilai - $nilaiSisa, 2),
                 'admin' => Auth::user()->name,
                 'sumber' => 'import',
@@ -315,7 +316,7 @@ class AktivaController extends Controller
     {
         $data =  [
             'title' => 'Add Aktiva',
-            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get()
+            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->whereNotNull('id_akun_induk')->orderBy('kode_perkiraan')->get()
         ];
         return view('aktiva.load_aktiva', $data);
     }
@@ -323,7 +324,7 @@ class AktivaController extends Controller
     public function tambah_baris_aktiva(Request $r)
     {
         $data =  [
-            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->orderBy('kode_perkiraan')->get(),
+            'akunAset' => DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','FASS')->whereNotNull('id_akun_induk')->orderBy('kode_perkiraan')->get(),
             'count' => $r->count
 
         ];
@@ -377,7 +378,8 @@ class AktivaController extends Controller
                     "umur_tahun.{$x}" => 'Umur aktiva minimal 1 bulan.',
                 ]);
             }
-            $biaya_depresiasi = $nilaiBuku / $umurAktiva;
+            $biaya_depresiasi = $nilaiPerolehan / $umurAktiva;
+            $sisaPeriode = $biaya_depresiasi > 0 ? (int) ceil($nilaiBuku / $biaya_depresiasi) : 0;
 
             $data = [
                 'id_kelompok' => null,
@@ -388,7 +390,7 @@ class AktivaController extends Controller
                 'nilai_buku_awal' => $nilaiBuku,
                 'biaya_depresiasi' => round($biaya_depresiasi, 2),
                 'umur_aktiva_bulan' => $umurAktiva,
-                'sisa_umur_bulan' => $umurAktiva,
+                'sisa_umur_bulan' => $sisaPeriode,
                 'akumulasi_penyusutan' => round($nilaiPerolehan - $nilaiBuku, 2),
                 'admin' => Auth::user()->name,
                 'sumber' => 'manual',

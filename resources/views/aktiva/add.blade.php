@@ -76,10 +76,11 @@
 
                 function hitungPenyusutan(count) {
                     var nilaiBuku = Number($('.nilai_sisa_biasa' + count).val()) || 0;
+                    var nilaiPerolehan = Number($('.nilai_perolehan_biasa' + count).val()) || 0;
                     var umurTahun = Number($('.umur_tahun' + count).val()) || 0;
                     var umurBulan = Number($('.umur_bulan' + count).val()) || 0;
                     var umurAktiva = (umurTahun * 12) + umurBulan;
-                    var penyusutan = umurAktiva > 0 ? nilaiBuku / umurAktiva : 0;
+                    var penyusutan = umurAktiva > 0 ? nilaiPerolehan / umurAktiva : 0;
                     $('.susut_bulan' + count).text(tampilRupiah(penyusutan));
                 }
 

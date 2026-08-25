@@ -46,6 +46,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Mengelola produk pakan, obat, satuan dosis, dan kegunaannya.',
             ],
             [
+                'judul' => 'Barang Umum',
+                'route' => 'barang-umum.index',
+                'img' => 'product.png',
+                'deskripsi' => 'Mengelola barang umum, satuan, gudang, dan kontrol stok untuk pembelian umum.',
+            ],
+            [
                 'judul' => 'Produk Telur',
                 'route' => 'produk-telur-master.index',
                 'img' => 'eggs.png',

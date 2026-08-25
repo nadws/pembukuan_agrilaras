@@ -4,6 +4,7 @@ use App\Http\Controllers\AktivaController;
 use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AkunPerkiraanController;
 use App\Http\Controllers\BukuBesarController;
+use App\Http\Controllers\BarangUmumController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
 use App\Http\Controllers\CrudPermissionController;
@@ -95,6 +96,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan-martadah', 'penjualan_martadah')->name('penjualan_martadah');
         Route::get('/penjualan-martadah/telur', 'penjualan_martadah_telur')->name('penjualan_martadah_telur');
     });
+
+    Route::controller(BarangUmumController::class)
+        ->prefix('data-master/barang-umum')
+        ->name('barang-umum.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{idProduk}', 'update')->name('update');
+            Route::delete('/{idProduk}', 'destroy')->name('destroy');
+        });
 
     Route::controller(FakturPembelianController::class)
         ->prefix('transaksi/faktur-pembelian')

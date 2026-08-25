@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PembukuanBaruJurnalPenyesuaianController extends Controller
 {
@@ -24,27 +25,49 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
         return view('pembukuan_baru.jurnal_penyesuaian.stok_opname', ['title'=>'Stok Opname','items'=>$items]);
     }
 
-    public function penyusutanAktiva()
+    public function penyusutanAktiva(Request $request)
     {
-        $aktiva = DB::table('aktiva_pembukuan_baru as a')
-            ->leftJoin('kelompok_aktiva as k','k.id_kelompok','=','a.id_kelompok')
-            ->leftJoin('akun_perkiraan as ap','ap.id_akun_perkiraan','=','a.id_akun_aset')
-            ->whereColumn('a.akumulasi_penyusutan', '<', 'a.h_perolehan')
-            ->where(function ($query) {
-                $query->whereNull('a.sisa_umur_bulan')->orWhere('a.sisa_umur_bulan', '>', 0);
-            })
-            ->orderBy('a.tgl')
-            ->get(['a.*','k.nm_kelompok','ap.kode_perkiraan','ap.nama as nama_akun_aset']);
-        return view('pembukuan_baru.jurnal_penyesuaian.penyusutan_aktiva', ['title'=>'Penyusutan Aktiva','aktiva'=>$aktiva]);
-    }
+        $tanggal = (string) $request->input('tanggal', date('Y-m-d'));
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal) || strtotime($tanggal) === false) {
+            $tanggal = date('Y-m-d');
+        }
+        $periode = date('Y-m', strtotime($tanggal));
 
-    public function simpanPenyusutan(Request $request)
-    {
-        $v=$request->validate(['tanggal'=>'required|date','id_aktiva'=>'required|array']); $aktiva=DB::table('aktiva_pembukuan_baru')->whereIn('id',$v['id_aktiva'])->get(); if($aktiva->isEmpty()) return back()->with('sukses','Tidak ada aktiva dipilih.');
-        $now=now();$no='JPA-'.date('YmdHis');$total=0;$rows=[];$akunBiaya=[];$akunAkumulasi=DB::table('akun_perkiraan')->where('kode_perkiraan','1200060')->where('aktif',1)->first(); $aktiva=$aktiva->map(function($a){if(!$a->id_akun_aset)$a->id_akun_aset=79;return $a;}); foreach($aktiva as $a){$akumulasi=min((float)$a->h_perolehan,(float)($a->akumulasi_penyusutan??0)+(float)$a->biaya_depresiasi);DB::table('aktiva_pembukuan_baru')->where('id',$a->id)->update(['akumulasi_penyusutan'=>$akumulasi,'sisa_umur_bulan'=>!is_null($a->sisa_umur_bulan)?max(0,$a->sisa_umur_bulan-1):null,'updated_at'=>now()]);}
-        foreach($aktiva as $a){$akun=DB::table('akun_perkiraan')->where('id_akun_perkiraan',$a->id_akun_aset)->first(); if(!$akun) continue; $biaya=DB::table('akun_perkiraan')->where('aktif',1)->where('nama','like','%Penyusutan%')->where('nama','like','%'.strtok($akun->nama,' ').'%')->first() ?: DB::table('akun_perkiraan')->where('aktif',1)->where('nama','like','%Penyusutan%')->first(); if(!$biaya) continue; $nilai=(float)$a->biaya_depresiasi;$total+=$nilai;$akunBiaya[$biaya->id_akun_perkiraan]=($akunBiaya[$biaya->id_akun_perkiraan]??0)+$nilai;}
-        foreach($akunBiaya as $id=>$nilai){$rows[]=['id_akun_perkiraan'=>$id,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Penyusutan aktiva bulan '.date('m-Y',strtotime($v['tanggal'])),'debit'=>$nilai,'kredit'=>0,'created_at'=>$now,'updated_at'=>$now];}
-        $aset=DB::table('akun_perkiraan')->where('kode_perkiraan','110406')->first(); if(!$rows||!$aset)return back()->withErrors(['akun'=>'Akun biaya penyusutan atau Persediaan Umum belum tersedia.']);$rows[]=['id_akun_perkiraan'=>$aset->id_akun_perkiraan,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Akumulasi penyusutan aktiva','debit'=>0,'kredit'=>$total,'created_at'=>$now,'updated_at'=>$now];$batch=DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Penyusutan Aktiva '.$no,'hash_file'=>hash('sha256',$no.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$total,'total_kredit'=>$total,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]);foreach($rows as &$r)$r['id_impor_jurnal_perkiraan']=$batch;DB::table('jurnal_perkiraan')->insert($rows);return redirect()->route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva')->with('sukses','Jurnal penyusutan berhasil dibuat.');
+        $aktiva = DB::table('aktiva_pembukuan_baru as a')
+            ->leftJoin('akun_perkiraan as ap','ap.id_akun_perkiraan','=','a.id_akun_aset')
+            ->leftJoin('penyusutan_aktiva_pembukuan_baru as p', function ($join) use ($periode) {
+                $join->on('p.id_aktiva', '=', 'a.id')->where('p.periode', '=', $periode);
+            })
+            ->whereColumn('a.akumulasi_penyusutan', '<', 'a.h_perolehan')
+            ->whereNotNull('a.id_akun_aset')
+            ->orderBy('a.tgl')
+            ->get(['a.*','ap.kode_perkiraan','ap.nama as nama_akun_aset','p.id as id_penyusutan_periode'])
+            ->map(function ($a) {
+                $a->nilai_buku = max(0, (float) $a->h_perolehan - (float) $a->akumulasi_penyusutan);
+                $a->penyusutan_bulan = !empty($a->umur_aktiva_bulan)
+                    ? round((float) $a->h_perolehan / (int) $a->umur_aktiva_bulan, 2)
+                    : (float) $a->biaya_depresiasi;
+                $a->nominal_periode = min($a->nilai_buku, $a->penyusutan_bulan);
+                $a->sisa_periode = $a->penyusutan_bulan > 0
+                    ? (int) ceil($a->nilai_buku / $a->penyusutan_bulan)
+                    : 0;
+                $akunBiaya = DB::table('akun_perkiraan')->where('aktif', 1)
+                    ->where('tipe_akun', 'EXPS')
+                    ->where('nama', 'like', '%Biaya Penyusutan%')
+                    ->where('nama', 'like', '%' . strtok((string) $a->nama_akun_aset, ' ') . '%')
+                    ->first(['kode_perkiraan', 'nama']);
+                $a->akun_biaya = $akunBiaya
+                    ? $akunBiaya->kode_perkiraan . ' - ' . $akunBiaya->nama
+                    : null;
+                return $a;
+            });
+
+        return view('pembukuan_baru.jurnal_penyesuaian.penyusutan_aktiva', [
+            'title' => 'Penyusutan Aktiva',
+            'aktiva' => $aktiva,
+            'tanggal' => $tanggal,
+            'periode' => $periode,
+        ]);
     }
 
     public function simpanStokOpname(Request $request)
@@ -65,16 +88,116 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
 
     public function simpanPenyusutanGrouped(Request $request)
     {
-        $v=$request->validate(['tanggal'=>'required|date','id_aktiva'=>'required|array']);$aktiva=DB::table('aktiva_pembukuan_baru')->whereIn('id',$v['id_aktiva'])->get();$debit=[];$credit=[];$now=now();$no='JPA-'.date('YmdHis');
-        foreach($aktiva as $a){$asset=DB::table('akun_perkiraan')->where('id_akun_perkiraan',$a->id_akun_aset)->first();if(!$asset)continue;$expense=DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','EXPS')->where('nama','like','%Biaya Penyusutan%')->where('nama','like','%'.strtok($asset->nama,' ').'%')->first();if(!$expense)continue;$nilai=min((float)$a->biaya_depresiasi,max(0,(float)$a->h_perolehan-(float)($a->akumulasi_penyusutan??0)));if($nilai<=0)continue;$debit[$expense->id_akun_perkiraan]=($debit[$expense->id_akun_perkiraan]??0)+$nilai;$credit[$asset->id_akun_perkiraan]=($credit[$asset->id_akun_perkiraan]??0)+$nilai;DB::table('aktiva_pembukuan_baru')->where('id',$a->id)->update(['akumulasi_penyusutan'=>min($a->h_perolehan,($a->akumulasi_penyusutan??0)+$nilai),'sisa_umur_bulan'=>is_null($a->sisa_umur_bulan)?null:max(0,$a->sisa_umur_bulan-1),'updated_at'=>$now]);}
-        $rows=[];foreach($debit as $id=>$nilai)$rows[]=['id_akun_perkiraan'=>$id,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Biaya penyusutan aktiva bulan '.date('m-Y',strtotime($v['tanggal'])),'debit'=>$nilai,'kredit'=>0,'created_at'=>$now,'updated_at'=>$now];foreach($credit as $id=>$nilai)$rows[]=['id_akun_perkiraan'=>$id,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Kredit akun aset tetap tujuan','debit'=>0,'kredit'=>$nilai,'created_at'=>$now,'updated_at'=>$now];$total=array_sum($debit);if(!$rows)return back()->withErrors(['akun'=>'Akun biaya penyusutan belum tersedia.']);$batch=DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Penyusutan Aktiva '.$no,'hash_file'=>hash('sha256',$no.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$total,'total_kredit'=>$total,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]);foreach($rows as &$row)$row['id_impor_jurnal_perkiraan']=$batch;DB::table('jurnal_perkiraan')->insert($rows);return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses','Jurnal penyusutan berhasil dibuat.');
+        $v = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'id_aktiva' => ['required', 'array', 'min:1'],
+            'id_aktiva.*' => ['required', 'integer', 'distinct', 'exists:aktiva_pembukuan_baru,id'],
+        ]);
+        $periode = date('Y-m', strtotime($v['tanggal']));
+
+        $hasil = DB::transaction(function () use ($v, $periode) {
+            $aktiva = DB::table('aktiva_pembukuan_baru')
+                ->whereIn('id', $v['id_aktiva'])->lockForUpdate()->get();
+            $sudahDiproses = DB::table('penyusutan_aktiva_pembukuan_baru')
+                ->where('periode', $periode)->whereIn('id_aktiva', $v['id_aktiva'])
+                ->pluck('id_aktiva')->map(fn ($id) => (int) $id)->all();
+
+            $debit = [];
+            $kredit = [];
+            $detailAktiva = [];
+            $akunTidakLengkap = [];
+            $dilewati = 0;
+
+            foreach ($aktiva as $a) {
+                if (in_array((int) $a->id, $sudahDiproses, true)) {
+                    $dilewati++;
+                    continue;
+                }
+
+                $akunAset = DB::table('akun_perkiraan')->where('aktif', 1)
+                    ->where('id_akun_perkiraan', $a->id_akun_aset)->first();
+                if (!$akunAset) {
+                    $akunTidakLengkap[] = $a->nm_aktiva . ' (akun aset tidak ditemukan)';
+                    continue;
+                }
+                $akunBiaya = DB::table('akun_perkiraan')->where('aktif', 1)
+                    ->where('tipe_akun', 'EXPS')
+                    ->where('nama', 'like', '%Biaya Penyusutan%')
+                    ->where('nama', 'like', '%' . strtok($akunAset->nama, ' ') . '%')
+                    ->first();
+                if (!$akunBiaya) {
+                    $akunTidakLengkap[] = $a->nm_aktiva . ' (biaya penyusutan ' . $akunAset->nama . ' tidak ditemukan)';
+                    continue;
+                }
+
+                $nilaiBuku = max(0, (float) $a->h_perolehan - (float) $a->akumulasi_penyusutan);
+                $penyusutanBulanan = !empty($a->umur_aktiva_bulan)
+                    ? round((float) $a->h_perolehan / (int) $a->umur_aktiva_bulan, 2)
+                    : (float) $a->biaya_depresiasi;
+                $nilai = round(min($nilaiBuku, $penyusutanBulanan), 2);
+                if ($nilai <= 0) {
+                    $dilewati++;
+                    continue;
+                }
+
+                $debit[$akunBiaya->id_akun_perkiraan] = ($debit[$akunBiaya->id_akun_perkiraan] ?? 0) + $nilai;
+                $kredit[$akunAset->id_akun_perkiraan] = ($kredit[$akunAset->id_akun_perkiraan] ?? 0) + $nilai;
+                $detailAktiva[] = compact('a', 'nilai', 'nilaiBuku', 'penyusutanBulanan');
+            }
+
+            if ($akunTidakLengkap) {
+                throw ValidationException::withMessages([
+                    'akun' => 'Akun belum lengkap: ' . implode(', ', $akunTidakLengkap),
+                ]);
+            }
+            if (!$detailAktiva) return ['diproses' => 0, 'dilewati' => $dilewati];
+
+            $now = now();
+            $nomor = 'JPA-' . date('YmdHis') . '-' . random_int(100, 999);
+            $rows = [];
+            foreach ($debit as $idAkun => $nilai) {
+                $rows[] = ['id_akun_perkiraan'=>$idAkun,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$nomor,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Biaya penyusutan aktiva periode '.date('m-Y',strtotime($v['tanggal'])),'debit'=>$nilai,'kredit'=>0,'created_at'=>$now,'updated_at'=>$now];
+            }
+            foreach ($kredit as $idAkun => $nilai) {
+                $rows[] = ['id_akun_perkiraan'=>$idAkun,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$nomor,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Pengurangan nilai buku aset periode '.date('m-Y',strtotime($v['tanggal'])),'debit'=>0,'kredit'=>$nilai,'created_at'=>$now,'updated_at'=>$now];
+            }
+            $total = round(array_sum($debit), 2);
+            $batch = DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Penyusutan Aktiva '.$nomor,'hash_file'=>hash('sha256',$nomor.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$total,'total_kredit'=>$total,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]);
+            foreach ($rows as &$row) $row['id_impor_jurnal_perkiraan'] = $batch;
+            DB::table('jurnal_perkiraan')->insert($rows);
+
+            foreach ($detailAktiva as $detail) {
+                $a = $detail['a'];
+                $nilai = $detail['nilai'];
+                $akumulasiBaru = min((float) $a->h_perolehan, (float) $a->akumulasi_penyusutan + $nilai);
+                $nilaiBukuBaru = max(0, (float) $a->h_perolehan - $akumulasiBaru);
+                $sisaPeriode = $detail['penyusutanBulanan'] > 0 ? (int) ceil($nilaiBukuBaru / $detail['penyusutanBulanan']) : 0;
+                DB::table('aktiva_pembukuan_baru')->where('id', $a->id)->update([
+                    'biaya_depresiasi' => $detail['penyusutanBulanan'],
+                    'akumulasi_penyusutan' => $akumulasiBaru,
+                    'sisa_umur_bulan' => $sisaPeriode,
+                    'updated_at' => $now,
+                ]);
+                DB::table('penyusutan_aktiva_pembukuan_baru')->insert([
+                    'id_aktiva' => $a->id,
+                    'periode' => $periode,
+                    'tanggal' => $v['tanggal'],
+                    'nominal' => $nilai,
+                    'nomor_transaksi' => $nomor,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            return ['diproses' => count($detailAktiva), 'dilewati' => $dilewati];
+        });
+
+        if (!$hasil['diproses']) {
+            return back()->with('sukses', 'Tidak ada penyusutan baru. Aktiva yang dipilih sudah diproses pada periode tersebut atau nilai bukunya sudah habis.');
+        }
+        $pesan = $hasil['diproses'] . ' aktiva berhasil disusutkan dan jurnal penyesuaian sudah dibuat.';
+        if ($hasil['dilewati']) $pesan .= ' ' . $hasil['dilewati'] . ' aktiva dilewati.';
+        return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses', $pesan);
     }
 
-    public function simpanPenyusutanCorrect(Request $request)
-    {
-        $v=$request->validate(['tanggal'=>'required|date','id_aktiva'=>'required|array']);
-        $aktiva=DB::table('aktiva_pembukuan_baru')->whereIn('id',$v['id_aktiva'])->get(); $rows=[]; $now=now(); $no='JPA-'.date('YmdHis'); $groups=[];
-        foreach($aktiva as $a){$asset=DB::table('akun_perkiraan')->where('id_akun_perkiraan',$a->id_akun_aset)->first(); if(!$asset) continue; $expense=DB::table('akun_perkiraan')->where('aktif',1)->where('tipe_akun','EXPS')->where('nama','like','%Biaya Penyusutan%')->where('nama','like','%'.strtok($asset->nama,' ').'%')->first(); if(!$expense) continue; $groups[$expense->id_akun_perkiraan]=($groups[$expense->id_akun_perkiraan]??0)+(float)$a->biaya_depresiasi; DB::table('aktiva_pembukuan_baru')->where('id',$a->id)->update(['akumulasi_penyusutan'=>min($a->h_perolehan,($a->akumulasi_penyusutan??0)+$a->biaya_depresiasi),'sisa_umur_bulan'=>is_null($a->sisa_umur_bulan)?null:max(0,$a->sisa_umur_bulan-1),'updated_at'=>$now]);}
-        $total=array_sum($groups); if(!$total)return back()->withErrors(['akun'=>'Akun biaya penyusutan sesuai aset belum tersedia.']); foreach($groups as $id=>$nilai)$rows[]=['id_akun_perkiraan'=>$id,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Biaya penyusutan aktiva bulan '.date('m-Y',strtotime($v['tanggal'])),'debit'=>$nilai,'kredit'=>0,'created_at'=>$now,'updated_at'=>$now]; $credit=$aktiva->first()->id_akun_aset; $rows[]=['id_akun_perkiraan'=>$credit,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Penyusutan Aktiva','urutan_detail'=>count($rows)+1,'deskripsi'=>'Kredit akun aset tetap tujuan','debit'=>0,'kredit'=>$total,'created_at'=>$now,'updated_at'=>$now]; $batch=DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Penyusutan Aktiva '.$no,'hash_file'=>hash('sha256',$no.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$total,'total_kredit'=>$total,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]); foreach($rows as &$r)$r['id_impor_jurnal_perkiraan']=$batch; DB::table('jurnal_perkiraan')->insert($rows); return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses','Jurnal penyusutan berhasil dibuat.');
-    }
 }
