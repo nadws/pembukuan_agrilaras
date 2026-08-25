@@ -21,11 +21,11 @@
         </style>
         <div class="egg-detail">
         <div class="row g-3 egg-detail-info">
-            <div class="col-md-3"><div class="label">Tanggal</div><div class="value">{{ tanggal($nota->tgl) }}</div></div>
-            <div class="col-md-4"><div class="label">Customer</div><div class="value">{{ $nota->nm_customer ?? '-' }}</div></div>
+            <div class="col-md-2"><div class="label">Tanggal</div><div class="value">{{ tanggal($nota->tgl) }}</div></div>
+            <div class="col-md-3"><div class="label">Customer 1</div><div class="value">{{ $nota->nm_customer ?? '-' }}</div></div>
+            <div class="col-md-3"><div class="label">Customer 2</div><div class="value">{{ $nota->nm_customer2 ?? '-' }}</div></div>
             <div class="col-md-2"><div class="label">Tipe Jualan</div><div class="value"><span class="egg-type-value">{{ strtoupper($nota->tipe) }}</span></div></div>
             <div class="col-md-2"><div class="label">Status</div><div class="value">{{ $nota->status === 'unpaid' ? 'Belum Lunas' : 'Lunas' }}</div></div>
-            <div class="col-md-2"><div class="label">Admin</div><div class="value">{{ $nota->admin }}</div></div>
         </div>
         <div class="egg-detail-table-wrap">
             <table class="table table-hover align-middle egg-detail-table">

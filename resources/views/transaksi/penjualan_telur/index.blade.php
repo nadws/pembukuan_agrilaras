@@ -72,7 +72,12 @@
                             <td>{{ ($penjualan->firstItem() ?? 1) + $i }}</td>
                             <td>{{ tanggal($item->tgl) }}</td>
                             <td class="fw-semibold">{{ $item->no_nota }}</td>
-                            <td>{{ $item->nm_customer ?? '-' }}</td>
+                            <td>
+                                {{ $item->nm_customer ?? '-' }}
+                                @if (!empty($item->nm_customer2))
+                                    <div class="text-muted small">C2: {{ $item->nm_customer2 }}</div>
+                                @endif
+                            </td>
                             <td><span class="egg-type-badge">{{ strtoupper($item->tipe) }}</span></td>
                             <td><span class="status-badge {{ $item->status === 'unpaid' ? 'status-unpaid' : 'status-paid' }}">{{ $item->status === 'unpaid' ? 'Belum Lunas' : 'Lunas' }}</span></td>
                             <td>{{ $item->jumlah_item }} item</td>

@@ -39,12 +39,21 @@
                     <label class="form-label">No Nota</label>
                     <input type="text" class="form-control" value="TP{{ $nota }}" readonly>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Customer</label>
+                <div class="col-md-3">
+                    <label class="form-label">Customer 1</label>
                     <select name="id_customer" class="form-select select2" required>
-                        <option value="">Pilih customer</option>
+                        <option value="">Pilih customer 1</option>
                         @foreach ($customers as $customer)
                             <option value="{{ $customer->id_customer }}" @selected(old('id_customer') == $customer->id_customer)>{{ $customer->nm_customer }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Customer 2</label>
+                    <select name="id_customer2" class="form-select select2">
+                        <option value="">Pilih customer 2 (opsional)</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id_customer }}" @selected(old('id_customer2') == $customer->id_customer)>{{ $customer->nm_customer }}</option>
                         @endforeach
                     </select>
                 </div>

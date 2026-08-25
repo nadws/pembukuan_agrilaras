@@ -15,12 +15,14 @@ class PenjualanTelurTransaksiController extends Controller
 
         $penjualan = DB::table('invoice_telur as i')
             ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoin('customer as c2', 'c2.id_customer', '=', 'i.id_customer2')
             ->where('i.lokasi', 'alpa')
             ->whereBetween('i.tgl', [$tanggalAwal, $tanggalAkhir])
             ->when($cari !== '', function ($query) use ($cari) {
                 $query->where(function ($search) use ($cari) {
                     $search->where('i.no_nota', 'like', "%{$cari}%")
-                        ->orWhere('c.nm_customer', 'like', "%{$cari}%");
+                        ->orWhere('c.nm_customer', 'like', "%{$cari}%")
+                        ->orWhere('c2.nm_customer', 'like', "%{$cari}%");
                 });
             })
             ->select(
@@ -30,10 +32,11 @@ class PenjualanTelurTransaksiController extends Controller
                 'i.tipe',
                 'i.status',
                 'c.nm_customer',
+                'c2.nm_customer as nm_customer2',
                 DB::raw('SUM(i.total_rp) as total_rp'),
                 DB::raw('COUNT(i.id_invoice_telur) as jumlah_item')
             )
-            ->groupBy('i.no_nota', 'i.tgl', 'i.admin', 'i.tipe', 'i.status', 'c.nm_customer')
+            ->groupBy('i.no_nota', 'i.tgl', 'i.admin', 'i.tipe', 'i.status', 'c.nm_customer', 'c2.nm_customer')
             ->orderByDesc('i.urutan')
             ->paginate(15)
             ->withQueryString();
@@ -88,6 +91,7 @@ class PenjualanTelurTransaksiController extends Controller
         $validated = $request->validate([
             'tgl' => ['required', 'date'],
             'id_customer' => ['required', 'integer'],
+            'id_customer2' => ['nullable', 'integer'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'tipe_penjualan' => ['required', 'in:pcs,kg'],
             'id_produk' => ['required', 'array', 'min:1'],
@@ -128,6 +132,7 @@ class PenjualanTelurTransaksiController extends Controller
                 DB::table('invoice_telur')->insert([
                     'tgl' => $validated['tgl'],
                     'id_customer' => $validated['id_customer'],
+                    'id_customer2' => $validated['id_customer2'] ?? null,
                     'tipe' => $validated['tipe_penjualan'],
                     'status' => $status,
                     'no_nota' => $noNota,
@@ -157,6 +162,7 @@ class PenjualanTelurTransaksiController extends Controller
         $validated = $request->validate([
             'tgl' => ['required', 'date'],
             'id_customer' => ['required', 'integer'],
+            'id_customer2' => ['nullable', 'integer'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'tipe_penjualan' => ['required', 'in:pcs,kg'],
             'id_produk' => ['required', 'array', 'min:1'],
@@ -190,6 +196,7 @@ class PenjualanTelurTransaksiController extends Controller
                 DB::table('invoice_telur')->insert([
                     'tgl' => $validated['tgl'],
                     'id_customer' => $validated['id_customer'],
+                    'id_customer2' => $validated['id_customer2'] ?? null,
                     'tipe' => $validated['tipe_penjualan'],
                     'status' => $status,
                     'no_nota' => $noNota,
@@ -233,12 +240,14 @@ class PenjualanTelurTransaksiController extends Controller
     {
         $items = DB::table('invoice_telur as i')
             ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoin('customer as c2', 'c2.id_customer', '=', 'i.id_customer2')
             ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 'i.id_produk')
             ->where('i.no_nota', $noNota)
             ->where('i.lokasi', 'alpa')
-            ->select('i.*', 'c.nm_customer', 'p.nm_telur')
+            ->select('i.*', 'c.nm_customer', 'c2.nm_customer as nm_customer2', 'p.nm_telur')
             ->orderBy('i.id_invoice_telur')
             ->get();
+        abort_unless($items->isNotEmpty(), 404);
         abort_unless($items->isNotEmpty(), 404);
 
         return [
