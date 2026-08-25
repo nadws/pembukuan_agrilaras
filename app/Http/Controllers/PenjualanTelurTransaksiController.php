@@ -35,7 +35,8 @@ class PenjualanTelurTransaksiController extends Controller
             )
             ->groupBy('i.no_nota', 'i.tgl', 'i.admin', 'i.tipe', 'i.status', 'c.nm_customer')
             ->orderByDesc('i.urutan')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('transaksi.penjualan_telur.index', compact(
             'penjualan',

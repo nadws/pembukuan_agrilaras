@@ -75,8 +75,12 @@ class BarangUmumController extends Controller
         return redirect()->route('barang-umum.index')->with('sukses', 'Barang umum berhasil diperbarui.');
     }
 
-    public function storeStokAwal(Request $request, int $idProduk)
+    public function storeStokAwal(Request $request, ?int $idProduk = null)
     {
+        $idProduk ??= (int) $request->input('id_produk');
+        $request->merge(['id_produk' => $idProduk]);
+        $request->validate(['id_produk' => ['required', 'integer', 'exists:tb_produk,id_produk']]);
+
         $barang = DB::table('tb_produk as p')
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
             ->where('p.id_produk', $idProduk)
@@ -85,6 +89,7 @@ class BarangUmumController extends Controller
         abort_unless($barang, 404);
 
         $data = $request->validate([
+            'id_produk' => ['required', 'integer', 'exists:tb_produk,id_produk'],
             'tanggal' => ['required', 'date'],
             'qty' => ['required', 'numeric', 'min:0'],
             'harga_satuan' => ['required', 'numeric', 'min:0'],

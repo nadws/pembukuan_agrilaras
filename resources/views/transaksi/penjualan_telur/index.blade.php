@@ -69,7 +69,7 @@
                 <tbody>
                     @forelse ($penjualan as $i => $item)
                         <tr>
-                            <td>{{ $i + 1 }}</td>
+                            <td>{{ ($penjualan->firstItem() ?? 1) + $i }}</td>
                             <td>{{ tanggal($item->tgl) }}</td>
                             <td class="fw-semibold">{{ $item->no_nota }}</td>
                             <td>{{ $item->nm_customer ?? '-' }}</td>
@@ -94,6 +94,14 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3">
+            <small class="text-muted">
+                Menampilkan {{ $penjualan->firstItem() ?? 0 }}–{{ $penjualan->lastItem() ?? 0 }} dari {{ $penjualan->total() }} transaksi
+            </small>
+            <div>
+                {{ $penjualan->links('pagination::bootstrap-5') }}
+            </div>
         </div>
         </div>
     </x-slot>

@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
+            Route::post('/stok-awal', 'storeStokAwal')->name('stok-awal.store');
             Route::post('/{idProduk}/stok-awal', 'storeStokAwal')->name('stok-awal');
             Route::put('/{idProduk}', 'update')->name('update');
             Route::delete('/{idProduk}', 'destroy')->name('destroy');
