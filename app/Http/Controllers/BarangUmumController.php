@@ -15,12 +15,23 @@ class BarangUmumController extends Controller
 
     public function index()
     {
+        $stok = DB::table('pembukuan_baru_stok')
+            ->select('id_produk')
+            ->selectRaw('SUM(qty) as stok_sistem')
+            ->selectRaw('SUM(qty * harga_satuan) as nilai_stok')
+            ->groupBy('id_produk');
+        $stokAwal = DB::table('pembukuan_baru_stok')
+            ->where('nomor_transaksi', 'like', 'STOK-AWAL-%')
+            ->select(['id_produk', 'qty as qty_stok_awal', 'harga_satuan as harga_stok_awal', 'tanggal as tanggal_stok_awal']);
+
         $barang = DB::table('tb_produk as p')
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
             ->leftJoin('tb_gudang as g', 'g.id_gudang', '=', 'p.gudang_id')
+            ->leftJoinSub($stok, 'st', 'st.id_produk', '=', 'p.id_produk')
+            ->leftJoinSub($stokAwal, 'sa', 'sa.id_produk', '=', 'p.id_produk')
             ->where('p.kategori_id', self::KATEGORI_BARANG_UMUM)
             ->orderBy('p.nm_produk')
-            ->get(['p.*', 's.nm_satuan', 'g.nm_gudang']);
+            ->get(['p.*', 's.nm_satuan', 'g.nm_gudang', 'st.stok_sistem', 'st.nilai_stok', 'sa.qty_stok_awal', 'sa.harga_stok_awal', 'sa.tanggal_stok_awal']);
 
         return view('data_master.barang_umum.index', [
             'title' => 'Master Barang Umum',
@@ -62,6 +73,40 @@ class BarangUmumController extends Controller
         DB::table('tb_produk')->where('id_produk', $idProduk)->update($data);
 
         return redirect()->route('barang-umum.index')->with('sukses', 'Barang umum berhasil diperbarui.');
+    }
+
+    public function storeStokAwal(Request $request, int $idProduk)
+    {
+        $barang = DB::table('tb_produk as p')
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
+            ->where('p.id_produk', $idProduk)
+            ->where('p.kategori_id', self::KATEGORI_BARANG_UMUM)
+            ->first(['p.id_produk', 'p.nm_produk', 's.nm_satuan']);
+        abort_unless($barang, 404);
+
+        $data = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'qty' => ['required', 'numeric', 'min:0'],
+            'harga_satuan' => ['required', 'numeric', 'min:0'],
+        ]);
+        $nomor = 'STOK-AWAL-' . $idProduk;
+        $now = now();
+
+        DB::table('pembukuan_baru_stok')->updateOrInsert(
+            ['nomor_transaksi' => $nomor, 'id_produk' => $idProduk],
+            [
+                'nama_produk' => $barang->nm_produk,
+                'satuan' => $barang->nm_satuan,
+                'qty' => $data['qty'],
+                'harga_satuan' => $data['harga_satuan'],
+                'tanggal' => $data['tanggal'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        return redirect()->route('barang-umum.index')
+            ->with('sukses', 'Stok awal ' . $barang->nm_produk . ' berhasil disimpan dan sudah dapat di-opname.');
     }
 
     public function destroy(int $idProduk)

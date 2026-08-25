@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
+            Route::post('/{idProduk}/stok-awal', 'storeStokAwal')->name('stok-awal');
             Route::put('/{idProduk}', 'update')->name('update');
             Route::delete('/{idProduk}', 'destroy')->name('destroy');
         });
@@ -225,6 +226,8 @@ Route::middleware('auth')->group(function () {
         ->name('transaksi.piutang.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::post('/import-accurate', 'importAccurate')->name('import-accurate');
+            Route::post('/import-accurate-ayam', 'importAccurateAyam')->name('import-accurate-ayam');
             Route::get('/pelunasan', 'pelunasan')->name('pelunasan');
             Route::post('/pelunasan', 'storePelunasan')->name('pelunasan.store');
         });

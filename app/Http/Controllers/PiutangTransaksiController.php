@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class PiutangTransaksiController extends Controller
 {
     public function index(Request $request)
     {
         $jenis = in_array($request->input('jenis'), ['telur', 'ayam', 'umum'], true) ? $request->input('jenis') : 'telur';
-        $awal = $request->input('tanggal_awal', date('Y-m-01'));
-        $akhir = $request->input('tanggal_akhir', date('Y-m-d'));
-        $cari = trim((string) $request->input('cari', ''));
+        $filterKey = 'transaksi_piutang_filter.' . $jenis;
+        $savedFilter = (array) session($filterKey, []);
+        $awal = $request->input('tanggal_awal', $savedFilter['tanggal_awal'] ?? date('Y-m-01'));
+        $akhir = $request->input('tanggal_akhir', $savedFilter['tanggal_akhir'] ?? date('Y-m-d'));
+        $cari = trim((string) $request->input('cari', $savedFilter['cari'] ?? ''));
+        session()->put($filterKey, ['tanggal_awal' => $awal, 'tanggal_akhir' => $akhir, 'cari' => $cari]);
 
         if ($jenis === 'ayam') {
             $piutang = DB::table('invoice_ayam as i')
@@ -39,7 +45,183 @@ class PiutangTransaksiController extends Controller
                 ->orderByDesc('i.tgl')->orderByDesc('i.no_nota')->get();
         }
 
-        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang'));
+        $totalPiutang = (float) $piutang->sum('total_rp');
+        $jumlahFaktur = $piutang->pluck('no_nota')->unique()->count();
+        $tabFilters = collect(['telur', 'ayam', 'umum'])->mapWithKeys(function ($tab) {
+            $saved = (array) session('transaksi_piutang_filter.' . $tab, []);
+            return [$tab => [
+                'jenis' => $tab,
+                'tanggal_awal' => $saved['tanggal_awal'] ?? date('Y-m-01'),
+                'tanggal_akhir' => $saved['tanggal_akhir'] ?? date('Y-m-d'),
+                'cari' => $saved['cari'] ?? '',
+            ]];
+        })->all();
+
+        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalPiutang', 'jumlahFaktur', 'tabFilters'));
+    }
+
+    public function importAccurate(Request $request)
+    {
+        $target = $request->attributes->get('accurate_target') === 'ayam' ? 'ayam' : 'telur';
+        $targetTable = $target === 'ayam' ? 'invoice_ayam' : 'invoice_telur';
+        $request->validate([
+            'file_accurate' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
+        ]);
+
+        try {
+            $spreadsheet = IOFactory::load($request->file('file_accurate')->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = $sheet->getHighestDataRow();
+            $highestColumn = $sheet->getHighestDataColumn();
+            $rows = $sheet->rangeToArray("A1:{$highestColumn}{$highestRow}", null, true, false, false);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['file_accurate' => 'File Accurate tidak dapat dibaca. Gunakan export Faktur Penjualan Belum Lunas berformat Excel.']);
+        }
+
+        $headerRow = null;
+        $columns = [];
+        foreach (array_slice($rows, 0, 10, true) as $rowIndex => $row) {
+            foreach ($row as $columnIndex => $value) {
+                $label = mb_strtolower(trim((string) $value));
+                if ($label === 'pelanggan') $columns['pelanggan'] = $columnIndex;
+                if (in_array($label, ['nomor #', 'nomor'], true)) $columns['nomor'] = $columnIndex;
+                if ($label === 'tanggal') $columns['tanggal'] = $columnIndex;
+                if ($label === 'jatuh tempo') $columns['jatuh_tempo'] = $columnIndex;
+                if ($label === 'keterangan') $columns['keterangan'] = $columnIndex;
+                if ($label === 'pelanggan') $headerRow = $rowIndex;
+            }
+        }
+        if ($headerRow === null || !isset($columns['pelanggan'], $columns['nomor'], $columns['tanggal'])) {
+            $spreadsheet->disconnectWorksheets();
+            return back()->withErrors(['file_accurate' => 'Header Pelanggan, Nomor #, dan Tanggal tidak ditemukan pada file Accurate.']);
+        }
+
+        $piutangColumn = null;
+        for ($r = $headerRow; $r <= min($headerRow + 2, count($rows) - 1); $r++) {
+            foreach ($rows[$r] as $columnIndex => $value) {
+                if (mb_strtolower(trim((string) $value)) === 'piutang') $piutangColumn = $columnIndex;
+            }
+        }
+        if ($piutangColumn === null) {
+            $spreadsheet->disconnectWorksheets();
+            return back()->withErrors(['file_accurate' => 'Kolom Piutang tidak ditemukan. Pastikan laporan yang dipakai adalah Faktur Penjualan Belum Lunas.']);
+        }
+
+        $customerMap = DB::table('customer')->where('active', 'Y')->orderByDesc('id_customer')->get(['id_customer', 'nm_customer'])
+            ->mapWithKeys(fn ($customer) => [$this->normalizeCustomer($customer->nm_customer) => $customer]);
+        $existingNotes = DB::table($targetTable)->whereNotNull('no_nota')->pluck('no_nota')
+            ->mapWithKeys(fn ($note) => [mb_strtoupper(trim((string) $note)) => true]);
+
+        $currentCustomer = '';
+        $data = [];
+        $errors = [];
+        $duplicates = 0;
+        $dates = [];
+        $nextSequence = ((int) DB::table($targetTable)->max('urutan')) + 1;
+
+        for ($r = $headerRow + 2; $r < count($rows); $r++) {
+            $row = $rows[$r];
+            $customerCell = trim((string) ($row[$columns['pelanggan']] ?? ''));
+            if ($customerCell !== '') $currentCustomer = $customerCell;
+            $note = trim((string) ($row[$columns['nomor']] ?? ''));
+            if ($note === '') continue;
+
+            $description = mb_strtoupper(trim((string) ($row[$columns['keterangan']] ?? '')));
+            if ($target === 'ayam' && !str_contains($description, 'AYAM')) continue;
+            $amount = $this->numericExcelValue($row[$piutangColumn] ?? null);
+            $date = $this->excelDateValue($row[$columns['tanggal']] ?? null);
+            $customer = $customerMap->get($this->normalizeCustomer($currentCustomer));
+            $validator = Validator::make([
+                'pelanggan' => $currentCustomer,
+                'nomor' => $note,
+                'tanggal' => $date,
+                'piutang' => $amount,
+            ], [
+                'pelanggan' => ['required'], 'nomor' => ['required', 'max:200'],
+                'tanggal' => ['required', 'date'], 'piutang' => ['required', 'numeric', 'gt:0'],
+            ]);
+            if ($validator->fails()) {
+                $errors[] = 'Baris ' . ($r + 1) . ': ' . implode(' ', $validator->errors()->all());
+                continue;
+            }
+            if (!$customer) {
+                $errors[] = 'Baris ' . ($r + 1) . ': customer "' . $currentCustomer . '" belum ada atau tidak aktif di Master Customer.';
+                continue;
+            }
+            $noteKey = mb_strtoupper($note);
+            if ($existingNotes->has($noteKey)) {
+                $duplicates++;
+                continue;
+            }
+            $existingNotes->put($noteKey, true);
+            $dates[] = $date;
+            if ($target === 'ayam') {
+                $data[] = [
+                    'tgl' => $date, 'id_customer' => $customer->id_customer, 'customer' => $currentCustomer,
+                    'no_nota' => $note, 'qty' => 1, 'h_satuan' => $amount,
+                    'admin' => auth()->user()->name ?? 'Import Accurate', 'urutan' => $nextSequence++,
+                    'lokasi' => 'alpa', 'status' => 'unpaid', 'cek' => 'T', 'urutan_customer' => 0,
+                    'admin_cek' => '', 'id_customer2' => 0, 'id_kandang' => 0,
+                ];
+            } else {
+                $data[] = [
+                    'tgl' => $date, 'id_customer' => $customer->id_customer, 'customer' => '', 'id_customer2' => 0,
+                    'no_nota' => $note, 'id_produk' => 0, 'pcs' => 0, 'kg' => 0, 'ikat' => 0, 'kg_jual' => 0,
+                    'rp_satuan' => 0, 'total_rp' => $amount, 'tipe' => 'kg', 'status' => 'unpaid',
+                    'admin' => auth()->user()->name ?? 'Import Accurate', 'urutan' => $nextSequence++,
+                    'urutan_customer' => 0, 'driver' => 'Import Accurate', 'lokasi' => 'alpa', 'cek' => 'T',
+                    'admin_cek' => '', 'void' => 'T', 'import' => 'Y',
+                ];
+            }
+        }
+        $spreadsheet->disconnectWorksheets();
+
+        if ($errors !== []) {
+            return back()->withErrors(['file_accurate' => implode(' | ', array_slice($errors, 0, 20))]);
+        }
+        if ($data === []) {
+            $message = $duplicates > 0
+                ? 'Semua faktur pada file sudah pernah diimpor.'
+                : 'Tidak ada piutang ' . $target . ' yang dapat diimpor dari file.';
+            return back()->withErrors(['file_accurate' => $message]);
+        }
+
+        DB::transaction(fn () => collect($data)->chunk(200)->each(fn ($chunk) => DB::table($targetTable)->insert($chunk->all())));
+        $message = count($data) . ' faktur Piutang ' . ucfirst($target) . ' Accurate berhasil diimpor.';
+        if ($duplicates) $message .= ' ' . $duplicates . ' faktur duplikat dilewati.';
+
+        return redirect()->route('transaksi.piutang.index', [
+            'jenis' => $target,
+            'tanggal_awal' => min($dates),
+            'tanggal_akhir' => max($dates),
+        ])->with('sukses', $message);
+    }
+
+    public function importAccurateAyam(Request $request)
+    {
+        $request->attributes->set('accurate_target', 'ayam');
+        return $this->importAccurate($request);
+    }
+
+    private function normalizeCustomer(?string $value): string
+    {
+        return mb_strtoupper(preg_replace('/\s+/u', ' ', trim((string) $value)));
+    }
+
+    private function numericExcelValue(mixed $value): float
+    {
+        if (is_numeric($value)) return (float) $value;
+        $clean = preg_replace('/[^0-9,.-]/', '', (string) $value);
+        if (substr_count($clean, ',') === 1 && substr_count($clean, '.') === 0) $clean = str_replace(',', '.', $clean);
+        else $clean = str_replace(',', '', $clean);
+        return (float) $clean;
+    }
+
+    private function excelDateValue(mixed $value): ?string
+    {
+        if (is_numeric($value)) return ExcelDate::excelToDateTimeObject((float) $value)->format('Y-m-d');
+        $timestamp = strtotime(trim((string) $value));
+        return $timestamp === false ? null : date('Y-m-d', $timestamp);
     }
 
     public function pelunasan(Request $request)

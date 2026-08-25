@@ -15,13 +15,12 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
 
     public function stokOpname()
     {
-        $items = DB::table('pembukuan_baru_stok')->select('id_produk','nama_produk','satuan')->selectRaw('SUM(qty) as qty_masuk, SUM(qty * harga_satuan) as nilai_masuk')->groupBy('id_produk','nama_produk','satuan')->orderBy('nama_produk')->get();
-        if ($items->isEmpty()) {
-            $items = DB::table('jurnal_perkiraan')->where('tipe_transaksi','Pembelian Umum')->where('debit','>',0)->get(['deskripsi','debit'])->map(function ($r) {
-                preg_match('/^Pembelian\s+(.+?)\s+\(([0-9.,]+)\s+([^@]+)\s+@\s+Rp\s+([0-9.,]+)/i', $r->deskripsi, $m);
-                return (object) ['nama_produk' => $m[1] ?? $r->deskripsi, 'satuan' => trim($m[3] ?? '-'), 'qty_masuk' => (float) str_replace(',', '', $m[2] ?? 0), 'nilai_masuk' => (float) $r->debit];
-            })->groupBy(fn($r) => strtolower($r->nama_produk))->map(function($rows){$first=$rows->first();$first->qty_masuk=$rows->sum('qty_masuk');$first->nilai_masuk=$rows->sum('nilai_masuk');return $first;})->values();
-        }
+        $items = DB::table('pembukuan_baru_stok')
+            ->select('id_produk','nama_produk','satuan')
+            ->selectRaw('SUM(qty) as qty_masuk, SUM(qty * harga_satuan) as nilai_masuk')
+            ->groupBy('id_produk','nama_produk','satuan')
+            ->havingRaw('ABS(SUM(qty)) > 0.000001')
+            ->orderBy('nama_produk')->get();
         return view('pembukuan_baru.jurnal_penyesuaian.stok_opname', ['title'=>'Stok Opname','items'=>$items]);
     }
 
@@ -72,18 +71,64 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
 
     public function simpanStokOpname(Request $request)
     {
-        $v = $request->validate(['tanggal'=>['required','date'],'nama_produk'=>['required','array'],'qty_sistem'=>['required','array'],'qty_fisik'=>['required','array'],'nilai_satuan'=>['required','array']]);
+        $v = $request->validate([
+            'tanggal'=>['required','date'],
+            'id_produk'=>['required','array'], 'id_produk.*'=>['required','integer','distinct','exists:tb_produk,id_produk'],
+            'nama_produk'=>['required','array'], 'qty_sistem'=>['required','array'],
+            'qty_fisik'=>['required','array'], 'qty_fisik.*'=>['required','numeric','min:0'],
+            'nilai_satuan'=>['required','array'], 'nilai_satuan.*'=>['required','numeric','min:0'],
+        ]);
         $persediaan = DB::table('akun_perkiraan')->where('kode_perkiraan','110406')->where('aktif',1)->first();
         $biaya = DB::table('akun_perkiraan')->where('aktif',1)->where(function($q){$q->where('nama','like','%Penyesuaian Persediaan%')->orWhere('nama','like','%Stock Opname%');})->first();
         if (!$persediaan || !$biaya) return back()->withErrors(['akun'=>'Akun Persediaan Umum atau Biaya Penyesuaian Persediaan belum tersedia.'])->withInput();
-        $rows=[]; $totalDebit=0; $totalKredit=0; $no='SO-'.date('YmdHis'); $now=now(); $deskripsi=[];
-        foreach ($v['nama_produk'] as $i=>$nama) { $selisih=(float)$v['qty_fisik'][$i]-(float)$v['qty_sistem'][$i]; $nilai=round(abs($selisih)*(float)$v['nilai_satuan'][$i],2); if($nilai<=0) continue; $deskripsi[]=$nama; if($selisih<0)$totalDebit+=$nilai;else $totalKredit+=$nilai; }
-        $total=max($totalDebit,$totalKredit); if($totalDebit>0)$rows[]=['id_akun_perkiraan'=>$biaya->id_akun_perkiraan,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Stok Opname','urutan_detail'=>1,'deskripsi'=>'Total selisih stok: '.implode(', ',$deskripsi),'debit'=>$totalDebit,'kredit'=>0,'created_at'=>$now,'updated_at'=>$now]; if($totalKredit>0)$rows[]=['id_akun_perkiraan'=>$persediaan->id_akun_perkiraan,'tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Stok Opname','urutan_detail'=>2,'deskripsi'=>'Total selisih stok: '.implode(', ',$deskripsi),'debit'=>0,'kredit'=>$totalKredit,'created_at'=>$now,'updated_at'=>$now];
-        if (!$rows) return back()->with('sukses','Tidak ada selisih stok untuk dijurnal.');
-        $batch=DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Stok Opname '.$no,'hash_file'=>hash('sha256',$no.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$total,'total_kredit'=>$total,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]);
-        foreach($rows as &$r) $r['id_impor_jurnal_perkiraan']=$batch;
-        DB::table('jurnal_perkiraan')->insert($rows);
-        return redirect()->route('pembukuan-baru.jurnal-penyesuaian.stok-opname')->with('sukses','Jurnal stok opname berhasil dibuat.');
+        $no='SO-'.date('YmdHis').'-'.random_int(100,999); $now=now();
+
+        $hasil = DB::transaction(function () use ($v, $persediaan, $biaya, $no, $now) {
+            $kurang=0; $lebih=0; $deskripsi=[]; $penyesuaian=[];
+            foreach ($v['nama_produk'] as $i=>$nama) {
+                $sistem=(float)$v['qty_sistem'][$i]; $fisik=(float)$v['qty_fisik'][$i];
+                $selisih=round($fisik-$sistem,6); $harga=(float)$v['nilai_satuan'][$i];
+                if (abs($selisih) < 0.000001) continue;
+                if ($harga <= 0) throw ValidationException::withMessages(['nilai_satuan'=>'Harga satuan '.$nama.' harus lebih dari 0 karena terdapat selisih stok.']);
+                $nilai=round(abs($selisih)*$harga,2);
+                $deskripsi[]=$nama; $selisih<0 ? $kurang+=$nilai : $lebih+=$nilai;
+                $penyesuaian[]=['i'=>$i,'nama'=>$nama,'sistem'=>$sistem,'fisik'=>$fisik,'selisih'=>$selisih,'harga'=>$harga,'nilai'=>$nilai];
+            }
+            if (!$penyesuaian) return false;
+
+            foreach ($penyesuaian as $p) {
+                DB::table('pembukuan_baru_stok_opname')->insert([
+                    'tanggal'=>$v['tanggal'],'id_produk'=>$v['id_produk'][$p['i']],'nama_produk'=>$p['nama'],
+                    'qty_sistem'=>$p['sistem'],'qty_fisik'=>$p['fisik'],'nilai_selisih'=>$p['nilai'],
+                    'nomor_transaksi'=>$no,'created_at'=>$now,'updated_at'=>$now,
+                ]);
+                $satuan = DB::table('tb_produk as pr')->leftJoin('tb_satuan as s','s.id_satuan','=','pr.satuan_id')
+                    ->where('pr.id_produk',$v['id_produk'][$p['i']])->value('s.nm_satuan');
+                DB::table('pembukuan_baru_stok')->insert([
+                    'id_produk'=>$v['id_produk'][$p['i']],'nama_produk'=>$p['nama'],'satuan'=>$satuan,
+                    'qty'=>$p['selisih'],'harga_satuan'=>$p['harga'],'tanggal'=>$v['tanggal'],
+                    'nomor_transaksi'=>$no,'created_at'=>$now,'updated_at'=>$now,
+                ]);
+            }
+
+            $net=round($kurang-$lebih,2); $rows=[]; $ringkas='Total selisih stok: '.implode(', ',$deskripsi);
+            if ($net>0) {
+                $rows[]=['id_akun_perkiraan'=>$biaya->id_akun_perkiraan,'debit'=>$net,'kredit'=>0];
+                $rows[]=['id_akun_perkiraan'=>$persediaan->id_akun_perkiraan,'debit'=>0,'kredit'=>$net];
+            } elseif ($net<0) {
+                $net=abs($net);
+                $rows[]=['id_akun_perkiraan'=>$persediaan->id_akun_perkiraan,'debit'=>$net,'kredit'=>0];
+                $rows[]=['id_akun_perkiraan'=>$biaya->id_akun_perkiraan,'debit'=>0,'kredit'=>$net];
+            }
+            if ($rows) {
+                $batch=DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file'=>'Stok Opname '.$no,'hash_file'=>hash('sha256',$no.$now),'periode_awal'=>$v['tanggal'],'periode_akhir'=>$v['tanggal'],'jumlah_transaksi'=>1,'jumlah_detail'=>count($rows),'total_debit'=>$net,'total_kredit'=>$net,'status'=>'aktif','diimpor_oleh'=>auth()->id(),'created_at'=>$now,'updated_at'=>$now]);
+                foreach($rows as $urutan=>&$r) $r += ['tanggal'=>$v['tanggal'],'nomor_transaksi'=>$no,'tipe_transaksi'=>'Stok Opname','urutan_detail'=>$urutan+1,'deskripsi'=>$ringkas,'created_at'=>$now,'updated_at'=>$now,'id_impor_jurnal_perkiraan'=>$batch];
+                DB::table('jurnal_perkiraan')->insert($rows);
+            }
+            return true;
+        });
+        if (!$hasil) return back()->with('sukses','Tidak ada selisih stok. Stok sistem sudah sama dengan stok fisik.');
+        return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses','Stok opname berhasil disimpan, stok sistem sudah diperbarui, dan jurnal penyesuaian sudah dibuat.');
     }
 
     public function simpanPenyusutanGrouped(Request $request)
