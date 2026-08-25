@@ -417,7 +417,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
     });
     Route::prefix('pembukuan-baru/buku-besar')->name('pembukuan-baru.buku-besar.')->controller(PembukuanBaruBukuBesarController::class)->group(function () {
-        Route::get('/', 'index')->name('index'); Route::get('/{id}', 'detail')->name('detail');
+        Route::get('/', 'index')->name('index');
+        Route::get('/export', 'export')->name('export');
+        Route::get('/{id}', 'detail')->name('detail');
+        Route::get('/{id}/export', 'exportDetail')->name('detail.export');
     });
     Route::controller(PembelianBahanBakuController::class)->group(function () {
         Route::get('/pembelian_bk', 'index')->name('pembelian_bk');
