@@ -238,11 +238,25 @@ class NavbarController extends Controller
     {
         $data = [
             [
-                'judul' => 'Stok Pakan & Vitamin',
+                'judul' => 'Stok Pakan , Vitamin & Vaksin',
                 'route' => 'gudang-persediaan.index',
                 'img' => 'gudang.png',
                 'deskripsi' => 'Melihat saldo berjalan seluruh produk pakan dan obat di gudang.',
             ],
+            [
+                'judul' => 'Stok Telur',
+                'route' => 'gudang-persediaan.telur',
+                'img' => 'egg.png',
+                'deskripsi' => 'Melihat saldo telur dalam pcs dan kilogram berdasarkan gudang masing-masing.',
+            ],
+            [
+                'judul' => 'Stok Barang Umum',
+                'route' => 'gudang-persediaan.barang-umum',
+                'img' => 'gudang.png',
+                'deskripsi' => 'Melihat saldo barang umum per gudang serta menuju pengisian stok awal dan stok opname.',
+            ],
+
+
 
         ];
         $title = 'Gudang';
@@ -346,10 +360,10 @@ class NavbarController extends Controller
                 'deskripsi' => 'Melihat aktiva hasil pembalikan aktiva gantung dan memasukkan data aktiva lama.',
             ],
             [
-                'judul' => 'Jurnal Penyesuaian',
-                'route' => 'pembukuan-baru.jurnal-penyesuaian.index',
-                'img' => 'journalism.png',
-                'deskripsi' => 'Stok opname dan penyusutan aktiva dalam satu menu penyesuaian.',
+                'judul' => 'Aktiva Gantung',
+                'route' => 'pembukuan-baru.aktiva-gantung.index',
+                'img' => 'buildings.png',
+                'deskripsi' => 'Mengelola aktiva dalam proses dan memasukkan saldo awal tanpa membuat jurnal ganda.',
             ],
             [
                 'judul' => 'Buku Besar',

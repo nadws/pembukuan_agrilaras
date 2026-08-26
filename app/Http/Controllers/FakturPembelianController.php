@@ -33,13 +33,16 @@ class FakturPembelianController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $penerimaanFaktur = DB::table('faktur_pembelian as f')
-            ->leftJoin('stok_produk_perencanaan as s', 's.no_nota', '=', 'f.no_faktur')
-            ->whereIn('f.no_faktur', $faktur->getCollection()->pluck('no_faktur'))
-            ->groupBy('f.no_faktur', 'f.jenis_faktur')
-            ->select('f.no_faktur')
-            ->selectRaw("COALESCE(SUM(CASE WHEN f.jenis_faktur = 'pakan' THEN s.pcs / 50000 ELSE s.pcs END), 0) as qty_diterima")
-            ->pluck('qty_diterima', 'no_faktur');
+        $nomorFaktur = $faktur->getCollection()->pluck('no_faktur');
+        $penerimaanFaktur = DB::table('stok_produk_perencanaan')->whereIn('no_nota', $nomorFaktur)
+            ->groupBy('no_nota')->select('no_nota')->selectRaw('SUM(pcs) as qty_diterima')->pluck('qty_diterima', 'no_nota');
+        $jenisByNota = $faktur->getCollection()->pluck('jenis_faktur', 'no_faktur');
+        foreach ($penerimaanFaktur as $nota => $qty) {
+            if (($jenisByNota[$nota] ?? null) === 'pakan') $penerimaanFaktur[$nota] = (float) $qty / 50000;
+        }
+        $penerimaanUmum = DB::table('pembukuan_baru_stok')->whereIn('nomor_transaksi', $nomorFaktur)
+            ->groupBy('nomor_transaksi')->select('nomor_transaksi')->selectRaw('SUM(qty) as qty_diterima')->pluck('qty_diterima', 'nomor_transaksi');
+        foreach ($penerimaanUmum as $nota => $qty) $penerimaanFaktur[$nota] = $qty;
 
         return view('transaksi.faktur_pembelian.index', [
             'title' => 'Faktur Pembelian',
@@ -52,16 +55,22 @@ class FakturPembelianController extends Controller
 
     public function create(): View
     {
+        $produkUmum = DB::table('tb_produk as p')
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
+            ->where('p.kategori_id', 1)
+            ->orderBy('p.nm_produk')
+            ->get(['p.id_produk', 'p.kd_produk', 'p.nm_produk', 's.nm_satuan as satuan_dosis'])
+            ->each(function ($item) { $item->kategori = 'barang_umum'; $item->sumber_produk = 'barang_umum'; });
+        $produkPerencanaan = ProdukPerencanaan::query()
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
+            ->orderBy('tb_produk_perencanaan.nm_produk')
+            ->get(['tb_produk_perencanaan.*', 's.nm_satuan as satuan_dosis'])
+            ->each(fn ($item) => $item->sumber_produk = 'perencanaan');
         return view('transaksi.faktur_pembelian.create', [
             'title' => 'Tambah Faktur Pembelian',
             'suppliers' => Suplier::orderBy('nm_suplier')->get(),
-            'produk' => ProdukPerencanaan::query()
-                ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
-                ->orderBy('tb_produk_perencanaan.nm_produk')
-                ->get([
-                    'tb_produk_perencanaan.*',
-                    's.nm_satuan as satuan_dosis',
-                ]),
+            'akunPembayaran' => $this->akunKasBankAktif(),
+            'produk' => $produkPerencanaan->concat($produkUmum),
             'noFakturDefault' => $this->generateNoFaktur(),
         ]);
     }
@@ -138,6 +147,10 @@ class FakturPembelianController extends Controller
             ->with('supplier')
             ->leftJoinSub($pelunasan, 'p', 'p.faktur_pembelian_id', '=', 'faktur_pembelian.id')
             ->whereBetween('faktur_pembelian.tanggal_faktur', [$tanggalAwal, $tanggalAkhir])
+            ->where(function ($q) {
+                $q->where('faktur_pembelian.metode_pembayaran', 'hutang')
+                    ->orWhereNull('faktur_pembelian.metode_pembayaran');
+            })
             ->when($cari, function ($query) use ($cari) {
                 $query->where(function ($q) use ($cari) {
                     $q->where('faktur_pembelian.no_faktur', 'like', "%{$cari}%")
@@ -181,7 +194,7 @@ class FakturPembelianController extends Controller
 
     public function pelunasan(FakturModel $faktur_pembelian): View|RedirectResponse
     {
-        $faktur_pembelian->load('supplier', 'detail.produk');
+        $faktur_pembelian->load('supplier', 'detail.produk', 'detail.produkUmum');
 
         $totalTerbayar = $this->totalPelunasanFaktur($faktur_pembelian);
         $sisaHutang = max((float) $faktur_pembelian->total_harga - $totalTerbayar, 0);
@@ -311,7 +324,9 @@ class FakturPembelianController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'jenis_faktur' => ['required', 'in:pakan,vitamin'],
+            'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin,barang_umum'],
+            'metode_pembayaran' => ['required', 'in:hutang,tunai'],
+            'id_akun_pembayaran' => ['nullable', 'required_if:metode_pembayaran,tunai', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur'],
             'tanggal_faktur' => ['required', 'date'],
             'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
@@ -319,7 +334,8 @@ class FakturPembelianController extends Controller
             'keterangan' => ['nullable', 'string'],
             'diskon_total' => ['nullable', 'numeric', 'min:0'],
             'item' => ['required', 'array', 'min:1'],
-            'item.*.pakan_id' => ['required', 'exists:tb_produk_perencanaan,id_produk'],
+            'item.*.pakan_id' => ['required', 'integer', 'min:1'],
+            'item.*.sumber_produk' => ['required', 'in:perencanaan,barang_umum'],
             'item.*.qty' => ['required', 'numeric', 'min:0.01'],
             'item.*.satuan' => ['nullable', 'string', 'max:20'],
             'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
@@ -329,6 +345,14 @@ class FakturPembelianController extends Controller
         ]);
 
         $items = $this->normalisasiItemFaktur($validated['item']);
+        // Satu faktur hanya berisi satu sumber produk. Untuk faktur Barang Umum,
+        // paksa sumbernya agar tidak terpengaruh oleh baris lama/JS browser.
+        if ($validated['jenis_faktur'] === 'barang_umum') {
+            $items = $items->map(function ($item) {
+                $item['sumber_produk'] = 'barang_umum';
+                return $item;
+            });
+        }
         $diskonTotal = round((float) ($validated['diskon_total'] ?? 0), 2);
 
         if ($diskonTotal > $items->sum(fn($item) => (float) $item['subtotal'])) {
@@ -346,13 +370,14 @@ class FakturPembelianController extends Controller
                 's.nm_satuan as satuan_dosis',
             ])
             ->keyBy('id_produk');
+        $produkUmum = DB::table('tb_produk as p')->leftJoin('tb_satuan as s','s.id_satuan','=','p.satuan_id')->where('p.kategori_id',1)->whereIn('p.id_produk',$items->pluck('pakan_id'))->get(['p.*','s.nm_satuan as satuan_dosis'])->keyBy('id_produk');
 
-        $produkTidakSesuai = $items->contains(function ($item) use ($produk, $validated) {
-            $kategori = $produk->get((int) $item['pakan_id'])?->kategori;
+        $produkTidakSesuai = $items->contains(function ($item) use ($produk, $produkUmum, $validated) {
+            $kategori = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum'
+                ? ($produkUmum->get((int) $item['pakan_id']) ? 'barang_umum' : null)
+                : $produk->get((int) $item['pakan_id'])?->kategori;
 
-            return $validated['jenis_faktur'] === 'pakan'
-                ? $kategori !== 'pakan'
-                : $kategori === 'pakan';
+            return ! $this->produkSesuaiJenisFaktur($kategori, $validated['jenis_faktur']);
         });
 
         if ($produkTidakSesuai) {
@@ -362,26 +387,32 @@ class FakturPembelianController extends Controller
         }
 
         $akunHutang = $this->akunAktif('210220');
-        $akunPersediaan = $this->akunAktif($validated['jenis_faktur'] === 'pakan' ? '110403' : '110404');
+        $akunTunai = $validated['metode_pembayaran'] === 'tunai'
+            ? DB::table('akun_perkiraan')->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])->where('aktif', 1)->first()
+            : null;
+        $akunKredit = $validated['metode_pembayaran'] === 'hutang' ? $akunHutang : $akunTunai;
+        $akunPersediaan = $this->akunAktif($this->kodeAkunPersediaanFaktur($validated['jenis_faktur']));
 
-        if (! $akunHutang || ! $akunPersediaan) {
+        if (! $akunKredit || ! $akunPersediaan) {
             return back()
                 ->withErrors(['akun' => 'Akun Hutang Lainnya atau akun persediaan belum tersedia/aktif.'])
                 ->withInput();
         }
 
-        $fakturId = DB::transaction(function () use ($validated, $items, $produk, $akunHutang, $akunPersediaan, $diskonTotal) {
+        $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunKredit, $akunPersediaan, $diskonTotal) {
             $sekarang = now();
+            $tipeJurnal = $validated['jenis_faktur'] === 'barang_umum' ? 'Pembelian Umum' : 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']);
             $totalQty = $items->sum(fn($item) => (float) $item['qty']);
             $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
 
             $faktur = FakturModel::create([
                 'no_faktur' => $validated['no_faktur'],
                 'jenis_faktur' => $validated['jenis_faktur'],
+                'metode_pembayaran' => $validated['metode_pembayaran'],
                 'tanggal_faktur' => $validated['tanggal_faktur'],
                 'supplier_id' => $validated['supplier_id'],
                 'jatuh_tempo' => $validated['jatuh_tempo'] ?? null,
-                'status_bayar' => 'belum_lunas',
+                'status_bayar' => $validated['metode_pembayaran'] === 'hutang' ? 'belum_lunas' : 'lunas',
                 'total_qty' => $totalQty,
                 'total_harga' => $totalHarga,
                 'diskon_total' => $diskonTotal,
@@ -397,10 +428,11 @@ class FakturPembelianController extends Controller
 
                 $faktur->detail()->create([
                     'pakan_id' => $item['pakan_id'],
+                    'sumber_produk' => $item['sumber_produk'] ?? 'perencanaan',
                     'qty' => $qty,
                     'satuan' => $validated['jenis_faktur'] === 'pakan'
                         ? 'zak'
-                        : ($produk->get((int) $item['pakan_id'])?->satuan_dosis ?? null),
+                        : (($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? ($produkUmum->get((int) $item['pakan_id'])?->satuan_dosis ?? null) : ($produk->get((int) $item['pakan_id'])?->satuan_dosis ?? null)),
                     'harga_satuan' => $hargaSatuan,
                     'subtotal' => $subtotal,
                     'no_batch' => $item['no_batch'] ?? null,
@@ -409,7 +441,7 @@ class FakturPembelianController extends Controller
             }
 
             $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
-                'nama_file' => 'Faktur pembelian ' . $validated['jenis_faktur'] . ' ' . $validated['no_faktur'],
+                'nama_file' => ($validated['jenis_faktur'] === 'barang_umum' ? 'Pembelian Umum ' : 'Faktur pembelian ' . $validated['jenis_faktur'] . ' ') . $validated['no_faktur'],
                 'hash_file' => hash('sha256', 'faktur-pembelian|' . $validated['no_faktur']),
                 'periode_awal' => $validated['tanggal_faktur'],
                 'periode_akhir' => $validated['tanggal_faktur'],
@@ -427,7 +459,7 @@ class FakturPembelianController extends Controller
             $urutanDetail = 1;
 
             foreach ($items as $item) {
-                $namaProduk = $produk->get((int) $item['pakan_id'])?->nm_produk ?? 'Produk';
+                $namaProduk = (($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? $produkUmum->get((int) $item['pakan_id']) : $produk->get((int) $item['pakan_id']))?->nm_produk ?? 'Produk';
                 $subtotal = (float) $item['subtotal'];
 
                 $detailJurnal[] = [
@@ -435,7 +467,7 @@ class FakturPembelianController extends Controller
                     'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
                     'tanggal' => $validated['tanggal_faktur'],
                     'nomor_transaksi' => $validated['no_faktur'],
-                    'tipe_transaksi' => 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']),
+                    'tipe_transaksi' => $tipeJurnal,
                     'urutan_detail' => $urutanDetail++,
                     'deskripsi' => 'Pembelian ' . $namaProduk,
                     'debit' => $subtotal,
@@ -447,12 +479,12 @@ class FakturPembelianController extends Controller
 
             $detailJurnal[] = [
                 'id_impor_jurnal_perkiraan' => $batchId,
-                'id_akun_perkiraan' => $akunHutang->id_akun_perkiraan,
+                'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
                 'tanggal' => $validated['tanggal_faktur'],
                 'nomor_transaksi' => $validated['no_faktur'],
-                'tipe_transaksi' => 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']),
+                'tipe_transaksi' => $tipeJurnal,
                 'urutan_detail' => $urutanDetail,
-                'deskripsi' => 'Hutang pembelian ' . $validated['jenis_faktur'],
+                'deskripsi' => ($validated['metode_pembayaran'] === 'hutang' ? 'Hutang pembelian ' : 'Pembayaran pembelian ') . $validated['jenis_faktur'] . ' via ' . $akunKredit->nama,
                 'debit' => 0,
                 'kredit' => $totalHarga,
                 'created_at' => $sekarang,
@@ -471,14 +503,15 @@ class FakturPembelianController extends Controller
 
     public function detail(FakturModel $faktur_pembelian): View
     {
-        $faktur_pembelian->load(['supplier', 'detail.produk']);
+        $faktur_pembelian->load(['supplier', 'detail.produk', 'detail.produkUmum']);
 
-        $qtyDiterimaByProduk = DB::table('stok_produk_perencanaan')
-            ->where('no_nota', $faktur_pembelian->no_faktur)
-            ->groupBy('id_pakan')
-            ->select('id_pakan')
-            ->selectRaw($faktur_pembelian->jenis_faktur === 'pakan' ? 'SUM(pcs / 50000) as qty' : 'SUM(pcs) as qty')
-            ->pluck('qty', 'id_pakan');
+        if ($faktur_pembelian->jenis_faktur === 'barang_umum') {
+            $qtyDiterimaByProduk = DB::table('pembukuan_baru_stok')->where('nomor_transaksi', $faktur_pembelian->no_faktur)
+                ->groupBy('id_produk')->select('id_produk')->selectRaw('SUM(qty) as qty')->pluck('qty', 'id_produk');
+        } else {
+            $qtyDiterimaByProduk = DB::table('stok_produk_perencanaan')->where('no_nota', $faktur_pembelian->no_faktur)
+                ->groupBy('id_pakan')->select('id_pakan')->selectRaw($faktur_pembelian->jenis_faktur === 'pakan' ? 'SUM(pcs / 50000) as qty' : 'SUM(pcs) as qty')->pluck('qty', 'id_pakan');
+        }
 
         $jurnal = DB::table('jurnal_perkiraan as j')
             ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
@@ -493,6 +526,30 @@ class FakturPembelianController extends Controller
             'jurnal' => $jurnal,
             'sudahAdaPenerimaan' => $this->fakturSudahAdaPenerimaan($faktur_pembelian),
         ]);
+    }
+
+    public function destroy(FakturModel $faktur_pembelian): RedirectResponse
+    {
+        if ($this->fakturSudahAdaPenerimaan($faktur_pembelian)) {
+            return redirect()->route('transaksi.faktur-pembelian.index')
+                ->with('error', 'Faktur tidak dapat dihapus karena stoknya sudah diterima.');
+        }
+
+        DB::transaction(function () use ($faktur_pembelian) {
+            $batchIds = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $faktur_pembelian->no_faktur)
+                ->pluck('id_impor_jurnal_perkiraan')->filter()->unique();
+            DB::table('jurnal_perkiraan')->where('nomor_transaksi', $faktur_pembelian->no_faktur)->delete();
+            foreach ($batchIds as $batchId) {
+                if (! DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->exists()) {
+                    DB::table('impor_jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->delete();
+                }
+            }
+            $faktur_pembelian->detail()->delete();
+            $faktur_pembelian->delete();
+        });
+
+        return redirect()->route('transaksi.faktur-pembelian.index')->with('sukses', 'Faktur pembelian berhasil dihapus.');
     }
 
     public function edit(FakturModel $faktur_pembelian): View|RedirectResponse
@@ -522,7 +579,7 @@ class FakturPembelianController extends Controller
         }
 
         $validated = $request->validate([
-            'jenis_faktur' => ['required', 'in:pakan,vitamin'],
+            'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin'],
             'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur,' . $faktur_pembelian->id],
             'tanggal_faktur' => ['required', 'date'],
             'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
@@ -556,9 +613,7 @@ class FakturPembelianController extends Controller
         $produkTidakSesuai = $items->contains(function ($item) use ($produk, $validated) {
             $kategori = $produk->get((int) $item['pakan_id'])?->kategori;
 
-            return $validated['jenis_faktur'] === 'pakan'
-                ? $kategori !== 'pakan'
-                : $kategori === 'pakan';
+            return ! $this->produkSesuaiJenisFaktur($kategori, $validated['jenis_faktur']);
         });
 
         if ($produkTidakSesuai) {
@@ -568,7 +623,7 @@ class FakturPembelianController extends Controller
         }
 
         $akunHutang = $this->akunAktif('210220');
-        $akunPersediaan = $this->akunAktif($validated['jenis_faktur'] === 'pakan' ? '110403' : '110404');
+        $akunPersediaan = $this->akunAktif($this->kodeAkunPersediaanFaktur($validated['jenis_faktur']));
 
         if (! $akunHutang || ! $akunPersediaan) {
             return back()
@@ -624,7 +679,7 @@ class FakturPembelianController extends Controller
 
     public function terima(FakturModel $faktur_pembelian): View
     {
-        $faktur_pembelian->load(['supplier', 'detail.produk']);
+        $faktur_pembelian->load(['supplier', 'detail.produk', 'detail.produkUmum']);
 
         $qtyDiterimaByProduk = DB::table('stok_produk_perencanaan')
             ->where('no_nota', $faktur_pembelian->no_faktur)
@@ -647,7 +702,7 @@ class FakturPembelianController extends Controller
 
     public function storeTerima(Request $request, FakturModel $faktur_pembelian): RedirectResponse
     {
-        $faktur_pembelian->load('detail.produk');
+        $faktur_pembelian->load('detail.produk', 'detail.produkUmum');
 
         $qtyDiterimaByProduk = DB::table('stok_produk_perencanaan')
             ->where('no_nota', $faktur_pembelian->no_faktur)
@@ -675,7 +730,7 @@ class FakturPembelianController extends Controller
         DB::transaction(function () use ($validated, $faktur_pembelian, $qtyDiterimaByProduk) {
             $admin = auth()->user()->name ?? 'system';
             $rows = [];
-
+            $jumlahDiterima = 0;
             foreach ($faktur_pembelian->detail as $detail) {
                 $qtyDiterima = (float) data_get($validated, 'detail.' . $detail->id . '.qty_diterima', 0);
                 $qtySebelumnya = (float) ($qtyDiterimaByProduk[$detail->pakan_id] ?? 0);
@@ -684,6 +739,7 @@ class FakturPembelianController extends Controller
                 if ($qtyDiterima <= 0) {
                     continue;
                 }
+                $jumlahDiterima++;
 
                 abort_if(
                     $qtyDiterima > $qtySisa,
@@ -694,6 +750,20 @@ class FakturPembelianController extends Controller
                 $qtyStok = $faktur_pembelian->jenis_faktur === 'pakan'
                     ? $qtyDiterima * 50000
                     : $qtyDiterima;
+
+                if ($faktur_pembelian->jenis_faktur === 'barang_umum') {
+                    DB::table('pembukuan_baru_stok')->insert([
+                        'id_produk' => $detail->pakan_id,
+                        'nama_produk' => $detail->produkUmum->nm_produk ?? 'Barang Umum',
+                        'satuan' => $detail->satuan,
+                        'qty' => $qtyDiterima,
+                        'harga_satuan' => $detail->harga_satuan,
+                        'tanggal' => $validated['tanggal_terima'],
+                        'nomor_transaksi' => $faktur_pembelian->no_faktur,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                    continue;
+                }
 
                 $rows[] = [
                     'id_kandang' => 0,
@@ -714,9 +784,9 @@ class FakturPembelianController extends Controller
                 ];
             }
 
-            abort_if(empty($rows), 422, 'Qty diterima harus diisi minimal 1 item.');
+            abort_if($jumlahDiterima === 0, 422, 'Qty diterima harus diisi minimal 1 item.');
 
-            DB::table('stok_produk_perencanaan')->insert($rows);
+            if ($rows) DB::table('stok_produk_perencanaan')->insert($rows);
         });
 
         return redirect()
@@ -738,7 +808,7 @@ class FakturPembelianController extends Controller
                 ->with('error', 'Pilih minimal 1 faktur untuk penerimaan stok.');
         }
 
-        $fakturs = FakturModel::with(['supplier', 'detail.produk'])
+        $fakturs = FakturModel::with(['supplier', 'detail.produk', 'detail.produkUmum'])
             ->whereIn('id', $ids)
             ->orderBy('tanggal_faktur')
             ->orderBy('no_faktur')
@@ -763,7 +833,7 @@ class FakturPembelianController extends Controller
             'detail.*.qty_diterima' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        $fakturs = FakturModel::with('detail.produk')
+        $fakturs = FakturModel::with(['detail.produk', 'detail.produkUmum'])
             ->whereIn('id', $validated['faktur'])
             ->get();
 
@@ -772,6 +842,7 @@ class FakturPembelianController extends Controller
         DB::transaction(function () use ($validated, $fakturs, $qtyDiterimaByNota) {
             $admin = auth()->user()->name ?? 'system';
             $rows = [];
+            $jumlahDiterima = 0;
 
             foreach ($fakturs as $faktur) {
                 foreach ($faktur->detail as $detail) {
@@ -782,16 +853,31 @@ class FakturPembelianController extends Controller
                     if ($qtyDiterima <= 0) {
                         continue;
                     }
+                    $jumlahDiterima++;
 
                     abort_if(
                         $qtyDiterima > $qtySisa,
                         422,
-                        'Qty diterima ' . $faktur->no_faktur . ' - ' . ($detail->produk->nm_produk ?? 'produk') . ' melebihi sisa faktur.'
+                        'Qty diterima ' . $faktur->no_faktur . ' - ' . (($detail->sumber_produk ?? 'perencanaan') === 'barang_umum' ? ($detail->produkUmum->nm_produk ?? 'produk') : ($detail->produk->nm_produk ?? 'produk')) . ' melebihi sisa faktur.'
                     );
 
                     $qtyStok = $faktur->jenis_faktur === 'pakan'
                         ? $qtyDiterima * 50000
                         : $qtyDiterima;
+
+                    if ($faktur->jenis_faktur === 'barang_umum') {
+                        DB::table('pembukuan_baru_stok')->insert([
+                            'id_produk' => $detail->pakan_id,
+                            'nama_produk' => $detail->produkUmum->nm_produk ?? 'Barang Umum',
+                            'satuan' => $detail->satuan,
+                            'qty' => $qtyDiterima,
+                            'harga_satuan' => $detail->harga_satuan,
+                            'tanggal' => $validated['tanggal_terima'],
+                            'nomor_transaksi' => $faktur->no_faktur,
+                            'created_at' => now(), 'updated_at' => now(),
+                        ]);
+                        continue;
+                    }
 
                     $rows[] = [
                         'id_kandang' => 0,
@@ -813,9 +899,9 @@ class FakturPembelianController extends Controller
                 }
             }
 
-            abort_if(empty($rows), 422, 'Qty diterima harus diisi minimal 1 item.');
+            abort_if($jumlahDiterima === 0, 422, 'Qty diterima harus diisi minimal 1 item.');
 
-            DB::table('stok_produk_perencanaan')->insert($rows);
+            if ($rows) DB::table('stok_produk_perencanaan')->insert($rows);
         });
 
         return redirect()
@@ -831,13 +917,17 @@ class FakturPembelianController extends Controller
             return collect();
         }
 
-        return DB::table('faktur_pembelian as f')
+        $hasil = DB::table('faktur_pembelian as f')
             ->leftJoin('stok_produk_perencanaan as s', 's.no_nota', '=', 'f.no_faktur')
             ->whereIn('f.no_faktur', $fakturs->pluck('no_faktur'))
             ->groupBy('f.no_faktur', 'f.jenis_faktur')
             ->select('f.no_faktur')
             ->selectRaw("COALESCE(SUM(CASE WHEN f.jenis_faktur = 'pakan' THEN s.pcs / 50000 ELSE s.pcs END), 0) as qty_diterima")
             ->pluck('qty_diterima', 'no_faktur');
+        $umum = DB::table('pembukuan_baru_stok')->whereIn('nomor_transaksi', $fakturs->pluck('no_faktur'))
+            ->groupBy('nomor_transaksi')->select('nomor_transaksi')->selectRaw('SUM(qty) as qty_diterima')->pluck('qty_diterima', 'nomor_transaksi');
+        foreach ($umum as $nota => $qty) $hasil[$nota] = $qty;
+        return $hasil;
     }
 
     private function qtyDiterimaByNota($fakturs): array
@@ -848,7 +938,7 @@ class FakturPembelianController extends Controller
             return [];
         }
 
-        return DB::table('stok_produk_perencanaan as s')
+        $hasil = DB::table('stok_produk_perencanaan as s')
             ->join('faktur_pembelian as f', 'f.no_faktur', '=', 's.no_nota')
             ->whereIn('f.no_faktur', $fakturs->pluck('no_faktur'))
             ->groupBy('f.no_faktur', 'f.jenis_faktur', 's.id_pakan')
@@ -858,13 +948,18 @@ class FakturPembelianController extends Controller
             ->groupBy('no_faktur')
             ->map(fn($rows) => $rows->pluck('qty', 'id_pakan')->all())
             ->all();
+        $umum = DB::table('pembukuan_baru_stok as s')->join('faktur_pembelian as f', 'f.no_faktur', '=', 's.nomor_transaksi')
+            ->where('f.jenis_faktur', 'barang_umum')->whereIn('f.no_faktur', $fakturs->pluck('no_faktur'))
+            ->groupBy('f.no_faktur', 's.id_produk')->select('f.no_faktur', 's.id_produk')->selectRaw('SUM(s.qty) as qty')->get()
+            ->groupBy('no_faktur')->map(fn ($rows) => $rows->pluck('qty', 'id_produk')->all())->all();
+        return array_replace($hasil, $umum);
     }
 
     private function fakturSudahAdaPenerimaan(FakturModel $faktur): bool
     {
-        return DB::table('stok_produk_perencanaan')
-            ->where('no_nota', $faktur->no_faktur)
-            ->exists();
+        return $faktur->jenis_faktur === 'barang_umum'
+            ? DB::table('pembukuan_baru_stok')->where('nomor_transaksi', $faktur->no_faktur)->exists()
+            : DB::table('stok_produk_perencanaan')->where('no_nota', $faktur->no_faktur)->exists();
     }
 
     private function produkFakturOptions()
@@ -876,6 +971,27 @@ class FakturPembelianController extends Controller
                 'tb_produk_perencanaan.*',
                 's.nm_satuan as satuan_dosis',
             ]);
+    }
+
+    private function produkSesuaiJenisFaktur(?string $kategori, string $jenisFaktur): bool
+    {
+        return match ($jenisFaktur) {
+            'pakan' => $kategori === 'pakan',
+            'vaksin' => $kategori === 'vaksin',
+            'vitamin' => in_array($kategori, ['obat_pakan', 'obat_air', 'obat_ayam'], true),
+            'barang_umum' => $kategori === 'barang_umum',
+            default => false,
+        };
+    }
+
+    private function kodeAkunPersediaanFaktur(string $jenisFaktur): string
+    {
+        return match ($jenisFaktur) {
+            'pakan' => '110403',
+            'barang_umum' => '110406',
+            'vaksin' => '110521',
+            default => '110404',
+        };
     }
 
     private function normalisasiItemFaktur(array $items)

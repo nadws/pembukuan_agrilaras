@@ -208,9 +208,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ $kelompok === 'pembelian-umum' ? 'active' : '' }}"
-                    href="{{ route('pembukuan-baru.jurnal-umum.index', request()->except('page', 'kelompok') + ['kelompok' => 'pembelian-umum']) }}">
-                    Pembelian Umum
+                <a class="nav-link {{ $kelompok === 'penyesuaian' ? 'active' : '' }}"
+                    href="{{ route('pembukuan-baru.jurnal-umum.index', request()->except('page', 'kelompok') + ['kelompok' => 'penyesuaian']) }}">
+                    Jurnal Penyesuaian
                 </a>
             </li>
             <li class="nav-item">
@@ -855,15 +855,23 @@
                                                             <td>{{ tanggal($detail->tanggal) }}</td>
                                                             <td>{{ $detail->nomor_transaksi }}</td>
                                                             <td>{{ $detail->kode_akun_aktiva }} - {{ $detail->nama_akun_aktiva }}</td>
-                                                            <td>{{ $detail->kode_akun_kas }} - {{ $detail->nama_akun_kas }}</td>
+                                                            <td>
+                                                                @if (($detail->sumber ?? 'transaksi') === 'saldo_awal')
+                                                                    <span class="badge bg-info">Saldo awal (tanpa jurnal)</span>
+                                                                @else
+                                                                    {{ $detail->kode_akun_kas }} - {{ $detail->nama_akun_kas }}
+                                                                @endif
+                                                            </td>
                                                             <td>{{ $detail->keterangan }}</td>
                                                             <td class="text-end">Rp {{ number_format($detail->jumlah, 0, ',', '.') }}</td>
                                                             <td class="text-center">
                                                                 <div class="btn-group btn-group-sm" role="group">
-                                                                    <a href="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.transaksi.edit', $detail->nomor_transaksi) }}"
-                                                                        class="btn btn-outline-warning" title="Edit Transaksi">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </a>
+                                                                    @if (($detail->sumber ?? 'transaksi') !== 'saldo_awal')
+                                                                        <a href="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.transaksi.edit', $detail->nomor_transaksi) }}"
+                                                                            class="btn btn-outline-warning" title="Edit Transaksi">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                    @endif
                                                                     <button type="button" class="btn btn-outline-danger btn-delete-ag-transaksi"
                                                                         data-nomor="{{ $detail->nomor_transaksi }}"
                                                                         data-url="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.transaksi.destroy', $detail->nomor_transaksi) }}"
@@ -1013,6 +1021,12 @@
                     {{ $jurnalPembalik->links() }}
                 </div>
             @endif
+        @elseif ($kelompok === 'penyesuaian')
+            @include('pembukuan_baru.jurnal_umum._penyesuaian', [
+                'jurnal' => $jurnalPenyesuaian,
+                'detail' => $detailPenyesuaian,
+                'ringkasan' => $ringkasanPenyesuaian,
+            ])
         @else
             <div class="journal-summary">
                 <div class="journal-summary-box">

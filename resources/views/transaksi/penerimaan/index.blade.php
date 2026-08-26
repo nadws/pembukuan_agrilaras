@@ -195,7 +195,7 @@
                                     <td>{{ $item->no_faktur }}</td>
                                     <td>
                                         <span class="status-badge status-{{ $item->jenis_faktur === 'vitamin' ? 'sebagian' : 'lunas' }}">
-                                            {{ $item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan' }}
+                                            {{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}
                                         </span>
                                     </td>
                                     <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>

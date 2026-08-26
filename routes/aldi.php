@@ -37,6 +37,11 @@ Route::middleware('auth')->group(function () {
         ->name('gudang-persediaan.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/barang-umum', 'barangUmum')->name('barang-umum');
+            Route::get('/telur', 'telur')->name('telur');
+            Route::get('/telur/riwayat-opname', 'riwayatOpnameTelur')->name('telur.riwayat');
+            Route::get('/telur/opname/{idGudang}', 'opnameTelur')->name('telur.opname');
+            Route::post('/telur/opname/{idGudang}', 'storeOpnameTelur')->name('telur.opname.store');
             Route::get('/opname', 'opname')->name('opname');
             Route::post('/opname', 'storeOpname')->name('opname.store');
             Route::get('/riwayat-opname', 'riwayat')->name('riwayat');

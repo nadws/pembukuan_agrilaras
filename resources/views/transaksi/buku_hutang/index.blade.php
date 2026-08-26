@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">Daftar hutang dari faktur pembelian pakan dan vitamin</small>
+                <small class="text-muted">Daftar hutang dari seluruh faktur pembelian yang menggunakan metode Hutang</small>
             </div>
             <a href="{{ route('transaksi') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Transaksi
@@ -230,7 +230,7 @@
                                 <td>{{ $faktur->firstItem() + $nomor }}</td>
                                 <td>{{ tanggal($item->tanggal_faktur) }}</td>
                                 <td>{{ $item->no_faktur }}</td>
-                                <td>{{ $item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan' }}</td>
+                                <td>{{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}</td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_bayar, 0, ',', '.') }}</td>

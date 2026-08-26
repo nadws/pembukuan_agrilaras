@@ -23,6 +23,19 @@
         </div>
     </x-slot>
     <x-slot name="cardBody">
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ route('aktiva') }}">
+                    <i class="fas fa-building me-1"></i> Daftar Aktiva
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva') }}">
+                    <i class="fas fa-chart-line me-1"></i> Penyusutan Aktiva
+                </a>
+            </li>
+        </ul>
+
         @if ($errors->has('file_aktiva'))
             <div class="alert alert-danger" style="white-space: pre-line">{{ $errors->first('file_aktiva') }}</div>
         @endif

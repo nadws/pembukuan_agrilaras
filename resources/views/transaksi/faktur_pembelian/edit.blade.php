@@ -48,7 +48,7 @@
 
             .jenis-grid {
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 12px;
             }
 
@@ -210,6 +210,14 @@
                             <span class="jenis-akun">Persediaan Vitamin/Obat</span>
                         </span>
                     </label>
+                    <label class="jenis-card {{ $jenisFakturTerpilih === 'vaksin' ? 'is-active' : '' }}"
+                        data-jenis-card="vaksin">
+                        <input type="radio" name="jenis_faktur" value="vaksin" @checked($jenisFakturTerpilih === 'vaksin') required>
+                        <span>
+                            <span class="jenis-title">Faktur Vaksin</span>
+                            <span class="jenis-akun">Vaksin Ayam Belum Terbiayakan</span>
+                        </span>
+                    </label>
                 </div>
             </div>
 
@@ -246,7 +254,10 @@
             </div>
 
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <h6 class="mb-0">Daftar Item Pembelian</h6>
+                <div>
+                    <h6 class="mb-0">Daftar Item Pembelian</h6>
+                    <small class="text-muted">Isi Harga Satuan atau Subtotal; kolom pasangannya dihitung otomatis dari Qty.</small>
+                </div>
                 <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-item">
                     <i class="fas fa-plus me-1"></i> Tambah Item
                 </button>
@@ -336,11 +347,11 @@
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][harga_satuan]"
-                        class="form-control input-harga" required>
+                        class="form-control input-harga" placeholder="Dari subtotal" required>
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][subtotal]"
-                        class="form-control input-subtotal" required>
+                        class="form-control input-subtotal" placeholder="Dari harga" required>
                 </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">
@@ -455,7 +466,10 @@
                 }
 
                 function produkCocok(kategori) {
-                    return jenisTerpilih() === 'pakan' ? kategori === 'pakan' : kategori !== 'pakan';
+                    const jenis = jenisTerpilih();
+                    if (jenis === 'pakan') return kategori === 'pakan';
+                    if (jenis === 'vaksin') return kategori === 'vaksin';
+                    return ['obat_pakan', 'obat_air', 'obat_ayam'].includes(kategori);
                 }
 
                 function filterProduk() {

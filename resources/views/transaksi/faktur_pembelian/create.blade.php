@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">Input transaksi pembelian pakan / vitamin dari pemasok</small>
+                <small class="text-muted">Input transaksi pembelian pakan, vitamin/obat, atau vaksin dari pemasok</small>
             </div>
             <a href="{{ route('transaksi.faktur-pembelian.index') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Kembali
@@ -69,7 +69,7 @@
 
             .jenis-grid {
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
                 gap: 12px;
             }
 
@@ -195,6 +195,12 @@
                 white-space: nowrap;
             }
 
+            @media (max-width: 900px) {
+                .jenis-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
             @media (max-width: 576px) {
                 .jenis-grid {
                     grid-template-columns: 1fr;
@@ -239,6 +245,18 @@
                             <span class="jenis-akun">Persediaan Vitamin/Obat</span>
                         </span>
                     </label>
+                    <label class="jenis-card {{ $jenisFakturTerpilih === 'vaksin' ? 'is-active' : '' }}"
+                        data-jenis-card="vaksin">
+                        <input type="radio" name="jenis_faktur" value="vaksin" @checked($jenisFakturTerpilih === 'vaksin') required>
+                        <span>
+                            <span class="jenis-title">Faktur Vaksin</span>
+                            <span class="jenis-akun">Vaksin Ayam Belum Terbiayakan</span>
+                        </span>
+                    </label>
+                    <label class="jenis-card {{ $jenisFakturTerpilih === 'barang_umum' ? 'is-active' : '' }}" data-jenis-card="barang_umum">
+                        <input type="radio" name="jenis_faktur" value="barang_umum" @checked($jenisFakturTerpilih === 'barang_umum') required>
+                        <span><span class="jenis-title">Faktur Barang Umum</span><span class="jenis-akun">Persediaan Umum</span></span>
+                    </label>
                 </div>
             </div>
 
@@ -277,11 +295,30 @@
                             <input type="text" id="keterangan" name="keterangan" class="form-control"
                                 value="{{ old('keterangan') }}" placeholder="Catatan tambahan (opsional)">
                         </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label" for="metode_pembayaran">Metode Pembayaran</label>
+                            <select id="metode_pembayaran" name="metode_pembayaran" class="form-select" required>
+                                <option value="hutang" @selected(old('metode_pembayaran', 'hutang') === 'hutang')>Hutang (masuk Buku Hutang)</option>
+                                <option value="tunai" @selected(old('metode_pembayaran') === 'tunai')>Tunai / Bank</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-6 col-md-6" id="akun-pembayaran-wrap" style="display:{{ old('metode_pembayaran', 'hutang') === 'tunai' ? 'block' : 'none' }}">
+                            <label class="form-label" for="id_akun_pembayaran">Akun Pembayaran</label>
+                            <select id="id_akun_pembayaran" name="id_akun_pembayaran" class="form-select select-search-produk">
+                                <option value="">-- Pilih akun kas/bank --</option>
+                                @foreach($akunPembayaran as $akun)
+                                    <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('id_akun_pembayaran') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0">Daftar Item Pembelian</h6>
+                    <div>
+                        <h6 class="mb-0">Daftar Item Pembelian</h6>
+                        <small class="text-muted">Isi Harga Satuan atau Subtotal; kolom pasangannya dihitung otomatis dari Qty.</small>
+                    </div>
                     <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-item">
                         <i class="fas fa-plus me-1"></i> Tambah Item
                     </button>
@@ -355,6 +392,7 @@
             <tr class="baris-item">
                 <td class="text-center nomor-baris">1</td>
                 <td>
+                    <input type="hidden" name="item[__INDEX__][sumber_produk]" class="input-sumber-produk" value="perencanaan">
                     <select name="item[__INDEX__][pakan_id]" class="form-select select-produk select-search-produk"
                         data-placeholder="Cari produk" required>
                         <option value="">-- Pilih Produk --</option>
@@ -377,11 +415,11 @@
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][harga_satuan]"
-                        class="form-control input-harga" required>
+                        class="form-control input-harga" placeholder="Dari subtotal" required>
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][subtotal]"
-                        class="form-control input-subtotal" required>
+                        class="form-control input-subtotal" placeholder="Dari harga" required>
                 </td>
                 {{-- <td>
                     <input type="text" name="item[__INDEX__][no_batch]" class="form-control">
@@ -521,7 +559,11 @@
                 }
 
                 function produkCocok(kategori) {
-                    return jenisTerpilih() === 'pakan' ? kategori === 'pakan' : kategori !== 'pakan';
+                    const jenis = jenisTerpilih();
+                    if (jenis === 'pakan') return kategori === 'pakan';
+                    if (jenis === 'vaksin') return kategori === 'vaksin';
+                    if (jenis === 'barang_umum') return kategori === 'barang_umum';
+                    return ['obat_pakan', 'obat_air', 'obat_ayam'].includes(kategori);
                 }
 
                 function filterProduk() {
@@ -574,6 +616,7 @@
                     });
 
                     invoiceEntry.classList.toggle('is-hidden', !jenis);
+                    tbody.querySelectorAll('.input-sumber-produk').forEach((input) => { input.value = jenis === 'barang_umum' ? 'barang_umum' : 'perencanaan'; });
 
                     if (jenis && tbody.querySelectorAll('.baris-item').length === 0) {
                         tambahBaris();
@@ -626,6 +669,16 @@
                 btnTambah.addEventListener('click', tambahBaris);
                 diskonTotalInput.addEventListener('input', hitungUlangSemua);
                 jenisRadios.forEach((radio) => radio.addEventListener('change', updateJenisFaktur));
+                const metodePembayaran = document.getElementById('metode_pembayaran');
+                const akunPembayaranWrap = document.getElementById('akun-pembayaran-wrap');
+                const akunPembayaran = document.getElementById('id_akun_pembayaran');
+                function updateMetodePembayaran() {
+                    const tunai = metodePembayaran.value === 'tunai';
+                    akunPembayaranWrap.style.display = tunai ? 'block' : 'none';
+                    akunPembayaran.required = tunai;
+                }
+                metodePembayaran.addEventListener('change', updateMetodePembayaran);
+                updateMetodePembayaran();
 
                 initSelectSearch();
                 updateJenisFaktur();

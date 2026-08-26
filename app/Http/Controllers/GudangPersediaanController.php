@@ -24,6 +24,236 @@ class GudangPersediaanController extends Controller
         ]);
     }
 
+    public function barangUmum(Request $request)
+    {
+        $saldo = DB::table('pembukuan_baru_stok')
+            ->select('id_produk')
+            ->selectRaw('SUM(qty) as stok')
+            ->selectRaw('SUM(qty * harga_satuan) as nilai_stok')
+            ->groupBy('id_produk');
+
+        $base = DB::table('tb_produk as p')
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
+            ->leftJoin('tb_gudang as g', 'g.id_gudang', '=', 'p.gudang_id')
+            ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
+            ->where('p.kategori_id', 1)
+            ->when($request->filled('gudang'), fn ($q) => $q->where('p.gudang_id', $request->integer('gudang')))
+            ->when($request->filled('cari'), function ($q) use ($request) {
+                $cari = '%' . trim((string) $request->input('cari')) . '%';
+                $q->where(function ($sub) use ($cari) {
+                    $sub->where('p.nm_produk', 'like', $cari)
+                        ->orWhere('p.kd_produk', 'like', $cari)
+                        ->orWhere('s.nm_satuan', 'like', $cari)
+                        ->orWhere('g.nm_gudang', 'like', $cari);
+                });
+            });
+
+        $barang = (clone $base)
+            ->orderBy('g.nm_gudang')->orderBy('p.nm_produk')
+            ->select([
+                'p.id_produk', 'p.kd_produk', 'p.nm_produk', 'p.kontrol_stok',
+                'p.gudang_id', 'g.nm_gudang', 's.nm_satuan',
+                DB::raw('COALESCE(st.stok, 0) as stok'),
+                DB::raw('COALESCE(st.nilai_stok, 0) as nilai_stok'),
+            ])->paginate(15)->withQueryString();
+
+        $ringkasan = DB::table('tb_produk as p')
+            ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
+            ->where('p.kategori_id', 1)
+            ->selectRaw('COUNT(p.id_produk) as total_produk')
+            ->selectRaw('SUM(CASE WHEN COALESCE(st.stok, 0) > 0 THEN 1 ELSE 0 END) as tersedia')
+            ->selectRaw('SUM(CASE WHEN COALESCE(st.stok, 0) <= 0 THEN 1 ELSE 0 END) as kosong')
+            ->selectRaw('SUM(COALESCE(st.nilai_stok, 0)) as nilai_persediaan')
+            ->first();
+
+        return view('gudang_persediaan.barang_umum', [
+            'title' => 'Stok Barang Umum',
+            'barang' => $barang,
+            'ringkasan' => $ringkasan,
+            'gudang' => DB::table('tb_gudang')->whereIn('id_gudang', function ($q) {
+                $q->select('gudang_id')->from('tb_produk')->where('kategori_id', 1)->whereNotNull('gudang_id');
+            })->orderBy('nm_gudang')->get(),
+        ]);
+    }
+
+    public function telur()
+    {
+        $stokTelurPerGudang = $this->eggStockRows()->groupBy('id_gudang_telur');
+
+        return view('gudang_persediaan.telur', [
+            'title' => 'Stok Telur per Gudang',
+            'stokTelurPerGudang' => $stokTelurPerGudang,
+            'jumlahGudangTelur' => $stokTelurPerGudang->count(),
+            'totalStokTelurPcs' => $stokTelurPerGudang->flatten(1)->sum(fn ($row) => (float) $row->stok_pcs),
+            'totalStokTelurKg' => $stokTelurPerGudang->flatten(1)->sum(fn ($row) => (float) $row->stok_kg),
+        ]);
+    }
+
+    public function opnameTelur(Request $request, int $idGudang)
+    {
+        abort_unless(DB::table('gudang_telur')->where('id_gudang_telur', $idGudang)->exists(), 404);
+
+        try {
+            $tanggal = Carbon::parse($request->input('tanggal', date('Y-m-d')))->format('Y-m-d');
+        } catch (\Throwable) {
+            $tanggal = date('Y-m-d');
+        }
+
+        return view('gudang_persediaan.telur_opname', [
+            'title' => 'Stok Opname Telur',
+            'tanggal' => $tanggal,
+            'gudang' => DB::table('gudang_telur')->where('id_gudang_telur', $idGudang)->first(),
+            'stok' => $this->eggStockRows($tanggal, $idGudang),
+        ]);
+    }
+
+    public function storeOpnameTelur(Request $request, int $idGudang)
+    {
+        abort_unless(DB::table('gudang_telur')->where('id_gudang_telur', $idGudang)->exists(), 404);
+
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date', 'before_or_equal:today'],
+            'produk' => ['required', 'array', 'min:1'],
+            'produk.*' => ['required', 'integer', 'distinct', 'exists:telur_produk,id_produk_telur'],
+            'stok_fisik_pcs' => ['required', 'array'],
+            'stok_fisik_pcs.*' => ['required', 'numeric', 'min:0'],
+            'stok_fisik_kg' => ['required', 'array'],
+            'stok_fisik_kg.*' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        foreach ($validated['produk'] as $idTelur) {
+            if (! array_key_exists($idTelur, $validated['stok_fisik_pcs'])
+                || ! array_key_exists($idTelur, $validated['stok_fisik_kg'])) {
+                return back()->withErrors(['produk' => 'Stok fisik PCS dan KG wajib diisi untuk semua jenis telur.'])->withInput();
+            }
+        }
+
+        $opnameLebihBaru = DB::table('gudang_opname_telur')
+            ->where('id_gudang', $idGudang)
+            ->whereDate('tanggal', '>', $validated['tanggal'])
+            ->exists();
+        if ($opnameLebihBaru) {
+            return back()->withErrors(['tanggal' => 'Tanggal tidak boleh lebih lama dari opname telur terakhir di gudang ini.'])->withInput();
+        }
+
+        $opnameId = DB::transaction(function () use ($validated, $idGudang) {
+            $now = now();
+            $opnameId = DB::table('gudang_opname_telur')->insertGetId([
+                'nomor_opname' => 'TMP-' . str()->uuid(),
+                'id_gudang' => $idGudang,
+                'tanggal' => $validated['tanggal'],
+                'admin' => auth()->user()->name,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $nomorOpname = 'OPT-' . Carbon::parse($validated['tanggal'])->format('Ymd') . '-' . str_pad((string) $opnameId, 6, '0', STR_PAD_LEFT);
+            DB::table('gudang_opname_telur')->where('id', $opnameId)->update(['nomor_opname' => $nomorOpname]);
+
+            foreach ($validated['produk'] as $idTelur) {
+                $mutasi = DB::table('stok_telur')
+                    ->where('id_gudang', $idGudang)
+                    ->where('id_telur', $idTelur)
+                    ->where('opname', 'T')
+                    ->whereDate('tgl', '<=', $validated['tanggal'])
+                    ->lockForUpdate()
+                    ->get(['pcs', 'pcs_kredit', 'kg', 'kg_kredit']);
+
+                $stokSistemPcs = round($mutasi->sum(fn ($row) => (float) $row->pcs - (float) $row->pcs_kredit), 4);
+                $stokSistemKg = round($mutasi->sum(fn ($row) => (float) $row->kg - (float) $row->kg_kredit), 4);
+                $stokFisikPcs = round((float) $validated['stok_fisik_pcs'][$idTelur], 4);
+                $stokFisikKg = round((float) $validated['stok_fisik_kg'][$idTelur], 4);
+
+                DB::table('stok_telur')
+                    ->where('id_gudang', $idGudang)
+                    ->where('id_telur', $idTelur)
+                    ->where('opname', 'T')
+                    ->whereDate('tgl', '<=', $validated['tanggal'])
+                    ->update(['opname' => 'Y']);
+
+                DB::table('stok_telur')->insert([
+                    'id_kandang' => 0,
+                    'id_telur' => $idTelur,
+                    'tgl' => $validated['tanggal'],
+                    'pcs' => $stokFisikPcs,
+                    'kg' => $stokFisikKg,
+                    'pcs_kredit' => 0,
+                    'kg_kredit' => 0,
+                    'admin' => auth()->user()->name,
+                    'id_gudang' => $idGudang,
+                    'nota_transfer' => $nomorOpname,
+                    'ket' => 'Stok opname telur',
+                    'check' => 'Y',
+                    'jenis' => 'Opname',
+                    'opname' => 'T',
+                    'cek_admin' => auth()->user()->name,
+                    'pcs_selisih' => round($stokFisikPcs - $stokSistemPcs, 4),
+                    'kg_selisih' => round($stokFisikKg - $stokSistemKg, 4),
+                ]);
+
+                DB::table('gudang_opname_telur_detail')->insert([
+                    'opname_id' => $opnameId,
+                    'id_telur' => $idTelur,
+                    'stok_sistem_pcs' => $stokSistemPcs,
+                    'stok_sistem_kg' => $stokSistemKg,
+                    'stok_fisik_pcs' => $stokFisikPcs,
+                    'stok_fisik_kg' => $stokFisikKg,
+                    'selisih_pcs' => round($stokFisikPcs - $stokSistemPcs, 4),
+                    'selisih_kg' => round($stokFisikKg - $stokSistemKg, 4),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            return $opnameId;
+        });
+
+        return redirect()->route('gudang-persediaan.telur', ['opname' => $opnameId])
+            ->with('sukses', 'Stok opname telur berhasil disimpan. Saldo gudang sekarang mengikuti stok fisik.');
+    }
+
+    public function riwayatOpnameTelur(Request $request)
+    {
+        $query = DB::table('gudang_opname_telur as o')
+            ->join('gudang_telur as g', 'g.id_gudang_telur', '=', 'o.id_gudang')
+            ->leftJoin('gudang_opname_telur_detail as d', 'd.opname_id', '=', 'o.id')
+            ->when($request->filled('id_gudang'), fn ($q) => $q->where('o.id_gudang', $request->integer('id_gudang')))
+            ->when($request->filled('tgl1'), fn ($q) => $q->whereDate('o.tanggal', '>=', $request->input('tgl1')))
+            ->when($request->filled('tgl2'), fn ($q) => $q->whereDate('o.tanggal', '<=', $request->input('tgl2')))
+            ->when($request->filled('cari'), function ($q) use ($request) {
+                $cari = '%' . trim((string) $request->input('cari')) . '%';
+                $q->where(function ($sub) use ($cari) {
+                    $sub->where('o.nomor_opname', 'like', $cari)
+                        ->orWhere('o.admin', 'like', $cari)
+                        ->orWhere('g.nm_gudang', 'like', $cari);
+                });
+            })
+            ->select(
+                'o.id', 'o.nomor_opname', 'o.tanggal', 'o.admin', 'o.created_at',
+                'g.nm_gudang',
+                DB::raw('COUNT(d.id) as jumlah_produk'),
+                DB::raw('SUM(CASE WHEN COALESCE(d.selisih_pcs, 0) != 0 OR COALESCE(d.selisih_kg, 0) != 0 THEN 1 ELSE 0 END) as jumlah_selisih'),
+                DB::raw('SUM(COALESCE(d.selisih_pcs, 0)) as total_selisih_pcs'),
+                DB::raw('SUM(COALESCE(d.selisih_kg, 0)) as total_selisih_kg')
+            )
+            ->groupBy('o.id', 'o.nomor_opname', 'o.tanggal', 'o.admin', 'o.created_at', 'g.nm_gudang')
+            ->orderByDesc('o.tanggal')->orderByDesc('o.id');
+
+        $riwayat = $query->paginate(10)->withQueryString();
+        $detail = DB::table('gudang_opname_telur_detail as d')
+            ->join('telur_produk as p', 'p.id_produk_telur', '=', 'd.id_telur')
+            ->whereIn('d.opname_id', $riwayat->pluck('id'))
+            ->orderBy('p.id_produk_telur')
+            ->get(['d.*', 'p.nm_telur', 'p.kode_produk'])
+            ->groupBy('opname_id');
+
+        return view('gudang_persediaan.telur_riwayat', [
+            'title' => 'Riwayat Stok Opname Telur',
+            'riwayat' => $riwayat,
+            'detail' => $detail,
+            'gudang' => DB::table('gudang_telur')->orderBy('nm_gudang')->get(),
+        ]);
+    }
+
     public function opname(Request $request)
     {
         try {
@@ -174,6 +404,36 @@ class GudangPersediaanController extends Controller
                 'p.id_produk', 'p.nm_produk', 'p.kode_accurate', 'p.kategori',
                 's.nm_satuan', DB::raw('COALESCE(m.stok, 0) as stok'),
                 DB::raw('COALESCE(m.nilai_stok, 0) as nilai_stok'),
+            ]);
+    }
+
+    private function eggStockRows(?string $tanggal = null, ?int $idGudang = null): Collection
+    {
+        $saldo = DB::table('stok_telur')
+            ->where('opname', 'T')
+            ->when($tanggal, fn ($query) => $query->whereDate('tgl', '<=', $tanggal))
+            ->select('id_gudang', 'id_telur')
+            ->selectRaw('SUM(COALESCE(pcs, 0) - COALESCE(pcs_kredit, 0)) as stok_pcs')
+            ->selectRaw('SUM(COALESCE(kg, 0) - COALESCE(kg_kredit, 0)) as stok_kg')
+            ->groupBy('id_gudang', 'id_telur');
+
+        return DB::table('gudang_telur as g')
+            ->crossJoin('telur_produk as p')
+            ->when($idGudang, fn ($query) => $query->where('g.id_gudang_telur', $idGudang))
+            ->leftJoinSub($saldo, 's', function ($join) {
+                $join->on('s.id_gudang', '=', 'g.id_gudang_telur')
+                    ->on('s.id_telur', '=', 'p.id_produk_telur');
+            })
+            ->orderBy('g.nm_gudang')
+            ->orderBy('p.id_produk_telur')
+            ->get([
+                'g.id_gudang_telur',
+                'g.nm_gudang',
+                'p.id_produk_telur',
+                'p.kode_produk',
+                'p.nm_telur',
+                DB::raw('COALESCE(s.stok_pcs, 0) as stok_pcs'),
+                DB::raw('COALESCE(s.stok_kg, 0) as stok_kg'),
             ]);
     }
 

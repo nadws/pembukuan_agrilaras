@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Produk;
 
 class FakturPembelianDetail extends Model
 {
@@ -14,5 +15,10 @@ class FakturPembelianDetail extends Model
     public function produk()
     {
         return $this->belongsTo(ProdukPerencanaan::class, 'pakan_id', 'id_produk');
+    }
+
+    public function produkUmum()
+    {
+        return $this->belongsTo(Produk::class, 'pakan_id', 'id_produk');
     }
 }

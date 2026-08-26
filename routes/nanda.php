@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AktivaController;
+use App\Http\Controllers\AktivaGantungController;
 use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AkunPerkiraanController;
 use App\Http\Controllers\BukuBesarController;
@@ -118,6 +119,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', 'store')->name('store');
             Route::get('/{faktur_pembelian}/detail', 'detail')->name('detail');
             Route::get('/{faktur_pembelian}/edit', 'edit')->name('edit');
+            Route::delete('/{faktur_pembelian}', 'destroy')->name('destroy');
             Route::put('/{faktur_pembelian}', 'update')->name('update');
             Route::get('/{faktur_pembelian}/terima', 'terima')->name('terima');
             Route::post('/{faktur_pembelian}/terima', 'storeTerima')->name('terima.store');
@@ -414,10 +416,16 @@ Route::middleware('auth')->group(function () {
     });
     Route::prefix('pembukuan-baru/jurnal-penyesuaian')->name('pembukuan-baru.jurnal-penyesuaian.')->controller(PembukuanBaruJurnalPenyesuaianController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/stok-opname', 'stokOpname')->name('stok-opname');
+        // URL lama tetap dipertahankan sebagai pintu masuk, tetapi proses opname
+        // barang umum sekarang dilakukan dari modul Gudang.
+        Route::get('/stok-opname', fn () => redirect()->route('gudang-persediaan.barang-umum'))->name('stok-opname');
         Route::post('/stok-opname', 'simpanStokOpname')->name('stok-opname.store');
         Route::get('/penyusutan-aktiva', 'penyusutanAktiva')->name('penyusutan-aktiva');
         Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
+    });
+    Route::prefix('pembukuan-baru/aktiva-gantung')->name('pembukuan-baru.aktiva-gantung.')->controller(AktivaGantungController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/saldo-awal', 'storeSaldoAwal')->name('saldo-awal.store');
     });
     Route::prefix('pembukuan-baru/buku-besar')->name('pembukuan-baru.buku-besar.')->controller(PembukuanBaruBukuBesarController::class)->group(function () {
         Route::get('/', 'index')->name('index');

@@ -67,7 +67,7 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="label">Jenis</div>
-                    <div class="value">{{ $faktur->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan' }}</div>
+                    <div class="value">{{ ucfirst($faktur->jenis_faktur) }}</div>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="label">Suplier</div>
@@ -111,8 +111,8 @@
                         <tr>
                             <td>{{ $no + 1 }}</td>
                             <td>
-                                <strong>{{ $detail->produk->nm_produk ?? '-' }}</strong>
-                                <div class="text-muted small">{{ $detail->produk->kategori ?? '-' }}</div>
+                                <strong>{{ ($detail->sumber_produk ?? 'perencanaan') === 'barang_umum' ? ($detail->produkUmum->nm_produk ?? '-') : ($detail->produk->nm_produk ?? '-') }}</strong>
+                                <div class="text-muted small">{{ ($detail->sumber_produk ?? 'perencanaan') === 'barang_umum' ? 'Barang Umum' : ($detail->produk->kategori ?? '-') }}</div>
                             </td>
                             <td class="text-end">{{ number_format($detail->qty, 2, ',', '.') }}</td>
                             <td class="text-end">

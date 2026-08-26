@@ -1,13 +1,22 @@
 <x-theme.app title="{{ $title }}" sizeCard="12">
     <x-slot name="cardHeader">
         <div><h5 class="mb-1">Penyusutan Aktiva</h5><small class="text-muted">Pilih aktiva yang akan disusutkan untuk satu periode.</small></div>
-        <div class="btn-group">
-            <a class="btn btn-outline-primary" href="{{ route('pembukuan-baru.jurnal-penyesuaian.stok-opname') }}">Stok Opname</a>
-            <a class="btn btn-primary" href="{{ route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva', ['tanggal' => $tanggal]) }}">Penyusutan Aktiva</a>
-        </div>
     </x-slot>
 
     <x-slot name="cardBody">
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('aktiva') }}">
+                    <i class="fas fa-building me-1"></i> Daftar Aktiva
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva', ['tanggal' => $tanggal]) }}">
+                    <i class="fas fa-chart-line me-1"></i> Penyusutan Aktiva
+                </a>
+            </li>
+        </ul>
+
         @if (isset($errors) && $errors->any())
             <div class="alert alert-danger">{{ $errors->first() }}</div>
         @endif

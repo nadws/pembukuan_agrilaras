@@ -124,7 +124,7 @@
                                 <div class="nota-title">{{ $faktur->no_faktur }}</div>
                                 <div class="nota-meta">
                                     {{ tanggal($faktur->tanggal_faktur) }} |
-                                    {{ $faktur->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan' }} |
+                                    {{ $faktur->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($faktur->jenis_faktur === 'vaksin' ? 'Vaksin' : ($faktur->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }} |
                                     {{ $faktur->supplier->nm_suplier ?? '-' }}
                                 </div>
                             </div>
@@ -155,8 +155,8 @@
                                         <tr>
                                             <td>{{ $no + 1 }}</td>
                                             <td>
-                                                <strong>{{ $detail->produk->nm_produk ?? '-' }}</strong>
-                                                <div class="text-muted small">{{ $detail->produk->kategori ?? '-' }}</div>
+                                                <strong>{{ ($detail->sumber_produk ?? 'perencanaan') === 'barang_umum' ? ($detail->produkUmum->nm_produk ?? '-') : ($detail->produk->nm_produk ?? '-') }}</strong>
+                                                <div class="text-muted small">{{ ($detail->sumber_produk ?? 'perencanaan') === 'barang_umum' ? 'Barang Umum' : ($detail->produk->kategori ?? '-') }}</div>
                                             </td>
                                             <td class="text-end">
                                                 {{ number_format($detail->qty, 2, ',', '.') }}

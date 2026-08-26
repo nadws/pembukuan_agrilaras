@@ -14,7 +14,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
         $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
         $cari = $request->input('cari');
-        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'pembelian-umum', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual'], true)
+        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual'], true)
             ? $request->input('kelompok')
             : 'faktur-pembelian';
 
@@ -40,7 +40,10 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $jurnalFakturDetailQuery = DB::table('jurnal_perkiraan as j')
             ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-            ->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+            ->where(function ($q) {
+                $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+                    ->orWhere('j.tipe_transaksi', 'Pembelian Umum');
+            })
             ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
             ->when($cari, function ($query) use ($cari) {
                 $query->where(function ($q) use ($cari) {
@@ -55,7 +58,10 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->orderBy('j.urutan_detail');
 
         $filterFaktur = function ($query) use ($tanggalAwal, $tanggalAkhir, $cari) {
-            $query->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+            $query->where(function ($q) {
+                    $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+                        ->orWhere('j.tipe_transaksi', 'Pembelian Umum');
+                })
                 ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
                 ->when($cari, function ($query) use ($cari) {
                     $query->where(function ($q) use ($cari) {
@@ -156,6 +162,14 @@ class PembukuanBaruJurnalUmumController extends Controller
             aktif: $kelompok === 'pembalik-aktiva-gantung'
         );
 
+        [$jurnalPenyesuaian, $detailPenyesuaian, $ringkasanPenyesuaian] = $this->jurnalGroupedByTransaction(
+            tipeTransaksi: ['Stok Opname', 'Penyusutan Aktiva'],
+            tanggalAwal: $tanggalAwal,
+            tanggalAkhir: $tanggalAkhir,
+            cari: $cari,
+            aktif: $kelompok === 'penyesuaian'
+        );
+
         $batch = $kelompok === 'manual'
             ? $batchManualQuery->paginate(15)->withQueryString()
             : collect();
@@ -219,6 +233,9 @@ class PembukuanBaruJurnalUmumController extends Controller
             'ringkasanPembelianUmum' => $ringkasanPembelianUmum,
             'ringkasanAktivaGantung' => $ringkasanAktivaGantung,
             'ringkasanPembalik' => $ringkasanPembalik,
+            'jurnalPenyesuaian' => $jurnalPenyesuaian,
+            'detailPenyesuaian' => $detailPenyesuaian,
+            'ringkasanPenyesuaian' => $ringkasanPenyesuaian,
         ]);
     }
 

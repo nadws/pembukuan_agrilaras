@@ -79,8 +79,11 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
             'nilai_satuan'=>['required','array'], 'nilai_satuan.*'=>['required','numeric','min:0'],
         ]);
         $persediaan = DB::table('akun_perkiraan')->where('kode_perkiraan','110406')->where('aktif',1)->first();
-        $biaya = DB::table('akun_perkiraan')->where('aktif',1)->where(function($q){$q->where('nama','like','%Penyesuaian Persediaan%')->orWhere('nama','like','%Stock Opname%');})->first();
-        if (!$persediaan || !$biaya) return back()->withErrors(['akun'=>'Akun Persediaan Umum atau Biaya Penyesuaian Persediaan belum tersedia.'])->withInput();
+        // Selisih opname barang umum dibebankan ke BPP Telur (Telur/Rak),
+        // mengikuti akun yang digunakan pada jurnal pembelian umum.
+        $biaya = DB::table('akun_perkiraan')->where('aktif', 1)->where('kode_perkiraan', '5101-01')->first()
+            ?: DB::table('akun_perkiraan')->where('aktif', 1)->where(function($q){$q->where('nama','like','%Penyesuaian Persediaan%')->orWhere('nama','like','%Stock Opname%');})->first();
+        if (!$persediaan || !$biaya) return back()->withErrors(['akun'=>'Akun Persediaan Umum (110406) atau Biaya Pokok Penjualan Telur (Telur/Rak) (5101-01) belum tersedia.'])->withInput();
         $no='SO-'.date('YmdHis').'-'.random_int(100,999); $now=now();
 
         $hasil = DB::transaction(function () use ($v, $persediaan, $biaya, $no, $now) {

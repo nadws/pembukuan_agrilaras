@@ -176,8 +176,8 @@
                                 <td>{{ $item->no_faktur }}</td>
                                 <td>
                                     <span
-                                        class="status-badge status-{{ $item->jenis_faktur === 'vitamin' ? 'sebagian' : 'lunas' }}">
-                                        {{ $item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan' }}
+                                        class="status-badge status-{{ $item->jenis_faktur === 'pakan' ? 'lunas' : 'sebagian' }}">
+                                        {{ ucfirst($item->jenis_faktur) }}
                                     </span>
                                 </td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
@@ -212,6 +212,12 @@
                                         class="btn btn-outline-warning btn-sm" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @if (!$stokSelesai && $qtyDiterima <= 0)
+                                        <form method="POST" action="{{ route('transaksi.faktur-pembelian.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Hapus faktur ini? Jurnal terkait juga akan dihapus.')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
