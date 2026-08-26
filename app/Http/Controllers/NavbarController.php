@@ -111,76 +111,76 @@ class NavbarController extends Controller
         $title = 'Persediaan Barang';
         return view('navbar.data_master', compact(['data', 'title']));
     }
-    public function buku_besar()
-    {
-        $data = [
-            [
-                'judul' => 'Dashboard',
-                'route' => 'controlflow',
-                'img' => 'dashboard.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
-            [
-                'judul' => 'Budget',
-                'route' => 'budget.index',
-                'img' => 'budget.png',
-                'deskripsi' => 'Mencatat budgeting.',
-            ],
-            [
-                'judul' => 'Daftar Akun',
-                'route' => 'akun',
-                'img' => 'accounting.png',
-                'deskripsi' => 'membuat dan menyunting data rekening',
-            ],
-            [
-                'judul' => 'Saldo Awal',
-                'route' => 'saldo_awal',
-                'img' => 'report.png',
-                'deskripsi' => 'membuat dan menyunting data rekening',
-            ],
-            [
-                'judul' => 'Buku Besar',
-                'route' => 'summary_buku_besar.index',
-                'img' => 'ledger.png',
-                'deskripsi' => 'Menampilkan ikhtisar jurnal dan perubahannya pada berbagai rekening.',
-            ],
-            [
-                'judul' => 'Jurnal Umum',
-                'route' => 'jurnal',
-                'img' => 'newspaper.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
-            // [
-            //     'judul' => 'Profit & Loss',
-            //     'route' => 'profit',
-            //     'img' => 'profit.png',
-            //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            // ],
+    // public function buku_besar()
+    // {
+    //     $data = [
+    //         [
+    //             'judul' => 'Dashboard',
+    //             'route' => 'controlflow',
+    //             'img' => 'dashboard.png',
+    //             'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         ],
+    //         [
+    //             'judul' => 'Budget',
+    //             'route' => 'budget.index',
+    //             'img' => 'budget.png',
+    //             'deskripsi' => 'Mencatat budgeting.',
+    //         ],
+    //         [
+    //             'judul' => 'Daftar Akun',
+    //             'route' => 'akun',
+    //             'img' => 'accounting.png',
+    //             'deskripsi' => 'membuat dan menyunting data rekening',
+    //         ],
+    //         [
+    //             'judul' => 'Saldo Awal',
+    //             'route' => 'saldo_awal',
+    //             'img' => 'report.png',
+    //             'deskripsi' => 'membuat dan menyunting data rekening',
+    //         ],
+    //         [
+    //             'judul' => 'Buku Besar',
+    //             'route' => 'summary_buku_besar.index',
+    //             'img' => 'ledger.png',
+    //             'deskripsi' => 'Menampilkan ikhtisar jurnal dan perubahannya pada berbagai rekening.',
+    //         ],
+    //         [
+    //             'judul' => 'Jurnal Umum',
+    //             'route' => 'jurnal',
+    //             'img' => 'newspaper.png',
+    //             'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         ],
+    //         // [
+    //         //     'judul' => 'Profit & Loss',
+    //         //     'route' => 'profit',
+    //         //     'img' => 'profit.png',
+    //         //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         // ],
 
-            // [
-            //     'judul' => 'Laporan Neraca',
-            //     'route' => 'neraca',
-            //     'img' => 'law-book.png',
-            //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            // ],
+    //         // [
+    //         //     'judul' => 'Laporan Neraca',
+    //         //     'route' => 'neraca',
+    //         //     'img' => 'law-book.png',
+    //         //     'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         // ],
 
-            [
-                'judul' => 'Jurnal Penutup',
-                'route' => 'penutup.index',
-                'img' => 'penutup.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
-            [
-                'judul' => 'Saldo Penutup',
-                'route' => 'saldo_penutup',
-                'img' => 'legislation.png',
-                'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
-            ],
+    //         [
+    //             'judul' => 'Jurnal Penutup',
+    //             'route' => 'penutup.index',
+    //             'img' => 'penutup.png',
+    //             'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         ],
+    //         [
+    //             'judul' => 'Saldo Penutup',
+    //             'route' => 'saldo_penutup',
+    //             'img' => 'legislation.png',
+    //             'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
+    //         ],
 
-        ];
-        $title = 'Buku Besar';
-        return view('navbar.data_master', compact(['data', 'title']));
-    }
+    //     ];
+    //     $title = 'Buku Besar';
+    //     return view('navbar.data_master', compact(['data', 'title']));
+    // }
 
     public function transaksi()
     {
