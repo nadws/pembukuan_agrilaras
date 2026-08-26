@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/barang-umum', 'barangUmum')->name('barang-umum');
+            Route::get('/barang-umum/opname', 'opnameBarangUmum')->name('barang-umum.opname');
             Route::get('/telur', 'telur')->name('telur');
             Route::get('/telur/riwayat-opname', 'riwayatOpnameTelur')->name('telur.riwayat');
             Route::get('/telur/opname/{idGudang}', 'opnameTelur')->name('telur.opname');

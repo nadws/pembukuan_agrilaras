@@ -76,6 +76,34 @@ class GudangPersediaanController extends Controller
         ]);
     }
 
+    public function opnameBarangUmum()
+    {
+        $saldo = DB::table('pembukuan_baru_stok')
+            ->select('id_produk')
+            ->selectRaw('SUM(qty) as qty_masuk')
+            ->selectRaw('SUM(qty * harga_satuan) as nilai_masuk')
+            ->groupBy('id_produk');
+
+        $items = DB::table('tb_produk as p')
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
+            ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
+            ->where('p.kategori_id', 1)
+            ->where('p.kontrol_stok', 'Y')
+            ->orderBy('p.nm_produk')
+            ->get([
+                'p.id_produk',
+                'p.nm_produk as nama_produk',
+                's.nm_satuan as satuan',
+                DB::raw('COALESCE(st.qty_masuk, 0) as qty_masuk'),
+                DB::raw('COALESCE(st.nilai_masuk, 0) as nilai_masuk'),
+            ]);
+
+        return view('pembukuan_baru.jurnal_penyesuaian.stok_opname', [
+            'title' => 'Stok Opname Barang Umum',
+            'items' => $items,
+        ]);
+    }
+
     public function telur()
     {
         $stokTelurPerGudang = $this->eggStockRows()->groupBy('id_gudang_telur');

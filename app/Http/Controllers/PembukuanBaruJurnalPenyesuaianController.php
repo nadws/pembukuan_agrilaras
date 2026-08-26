@@ -131,7 +131,7 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
             return true;
         });
         if (!$hasil) return back()->with('sukses','Tidak ada selisih stok. Stok sistem sudah sama dengan stok fisik.');
-        return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses','Stok opname berhasil disimpan, stok sistem sudah diperbarui, dan jurnal penyesuaian sudah dibuat.');
+        return redirect()->route('gudang-persediaan.barang-umum')->with('sukses','Stok opname berhasil disimpan, stok sistem sudah diperbarui, dan jurnal penyesuaian sudah dibuat.');
     }
 
     public function simpanPenyusutanGrouped(Request $request)
