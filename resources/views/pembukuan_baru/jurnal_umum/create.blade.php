@@ -3,9 +3,9 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">Isi jurnal dalam 3 langkah sederhana</small>
+                <small class="text-muted">{{ !empty($isEdit) ? 'Perbarui informasi dan detail debit kredit jurnal' : 'Masukkan informasi dan detail debit kredit jurnal' }}</small>
             </div>
-            <a href="{{ route('pembukuan-baru.jurnal-umum.index') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'manual']) }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Jurnal Umum
             </a>
         </div>
@@ -138,8 +138,11 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('pembukuan-baru.jurnal-umum.store') }}" id="form-jurnal-step">
+        <form method="POST" action="{{ !empty($isEdit) ? route('pembukuan-baru.jurnal-umum.manual.update', $batchManual->id_impor_jurnal_perkiraan) : route('pembukuan-baru.jurnal-umum.store') }}" id="form-jurnal-step">
             @csrf
+            @if (!empty($isEdit))
+                @method('PUT')
+            @endif
             <div class="stepper">
                 <button type="button" class="step-button active" data-step-target="1">1. Info Transaksi</button>
                 <button type="button" class="step-button" data-step-target="2">2. Detail Jurnal</button>
@@ -154,7 +157,7 @@
                             <div class="col-lg-3 col-md-6">
                                 <label class="form-label" for="tanggal">Tanggal</label>
                                 <input type="date" id="tanggal" name="tanggal" class="form-control"
-                                    value="{{ old('tanggal', now()->toDateString()) }}" required>
+                                    value="{{ old('tanggal', $jurnalTanggal ?? now()->toDateString()) }}" required>
                             </div>
                             <div class="col-lg-3 col-md-6">
                                 <label class="form-label" for="nomor_transaksi">Nomor Transaksi</label>
@@ -247,7 +250,7 @@
                 <button type="button" class="btn btn-outline-secondary" id="btn-prev" disabled>Sebelumnya</button>
                 <button type="button" class="btn btn-primary" id="btn-next">Lanjut</button>
                 <button type="submit" class="btn btn-success" id="btn-submit" hidden>
-                    <i class="fas fa-save me-1"></i> Simpan Jurnal
+                    <i class="fas fa-save me-1"></i> {{ !empty($isEdit) ? 'Simpan Perubahan' : 'Simpan Jurnal' }}
                 </button>
             </div>
         </form>
@@ -299,6 +302,7 @@
                 const btnSubmit = document.getElementById('btn-submit');
                 const btnTambah = document.getElementById('btn-tambah-baris');
                 const form = document.getElementById('form-jurnal-step');
+                const initialDetails = @json(old('detail', $detailAwal ?? []));
                 let step = 1;
                 let index = 0;
                 let totals = {debit: 0, kredit: 0, selisih: 0};
@@ -322,10 +326,14 @@
                     });
                 }
 
-                function addRow() {
+                function addRow(data = {}) {
                     const html = template.innerHTML.replaceAll('__INDEX__', index);
                     tbody.insertAdjacentHTML('beforeend', html);
                     const row = tbody.querySelector('.detail-row:last-child');
+                    row.querySelector('.select-akun').value = data.id_akun_perkiraan || '';
+                    row.querySelector('.input-deskripsi').value = data.deskripsi || '';
+                    row.querySelector('.input-debit').value = data.debit || 0;
+                    row.querySelector('.input-kredit').value = data.kredit || 0;
                     index++;
                     initSelect(row);
                     refreshRows();
@@ -399,8 +407,12 @@
                     }
                 });
 
-                addRow();
-                addRow();
+                if (initialDetails.length) {
+                    initialDetails.forEach((detail) => addRow(detail));
+                } else {
+                    addRow();
+                    addRow();
+                }
                 initSelect();
                 showStep(1);
             })();

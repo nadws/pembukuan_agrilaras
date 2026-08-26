@@ -148,6 +148,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
+            Route::get('/manual/{id}/edit', 'editManual')->name('manual.edit');
+            Route::put('/manual/{id}', 'updateManual')->name('manual.update');
+            Route::delete('/manual/{id}', 'destroyManual')->name('manual.destroy');
 
             Route::get('/biaya/create', 'createBiaya')->name('biaya.create');
             Route::post('/biaya', 'storeBiaya')->name('biaya.store');

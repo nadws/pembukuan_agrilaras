@@ -1014,38 +1014,111 @@
                 </div>
             @endif
         @else
+            <div class="journal-summary">
+                <div class="journal-summary-box">
+                    <div class="label">Jumlah detail</div>
+                    <div class="value">{{ number_format($ringkasanManual->jumlah_detail ?? 0, 0, ',', '.') }}</div>
+                </div>
+                <div class="journal-summary-box">
+                    <div class="label">Total debit</div>
+                    <div class="value">Rp {{ number_format($ringkasanManual->total_debit ?? 0, 0, ',', '.') }}</div>
+                </div>
+                <div class="journal-summary-box">
+                    <div class="label">Total kredit</div>
+                    <div class="value">Rp {{ number_format($ringkasanManual->total_kredit ?? 0, 0, ',', '.') }}</div>
+                </div>
+            </div>
 
             <div class="journal-table-wrap">
                 <table class="table table-hover align-middle journal-table">
                     <thead>
                         <tr>
                             <th width="55">No</th>
-                            <th>Nama</th>
-                            <th>Periode</th>
+                            <th>Tanggal</th>
+                            <th>No Transaksi</th>
+                            <th>Tipe</th>
                             <th class="text-end">Detail</th>
                             <th class="text-end">Debit</th>
                             <th class="text-end">Kredit</th>
-                            <th>Status</th>
+                            <th width="140" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($batch as $nomor => $item)
-                            <tr>
+                            @php
+                                $detailRows = $detailManual[$item->id_impor_jurnal_perkiraan] ?? collect();
+                                $detailId = 'detail-manual-' . $item->id_impor_jurnal_perkiraan;
+                            @endphp
+                            <tr class="journal-master-row" data-detail-target="{{ $detailId }}">
                                 <td>{{ $batch->firstItem() + $nomor }}</td>
-                                <td>{{ $item->nama_file }}</td>
                                 <td>{{ tanggal($item->periode_awal) }}</td>
-                                <td class="text-end">{{ number_format($item->jumlah_detail, 0, ',', '.') }}</td>
+                                <td>{{ $detailRows->first()->nomor_transaksi ?? '-' }}</td>
+                                <td>Jurnal Umum Manual</td>
+                                <td class="text-end">{{ number_format($item->jumlah_detail, 0, ',', '.') }} baris</td>
                                 <td class="text-end">Rp {{ number_format($item->total_debit, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_kredit, 0, ',', '.') }}</td>
-                                <td>
-                                    <span class="badge bg-{{ $item->status === 'aktif' ? 'success' : 'danger' }}">
-                                        {{ ucfirst($item->status) }}
-                                    </span>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-toggle-detail"
+                                            data-detail-target="{{ $detailId }}" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="{{ route('pembukuan-baru.jurnal-umum.manual.edit', $item->id_impor_jurnal_perkiraan) }}"
+                                            class="btn btn-outline-warning" title="Edit Jurnal"
+                                            onclick="event.stopPropagation()">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="POST" action="{{ route('pembukuan-baru.jurnal-umum.manual.destroy', $item->id_impor_jurnal_perkiraan) }}"
+                                            class="d-inline-flex" onclick="event.stopPropagation()"
+                                            onsubmit="return confirm('Hapus jurnal umum manual ini? Seluruh detail debit dan kreditnya juga akan dihapus.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger rounded-start-0" title="Hapus Jurnal">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="journal-detail-row" id="{{ $detailId }}">
+                                <td colspan="8">
+                                    <div class="journal-detail-box">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered align-middle journal-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="45">No</th>
+                                                        <th>No. Transaksi</th>
+                                                        <th>Akun</th>
+                                                        <th>Keterangan</th>
+                                                        <th class="text-end">Debit</th>
+                                                        <th class="text-end">Kredit</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($detailRows as $detailNo => $detail)
+                                                        <tr>
+                                                            <td>{{ $detailNo + 1 }}</td>
+                                                            <td>{{ $detail->nomor_transaksi }}</td>
+                                                            <td>{{ $detail->kode_perkiraan }} - {{ $detail->nama_akun }}</td>
+                                                            <td>{{ $detail->deskripsi ?: '-' }}</td>
+                                                            <td class="text-end">Rp {{ number_format($detail->debit, 0, ',', '.') }}</td>
+                                                            <td class="text-end">Rp {{ number_format($detail->kredit, 0, ',', '.') }}</td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="6" class="text-center text-muted">Detail jurnal tidak ditemukan.</td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="empty-journal">
+                                <td colspan="8" class="empty-journal">
                                     <strong class="d-block mb-1">Belum ada jurnal umum</strong>
                                     <span>Jurnal yang dibuat dari halaman ini akan muncul di sini.</span>
                                 </td>

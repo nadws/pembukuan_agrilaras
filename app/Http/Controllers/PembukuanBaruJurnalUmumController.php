@@ -160,9 +160,41 @@ class PembukuanBaruJurnalUmumController extends Controller
             ? $batchManualQuery->paginate(15)->withQueryString()
             : collect();
 
+        $ringkasanManual = $kelompok === 'manual'
+            ? (clone $batchManualQuery)
+                ->reorder()
+                ->selectRaw('COALESCE(SUM(i.jumlah_detail), 0) as jumlah_detail')
+                ->selectRaw('COALESCE(SUM(i.total_debit), 0) as total_debit')
+                ->selectRaw('COALESCE(SUM(i.total_kredit), 0) as total_kredit')
+                ->first()
+            : (object) ['jumlah_detail' => 0, 'total_debit' => 0, 'total_kredit' => 0];
+
+        $detailManual = $kelompok === 'manual' && $batch->isNotEmpty()
+            ? DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->whereIn(
+                    'j.id_impor_jurnal_perkiraan',
+                    $batch->getCollection()->pluck('id_impor_jurnal_perkiraan')
+                )
+                ->orderBy('j.id_impor_jurnal_perkiraan')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.id_impor_jurnal_perkiraan',
+                    'j.nomor_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ])
+                ->groupBy('id_impor_jurnal_perkiraan')
+            : collect();
+
         return view('pembukuan_baru.jurnal_umum.index', [
             'title' => 'Jurnal Umum',
             'batch' => $batch,
+            'detailManual' => $detailManual,
+            'ringkasanManual' => $ringkasanManual,
             'jurnalFaktur' => $jurnalFaktur,
             'detailFaktur' => $detailFaktur,
             'jurnalPelunasan' => $jurnalPelunasan,
@@ -274,8 +306,148 @@ class PembukuanBaruJurnalUmumController extends Controller
         });
 
         return redirect()
-            ->route('pembukuan-baru.jurnal-umum.index')
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'manual'])
             ->with('sukses', 'Jurnal umum berhasil disimpan.');
+    }
+
+    public function editManual(int $id): View
+    {
+        $batch = DB::table('impor_jurnal_perkiraan')
+            ->where('id_impor_jurnal_perkiraan', $id)
+            ->where('nama_file', 'like', 'Jurnal umum manual%')
+            ->first();
+
+        abort_unless($batch, 404);
+
+        $rows = DB::table('jurnal_perkiraan')
+            ->where('id_impor_jurnal_perkiraan', $id)
+            ->orderBy('urutan_detail')
+            ->get();
+
+        abort_if($rows->isEmpty(), 404);
+
+        return view('pembukuan_baru.jurnal_umum.create', [
+            'title' => 'Edit Jurnal Umum',
+            'isEdit' => true,
+            'batchManual' => $batch,
+            'noTransaksi' => $rows->first()->nomor_transaksi,
+            'jurnalTanggal' => $rows->first()->tanggal,
+            'detailAwal' => $rows->map(fn ($row) => [
+                'id_akun_perkiraan' => $row->id_akun_perkiraan,
+                'deskripsi' => $row->deskripsi,
+                'debit' => (float) $row->debit,
+                'kredit' => (float) $row->kredit,
+            ])->all(),
+            'akun' => DB::table('akun_perkiraan')
+                ->where('aktif', 1)
+                ->orderBy('kode_perkiraan')
+                ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']),
+        ]);
+    }
+
+    public function updateManual(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'nomor_transaksi' => ['required', 'string', 'max:100'],
+            'keterangan' => ['nullable', 'string'],
+            'detail' => ['required', 'array', 'min:2'],
+            'detail.*.id_akun_perkiraan' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'detail.*.deskripsi' => ['nullable', 'string'],
+            'detail.*.debit' => ['nullable', 'numeric', 'min:0'],
+            'detail.*.kredit' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $detail = collect($validated['detail'])->values()->map(function ($item) {
+            $item['debit'] = round((float) ($item['debit'] ?? 0), 2);
+            $item['kredit'] = round((float) ($item['kredit'] ?? 0), 2);
+            return $item;
+        })->filter(fn ($item) => $item['debit'] > 0 || $item['kredit'] > 0)->values();
+
+        if ($detail->count() < 2) {
+            return back()->withErrors(['detail' => 'Minimal isi 2 baris jurnal.'])->withInput();
+        }
+
+        $totalDebit = $detail->sum('debit');
+        $totalKredit = $detail->sum('kredit');
+
+        if (round($totalDebit - $totalKredit, 2) !== 0.0) {
+            return back()->withErrors(['detail' => 'Total debit dan kredit harus sama.'])->withInput();
+        }
+
+        DB::transaction(function () use ($id, $validated, $detail, $totalDebit, $totalKredit) {
+            $batch = DB::table('impor_jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->where('nama_file', 'like', 'Jurnal umum manual%')
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($batch, 404);
+
+            $sekarang = now();
+            DB::table('impor_jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->update([
+                    'nama_file' => 'Jurnal umum manual ' . $validated['nomor_transaksi'],
+                    'periode_awal' => $validated['tanggal'],
+                    'periode_akhir' => $validated['tanggal'],
+                    'jumlah_transaksi' => 1,
+                    'jumlah_detail' => $detail->count(),
+                    'total_debit' => $totalDebit,
+                    'total_kredit' => $totalKredit,
+                    'updated_at' => $sekarang,
+                ]);
+
+            DB::table('jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->delete();
+
+            DB::table('jurnal_perkiraan')->insert(
+                $detail->map(function ($item, $index) use ($id, $validated, $sekarang) {
+                    return [
+                        'id_impor_jurnal_perkiraan' => $id,
+                        'id_akun_perkiraan' => $item['id_akun_perkiraan'],
+                        'tanggal' => $validated['tanggal'],
+                        'nomor_transaksi' => $validated['nomor_transaksi'],
+                        'tipe_transaksi' => 'Jurnal Umum Manual',
+                        'urutan_detail' => $index + 1,
+                        'deskripsi' => ($item['deskripsi'] ?? null) ?: ($validated['keterangan'] ?? null),
+                        'debit' => $item['debit'],
+                        'kredit' => $item['kredit'],
+                        'created_at' => $sekarang,
+                        'updated_at' => $sekarang,
+                    ];
+                })->all()
+            );
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'manual'])
+            ->with('sukses', 'Jurnal umum manual berhasil diperbarui.');
+    }
+
+    public function destroyManual(int $id): RedirectResponse
+    {
+        DB::transaction(function () use ($id) {
+            $batch = DB::table('impor_jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->where('nama_file', 'like', 'Jurnal umum manual%')
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($batch, 404);
+
+            DB::table('jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->delete();
+            DB::table('impor_jurnal_perkiraan')
+                ->where('id_impor_jurnal_perkiraan', $id)
+                ->delete();
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'manual'])
+            ->with('sukses', 'Jurnal umum manual berhasil dihapus.');
     }
 
     public function createBiaya(): View
