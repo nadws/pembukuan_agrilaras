@@ -262,7 +262,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'nomor_transaksi' => $validated['nomor_transaksi'],
                     'tipe_transaksi' => 'Jurnal Umum Manual',
                     'urutan_detail' => $index + 1,
-                    'deskripsi' => $item['deskripsi'] ?: ($validated['keterangan'] ?? null),
+                    'deskripsi' => ($item['deskripsi'] ?? null) ?: ($validated['keterangan'] ?? null),
                     'debit' => $item['debit'],
                     'kredit' => $item['kredit'],
                     'created_at' => $sekarang,
@@ -271,10 +271,6 @@ class PembukuanBaruJurnalUmumController extends Controller
             })->all();
 
             DB::table('jurnal_perkiraan')->insert($rows);
-            DB::table('pembukuan_baru_stok')->insert($detail->map(function ($item) use ($validated, $produkMap, $sekarang) {
-                $p = $produkMap[$item['id_produk']] ?? null;
-                return ['id_produk'=>$item['id_produk'],'nama_produk'=>$p?->nm_produk ?? 'Produk #'.$item['id_produk'],'satuan'=>$item['satuan'],'qty'=>$item['qty'],'harga_satuan'=>$item['harga_satuan'],'tanggal'=>$validated['tanggal'],'nomor_transaksi'=>$validated['nomor_transaksi'],'created_at'=>$sekarang,'updated_at'=>$sekarang];
-            })->all());
         });
 
         return redirect()
