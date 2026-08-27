@@ -9,7 +9,7 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
 {
     public function index(Request $request) {
         $tgl1 = $request->input('tgl1', date('Y-m-01')); $tgl2 = $request->input('tgl2', date('Y-m-t')); $cari = trim((string) $request->input('cari', ''));
-        $jurnal = DB::table('jurnal_perkiraan as j')->leftJoin('akun_perkiraan as a','a.id_akun_perkiraan','=','j.id_akun_perkiraan')->whereIn('j.tipe_transaksi',['Stok Opname','Penyusutan Aktiva'])->whereBetween('j.tanggal',[$tgl1,$tgl2])->when($cari, fn($q)=>$q->where(function($w) use($cari){$w->where('j.nomor_transaksi','like',"%$cari%")->orWhere('j.deskripsi','like',"%$cari%")->orWhere('a.nama','like',"%$cari%");}))->orderByDesc('j.tanggal')->orderByDesc('j.id_impor_jurnal_perkiraan')->select(['j.*','a.kode_perkiraan','a.nama as nama_akun'])->paginate(15)->withQueryString();
+        $jurnal = DB::table('jurnal_perkiraan as j')->leftJoin('akun_perkiraan as a','a.id_akun_perkiraan','=','j.id_akun_perkiraan')->whereIn('j.tipe_transaksi',['Stok Opname','Penyusutan Aktiva','Penyesuaian Aktiva'])->whereBetween('j.tanggal',[$tgl1,$tgl2])->when($cari, fn($q)=>$q->where(function($w) use($cari){$w->where('j.nomor_transaksi','like',"%$cari%")->orWhere('j.deskripsi','like',"%$cari%")->orWhere('a.nama','like',"%$cari%");}))->orderByDesc('j.tanggal')->orderByDesc('j.id_impor_jurnal_perkiraan')->select(['j.*','a.kode_perkiraan','a.nama as nama_akun'])->paginate(15)->withQueryString();
         return view('pembukuan_baru.jurnal_penyesuaian.index', ['title' => 'Jurnal Penyesuaian','jurnal'=>$jurnal]);
     }
 
@@ -61,11 +61,18 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
                 return $a;
             });
 
+        $akunBebanDisposisi = DB::table('akun_perkiraan')
+            ->where('aktif', 1)
+            ->whereIn('tipe_akun', ['EXPS', 'OEXP'])
+            ->orderBy('kode_perkiraan')
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama', 'tipe_akun']);
+
         return view('pembukuan_baru.jurnal_penyesuaian.penyusutan_aktiva', [
             'title' => 'Penyusutan Aktiva',
             'aktiva' => $aktiva,
             'tanggal' => $tanggal,
             'periode' => $periode,
+            'akunBebanDisposisi' => $akunBebanDisposisi,
         ]);
     }
 
@@ -248,4 +255,93 @@ class PembukuanBaruJurnalPenyesuaianController extends Controller
         return redirect()->route('pembukuan-baru.jurnal-penyesuaian.index')->with('sukses', $pesan);
     }
 
+    public function writeOffAktiva(Request $request)
+    {
+        $v = $request->validate([
+            'id_aktiva' => ['required', 'integer', 'exists:aktiva_pembukuan_baru,id'],
+            'tanggal' => ['required', 'date'],
+            'id_akun_beban' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'keterangan' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $aktiva = DB::table('aktiva_pembukuan_baru')->where('id', $v['id_aktiva'])->first();
+        abort_unless($aktiva, 404);
+
+        $nilaiBuku = max(0, (float) $aktiva->h_perolehan - (float) $aktiva->akumulasi_penyusutan);
+        if ($nilaiBuku <= 0) {
+            return back()->withErrors(['id_aktiva' => 'Nilai buku aktiva ini sudah Rp 0 (sudah habis disusutkan).']);
+        }
+
+        $akunAset = DB::table('akun_perkiraan')->where('id_akun_perkiraan', $aktiva->id_akun_aset)->first();
+        if (!$akunAset) {
+            return back()->withErrors(['akun' => 'Akun aset tetap untuk aktiva ini belum ditentukan.']);
+        }
+
+        $akunBeban = DB::table('akun_perkiraan')->where('id_akun_perkiraan', $v['id_akun_beban'])->first();
+        if (!$akunBeban) {
+            return back()->withErrors(['akun' => 'Akun beban kerugian tidak valid.']);
+        }
+
+        DB::transaction(function () use ($v, $aktiva, $akunAset, $akunBeban, $nilaiBuku) {
+            $now = now();
+            $nomor = 'JPA-WO-' . date('YmdHis') . '-' . random_int(100, 999);
+            $deskripsi = 'Penghapusan aktiva rusak: ' . $aktiva->nm_aktiva;
+            if (!empty($v['keterangan'])) {
+                $deskripsi .= ' (' . trim($v['keterangan']) . ')';
+            }
+
+            $batch = DB::table('impor_jurnal_perkiraan')->insertGetId([
+                'nama_file' => 'Penghapusan Aktiva Rusak ' . $nomor,
+                'hash_file' => hash('sha256', $nomor . $now),
+                'periode_awal' => $v['tanggal'],
+                'periode_akhir' => $v['tanggal'],
+                'jumlah_transaksi' => 1,
+                'jumlah_detail' => 2,
+                'total_debit' => $nilaiBuku,
+                'total_kredit' => $nilaiBuku,
+                'status' => 'aktif',
+                'diimpor_oleh' => auth()->id(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            DB::table('jurnal_perkiraan')->insert([
+                [
+                    'id_impor_jurnal_perkiraan' => $batch,
+                    'id_akun_perkiraan' => $akunBeban->id_akun_perkiraan,
+                    'tanggal' => $v['tanggal'],
+                    'nomor_transaksi' => $nomor,
+                    'tipe_transaksi' => 'Penyesuaian Aktiva',
+                    'urutan_detail' => 1,
+                    'deskripsi' => $deskripsi,
+                    'debit' => $nilaiBuku,
+                    'kredit' => 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+                [
+                    'id_impor_jurnal_perkiraan' => $batch,
+                    'id_akun_perkiraan' => $akunAset->id_akun_perkiraan,
+                    'tanggal' => $v['tanggal'],
+                    'nomor_transaksi' => $nomor,
+                    'tipe_transaksi' => 'Penyesuaian Aktiva',
+                    'urutan_detail' => 2,
+                    'deskripsi' => $deskripsi,
+                    'debit' => 0,
+                    'kredit' => $nilaiBuku,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            ]);
+
+            DB::table('aktiva_pembukuan_baru')->where('id', $aktiva->id)->update([
+                'akumulasi_penyusutan' => $aktiva->h_perolehan,
+                'sisa_umur_bulan' => 0,
+                'updated_at' => $now,
+            ]);
+        });
+
+        return redirect()->route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva')
+            ->with('sukses', 'Aktiva "' . $aktiva->nm_aktiva . '" berhasil dihapus karena rusak. Jurnal kerugian sebesar Rp ' . number_format($nilaiBuku, 0, ',', '.') . ' telah dibuat.');
+    }
 }

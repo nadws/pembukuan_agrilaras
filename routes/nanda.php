@@ -423,6 +423,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/stok-opname', 'simpanStokOpname')->name('stok-opname.store');
         Route::get('/penyusutan-aktiva', 'penyusutanAktiva')->name('penyusutan-aktiva');
         Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
+        Route::post('/penyusutan-aktiva/write-off', 'writeOffAktiva')->name('penyusutan-aktiva.write-off');
     });
     Route::prefix('pembukuan-baru/aktiva-gantung')->name('pembukuan-baru.aktiva-gantung.')->controller(AktivaGantungController::class)->group(function () {
         Route::get('/', 'index')->name('index');

@@ -23,6 +23,10 @@
         </div>
     </x-slot>
     <x-slot name="cardBody">
+        <style>
+            .nav-pills .nav-link { color: #435EBE !important; background: #edf2fc; border: 1px solid #dce4f2; font-weight: 600; margin-right: 8px; }
+            .nav-pills .nav-link.active { color: #ffffff !important; background: #435EBE !important; border-color: #435EBE; }
+        </style>
         <ul class="nav nav-pills mb-4">
             <li class="nav-item">
                 <a class="nav-link active" href="{{ route('aktiva') }}">
