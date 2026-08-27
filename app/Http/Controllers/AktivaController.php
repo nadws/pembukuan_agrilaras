@@ -19,51 +19,46 @@ use SettingHal;
 
 class AktivaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $id_user = auth()->user()->id;
-        $aktivaManual = collect(DB::select("SELECT a.*, b.*, a.akumulasi_penyusutan as beban FROM aktiva_pembukuan_baru as a
-            left join kelompok_aktiva as b on b.id_kelompok = a.id_kelompok
-            order by a.id DESC"));
-        $aktivaPembalikan = DB::table('jurnal_perkiraan as j')
-            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-            ->where('j.tipe_transaksi', 'Pembalik Aktiva Gantung')
-            ->where('j.debit', '>', 0)
-            ->orderByDesc('j.tanggal')->orderByDesc('j.id_impor_jurnal_perkiraan')
-            ->get(['j.tanggal', 'j.nomor_transaksi', 'j.debit as h_perolehan', 'j.deskripsi', 'a.nama as nm_kelompok', 'j.tanggal as tgl'])
-            ->map(function ($row) {
-                // Nama aktiva mengikuti nama aset pada aktiva gantung, bukan deskripsi jurnal.
-                $nama = preg_replace('/^Pembalikan aktiva gantung\s+/i', '', (string) $row->deskripsi);
-                $nama = preg_replace('/\s+ke aset\s+.*$/i', '', $nama);
-                $nama = preg_replace('/\s+menjadi aset tetap\s*$/i', '', $nama);
-                $row->nm_aktiva = trim($nama) ?: $row->deskripsi;
-                $row->biaya_depresiasi = 0;
-                $row->beban = 0;
-                $row->umur_aktiva_bulan = null;
-                return $row;
-            });
-        $namaManual = $aktivaManual->pluck('nm_aktiva')->map(fn($n) => mb_strtolower(trim($n)));
-        $aktiva = $aktivaManual->concat($aktivaPembalikan->reject(fn($a) => $namaManual->contains(mb_strtolower(trim($a->nm_aktiva)))));
-        $data =  [
-            'title' => 'Aktiva',
-            'tahun' => DB::select("SELECT YEAR(a.tgl) as tahun, a.tgl
-            FROM depresiasi_aktiva as a
-            group by YEAR(a.tgl)
-            order by YEAR(a.tgl) ASC;"),
+        $cari    = trim((string) $request->input('cari', ''));
+
+        $aktiva = DB::table('aktiva_pembukuan_baru as a')
+            ->leftJoin('kelompok_aktiva as b', 'b.id_kelompok', '=', 'a.id_kelompok')
+            ->leftJoin('akun_perkiraan as ap', 'ap.id_akun_perkiraan', '=', 'a.id_akun_aset')
+            ->when($cari, fn($q) => $q->where(function ($w) use ($cari) {
+                $w->where('a.nm_aktiva', 'like', "%{$cari}%")
+                  ->orWhere('b.nm_kelompok', 'like', "%{$cari}%")
+                  ->orWhere('ap.nama', 'like', "%{$cari}%");
+            }))
+            ->select([
+                'a.id', 'a.tgl', 'a.nm_aktiva', 'a.h_perolehan',
+                'a.biaya_depresiasi', 'a.akumulasi_penyusutan as beban',
+                'a.umur_aktiva_bulan', 'a.sisa_umur_bulan', 'a.id_akun_aset',
+                'b.nm_kelompok', 'ap.kode_perkiraan', 'ap.nama as nama_akun_aset',
+            ])
+            ->orderByDesc('a.tgl')
+            ->orderByDesc('a.id')
+            ->paginate(20)
+            ->withQueryString();
+
+        $data = [
+            'title'  => 'Aktiva',
+            'tahun'  => DB::select("SELECT YEAR(a.tgl) as tahun, a.tgl FROM depresiasi_aktiva as a group by YEAR(a.tgl) order by YEAR(a.tgl) ASC;"),
             'aktiva' => $aktiva,
-            // Jurnal pembalik adalah sumber aktiva baru pada Pembukuan Baru.
-
-            'user' => User::where('posisi_id', 1)->get(),
+            'cari'   => $cari,
+            'user'   => User::where('posisi_id', 1)->get(),
             'halaman' => 10,
-            'create' => SettingHal::btnHal(41, $id_user),
-            'print' => SettingHal::btnHal(42, $id_user),
-            'edit' => SettingHal::btnHal(43, $id_user),
-            'delete' => SettingHal::btnHal(44, $id_user),
-            'detail' => SettingHal::btnHal(45, $id_user),
-
+            'create'  => SettingHal::btnHal(41, $id_user),
+            'print'   => SettingHal::btnHal(42, $id_user),
+            'edit'    => SettingHal::btnHal(43, $id_user),
+            'delete'  => SettingHal::btnHal(44, $id_user),
+            'detail'  => SettingHal::btnHal(45, $id_user),
         ];
         return view('aktiva.index', $data);
     }
+
 
     public function add()
     {

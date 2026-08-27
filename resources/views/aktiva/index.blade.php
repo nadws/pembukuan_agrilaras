@@ -1,92 +1,161 @@
-<x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
+<x-theme.app title="{{ $title }}" sizeCard="12">
     <x-slot name="cardHeader">
-        <h6 class="float-start">Aktiva</h6>
-        <div class="row justify-content-end">
-            <div class="col-lg-6">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5 class="mb-0" style="color: #0f172a !important;">Daftar Aktiva</h5>
+                <small class="text-muted">Total: {{ $aktiva->total() }} aktiva</small>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
                 @if (!empty($create))
-                    <x-theme.button modal="T" href="{{ route('aktiva.add') }}" icon="fa-plus" addClass="float-end"
-                        teks="Buat Baru" />
+                    <a href="{{ route('aktiva.add') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Buat Baru
+                    </a>
                 @endif
-                <a href="{{ route('aktiva.import.template') }}" class="btn btn-outline-success btn-sm float-end me-2"><i class="fas fa-download"></i> Format Import</a>
-                <button type="button" class="btn btn-success btn-sm float-end me-2" data-bs-toggle="modal" data-bs-target="#importAktiva">
+                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importAktiva">
                     <i class="fas fa-file-import me-1"></i> Import Data
                 </button>
+                <a href="{{ route('aktiva.import.template') }}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-download me-1"></i> Format Import
+                </a>
                 @if (!empty($print))
-                    <x-theme.button modal="Y" idModal="view" icon="fa-print" addClass="float-end" teks="Print" />
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#view">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
                 @endif
-                {{--
-                <x-theme.button modal="T" href="{{ route('print_aktiva') }}" icon="fa-print" addClass="float-end"
-                    teks="Print" /> --}}
-                <x-theme.akses :halaman="$halaman" route="aktiva" />
-
+                <a href="{{ route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-chart-line me-1"></i> Penyusutan Aktiva
+                </a>
             </div>
         </div>
     </x-slot>
+
     <x-slot name="cardBody">
         <style>
-            .nav-pills .nav-link { color: #435EBE !important; background: #edf2fc; border: 1px solid #dce4f2; font-weight: 600; margin-right: 8px; }
-            .nav-pills .nav-link.active { color: #ffffff !important; background: #435EBE !important; border-color: #435EBE; }
+            .aktiva-table { font-size: 13px; width: 100%; border-collapse: separate; border-spacing: 0; }
+            .aktiva-table thead th {
+                background: #304f9e !important;
+                color: #ffffff !important;
+                font-weight: 600;
+                font-size: 12.5px;
+                padding: 10px 14px;
+                border: none;
+                white-space: nowrap;
+            }
+            .aktiva-table tbody td {
+                padding: 10px 14px;
+                vertical-align: middle;
+                border-bottom: 1px solid #eef2f6;
+                color: #0f172a !important;
+                background-color: #ffffff !important;
+            }
+            .aktiva-table tbody tr:hover td {
+                background-color: #f1f5f9 !important;
+            }
+            .nilai-buku-positif { color: #16a34a !important; font-weight: 700; }
+            .nilai-buku-nol { color: #94a3b8 !important; font-weight: 600; }
+            .nm-aktiva-text { color: #0f172a !important; font-weight: 700; font-size: 13px; }
         </style>
-        <ul class="nav nav-pills mb-4">
-            <li class="nav-item">
-                <a class="nav-link active" href="{{ route('aktiva') }}">
-                    <i class="fas fa-building me-1"></i> Daftar Aktiva
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('pembukuan-baru.jurnal-penyesuaian.penyusutan-aktiva') }}">
-                    <i class="fas fa-chart-line me-1"></i> Penyusutan Aktiva
-                </a>
-            </li>
-        </ul>
 
         @if ($errors->has('file_aktiva'))
-            <div class="alert alert-danger" style="white-space: pre-line">{{ $errors->first('file_aktiva') }}</div>
+            <div class="alert alert-danger alert-dismissible fade show" style="white-space: pre-line">
+                {{ $errors->first('file_aktiva') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         @endif
-        <div class="alert alert-info py-2">Aktiva manual dan aktiva dari jurnal pembalik ditampilkan dalam satu daftar.</div>
-        <section class="row">
-            <table class="table table-hover" id="table1">
+
+        {{-- Search Bar --}}
+        <form method="GET" action="{{ route('aktiva') }}" class="mb-3">
+            <div class="input-group" style="max-width: 400px;">
+                <input type="text" name="cari" class="form-control form-control-sm" placeholder="Cari nama aktiva atau akun aset..." value="{{ $cari }}">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+                @if ($cari)
+                    <a href="{{ route('aktiva') }}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-times"></i></a>
+                @endif
+            </div>
+        </form>
+
+        <div class="table-responsive border rounded bg-white">
+            <table class="aktiva-table">
                 <thead>
                     <tr>
-                        <th width="5">#</th>
-                        <th>Tanggal Perolehan</th>
-                        <th>Nama</th>
-                        <th class="text-end">Nilai Aset/Perolehan</th>
-                        <th class="text-end">Penysutan Perbulan</th>
-                        <th class="text-end">Akumulasi Penyusutan</th>
-                        <th class="text-end">Sisa Nilai Aset (Nilai Buku)</th>
-                        <th>Umur Aktiva</th>
-                        {{-- <th>Aksi</th> --}}
+                        <th style="width: 45px;">#</th>
+                        <th style="min-width: 110px;">Tanggal Perolehan</th>
+                        <th style="min-width: 200px;">Nama Aktiva</th>
+                        <th style="min-width: 130px;">Akun Aset</th>
+                        <th class="text-end" style="min-width: 140px;">Nilai Perolehan</th>
+                        <th class="text-end" style="min-width: 130px;">Penyusutan/Bulan</th>
+                        <th class="text-end" style="min-width: 140px;">Akumulasi Penyusutan</th>
+                        <th class="text-end" style="min-width: 130px;">Nilai Buku</th>
+                        <th class="text-center" style="min-width: 110px;">Umur Aktiva</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($aktiva as $no => $a)
+                    @forelse ($aktiva as $i => $a)
+                        @php
+                            $nilaiBuku = max(0, (float) $a->h_perolehan - (float) $a->beban);
+                            $tahunUmur = !empty($a->umur_aktiva_bulan) ? intdiv((int) $a->umur_aktiva_bulan, 12) : 0;
+                            $bulanUmur = !empty($a->umur_aktiva_bulan) ? (int) $a->umur_aktiva_bulan % 12 : 0;
+                        @endphp
                         <tr>
-                            <td>{{ $no + 1 }}</td>
-                            <td>{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
-                            <td>{{ $a->nm_aktiva }}</td>
-                            <td align="right">Rp {{ number_format($a->h_perolehan, 0) }}</td>
-                            <td align="right">Rp {{ number_format($a->biaya_depresiasi, 0) }}</td>
-                            <td align="right">Rp {{ number_format($a->beban, 0) }}</td>
-                            <td align="right">Rp {{ number_format(max(0, $a->h_perolehan - $a->beban), 0) }}</td>
+                            <td style="color: #94a3b8 !important; font-size: 12px;">{{ $aktiva->firstItem() + $i }}</td>
+                            <td style="color: #475569 !important; font-size: 12px;">{{ date('d-m-Y', strtotime($a->tgl)) }}</td>
                             <td>
-                                @if (!empty($a->umur_aktiva_bulan))
-                                    @php
-                                        $tahunUmur = intdiv((int) $a->umur_aktiva_bulan, 12);
-                                        $bulanUmur = (int) $a->umur_aktiva_bulan % 12;
-                                    @endphp
-                                    {{ $tahunUmur > 0 ? $tahunUmur . ' tahun' : '' }}{{ $tahunUmur > 0 && $bulanUmur > 0 ? ' ' : '' }}{{ $bulanUmur > 0 ? $bulanUmur . ' bulan' : '' }}
+                                <div class="nm-aktiva-text">{{ $a->nm_aktiva }}</div>
+                                @if ($a->nm_kelompok)
+                                    <small style="color: #64748b !important; font-size: 11px;">{{ $a->nm_kelompok }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($a->kode_perkiraan)
+                                    <span style="color: #2563eb !important; font-weight: 600; font-size: 12px;">{{ $a->kode_perkiraan }}</span>
+                                    <div style="color: #475569 !important; font-size: 11.5px; max-width: 140px;" class="text-truncate">{{ $a->nama_akun_aset }}</div>
                                 @else
-                                    -
+                                    <span style="color: #94a3b8 !important; font-size: 12px;">-</span>
+                                @endif
+                            </td>
+                            <td class="text-end" style="color: #0f172a !important;">Rp {{ number_format($a->h_perolehan, 0, ',', '.') }}</td>
+                            <td class="text-end" style="color: #0f172a !important;">Rp {{ number_format($a->biaya_depresiasi, 0, ',', '.') }}</td>
+                            <td class="text-end" style="color: #64748b !important;">Rp {{ number_format($a->beban, 0, ',', '.') }}</td>
+                            <td class="text-end {{ $nilaiBuku > 0 ? 'nilai-buku-positif' : 'nilai-buku-nol' }}">
+                                Rp {{ number_format($nilaiBuku, 0, ',', '.') }}
+                            </td>
+                            <td class="text-center">
+                                @if ($tahunUmur > 0 || $bulanUmur > 0)
+                                    <div style="color: #0f172a !important; font-weight: 600; font-size: 12.5px;">
+                                        {{ $tahunUmur > 0 ? $tahunUmur . ' th' : '' }}{{ $tahunUmur > 0 && $bulanUmur > 0 ? ' ' : '' }}{{ $bulanUmur > 0 ? $bulanUmur . ' bln' : '' }}
+                                    </div>
+                                    @if ($a->sisa_umur_bulan !== null)
+                                        <small style="color: #64748b !important; font-size: 11px;">Sisa: {{ $a->sisa_umur_bulan }} bln</small>
+                                    @endif
+                                @else
+                                    <span style="color: #94a3b8 !important;">-</span>
                                 @endif
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center py-5" style="color: #94a3b8 !important;">
+                                @if ($cari)
+                                    Tidak ada aktiva yang cocok dengan pencarian "<strong>{{ $cari }}</strong>".
+                                @else
+                                    Belum ada data aktiva.
+                                @endif
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
-
             </table>
-        </section>
+        </div>
 
+        {{-- Pagination --}}
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3">
+            <small class="text-muted" style="color: #64748b !important;">
+                Menampilkan {{ $aktiva->firstItem() ?? 0 }}–{{ $aktiva->lastItem() ?? 0 }} dari {{ $aktiva->total() }} aktiva
+            </small>
+            {{ $aktiva->onEachSide(1)->links('pagination::bootstrap-5') }}
+        </div>
+
+        {{-- Modal Import --}}
         <div class="modal fade" id="importAktiva" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -113,6 +182,7 @@
             </div>
         </div>
 
+        {{-- Modal Print --}}
         <form action="{{ route('print_aktiva') }}" method="get">
             <x-theme.modal title="Pilih Tahun" idModal="view">
                 <div class="row">
@@ -123,25 +193,9 @@
                                 <option value="{{ $t->tgl }}">{{ $t->tahun }}</option>
                             @endforeach
                         </select>
-
                     </div>
                 </div>
-
             </x-theme.modal>
         </form>
-
-
-
-
-
-
     </x-slot>
-    @section('scripts')
-        <script>
-            $(document).ready(function() {
-
-
-            });
-        </script>
-    @endsection
 </x-theme.app>
