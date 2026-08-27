@@ -138,8 +138,8 @@
                     <div class="pay-panel-body">
                         <div class="summary-grid">
                             <div class="summary-box">
-                                <div class="label">Total faktur</div>
-                                <div class="value">Rp {{ number_format($faktur->total_harga, 0, ',', '.') }}</div>
+                                <div class="label">Total hutang</div>
+                                <div class="value">Rp {{ number_format($faktur->total_hutang, 0, ',', '.') }}</div>
                             </div>
                             <div class="summary-box">
                                 <div class="label">Sudah dibayar</div>
@@ -175,6 +175,21 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        @if (count($faktur->biaya_lain ?? []))
+                            <h6 class="mb-2">Biaya Lain-lain</h6>
+                            <div class="table-responsive mb-3">
+                                <table class="table table-sm table-bordered align-middle detail-table">
+                                    <thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th class="text-end">Nominal</th></tr></thead>
+                                    <tbody>
+                                        @foreach (($faktur->biaya_lain ?? []) as $biaya)
+                                            @php($akunBiayaItem = $akunBiaya[$biaya['id_akun'] ?? 0] ?? null)
+                                            <tr><td>{{ $akunBiayaItem?->kode_perkiraan ?? '-' }} - {{ $akunBiayaItem?->nama ?? 'Akun tidak ditemukan' }}</td><td>{{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'Biaya lain') }}</td><td class="text-end">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</td></tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
 
                         <h6 class="mb-2">Riwayat Pelunasan</h6>
                         <div class="table-responsive">

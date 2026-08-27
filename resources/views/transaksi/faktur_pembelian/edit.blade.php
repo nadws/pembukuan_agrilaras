@@ -91,8 +91,17 @@
             }
 
             .item-table {
-                min-width: 950px;
+                min-width: 1220px;
                 margin-bottom: 0;
+            }
+
+            .biaya-table {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .biaya-section {
+                max-width: 780px;
             }
 
             .item-table thead th {
@@ -144,6 +153,7 @@
                 border-top: 1px solid var(--invoice-border);
                 color: var(--invoice-primary);
             }
+
         </style>
 
         @php
@@ -156,7 +166,7 @@
                 $jumlahItemLama = $faktur->detail->count();
 
                 $itemsLama = $faktur->detail->values()->map(
-                    function ($detail, $index) use ($diskonLama, $totalBersihLama, &$sisaDiskonLama, $jumlahItemLama) {
+                    function ($detail, $index) use ($diskonLama, $totalBersihLama, &$sisaDiskonLama, $jumlahItemLama, $akunPembayaranDefaultId) {
                         $diskonItem = $index === $jumlahItemLama - 1
                             ? $sisaDiskonLama
                             : ($totalBersihLama > 0 ? round((float) $detail->subtotal / $totalBersihLama * $diskonLama, 2) : 0);
@@ -169,6 +179,7 @@
                         'satuan' => $detail->satuan,
                         'harga_satuan' => $detail->qty > 0 ? round($subtotalSebelumDiskon / (float) $detail->qty, 6) : 0,
                         'subtotal' => $subtotalSebelumDiskon,
+                        'id_akun_pembayaran' => $detail->id_akun_pembayaran ?? $akunPembayaranDefaultId,
                         ];
                     },
                 );
@@ -237,7 +248,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-12">
                         <label class="form-label" for="keterangan">Keterangan</label>
                         <input type="text" id="keterangan" name="keterangan" class="form-control"
                             value="{{ old('keterangan', $faktur->keterangan) }}">
@@ -248,7 +259,7 @@
             <div class="d-flex align-items-center justify-content-between mb-2">
                 <div>
                     <h6 class="mb-0">Daftar Item Pembelian</h6>
-                    <small class="text-muted">Isi Harga Satuan atau Subtotal; kolom pasangannya dihitung otomatis dari Qty.</small>
+                    <small class="text-muted">Pilih akun pembayaran setiap item terlebih dahulu: Hutang, kas, atau bank. Lalu isi produk dan nilainya.</small>
                 </div>
                 <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-item">
                     <i class="fas fa-plus me-1"></i> Tambah Item
@@ -260,6 +271,7 @@
                     <thead>
                         <tr>
                             <th width="40">No</th>
+                            <th width="250">Akun Pembayaran</th>
                             <th width="260">Produk</th>
                             <th width="120">Qty</th>
                             <th width="120">Satuan</th>
@@ -272,18 +284,25 @@
                 </table>
             </div>
 
+            @php($biayaLama = is_array($faktur->biaya_lain) ? $faktur->biaya_lain : (json_decode($faktur->biaya_lain ?? '[]', true) ?: []))
             <div class="row justify-content-end mb-3">
+                <div class="col-12 biaya-section mb-3"><div class="d-flex align-items-center justify-content-between mb-2"><h6 class="mb-0">Biaya Lain-lain</h6></div><div class="item-table-wrap"><table class="table biaya-table mb-0"><thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th>Nominal</th></tr></thead><tbody>
+                    @foreach(['ongkir' => 'Ongkir', 'admin' => 'Admin'] as $kode => $label)
+                        @php($biayaItem = collect($biayaLama)->firstWhere('kode', $kode))
+                        <tr><td><select name="biaya_lain[{{ $kode }}][id_akun]" class="form-select select-search-akun" data-placeholder="Cari akun pembayaran"><option value="">-- Pilih akun --</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}" @selected(old('biaya_lain.'.$kode.'.id_akun', $biayaItem['id_akun'] ?? '') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></td><td class="fw-semibold">{{ $label }}</td><td><input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control" value="{{ old('biaya_lain.'.$kode.'.nominal', $biayaItem['nominal'] ?? 0) }}" placeholder="0"></td></tr>
+                    @endforeach
+                </tbody></table></div></div>
                 <div class="col-lg-6 col-md-8">
                     <div class="grand-total-box">
                         <div class="row g-2 align-items-end text-start mb-2">
-                            <div class="col-md-7">
+                                <div class="col-md-7">
                                 <label class="form-label" for="diskon_total">Diskon</label>
                                 <input type="number" step="0.01" min="0" id="diskon_total"
                                     name="diskon_total" class="form-control text-end"
                                     value="{{ old('diskon_total', $faktur->diskon_total ?? 0) }}">
                             </div>
                             <div class="col-md-5 text-md-end">
-                                <div class="label">TOTAL HPP / HUTANG</div>
+                                <div class="label" id="payment-total-label">TOTAL HPP / PEMBAYARAN</div>
                                 <div class="value" id="grand-total-display">Rp 0</div>
                             </div>
                         </div>
@@ -316,6 +335,16 @@
         <template id="template-baris-item">
             <tr class="baris-item">
                 <td class="text-center nomor-baris">1</td>
+                <td>
+                    <select name="item[__INDEX__][id_akun_pembayaran]"
+                        class="form-select select-akun-pembayaran select-search-produk"
+                        data-placeholder="Pilih Hutang / kas / bank" required>
+                        <option value="">-- Pilih Hutang / kas / bank --</option>
+                        @foreach($akunPembayaran as $akun)
+                            <option value="{{ $akun->id_akun_perkiraan }}">{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
+                        @endforeach
+                    </select>
+                </td>
                 <td>
                     <select name="item[__INDEX__][pakan_id]" class="form-select select-produk select-search-produk"
                         data-placeholder="Cari produk" required>
@@ -377,7 +406,7 @@
                 function initSelectSearch(scope = document) {
                     if (!window.jQuery || !jQuery.fn.select2) return;
 
-                    jQuery(scope).find('.select-search-supplier, .select-search-produk').each(function() {
+                    jQuery(scope).find('.select-search-supplier, .select-search-produk, .select-search-akun').each(function() {
                         const select = jQuery(this);
 
                         if (select.hasClass('select2-hidden-accessible')) {
@@ -502,16 +531,19 @@
 
                     const baris = tbody.querySelector('.baris-item:last-child');
                     const selectProduk = baris.querySelector('.select-produk');
+                    const selectAkun = baris.querySelector('.select-akun-pembayaran');
                     baris.querySelector('.input-qty').value = data.qty ?? '';
                     baris.querySelector('.input-harga').value = data.harga_satuan ?? '';
                     baris.querySelector('.input-subtotal').value = data.subtotal ?? '';
                     selectProduk.value = data.pakan_id ?? '';
+                    selectAkun.value = data.id_akun_pembayaran ?? '';
 
                     indexBaris++;
                     filterProduk();
                     initSelectSearch(baris);
                     if (window.jQuery && jQuery.fn.select2) {
                         jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change');
+                        jQuery(selectAkun).val(data.id_akun_pembayaran ?? null).trigger('change');
                     }
                     if (!data.subtotal) {
                         hitungBaris(baris, 'harga');

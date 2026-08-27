@@ -85,6 +85,20 @@
                     <div class="label">Diskon</div>
                     <div class="value">Rp {{ number_format($faktur->diskon_total ?? 0, 0, ',', '.') }}</div>
                 </div>
+                @foreach (($faktur->biaya_lain ?? []) as $biaya)
+                    <div class="col-lg-3 col-md-6">
+                        <div class="label">Biaya {{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'lain') }}</div>
+                        <div class="value">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                @endforeach
+                <div class="col-lg-3 col-md-6">
+                    <div class="label">Metode Pembayaran</div>
+                    <div class="value">{{ match ($faktur->metode_pembayaran ?? 'hutang') {
+                        'tunai' => 'Tunai / Bank',
+                        'campuran' => 'Campuran',
+                        default => 'Hutang',
+                    } }}</div>
+                </div>
                 <div class="col-lg-6">
                     <div class="label">Keterangan</div>
                     <div class="value">{{ $faktur->keterangan ?: '-' }}</div>
@@ -104,6 +118,7 @@
                         <th>Satuan</th>
                         <th class="text-end">HPP / Satuan</th>
                         <th class="text-end">Subtotal Bersih</th>
+                        <th>Akun Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -121,11 +136,39 @@
                             <td>{{ $detail->satuan ?? '-' }}</td>
                             <td class="text-end">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
                             <td class="text-end">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                            <td>
+                                @if ($detail->akunPembayaran)
+                                    {{ $detail->akunPembayaran->kode_perkiraan }} - {{ $detail->akunPembayaran->nama }}
+                                @elseif (($faktur->metode_pembayaran ?? 'hutang') === 'hutang')
+                                    Hutang Lainnya
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+
+        @if (count($faktur->biaya_lain ?? []))
+            <h6>Biaya Lain-lain</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-detail">
+                    <thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th class="text-end">Nominal</th></tr></thead>
+                    <tbody>
+                        @foreach (($faktur->biaya_lain ?? []) as $biaya)
+                            @php($akun = $akunBiaya[$biaya['id_akun'] ?? 0] ?? null)
+                            <tr>
+                                <td>{{ $akun?->kode_perkiraan ?? '-' }} - {{ $akun?->nama ?? 'Akun tidak ditemukan' }}</td>
+                                <td>{{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'Biaya lain') }}</td>
+                                <td class="text-end">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
 
         <h6>Jurnal</h6>
         <div class="table-responsive">

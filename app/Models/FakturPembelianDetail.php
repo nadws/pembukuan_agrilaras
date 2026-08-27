@@ -21,4 +21,9 @@ class FakturPembelianDetail extends Model
     {
         return $this->belongsTo(Produk::class, 'pakan_id', 'id_produk');
     }
+
+    public function akunPembayaran()
+    {
+        return $this->belongsTo(AkunPerkiraan::class, 'id_akun_pembayaran', 'id_akun_perkiraan');
+    }
 }

@@ -213,7 +213,7 @@
                             <th>Nomor Faktur</th>
                             <th>Jenis</th>
                             <th>Pemasok</th>
-                            <th class="text-end">Total Faktur</th>
+                            <th class="text-end">Total Hutang</th>
                             <th class="text-end">Sudah Dibayar</th>
                             <th class="text-end">Sisa Hutang</th>
                             <th>Status</th>
@@ -232,7 +232,7 @@
                                 <td>{{ $item->no_faktur }}</td>
                                 <td>{{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}</td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
-                                <td class="text-end">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($item->total_hutang, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_bayar, 0, ',', '.') }}</td>
                                 <td class="text-end fw-bold">Rp {{ number_format($sisaHutang, 0, ',', '.') }}</td>
                                 <td>

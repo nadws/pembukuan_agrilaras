@@ -10,6 +10,9 @@ class FakturModel extends Model
     use HasFactory;
     protected $table = 'faktur_pembelian';
     protected $guarded = ['id'];
+    protected $casts = [
+        'biaya_lain' => 'array',
+    ];
     const UPDATED_AT = null;
 
     public function supplier()

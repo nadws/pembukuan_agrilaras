@@ -69,7 +69,7 @@ class FakturPembelianController extends Controller
         return view('transaksi.faktur_pembelian.create', [
             'title' => 'Tambah Faktur Pembelian',
             'suppliers' => Suplier::orderBy('nm_suplier')->get(),
-            'akunPembayaran' => $this->akunKasBankAktif(),
+            'akunPembayaran' => $this->akunPembayaranPembelianAktif(),
             'produk' => $produkPerencanaan->concat($produkUmum),
             'noFakturDefault' => $this->generateNoFaktur(),
         ]);
@@ -147,10 +147,7 @@ class FakturPembelianController extends Controller
             ->with('supplier')
             ->leftJoinSub($pelunasan, 'p', 'p.faktur_pembelian_id', '=', 'faktur_pembelian.id')
             ->whereBetween('faktur_pembelian.tanggal_faktur', [$tanggalAwal, $tanggalAkhir])
-            ->where(function ($q) {
-                $q->where('faktur_pembelian.metode_pembayaran', 'hutang')
-                    ->orWhereNull('faktur_pembelian.metode_pembayaran');
-            })
+            ->where('faktur_pembelian.total_hutang', '>', 0)
             ->when($cari, function ($query) use ($cari) {
                 $query->where(function ($q) use ($cari) {
                     $q->where('faktur_pembelian.no_faktur', 'like', "%{$cari}%")
@@ -161,10 +158,10 @@ class FakturPembelianController extends Controller
             })
             ->select('faktur_pembelian.*')
             ->selectRaw('COALESCE(p.total_bayar, 0) as total_bayar')
-            ->selectRaw('(faktur_pembelian.total_harga - COALESCE(p.total_bayar, 0)) as sisa_hutang');
+            ->selectRaw('(faktur_pembelian.total_hutang - COALESCE(p.total_bayar, 0)) as sisa_hutang');
 
         $ringkasan = (clone $query)->get();
-        $totalHutang = $ringkasan->sum('total_harga');
+        $totalHutang = $ringkasan->sum('total_hutang');
         $totalTerbayar = $ringkasan->sum('total_bayar');
         $totalSisa = $ringkasan->sum('sisa_hutang');
         $jumlahBerjalan = $ringkasan->filter(fn($item) => (float) $item->sisa_hutang > 0)->count();
@@ -197,7 +194,7 @@ class FakturPembelianController extends Controller
         $faktur_pembelian->load('supplier', 'detail.produk', 'detail.produkUmum');
 
         $totalTerbayar = $this->totalPelunasanFaktur($faktur_pembelian);
-        $sisaHutang = max((float) $faktur_pembelian->total_harga - $totalTerbayar, 0);
+        $sisaHutang = max((float) $faktur_pembelian->total_hutang - $totalTerbayar, 0);
 
         if ($sisaHutang <= 0) {
             return redirect()
@@ -208,6 +205,9 @@ class FakturPembelianController extends Controller
         return view('transaksi.buku_hutang.pelunasan', [
             'title' => 'Pelunasan Hutang Faktur Pembelian',
             'faktur' => $faktur_pembelian,
+            'akunBiaya' => DB::table('akun_perkiraan')
+                ->whereIn('id_akun_perkiraan', collect($faktur_pembelian->biaya_lain ?? [])->pluck('id_akun')->filter()->unique())
+                ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama'])->keyBy('id_akun_perkiraan'),
             'totalTerbayar' => $totalTerbayar,
             'sisaHutang' => $sisaHutang,
             'akunKas' => $this->akunKasBankAktif(),
@@ -236,7 +236,7 @@ class FakturPembelianController extends Controller
                 ->withInput();
         }
 
-        $sisaHutang = max((float) $faktur_pembelian->total_harga - $this->totalPelunasanFaktur($faktur_pembelian), 0);
+        $sisaHutang = max((float) $faktur_pembelian->total_hutang - $this->totalPelunasanFaktur($faktur_pembelian), 0);
         $jumlahBayar = round((float) $validated['jumlah_bayar'], 2);
 
         if ($jumlahBayar > $sisaHutang) {
@@ -309,7 +309,7 @@ class FakturPembelianController extends Controller
             ]);
 
             $totalTerbayar = $this->totalPelunasanFaktur($faktur_pembelian);
-            $sisaSetelahBayar = max((float) $faktur_pembelian->total_harga - $totalTerbayar, 0);
+            $sisaSetelahBayar = max((float) $faktur_pembelian->total_hutang - $totalTerbayar, 0);
 
             $faktur_pembelian->update([
                 'status_bayar' => $sisaSetelahBayar <= 0 ? 'lunas' : 'sebagian',
@@ -325,14 +325,17 @@ class FakturPembelianController extends Controller
     {
         $validated = $request->validate([
             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin,barang_umum'],
-            'metode_pembayaran' => ['required', 'in:hutang,tunai'],
-            'id_akun_pembayaran' => ['nullable', 'required_if:metode_pembayaran,tunai', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur'],
             'tanggal_faktur' => ['required', 'date'],
             'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
             'jatuh_tempo' => ['nullable', 'date'],
             'keterangan' => ['nullable', 'string'],
             'diskon_total' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain' => ['nullable', 'array'],
+            'biaya_lain.ongkir.nominal' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain.ongkir.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'biaya_lain.admin.nominal' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain.admin.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'item' => ['required', 'array', 'min:1'],
             'item.*.pakan_id' => ['required', 'integer', 'min:1'],
             'item.*.sumber_produk' => ['required', 'in:perencanaan,barang_umum'],
@@ -340,6 +343,7 @@ class FakturPembelianController extends Controller
             'item.*.satuan' => ['nullable', 'string', 'max:20'],
             'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
             'item.*.subtotal' => ['required', 'numeric', 'min:0'],
+            'item.*.id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'item.*.no_batch' => ['nullable', 'string', 'max:50'],
             'item.*.tanggal_expired' => ['nullable', 'date'],
         ]);
@@ -362,6 +366,7 @@ class FakturPembelianController extends Controller
         }
 
         $items = $this->terapkanDiskonKeItem($items, $diskonTotal);
+        $biayaLain = $this->normalisasiBiayaLain($validated['biaya_lain'] ?? []);
         $produk = ProdukPerencanaan::query()
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
             ->whereIn('tb_produk_perencanaan.id_produk', $items->pluck('pakan_id'))
@@ -387,10 +392,12 @@ class FakturPembelianController extends Controller
         }
 
         $akunHutang = $this->akunAktif('210220');
-        $akunTunai = $validated['metode_pembayaran'] === 'tunai'
-            ? DB::table('akun_perkiraan')->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])->where('aktif', 1)->first()
-            : null;
-        $akunKredit = $validated['metode_pembayaran'] === 'hutang' ? $akunHutang : $akunTunai;
+        $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
+            ->map(fn ($id) => (int) $id)->unique()->values();
+        $akunPembayaran = $this->akunPembayaranPembelianAktif()
+            ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
+        $akunBiaya = $this->akunPembayaranPembelianAktif()
+            ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
         $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk, $produkUmum) {
             $kategori = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum'
                 ? 'barang_umum'
@@ -401,31 +408,47 @@ class FakturPembelianController extends Controller
         $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
             ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
 
-        if (! $akunKredit || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
+        if (! $akunHutang
+            || $akunPembayaran->count() !== $idAkunPembayaran->count()
+            || $akunBiaya->count() !== collect($biayaLain)->pluck('id_akun')->unique()->count()
+            || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
             return back()
-                ->withErrors(['akun' => 'Akun Hutang Lainnya atau akun persediaan belum tersedia/aktif.'])
+                ->withErrors(['akun' => 'Akun pembayaran, Hutang Lainnya, atau akun persediaan belum tersedia/aktif.'])
                 ->withInput();
         }
 
-        $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunKredit, $akunPersediaan, $diskonTotal) {
+        $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunHutang, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain) {
             $sekarang = now();
             $tipeJurnal = $validated['jenis_faktur'] === 'barang_umum'
                 ? 'Pembelian Umum'
                 : ($validated['jenis_faktur'] === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']));
             $totalQty = $items->sum(fn($item) => (float) $item['qty']);
-            $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
+            $totalItem = $items->sum(fn($item) => (float) $item['subtotal']);
+            $totalBiayaLain = collect($biayaLain)->sum('nominal');
+            $totalHarga = round($totalItem + $totalBiayaLain, 2);
+            $kreditPerAkun = $items->groupBy(fn ($item) => (int) $item['id_akun_pembayaran'])
+                ->map(fn ($baris) => round($baris->sum(fn ($item) => (float) $item['subtotal']), 2));
+            foreach ($biayaLain as $biaya) {
+                $kreditPerAkun[$biaya['id_akun']] = round(($kreditPerAkun[$biaya['id_akun']] ?? 0) + $biaya['nominal'], 2);
+            }
+            $totalHutang = round((float) ($kreditPerAkun[$akunHutang->id_akun_perkiraan] ?? 0), 2);
+            $metodePembayaran = $totalHutang <= 0
+                ? 'tunai'
+                : ($totalHutang >= $totalHarga ? 'hutang' : 'campuran');
 
             $faktur = FakturModel::create([
                 'no_faktur' => $validated['no_faktur'],
                 'jenis_faktur' => $validated['jenis_faktur'],
-                'metode_pembayaran' => $validated['metode_pembayaran'],
+                'metode_pembayaran' => $metodePembayaran,
                 'tanggal_faktur' => $validated['tanggal_faktur'],
                 'supplier_id' => $validated['supplier_id'],
                 'jatuh_tempo' => $validated['jatuh_tempo'] ?? null,
-                'status_bayar' => $validated['metode_pembayaran'] === 'hutang' ? 'belum_lunas' : 'lunas',
+                'status_bayar' => $totalHutang > 0 ? 'belum_lunas' : 'lunas',
                 'total_qty' => $totalQty,
                 'total_harga' => $totalHarga,
+                'total_hutang' => $totalHutang,
                 'diskon_total' => $diskonTotal,
+                'biaya_lain' => $biayaLain ?: null,
                 'keterangan' => $validated['keterangan'] ?? null,
                 'created_by' => auth()->id(),
                 'created_at' => $sekarang,
@@ -445,6 +468,7 @@ class FakturPembelianController extends Controller
                         : (($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? ($produkUmum->get((int) $item['pakan_id'])?->satuan_dosis ?? null) : ($produk->get((int) $item['pakan_id'])?->satuan_dosis ?? null)),
                     'harga_satuan' => $hargaSatuan,
                     'subtotal' => $subtotal,
+                    'id_akun_pembayaran' => (int) $item['id_akun_pembayaran'],
                     'no_batch' => $item['no_batch'] ?? null,
                     'tanggal_expired' => $item['tanggal_expired'] ?? null,
                 ]);
@@ -456,7 +480,7 @@ class FakturPembelianController extends Controller
                 'periode_awal' => $validated['tanggal_faktur'],
                 'periode_akhir' => $validated['tanggal_faktur'],
                 'jumlah_transaksi' => 1,
-                'jumlah_detail' => $items->count() + 1,
+                'jumlah_detail' => $items->count() + $kreditPerAkun->count(),
                 'total_debit' => $totalHarga,
                 'total_kredit' => $totalHarga,
                 'status' => 'aktif',
@@ -477,6 +501,11 @@ class FakturPembelianController extends Controller
                 $kategori = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? 'barang_umum' : $itemProduk?->kategori;
                 $akunDebit = $akunPersediaan->get($this->kodeAkunPersediaanItem($validated['jenis_faktur'], $kategori));
 
+                $rasio = $totalItem > 0 ? ((float) $subtotal / $totalItem) : (1 / max($items->count(), 1));
+                $biayaAlokasi = round($totalBiayaLain * $rasio, 2);
+                if ($item === $items->last()) {
+                    $biayaAlokasi = round($totalBiayaLain - collect($detailJurnal)->sum(fn ($j) => (float) ($j['_biaya_alokasi'] ?? 0)), 2);
+                }
                 $detailJurnal[] = [
                     'id_impor_jurnal_perkiraan' => $batchId,
                     'id_akun_perkiraan' => $akunDebit->id_akun_perkiraan,
@@ -485,26 +514,33 @@ class FakturPembelianController extends Controller
                     'tipe_transaksi' => $tipeJurnal,
                     'urutan_detail' => $urutanDetail++,
                     'deskripsi' => 'Pembelian ' . $namaProduk,
-                    'debit' => $subtotal,
+                    'debit' => round($subtotal + $biayaAlokasi, 2),
                     'kredit' => 0,
+                    'created_at' => $sekarang,
+                    'updated_at' => $sekarang,
+                    '_biaya_alokasi' => $biayaAlokasi,
+                ];
+            }
+            $detailJurnal = array_map(function ($row) { unset($row['_biaya_alokasi']); return $row; }, $detailJurnal);
+
+            foreach ($kreditPerAkun as $idAkun => $nominal) {
+                $akunKredit = $akunPembayaran->get((int) $idAkun) ?? $akunBiaya->get((int) $idAkun);
+                $isHutang = (int) $idAkun === (int) $akunHutang->id_akun_perkiraan;
+
+                $detailJurnal[] = [
+                    'id_impor_jurnal_perkiraan' => $batchId,
+                    'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
+                    'tanggal' => $validated['tanggal_faktur'],
+                    'nomor_transaksi' => $validated['no_faktur'],
+                    'tipe_transaksi' => $tipeJurnal,
+                    'urutan_detail' => $urutanDetail++,
+                    'deskripsi' => ($isHutang ? 'Hutang pembelian ' : 'Pembayaran pembelian ') . $validated['jenis_faktur'] . ' via ' . $akunKredit->nama,
+                    'debit' => 0,
+                    'kredit' => $nominal,
                     'created_at' => $sekarang,
                     'updated_at' => $sekarang,
                 ];
             }
-
-            $detailJurnal[] = [
-                'id_impor_jurnal_perkiraan' => $batchId,
-                'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
-                'tanggal' => $validated['tanggal_faktur'],
-                'nomor_transaksi' => $validated['no_faktur'],
-                'tipe_transaksi' => $tipeJurnal,
-                'urutan_detail' => $urutanDetail,
-                'deskripsi' => ($validated['metode_pembayaran'] === 'hutang' ? 'Hutang pembelian ' : 'Pembayaran pembelian ') . $validated['jenis_faktur'] . ' via ' . $akunKredit->nama,
-                'debit' => 0,
-                'kredit' => $totalHarga,
-                'created_at' => $sekarang,
-                'updated_at' => $sekarang,
-            ];
 
             DB::table('jurnal_perkiraan')->insert($detailJurnal);
 
@@ -513,12 +549,17 @@ class FakturPembelianController extends Controller
 
         return redirect()
             ->route('transaksi.faktur-pembelian.index')
-            ->with('sukses', 'Faktur pembelian berhasil disimpan dan jurnal hutang sudah dibuat.');
+            ->with('sukses', 'Faktur pembelian berhasil disimpan dan jurnal pembayaran sudah dibuat.');
     }
 
     public function detail(FakturModel $faktur_pembelian): View
     {
-        $faktur_pembelian->load(['supplier', 'detail.produk', 'detail.produkUmum']);
+        $faktur_pembelian->load(['supplier', 'detail.produk', 'detail.produkUmum', 'detail.akunPembayaran']);
+        $biayaLain = collect($faktur_pembelian->biaya_lain ?? []);
+        $akunBiaya = DB::table('akun_perkiraan')
+            ->whereIn('id_akun_perkiraan', $biayaLain->pluck('id_akun')->filter()->unique())
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama'])
+            ->keyBy('id_akun_perkiraan');
 
         if ($faktur_pembelian->jenis_faktur === 'barang_umum') {
             $qtyDiterimaByProduk = DB::table('pembukuan_baru_stok')->where('nomor_transaksi', $faktur_pembelian->no_faktur)
@@ -539,6 +580,7 @@ class FakturPembelianController extends Controller
             'faktur' => $faktur_pembelian,
             'qtyDiterimaByProduk' => $qtyDiterimaByProduk,
             'jurnal' => $jurnal,
+            'akunBiaya' => $akunBiaya,
             'sudahAdaPenerimaan' => $this->fakturSudahAdaPenerimaan($faktur_pembelian),
         ]);
     }
@@ -581,6 +623,8 @@ class FakturPembelianController extends Controller
             'title' => 'Edit Faktur Pembelian',
             'faktur' => $faktur_pembelian,
             'suppliers' => Suplier::orderBy('nm_suplier')->get(),
+            'akunPembayaran' => $this->akunPembayaranPembelianAktif(),
+            'akunPembayaranDefaultId' => $this->akunPembayaranDefaultFaktur($faktur_pembelian),
             'produk' => $this->produkFakturOptions(),
         ]);
     }
@@ -601,12 +645,18 @@ class FakturPembelianController extends Controller
             'jatuh_tempo' => ['nullable', 'date'],
             'keterangan' => ['nullable', 'string'],
             'diskon_total' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain' => ['nullable', 'array'],
+            'biaya_lain.ongkir.nominal' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain.ongkir.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'biaya_lain.admin.nominal' => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain.admin.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'item' => ['required', 'array', 'min:1'],
             'item.*.pakan_id' => ['required', 'exists:tb_produk_perencanaan,id_produk'],
             'item.*.qty' => ['required', 'numeric', 'min:0.01'],
             'item.*.satuan' => ['nullable', 'string', 'max:20'],
             'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
             'item.*.subtotal' => ['required', 'numeric', 'min:0'],
+            'item.*.id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'item.*.no_batch' => ['nullable', 'string', 'max:50'],
             'item.*.tanggal_expired' => ['nullable', 'date'],
         ]);
@@ -621,6 +671,7 @@ class FakturPembelianController extends Controller
         }
 
         $items = $this->terapkanDiskonKeItem($items, $diskonTotal);
+        $biayaLain = $this->normalisasiBiayaLain($validated['biaya_lain'] ?? []);
         $produk = $this->produkFakturOptions()
             ->whereIn('id_produk', $items->pluck('pakan_id'))
             ->keyBy('id_produk');
@@ -638,6 +689,12 @@ class FakturPembelianController extends Controller
         }
 
         $akunHutang = $this->akunAktif('210220');
+        $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
+            ->map(fn ($id) => (int) $id)->unique()->values();
+        $akunPembayaran = $this->akunPembayaranPembelianAktif()
+            ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
+        $akunBiaya = $this->akunPembayaranPembelianAktif()
+            ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
         $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk) {
             return $this->kodeAkunPersediaanItem(
                 $validated['jenis_faktur'],
@@ -647,26 +704,40 @@ class FakturPembelianController extends Controller
         $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
             ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
 
-        if (! $akunHutang || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
+        if (! $akunHutang
+            || $akunPembayaran->count() !== $idAkunPembayaran->count()
+            || $akunBiaya->count() !== collect($biayaLain)->pluck('id_akun')->unique()->count()
+            || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
             return back()
-                ->withErrors(['akun' => 'Akun Hutang Lainnya atau akun persediaan belum tersedia/aktif.'])
+                ->withErrors(['akun' => 'Akun pembayaran, Hutang Lainnya, atau akun persediaan belum tersedia/aktif.'])
                 ->withInput();
         }
 
-        DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutang, $akunPersediaan, $diskonTotal) {
+        DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutang, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain) {
             $noFakturLama = $faktur_pembelian->no_faktur;
             $totalQty = $items->sum(fn($item) => (float) $item['qty']);
             $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
+            $totalItem = $totalHarga;
+            $totalBiayaLain = collect($biayaLain)->sum('nominal');
+            $totalHarga = round($totalItem + $totalBiayaLain, 2);
+            $kreditPerAkun = $items->groupBy(fn ($item) => (int) $item['id_akun_pembayaran'])
+                ->map(fn ($baris) => round($baris->sum(fn ($item) => (float) $item['subtotal']), 2));
+            foreach ($biayaLain as $biaya) $kreditPerAkun[$biaya['id_akun']] = round(($kreditPerAkun[$biaya['id_akun']] ?? 0) + $biaya['nominal'], 2);
+            $totalHutang = round((float) ($kreditPerAkun[$akunHutang->id_akun_perkiraan] ?? 0), 2);
+            $metodePembayaran = $totalHutang <= 0 ? 'tunai' : ($totalHutang >= $totalHarga ? 'hutang' : 'campuran');
 
             $faktur_pembelian->update([
                 'no_faktur' => $validated['no_faktur'],
                 'jenis_faktur' => $validated['jenis_faktur'],
+                'metode_pembayaran' => $metodePembayaran,
                 'tanggal_faktur' => $validated['tanggal_faktur'],
                 'supplier_id' => $validated['supplier_id'],
                 'jatuh_tempo' => $validated['jatuh_tempo'] ?? null,
-                'status_bayar' => 'belum_lunas',
+                'status_bayar' => $totalHutang > 0 ? 'belum_lunas' : 'lunas',
                 'total_qty' => $totalQty,
                 'total_harga' => $totalHarga,
+                'biaya_lain' => $biayaLain ?: null,
+                'total_hutang' => $totalHutang,
                 'diskon_total' => $diskonTotal,
                 'keterangan' => $validated['keterangan'] ?? null,
             ]);
@@ -686,12 +757,13 @@ class FakturPembelianController extends Controller
                         : ($produk->get((int) $item['pakan_id'])?->satuan_dosis ?? null),
                     'harga_satuan' => $hargaSatuan,
                     'subtotal' => $subtotal,
+                    'id_akun_pembayaran' => (int) $item['id_akun_pembayaran'],
                     'no_batch' => $item['no_batch'] ?? null,
                     'tanggal_expired' => $item['tanggal_expired'] ?? null,
                 ]);
             }
 
-            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPersediaan, $noFakturLama);
+            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPembayaran->union($akunBiaya), $akunPersediaan, $noFakturLama, $totalBiayaLain, $biayaLain);
         });
 
         return redirect()
@@ -1069,6 +1141,24 @@ class FakturPembelianController extends Controller
         });
     }
 
+    private function normalisasiBiayaLain(array $biaya): array
+    {
+        $hasil = [];
+        foreach (['ongkir' => 'Ongkir', 'admin' => 'Admin'] as $kode => $label) {
+            $nominal = round((float) data_get($biaya, $kode . '.nominal', 0), 2);
+            $idAkun = data_get($biaya, $kode . '.id_akun');
+            if ($nominal > 0) {
+                if (! $idAkun) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'biaya_lain.' . $kode . '.id_akun' => 'Pilih akun untuk biaya ' . $label . '.',
+                    ]);
+                }
+                $hasil[] = ['kode' => $kode, 'nama' => $label, 'nominal' => $nominal, 'id_akun' => (int) $idAkun];
+            }
+        }
+        return $hasil;
+    }
+
     private function totalPelunasanFaktur(FakturModel $faktur): float
     {
         return (float) DB::table('pelunasan_faktur_pembelian')
@@ -1094,26 +1184,62 @@ class FakturPembelianController extends Controller
     {
         return DB::table('akun_perkiraan')
             ->where('aktif', 1)
-            ->where(function ($query) {
-                $query->where('kode_perkiraan', 'like', '1101%')
-                    ->orWhere('nama', 'like', '%kas%')
-                    ->orWhere('nama', 'like', '%bank%');
-            })
+            // Hanya akun kas/bank detail (1101xx). Jangan ikutkan akun
+            // biaya administrasi bank atau pendapatan bunga yang namanya
+            // kebetulan mengandung kata "bank".
+            ->where('kode_perkiraan', 'like', '1101%')
             ->whereNotNull('id_akun_induk')
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+    }
+
+    private function akunPembayaranPembelianAktif()
+    {
+        $akunHutang = $this->akunAktif('210220');
+
+        return collect($akunHutang ? [$akunHutang] : [])
+            ->concat($this->akunKasBankAktif())
+            ->unique('id_akun_perkiraan')
+            ->values();
+    }
+
+    private function akunPembayaranDefaultFaktur(FakturModel $faktur): ?int
+    {
+        $akunHutang = $this->akunAktif('210220');
+
+        if (($faktur->metode_pembayaran ?? 'hutang') === 'hutang') {
+            return $akunHutang ? (int) $akunHutang->id_akun_perkiraan : null;
+        }
+
+        $idAkun = DB::table('jurnal_perkiraan')
+            ->where('nomor_transaksi', $faktur->no_faktur)
+            ->where('kredit', '>', 0)
+            ->where(function ($query) {
+                $query->where('tipe_transaksi', 'like', 'Faktur Pembelian%')
+                    ->orWhere('tipe_transaksi', 'Pembelian Umum');
+            })
+            ->value('id_akun_perkiraan');
+
+        return $idAkun ? (int) $idAkun : null;
     }
 
     private function rebuildJurnalFaktur(
         FakturModel $faktur,
         $items,
         $produk,
-        object $akunHutang,
+        ?object $akunHutang,
+        $akunPembayaran,
         $akunPersediaan,
-        string $noFakturLama
+        string $noFakturLama,
+        float $totalBiayaLain = 0,
+        array $biayaLain = []
     ): void {
         $sekarang = now();
-        $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
+        $totalItem = $items->sum(fn($item) => (float) $item['subtotal']);
+        $totalHarga = round($totalItem + $totalBiayaLain, 2);
+        $kreditPerAkun = $items->groupBy(fn ($item) => (int) $item['id_akun_pembayaran'])
+            ->map(fn ($baris) => round($baris->sum(fn ($item) => (float) $item['subtotal']), 2));
+        foreach ($biayaLain as $biaya) $kreditPerAkun[$biaya['id_akun']] = round(($kreditPerAkun[$biaya['id_akun']] ?? 0) + $biaya['nominal'], 2);
 
         $batchId = DB::table('jurnal_perkiraan')
             ->where('nomor_transaksi', $noFakturLama)
@@ -1133,7 +1259,7 @@ class FakturPembelianController extends Controller
                     'periode_awal' => $faktur->tanggal_faktur,
                     'periode_akhir' => $faktur->tanggal_faktur,
                     'jumlah_transaksi' => 1,
-                    'jumlah_detail' => $items->count() + 1,
+                    'jumlah_detail' => $items->count() + $kreditPerAkun->count(),
                     'total_debit' => $totalHarga,
                     'total_kredit' => $totalHarga,
                     'updated_at' => $sekarang,
@@ -1145,7 +1271,7 @@ class FakturPembelianController extends Controller
                 'periode_awal' => $faktur->tanggal_faktur,
                 'periode_akhir' => $faktur->tanggal_faktur,
                 'jumlah_transaksi' => 1,
-                'jumlah_detail' => $items->count() + 1,
+                'jumlah_detail' => $items->count() + $kreditPerAkun->count(),
                 'total_debit' => $totalHarga,
                 'total_kredit' => $totalHarga,
                 'status' => 'aktif',
@@ -1166,6 +1292,8 @@ class FakturPembelianController extends Controller
                 $this->kodeAkunPersediaanItem($faktur->jenis_faktur, $itemProduk?->kategori)
             );
 
+            $biayaAlokasi = $totalItem > 0 ? round($totalBiayaLain * $subtotal / $totalItem, 2) : 0;
+            if ($item === $items->last()) $biayaAlokasi = round($totalBiayaLain - collect($detailJurnal)->sum(fn ($j) => (float) ($j['_biaya_alokasi'] ?? 0)), 2);
             $detailJurnal[] = [
                 'id_impor_jurnal_perkiraan' => $batchId,
                 'id_akun_perkiraan' => $akunDebit->id_akun_perkiraan,
@@ -1174,26 +1302,33 @@ class FakturPembelianController extends Controller
                 'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
                 'urutan_detail' => $urutanDetail++,
                 'deskripsi' => 'Pembelian ' . $namaProduk,
-                'debit' => $subtotal,
+                'debit' => round($subtotal + $biayaAlokasi, 2),
                 'kredit' => 0,
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
+                '_biaya_alokasi' => $biayaAlokasi,
+            ];
+        }
+        $detailJurnal = array_map(function ($row) { unset($row['_biaya_alokasi']); return $row; }, $detailJurnal);
+
+        foreach ($kreditPerAkun as $idAkun => $nominal) {
+            $akunKredit = $akunPembayaran->get((int) $idAkun);
+            $isHutang = (int) $idAkun === (int) $akunHutang->id_akun_perkiraan;
+
+            $detailJurnal[] = [
+                'id_impor_jurnal_perkiraan' => $batchId,
+                'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
+                'tanggal' => $faktur->tanggal_faktur,
+                'nomor_transaksi' => $faktur->no_faktur,
+                'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
+                'urutan_detail' => $urutanDetail++,
+                'deskripsi' => ($isHutang ? 'Hutang pembelian ' : 'Pembayaran pembelian ') . $faktur->jenis_faktur . ' via ' . $akunKredit->nama,
+                'debit' => 0,
+                'kredit' => $nominal,
                 'created_at' => $sekarang,
                 'updated_at' => $sekarang,
             ];
         }
-
-        $detailJurnal[] = [
-            'id_impor_jurnal_perkiraan' => $batchId,
-            'id_akun_perkiraan' => $akunHutang->id_akun_perkiraan,
-            'tanggal' => $faktur->tanggal_faktur,
-            'nomor_transaksi' => $faktur->no_faktur,
-            'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
-            'urutan_detail' => $urutanDetail,
-            'deskripsi' => 'Hutang pembelian ' . $faktur->jenis_faktur,
-            'debit' => 0,
-            'kredit' => $totalHarga,
-            'created_at' => $sekarang,
-            'updated_at' => $sekarang,
-        ];
 
         DB::table('jurnal_perkiraan')->insert($detailJurnal);
     }
