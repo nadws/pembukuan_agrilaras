@@ -391,9 +391,17 @@ class FakturPembelianController extends Controller
             ? DB::table('akun_perkiraan')->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])->where('aktif', 1)->first()
             : null;
         $akunKredit = $validated['metode_pembayaran'] === 'hutang' ? $akunHutang : $akunTunai;
-        $akunPersediaan = $this->akunAktif($this->kodeAkunPersediaanFaktur($validated['jenis_faktur']));
+        $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk, $produkUmum) {
+            $kategori = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum'
+                ? 'barang_umum'
+                : $produk->get((int) $item['pakan_id'])?->kategori;
 
-        if (! $akunKredit || ! $akunPersediaan) {
+            return $this->kodeAkunPersediaanItem($validated['jenis_faktur'], $kategori);
+        })->unique()->values();
+        $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
+            ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
+
+        if (! $akunKredit || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
             return back()
                 ->withErrors(['akun' => 'Akun Hutang Lainnya atau akun persediaan belum tersedia/aktif.'])
                 ->withInput();
@@ -401,7 +409,9 @@ class FakturPembelianController extends Controller
 
         $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunKredit, $akunPersediaan, $diskonTotal) {
             $sekarang = now();
-            $tipeJurnal = $validated['jenis_faktur'] === 'barang_umum' ? 'Pembelian Umum' : 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']);
+            $tipeJurnal = $validated['jenis_faktur'] === 'barang_umum'
+                ? 'Pembelian Umum'
+                : ($validated['jenis_faktur'] === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($validated['jenis_faktur']));
             $totalQty = $items->sum(fn($item) => (float) $item['qty']);
             $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
 
@@ -459,12 +469,17 @@ class FakturPembelianController extends Controller
             $urutanDetail = 1;
 
             foreach ($items as $item) {
-                $namaProduk = (($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? $produkUmum->get((int) $item['pakan_id']) : $produk->get((int) $item['pakan_id']))?->nm_produk ?? 'Produk';
+                $itemProduk = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum'
+                    ? $produkUmum->get((int) $item['pakan_id'])
+                    : $produk->get((int) $item['pakan_id']);
+                $namaProduk = $itemProduk?->nm_produk ?? 'Produk';
                 $subtotal = (float) $item['subtotal'];
+                $kategori = ($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum' ? 'barang_umum' : $itemProduk?->kategori;
+                $akunDebit = $akunPersediaan->get($this->kodeAkunPersediaanItem($validated['jenis_faktur'], $kategori));
 
                 $detailJurnal[] = [
                     'id_impor_jurnal_perkiraan' => $batchId,
-                    'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                    'id_akun_perkiraan' => $akunDebit->id_akun_perkiraan,
                     'tanggal' => $validated['tanggal_faktur'],
                     'nomor_transaksi' => $validated['no_faktur'],
                     'tipe_transaksi' => $tipeJurnal,
@@ -623,9 +638,16 @@ class FakturPembelianController extends Controller
         }
 
         $akunHutang = $this->akunAktif('210220');
-        $akunPersediaan = $this->akunAktif($this->kodeAkunPersediaanFaktur($validated['jenis_faktur']));
+        $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk) {
+            return $this->kodeAkunPersediaanItem(
+                $validated['jenis_faktur'],
+                $produk->get((int) $item['pakan_id'])?->kategori
+            );
+        })->unique()->values();
+        $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
+            ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
 
-        if (! $akunHutang || ! $akunPersediaan) {
+        if (! $akunHutang || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
             return back()
                 ->withErrors(['akun' => 'Akun Hutang Lainnya atau akun persediaan belum tersedia/aktif.'])
                 ->withInput();
@@ -978,7 +1000,7 @@ class FakturPembelianController extends Controller
         return match ($jenisFaktur) {
             'pakan' => $kategori === 'pakan',
             'vaksin' => $kategori === 'vaksin',
-            'vitamin' => in_array($kategori, ['obat_pakan', 'obat_air', 'obat_ayam'], true),
+            'vitamin' => in_array($kategori, ['obat_pakan', 'obat_air', 'obat_ayam', 'vaksin'], true),
             'barang_umum' => $kategori === 'barang_umum',
             default => false,
         };
@@ -992,6 +1014,17 @@ class FakturPembelianController extends Controller
             'vaksin' => '110521',
             default => '110404',
         };
+    }
+
+    private function kodeAkunPersediaanItem(string $jenisFaktur, ?string $kategori): string
+    {
+        // Vitamin dan vaksin digabung dalam satu faktur, tetapi jurnal debit
+        // tetap masuk ke akun persediaan masing-masing sesuai kategori produk.
+        if ($jenisFaktur === 'vitamin' && $kategori === 'vaksin') {
+            return '110521';
+        }
+
+        return $this->kodeAkunPersediaanFaktur($jenisFaktur);
     }
 
     private function normalisasiItemFaktur(array $items)
@@ -1076,7 +1109,7 @@ class FakturPembelianController extends Controller
         $items,
         $produk,
         object $akunHutang,
-        object $akunPersediaan,
+        $akunPersediaan,
         string $noFakturLama
     ): void {
         $sekarang = now();
@@ -1126,15 +1159,19 @@ class FakturPembelianController extends Controller
         $urutanDetail = 1;
 
         foreach ($items as $item) {
-            $namaProduk = $produk->get((int) $item['pakan_id'])?->nm_produk ?? 'Produk';
+            $itemProduk = $produk->get((int) $item['pakan_id']);
+            $namaProduk = $itemProduk?->nm_produk ?? 'Produk';
             $subtotal = (float) $item['subtotal'];
+            $akunDebit = $akunPersediaan->get(
+                $this->kodeAkunPersediaanItem($faktur->jenis_faktur, $itemProduk?->kategori)
+            );
 
             $detailJurnal[] = [
                 'id_impor_jurnal_perkiraan' => $batchId,
-                'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                'id_akun_perkiraan' => $akunDebit->id_akun_perkiraan,
                 'tanggal' => $faktur->tanggal_faktur,
                 'nomor_transaksi' => $faktur->no_faktur,
-                'tipe_transaksi' => 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
+                'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
                 'urutan_detail' => $urutanDetail++,
                 'deskripsi' => 'Pembelian ' . $namaProduk,
                 'debit' => $subtotal,
@@ -1149,7 +1186,7 @@ class FakturPembelianController extends Controller
             'id_akun_perkiraan' => $akunHutang->id_akun_perkiraan,
             'tanggal' => $faktur->tanggal_faktur,
             'nomor_transaksi' => $faktur->no_faktur,
-            'tipe_transaksi' => 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
+            'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
             'urutan_detail' => $urutanDetail,
             'deskripsi' => 'Hutang pembelian ' . $faktur->jenis_faktur,
             'debit' => 0,

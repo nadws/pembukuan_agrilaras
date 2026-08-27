@@ -145,7 +145,7 @@ class PiutangTransaksiController extends Controller
                 continue;
             }
             if (!$customer) {
-                $errors[] = 'Baris ' . ($r + 1) . ': customer "' . $currentCustomer . '" belum ada atau tidak aktif di Master Customer.';
+                $errors[] = 'Baris ' . ($r + 1) . ': customer "' . $currentCustomer . '" belum ada atau tidak aktif di Data Customer.';
                 continue;
             }
             $noteKey = mb_strtoupper($note);

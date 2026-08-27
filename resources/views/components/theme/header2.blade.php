@@ -1,7 +1,7 @@
 <div class="header-top">
     <div class="container">
         <div class="logo">
-            <a href="dashboard">
+            <a href="{{ route('dashboard') }}">
                 <center>
                     <img src="/assets/login/img/agri_laras2.png" alt="Logo">
                 </center>

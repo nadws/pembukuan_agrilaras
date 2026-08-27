@@ -67,7 +67,7 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="label">Jenis</div>
-                    <div class="value">{{ ucfirst($faktur->jenis_faktur) }}</div>
+                    <div class="value">{{ in_array($faktur->jenis_faktur, ['vitamin', 'vaksin']) ? 'Vitamin & Vaksin' : ucfirst(str_replace('_', ' ', $faktur->jenis_faktur)) }}</div>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="label">Suplier</div>

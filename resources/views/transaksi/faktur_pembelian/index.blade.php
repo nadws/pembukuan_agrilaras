@@ -177,7 +177,7 @@
                                 <td>
                                     <span
                                         class="status-badge status-{{ $item->jenis_faktur === 'pakan' ? 'lunas' : 'sebagian' }}">
-                                        {{ ucfirst($item->jenis_faktur) }}
+                                        {{ in_array($item->jenis_faktur, ['vitamin', 'vaksin']) ? 'Vitamin & Vaksin' : ucfirst(str_replace('_', ' ', $item->jenis_faktur)) }}
                                     </span>
                                 </td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>

@@ -21,7 +21,7 @@
                 <x-theme.modal title="Import Piutang Telur dari Accurate" idModal="importPiutangAccurate" size="modal-lg">
                     <div class="alert alert-info"><strong>Gunakan laporan:</strong> Faktur Penjualan Belum Lunas dari Accurate. Semua faktur pada file akan dimasukkan ke Piutang Telur.</div>
                     <label class="form-label fw-bold">File Excel Accurate</label><input type="file" name="file_accurate" class="form-control" accept=".xlsx,.xls" required>
-                    <small class="text-muted d-block mt-2">Nama pelanggan harus sudah tersedia dan aktif di Master Customer. Nomor faktur yang sudah pernah masuk akan dilewati agar tidak menjadi data ganda.</small>
+                    <small class="text-muted d-block mt-2">Nama pelanggan harus sudah tersedia dan aktif di Data Customer. Nomor faktur yang sudah pernah masuk akan dilewati agar tidak menjadi data ganda.</small>
                 </x-theme.modal>
             </form>
         @endif
@@ -30,7 +30,7 @@
                 <x-theme.modal title="Import Piutang Ayam dari Accurate" idModal="importPiutangAyamAccurate" size="modal-lg">
                     <div class="alert alert-info"><strong>Gunakan laporan:</strong> Faktur Penjualan Belum Lunas dari Accurate. Hanya baris dengan Keterangan mengandung AYAM yang akan dimasukkan ke Piutang Ayam.</div>
                     <label class="form-label fw-bold">File Excel Accurate</label><input type="file" name="file_accurate" class="form-control" accept=".xlsx,.xls" required>
-                    <small class="text-muted d-block mt-2">Nama pelanggan harus tersedia dan aktif di Master Customer. Nomor faktur yang sudah masuk akan dilewati.</small>
+                    <small class="text-muted d-block mt-2">Nama pelanggan harus tersedia dan aktif di Data Customer. Nomor faktur yang sudah masuk akan dilewati.</small>
                 </x-theme.modal>
             </form>
         @endif

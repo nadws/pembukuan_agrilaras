@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">Input transaksi pembelian pakan, vitamin/obat, atau vaksin dari pemasok</small>
+                <small class="text-muted">Input transaksi pembelian pakan, vitamin/obat/vaksin, atau barang umum dari pemasok</small>
             </div>
             <a href="{{ route('transaksi.faktur-pembelian.index') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Kembali
@@ -69,7 +69,7 @@
 
             .jenis-grid {
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 12px;
             }
 
@@ -241,16 +241,8 @@
                         data-jenis-card="vitamin">
                         <input type="radio" name="jenis_faktur" value="vitamin" @checked($jenisFakturTerpilih === 'vitamin') required>
                         <span>
-                            <span class="jenis-title">Faktur Vitamin</span>
-                            <span class="jenis-akun">Persediaan Vitamin/Obat</span>
-                        </span>
-                    </label>
-                    <label class="jenis-card {{ $jenisFakturTerpilih === 'vaksin' ? 'is-active' : '' }}"
-                        data-jenis-card="vaksin">
-                        <input type="radio" name="jenis_faktur" value="vaksin" @checked($jenisFakturTerpilih === 'vaksin') required>
-                        <span>
-                            <span class="jenis-title">Faktur Vaksin</span>
-                            <span class="jenis-akun">Vaksin Ayam Belum Terbiayakan</span>
+                            <span class="jenis-title">Faktur Vitamin &amp; Vaksin</span>
+                            <span class="jenis-akun">Vitamin, obat, dan vaksin</span>
                         </span>
                     </label>
                     <label class="jenis-card {{ $jenisFakturTerpilih === 'barang_umum' ? 'is-active' : '' }}" data-jenis-card="barang_umum">
@@ -561,9 +553,8 @@
                 function produkCocok(kategori) {
                     const jenis = jenisTerpilih();
                     if (jenis === 'pakan') return kategori === 'pakan';
-                    if (jenis === 'vaksin') return kategori === 'vaksin';
                     if (jenis === 'barang_umum') return kategori === 'barang_umum';
-                    return ['obat_pakan', 'obat_air', 'obat_ayam'].includes(kategori);
+                    return ['obat_pakan', 'obat_air', 'obat_ayam', 'vaksin'].includes(kategori);
                 }
 
                 function filterProduk() {

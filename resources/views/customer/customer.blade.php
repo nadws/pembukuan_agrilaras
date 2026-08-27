@@ -72,7 +72,7 @@
         </section>
         <form action="{{ route('customer.import') }}" method="post" enctype="multipart/form-data">
             @csrf
-            <x-theme.modal title="Import Master Customer" idModal="importCustomer">
+            <x-theme.modal title="Import Data Customer" idModal="importCustomer">
                 <div class="alert alert-info py-2">
                     Unduh <a href="{{ route('customer.template-import') }}" class="fw-bold">Format Import</a>, isi sheet Data Customer, lalu unggah kembali di sini.
                 </div>

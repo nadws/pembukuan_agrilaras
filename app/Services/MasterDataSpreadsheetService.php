@@ -85,7 +85,7 @@ class MasterDataSpreadsheetService
 
         $guide = $spreadsheet->createSheet();
         $guide->setTitle('Panduan');
-        $guide->setCellValue('A1', 'PANDUAN IMPORT MASTER CUSTOMER');
+        $guide->setCellValue('A1', 'PANDUAN IMPORT DATA CUSTOMER');
         $guide->mergeCells('A1:C1');
         $guide->fromArray([
             ['Kolom', 'Wajib', 'Keterangan'],

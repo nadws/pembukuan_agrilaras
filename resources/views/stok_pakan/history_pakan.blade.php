@@ -2,51 +2,19 @@
     <x-slot name="cardHeader">
         <div class="row align-items-center g-2">
             <div class="col-lg-6">
-                <h6 class="mb-0">{{ $title }}</h6>
-                <small class="text-muted">Daftar biaya {{ $kategori }} yang belum dibukukan</small>
+                <h6 class="mb-0">History {{ $kategori === 'pakan' ? 'Pakan' : 'Vitamin & Vaksin' }}</h6>
+                <small class="text-muted">Daftar biaya yang belum dibukukan</small>
                 {{-- <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p> --}}
             </div>
-            <div class="col-lg-6 d-flex justify-content-lg-end gap-2">
+            <div class="col-lg-6 d-flex justify-content-lg-end gap-2 history-actions">
 
                 <x-theme.button modal="T" icon="fa-plus" addClass="btn_bayar" teks="Bukukan" />
-                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" teks="" />
+                <x-theme.button modal="T" href="{{ route('history_perencanaan') }}" icon="fa-arrow-left" teks="Kembali" />
             </div>
         </div>
     </x-slot>
     <x-slot name="cardBody">
         <style>
-            .kategori-nav {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 6px;
-                max-width: 420px;
-                padding: 5px;
-                margin-bottom: 18px;
-                border: 1px solid #dce3f2;
-                border-radius: 12px;
-                background: #f2f5fb;
-            }
-
-            .kategori-nav .nav-link {
-                padding: 10px 16px;
-                border-radius: 8px;
-                color: #52617a;
-                font-weight: 700;
-                text-align: center;
-                transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
-            }
-
-            .kategori-nav .nav-link:hover {
-                color: #29468f;
-                background: #e5ebf8;
-            }
-
-            .kategori-nav .nav-link.active {
-                color: #fff;
-                background: #29468f;
-                box-shadow: 0 5px 12px rgba(41, 70, 143, .24);
-            }
-
             .history-table-wrap {
                 overflow-x: auto;
                 border: 1px solid #dce3f2;
@@ -58,39 +26,143 @@
                 margin-bottom: 0;
             }
 
-            @media (max-width: 576px) {
-                .kategori-nav {
+            .history-search {
+                display: flex;
+                max-width: 360px;
+                align-items: center;
+                gap: 10px;
+                margin: 0 0 12px auto;
+            }
+
+            .history-search label {
+                margin: 0;
+                color: #52617a;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .history-mobile-check {
+                display: none;
+            }
+
+            @media (max-width: 767.98px) {
+                .history-actions {
+                    width: 100%;
+                    margin-top: 6px;
+                }
+
+                .history-actions .btn {
+                    display: inline-flex;
+                    flex: 1;
+                    align-items: center;
+                    justify-content: center;
+                    margin-right: 0 !important;
+                    padding: 9px 12px;
+                }
+
+                .history-search {
+                    display: block;
                     max-width: none;
+                    margin-bottom: 14px;
+                }
+
+                .history-search label {
+                    display: block;
+                    margin-bottom: 6px;
+                }
+
+                .history-mobile-check {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 10px;
+                    padding: 10px 12px;
+                    border: 1px solid #dce3f2;
+                    border-radius: 9px;
+                    background: #f7f9fd;
+                    color: #40516f;
+                    font-weight: 700;
+                }
+
+                .history-table-wrap {
+                    overflow: visible;
+                    border: 0;
+                    border-radius: 0;
+                    background: transparent;
+                }
+
+                .history-table-wrap .table {
+                    min-width: 0;
+                    border-collapse: separate;
+                    border-spacing: 0 12px;
+                    background: transparent;
+                }
+
+                .history-table-wrap thead {
+                    display: none;
+                }
+
+                .history-table-wrap tbody,
+                .history-table-wrap tr,
+                .history-table-wrap td {
+                    display: block;
                     width: 100%;
                 }
 
-                .kategori-nav .nav-link {
-                    padding: 9px 10px;
-                    font-size: 12px;
+                .history-table-wrap tbody tr {
+                    overflow: hidden;
+                    border: 1px solid #dce3f2;
+                    border-radius: 12px;
+                    background: #fff !important;
+                    box-shadow: 0 5px 16px rgba(35, 60, 115, .06);
+                }
+
+                .history-table-wrap tbody td {
+                    display: grid;
+                    grid-template-columns: minmax(105px, 42%) 1fr;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 9px 12px;
+                    border-bottom: 1px solid #edf0f6;
+                    text-align: right !important;
+                }
+
+                .history-table-wrap tbody td:first-child {
+                    display: none;
+                }
+
+                .history-table-wrap tbody td:last-child {
+                    border-bottom: 0;
+                    background: #f7f9fd;
+                }
+
+                .history-table-wrap tbody td::before {
+                    color: #71809a;
+                    content: attr(data-label);
+                    font-size: 11px;
+                    font-weight: 750;
+                    letter-spacing: .2px;
+                    text-align: left;
+                    text-transform: uppercase;
+                }
+
+                .history-table-wrap .cek_bayar {
+                    width: 19px;
+                    height: 19px;
+                    margin-left: auto;
                 }
             }
         </style>
 
-        <nav class="kategori-nav" aria-label="Kategori history perencanaan">
-            <a class="nav-link {{ $kategori === 'pakan' ? 'active' : '' }}"
-                href="{{ route('history_perencanaan_pakan', ['kategori' => 'pakan']) }}">
-                Pakan
-            </a>
-            <a class="nav-link {{ $kategori === 'vitamin' ? 'active' : '' }}"
-                href="{{ route('history_perencanaan_pakan', ['kategori' => 'vitamin']) }}">
-                Vitamin
-            </a>
-        </nav>
-
-        <section class="row">
-            <div class="col-lg-8"></div>
-            <div class="col-lg-4 mb-2">
-                <table class="float-end">
-                    <td>Pencarian :</td>
-                    <td><input type="text" id="pencarian" class="form-control float-end"></td>
-                </table>
+        <section>
+            <div class="history-search">
+                <label for="pencarian">Pencarian</label>
+                <input type="search" id="pencarian" class="form-control" placeholder="Cari transaksi...">
             </div>
-            <div class="col-12">
+            <label class="history-mobile-check">
+                <input type="checkbox" class="check-all"> Pilih semua transaksi yang tersedia
+            </label>
+            <div>
                 <div class="history-table-wrap">
                     <table class="table table-hover table-striped" id="tablealdi" width="100%">
                 <thead>
@@ -112,16 +184,16 @@
                 <tbody>
                     @foreach ($stok as $no => $s)
                     <tr>
-                        <td>{{$no+1}}</td>
-                        <td>{{tanggal($s->tgl)}}</td>
-                        <td>{{$s->nm_kandang}}</td>
-                        <td>{{$s->nm_produk}}</td>
-                        <td class="text-end">{{number_format($s->pcs_kredit,1)}} </td>
-                        <td>{{$s->nm_satuan}}</td>
-                        <td class="text-end">Rp {{number_format($s->hpp_per_gr ?? ($s->pcs_kredit > 0 ? $s->total_rp / $s->pcs_kredit : 0), 2)}}</td>
-                        <td class="text-end">Rp {{number_format($s->total_rp,0)}}</td>
-                        <td>{{$s->admin}}</td>
-                        <td align="center">
+                        <td data-label="Nomor">{{$no+1}}</td>
+                        <td data-label="Tanggal">{{tanggal($s->tgl)}}</td>
+                        <td data-label="Kandang">{{$s->nm_kandang}}</td>
+                        <td data-label="Produk">{{$s->nm_produk}}</td>
+                        <td data-label="Jumlah" class="text-end">{{number_format($s->pcs_kredit,1)}} </td>
+                        <td data-label="Satuan">{{$s->nm_satuan}}</td>
+                        <td data-label="HPP / Gr" class="text-end">Rp {{number_format($s->hpp_per_gr ?? ($s->pcs_kredit > 0 ? $s->total_rp / $s->pcs_kredit : 0), 2)}}</td>
+                        <td data-label="Total" class="text-end">Rp {{number_format($s->total_rp,0)}}</td>
+                        <td data-label="Admin">{{$s->admin}}</td>
+                        <td data-label="Pilih" class="text-center">
                             <input type="checkbox" name="" no_nota="{{ $s->id_stok_telur }}"
                                 piutang="{{ $s->total_rp }}" id=""
                                 class="cek_bayar {{$max_tgl == $s->tgl ? 'checkbox' : ''}}" {{$max_tgl==$s->tgl
@@ -130,11 +202,11 @@
                         </td>
                     </tr>
                     @endforeach
-                    <input type="text" style="display: none" class="kategori" value="{{$kategori}}">
                 </tbody>
                     </table>
                 </div>
             </div>
+            <input type="hidden" class="kategori" value="{{$kategori}}">
         </section>
 
 
@@ -177,7 +249,12 @@
     @section('scripts')
     <script>
         $(document).ready(function() {
-                pencarian('pencarian', 'tablealdi')
+                $(document).on('input', '#pencarian', function() {
+                    var value = $(this).val().toLowerCase();
+                    $('#tablealdi tbody tr').each(function() {
+                        $(this).toggleClass('d-none', $(this).text().toLowerCase().indexOf(value) === -1);
+                    });
+                });
                 $(document).on("click", ".detail_nota", function() {
                     var no_nota = $(this).attr('no_nota');
                     $.ajax({
@@ -267,8 +344,13 @@
                     
                     // Setel semua checkbox lainnya sesuai dengan status tombol "Check All"
                     $(".checkbox").prop("checked", isChecked);
+                    $(".check-all").prop("checked", isChecked);
 
                     var anyChecked = $('.cek_bayar:checked').length > 0;
+                    var totalPiutang = 0;
+                    $('.cek_bayar:checked').each(function() {
+                        totalPiutang += parseInt($(this).attr('piutang')) || 0;
+                    });
                     $('.btn_bayar').toggle(anyChecked);
                     $(".piutang_cek").toggle(anyChecked);
                     $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));

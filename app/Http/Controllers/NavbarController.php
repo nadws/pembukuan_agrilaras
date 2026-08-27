@@ -34,7 +34,7 @@ class NavbarController extends Controller
                 'deskripsi' => 'membuat dan menyunting data rekening',
             ],
             [
-                'judul' => 'Master Customer',
+                'judul' => 'Data Customer',
                 'route' => 'customer.index',
                 'img' => 'customer-feedback.png',
                 'deskripsi' => 'Membuat, mengimpor, dan menyunting data customer.',
@@ -260,6 +260,29 @@ class NavbarController extends Controller
 
         ];
         $title = 'Gudang';
+
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
+    public function history_perencanaan()
+    {
+        $data = [
+            [
+                'judul' => 'History Pakan',
+                'route' => 'history_perencanaan_pakan',
+                'params' => ['kategori' => 'pakan'],
+                'img' => 'gudang.png',
+                'deskripsi' => 'Melihat riwayat perencanaan pemakaian dan pembukuan biaya pakan.',
+            ],
+            [
+                'judul' => 'History Vitamin & Vaksin',
+                'route' => 'history_perencanaan_pakan',
+                'params' => ['kategori' => 'vitamin'],
+                'img' => 'report.png',
+                'deskripsi' => 'Melihat riwayat perencanaan pemakaian vitamin, obat, dan vaksin.',
+            ],
+        ];
+        $title = 'History Perencanaan';
 
         return view('navbar.data_master', compact(['data', 'title']));
     }

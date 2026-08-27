@@ -202,20 +202,12 @@
                             <span class="jenis-akun">Persediaan Pakan</span>
                         </span>
                     </label>
-                    <label class="jenis-card {{ $jenisFakturTerpilih === 'vitamin' ? 'is-active' : '' }}"
+                    <label class="jenis-card {{ in_array($jenisFakturTerpilih, ['vitamin', 'vaksin']) ? 'is-active' : '' }}"
                         data-jenis-card="vitamin">
-                        <input type="radio" name="jenis_faktur" value="vitamin" @checked($jenisFakturTerpilih === 'vitamin') required>
+                        <input type="radio" name="jenis_faktur" value="vitamin" @checked(in_array($jenisFakturTerpilih, ['vitamin', 'vaksin'])) required>
                         <span>
-                            <span class="jenis-title">Faktur Vitamin</span>
-                            <span class="jenis-akun">Persediaan Vitamin/Obat</span>
-                        </span>
-                    </label>
-                    <label class="jenis-card {{ $jenisFakturTerpilih === 'vaksin' ? 'is-active' : '' }}"
-                        data-jenis-card="vaksin">
-                        <input type="radio" name="jenis_faktur" value="vaksin" @checked($jenisFakturTerpilih === 'vaksin') required>
-                        <span>
-                            <span class="jenis-title">Faktur Vaksin</span>
-                            <span class="jenis-akun">Vaksin Ayam Belum Terbiayakan</span>
+                            <span class="jenis-title">Faktur Vitamin &amp; Vaksin</span>
+                            <span class="jenis-akun">Vitamin, obat, dan vaksin</span>
                         </span>
                     </label>
                 </div>
@@ -468,8 +460,7 @@
                 function produkCocok(kategori) {
                     const jenis = jenisTerpilih();
                     if (jenis === 'pakan') return kategori === 'pakan';
-                    if (jenis === 'vaksin') return kategori === 'vaksin';
-                    return ['obat_pakan', 'obat_air', 'obat_ayam'].includes(kategori);
+                    return ['obat_pakan', 'obat_air', 'obat_ayam', 'vaksin'].includes(kategori);
                 }
 
                 function filterProduk() {

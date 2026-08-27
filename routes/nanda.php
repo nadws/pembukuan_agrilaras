@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/akuntansi-baru', 'akuntansi_baru')->name('akuntansi_baru');
         Route::get('/transaksi', 'transaksi')->name('transaksi');
         Route::get('/gudang-persediaan', 'gudang_persediaan')->name('gudang_persediaan');
+        Route::get('/history-perencanaan', 'history_perencanaan')->name('history_perencanaan');
         Route::get('/penjualan-martadah', 'penjualan_martadah')->name('penjualan_martadah');
         Route::get('/penjualan-martadah/telur', 'penjualan_martadah_telur')->name('penjualan_martadah_telur');
     });
