@@ -124,17 +124,8 @@
             }
 
             .item-table {
-                min-width: 1220px;
+                min-width: 970px;
                 margin-bottom: 0;
-            }
-
-            .biaya-table {
-                min-width: 0;
-                width: 100%;
-            }
-
-            .biaya-section {
-                max-width: 780px;
             }
 
             .item-table thead th {
@@ -149,6 +140,21 @@
             .item-table td {
                 vertical-align: middle;
                 padding: 8px;
+            }
+
+            .baris-item.harga-berbeda td {
+                background: #fff0f0;
+            }
+
+            .harga-rata {
+                display: block;
+                min-height: 16px;
+                font-size: 11px;
+            }
+
+            .harga-berbeda .harga-rata {
+                color: #c62828 !important;
+                font-weight: 700;
             }
 
             .item-table .form-control,
@@ -286,12 +292,28 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label" for="metode_pembayaran">Metode Pembayaran</label>
+                            <select id="metode_pembayaran" name="metode_pembayaran" class="form-select" required>
+                                <option value="hutang" @selected(old('metode_pembayaran', 'hutang') === 'hutang')>Hutang</option>
+                                <option value="tunai" @selected(old('metode_pembayaran') === 'tunai')>Tunai / Bank</option>
+                            </select>
+                        </div>
                         {{-- <div class="col-lg-3 col-md-6">
                             <label class="form-label" for="jatuh_tempo">Jatuh Tempo</label>
                             <input type="date" id="jatuh_tempo" name="jatuh_tempo" class="form-control"
                                 value="{{ old('jatuh_tempo') }}">
                         </div> --}}
-                        <div class="col-12">
+                        <div class="col-lg-4 col-md-6" id="akun-pembayaran-wrap">
+                            <label class="form-label" for="id_akun_pembayaran">Akun Pembayaran</label>
+                            <select id="id_akun_pembayaran" name="id_akun_pembayaran" class="form-select select-search-akun" data-placeholder="Cari kas atau bank">
+                                <option value="">-- Pilih Kas / Bank --</option>
+                                @foreach($akunPembayaran as $akun)
+                                    <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('id_akun_pembayaran') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-8 col-md-6">
                             <label class="form-label" for="keterangan">Keterangan</label>
                             <input type="text" id="keterangan" name="keterangan" class="form-control"
                                 value="{{ old('keterangan') }}" placeholder="Catatan tambahan (opsional)">
@@ -302,7 +324,7 @@
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div>
                         <h6 class="mb-0">Daftar Item Pembelian</h6>
-                        <small class="text-muted">Pilih akun pembayaran setiap item terlebih dahulu: Hutang, kas, atau bank. Lalu isi produk dan nilainya.</small>
+                        <small class="text-muted">Isi produk, jumlah, dan harga pembelian.</small>
                     </div>
                     <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-item">
                         <i class="fas fa-plus me-1"></i> Tambah Item
@@ -314,7 +336,6 @@
                         <thead>
                             <tr>
                                 <th width="40">No</th>
-                                <th width="250">Akun Pembayaran</th>
                                 <th width="230">Produk</th>
                                 <th width="110">Qty</th>
                                 <th width="110">Satuan</th>
@@ -332,14 +353,6 @@
                 </div>
 
                 <div class="row justify-content-end mb-3">
-                    <div class="col-12 biaya-section mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2"><h6 class="mb-0">Biaya Lain-lain</h6></div>
-                        <div class="item-table-wrap"><table class="table biaya-table mb-0"><thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th>Nominal</th></tr></thead><tbody>
-                            @foreach(['ongkir' => 'Ongkir', 'admin' => 'Admin'] as $kode => $label)
-                                <tr><td><select name="biaya_lain[{{ $kode }}][id_akun]" class="form-select select-search-akun" data-placeholder="Cari akun pembayaran"><option value="">-- Pilih akun --</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}" @selected(old('biaya_lain.'.$kode.'.id_akun') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></td><td class="fw-semibold">{{ $label }}</td><td><input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control" value="{{ old('biaya_lain.'.$kode.'.nominal', 0) }}" placeholder="0"></td></tr>
-                            @endforeach
-                        </tbody></table></div>
-                    </div>
                     <div class="col-lg-6 col-md-8">
                         <div class="grand-total-box">
                             <div class="row g-2 align-items-end text-start mb-2">
@@ -386,23 +399,13 @@
             <tr class="baris-item">
                 <td class="text-center nomor-baris">1</td>
                 <td>
-                    <select name="item[__INDEX__][id_akun_pembayaran]"
-                        class="form-select select-akun-pembayaran select-search-produk"
-                        data-placeholder="Pilih Hutang / kas / bank" required>
-                        <option value="">-- Pilih Hutang / kas / bank --</option>
-                        @foreach($akunPembayaran as $akun)
-                            <option value="{{ $akun->id_akun_perkiraan }}">{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
-                        @endforeach
-                    </select>
-                </td>
-                <td>
                     <input type="hidden" name="item[__INDEX__][sumber_produk]" class="input-sumber-produk" value="perencanaan">
                     <select name="item[__INDEX__][pakan_id]" class="form-select select-produk select-search-produk"
                         data-placeholder="Cari produk" required>
                         <option value="">-- Pilih Produk --</option>
                         @foreach ($produk as $p)
                             <option value="{{ $p->id_produk }}" data-kategori="{{ $p->kategori }}"
-                                data-satuan="{{ $p->satuan_dosis }}">
+                                data-satuan="{{ $p->satuan_dosis }}" data-rata-harga="{{ $hargaRataRata[($p->sumber_produk ?? 'perencanaan') . ':' . $p->id_produk] ?? '' }}">
                                 {{ $p->nm_produk }}
                                 ({{ $p->kategori }}{{ $p->satuan_dosis ? ' / ' . $p->satuan_dosis : '' }})
                             </option>
@@ -420,6 +423,7 @@
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][harga_satuan]"
                         class="form-control input-harga" placeholder="Dari subtotal" required>
+                    <small class="harga-rata text-muted"></small>
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="item[__INDEX__][subtotal]"
@@ -492,6 +496,7 @@
                         select.off('change.fakturPembelian').on('change.fakturPembelian', function() {
                             if (this.classList.contains('select-produk')) {
                                 isiSatuan(this);
+                                cekHargaRataRata(this);
                             }
                         });
                     });
@@ -530,6 +535,22 @@
                     return subtotalBaru;
                 }
 
+                function cekHargaRataRata(selectProduk) {
+                    const baris = selectProduk.closest('.baris-item');
+                    if (!baris) return;
+                    const option = selectProduk.options[selectProduk.selectedIndex];
+                    const rata = parseFloat(option?.dataset.rataHarga || '');
+                    const harga = angkaInput(baris.querySelector('.input-harga'));
+                    const label = baris.querySelector('.harga-rata');
+                    if (!Number.isFinite(rata) || rata <= 0) {
+                        baris.classList.remove('harga-berbeda');
+                        if (label) label.textContent = '';
+                        return;
+                    }
+                    if (label) label.textContent = 'Rata-rata: ' + formatRupiah(rata);
+                    baris.classList.toggle('harga-berbeda', harga > 0 && Math.abs(harga - rata) >= 5000);
+                }
+
                 function hitungUlangSemua() {
                     let subtotal = 0;
 
@@ -558,19 +579,17 @@
                     tbody.insertAdjacentHTML('beforeend', html);
                     const barisBaru = tbody.querySelector('.baris-item:last-child');
                     const selectProduk = barisBaru.querySelector('.select-produk');
-                    const selectAkun = barisBaru.querySelector('.select-akun-pembayaran');
                     barisBaru.querySelector('.input-qty').value = data.qty ?? '';
                     barisBaru.querySelector('.input-harga').value = data.harga_satuan ?? '';
                     barisBaru.querySelector('.input-subtotal').value = data.subtotal ?? '';
                     selectProduk.value = data.pakan_id ?? '';
-                    selectAkun.value = data.id_akun_pembayaran ?? '';
                     indexBaris++;
                     filterProduk();
                     initSelectSearch(barisBaru);
                     if (window.jQuery && jQuery.fn.select2) {
                         jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change');
-                        jQuery(selectAkun).val(data.id_akun_pembayaran ?? null).trigger('change');
                     }
+                    cekHargaRataRata(selectProduk);
                     hitungUlangSemua();
                 }
 
@@ -648,12 +667,14 @@
                         baris.dataset.hitungDari = 'subtotal';
                         hitungBaris(baris, 'subtotal');
                         hitungUlangSemua();
+                        cekHargaRataRata(baris.querySelector('.select-produk'));
                     }
 
                     if (e.target.classList.contains('input-harga')) {
                         baris.dataset.hitungDari = 'harga';
                         hitungBaris(baris, 'harga');
                         hitungUlangSemua();
+                        cekHargaRataRata(baris.querySelector('.select-produk'));
                     }
 
                     if (e.target.classList.contains('input-qty')) {
@@ -665,6 +686,7 @@
                 tbody.addEventListener('change', function(e) {
                     if (e.target.classList.contains('select-produk')) {
                         isiSatuan(e.target);
+                        cekHargaRataRata(e.target);
                     }
                 });
 
@@ -684,6 +706,18 @@
                 btnTambah.addEventListener('click', tambahBaris);
                 diskonTotalInput.addEventListener('input', hitungUlangSemua);
                 jenisRadios.forEach((radio) => radio.addEventListener('change', updateJenisFaktur));
+                const metodePembayaran = document.getElementById('metode_pembayaran');
+                const akunPembayaranWrap = document.getElementById('akun-pembayaran-wrap');
+                const akunPembayaran = document.getElementById('id_akun_pembayaran');
+                function updateMetodePembayaran() {
+                    const tunai = metodePembayaran.value === 'tunai';
+                    akunPembayaranWrap.style.display = tunai ? 'block' : 'none';
+                    akunPembayaran.required = tunai;
+                    akunPembayaran.disabled = !tunai;
+                    document.getElementById('payment-total-label').textContent = tunai ? 'TOTAL HPP / PEMBAYARAN' : 'TOTAL HPP / HUTANG';
+                }
+                metodePembayaran.addEventListener('change', updateMetodePembayaran);
+                updateMetodePembayaran();
                 initSelectSearch();
                 updateJenisFaktur();
 

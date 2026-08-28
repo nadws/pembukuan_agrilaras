@@ -66,11 +66,18 @@ class FakturPembelianController extends Controller
             ->orderBy('tb_produk_perencanaan.nm_produk')
             ->get(['tb_produk_perencanaan.*', 's.nm_satuan as satuan_dosis'])
             ->each(fn ($item) => $item->sumber_produk = 'perencanaan');
+        $hargaRataRata = DB::table('faktur_pembelian_detail as d')
+            ->select('d.pakan_id', 'd.sumber_produk')
+            ->selectRaw('SUM(d.subtotal) / NULLIF(SUM(d.qty), 0) as harga_rata_rata')
+            ->groupBy('d.pakan_id', 'd.sumber_produk')
+            ->get()
+            ->mapWithKeys(fn ($row) => [($row->sumber_produk ?: 'perencanaan') . ':' . $row->pakan_id => (float) $row->harga_rata_rata]);
         return view('transaksi.faktur_pembelian.create', [
             'title' => 'Tambah Faktur Pembelian',
             'suppliers' => Suplier::orderBy('nm_suplier')->get(),
-            'akunPembayaran' => $this->akunPembayaranPembelianAktif(),
+            'akunPembayaran' => $this->akunKasBankAktif(),
             'produk' => $produkPerencanaan->concat($produkUmum),
+            'hargaRataRata' => $hargaRataRata,
             'noFakturDefault' => $this->generateNoFaktur(),
         ]);
     }
@@ -325,6 +332,8 @@ class FakturPembelianController extends Controller
     {
         $validated = $request->validate([
             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin,barang_umum'],
+            'metode_pembayaran' => ['required', 'in:hutang,tunai'],
+            'id_akun_pembayaran' => ['nullable', 'required_if:metode_pembayaran,tunai', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur'],
             'tanggal_faktur' => ['required', 'date'],
             'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
@@ -343,7 +352,6 @@ class FakturPembelianController extends Controller
             'item.*.satuan' => ['nullable', 'string', 'max:20'],
             'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
             'item.*.subtotal' => ['required', 'numeric', 'min:0'],
-            'item.*.id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'item.*.no_batch' => ['nullable', 'string', 'max:50'],
             'item.*.tanggal_expired' => ['nullable', 'date'],
         ]);
@@ -367,6 +375,14 @@ class FakturPembelianController extends Controller
 
         $items = $this->terapkanDiskonKeItem($items, $diskonTotal);
         $biayaLain = $this->normalisasiBiayaLain($validated['biaya_lain'] ?? []);
+        $akunHutang = $this->akunAktif('210220');
+        $idAkunPembayaranGlobal = $validated['metode_pembayaran'] === 'hutang'
+            ? ($akunHutang?->id_akun_perkiraan)
+            : (int) $validated['id_akun_pembayaran'];
+        $items = $items->map(function ($item) use ($idAkunPembayaranGlobal) {
+            $item['id_akun_pembayaran'] = (int) $idAkunPembayaranGlobal;
+            return $item;
+        });
         $produk = ProdukPerencanaan::query()
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
             ->whereIn('tb_produk_perencanaan.id_produk', $items->pluck('pakan_id'))
@@ -394,7 +410,9 @@ class FakturPembelianController extends Controller
         $akunHutang = $this->akunAktif('210220');
         $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
             ->map(fn ($id) => (int) $id)->unique()->values();
-        $akunPembayaran = $this->akunPembayaranPembelianAktif()
+        $akunPembayaran = ($validated['metode_pembayaran'] === 'hutang'
+            ? collect($akunHutang ? [$akunHutang] : [])
+            : $this->akunKasBankAktif())
             ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
         $akunBiaya = $this->akunPembayaranPembelianAktif()
             ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');

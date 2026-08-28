@@ -87,6 +87,43 @@
                 font-weight: 700
             }
 
+            .warehouse-filter {
+                max-width: 680px;
+                margin-bottom: 18px
+            }
+
+            .warehouse-pagination {
+                min-height: 38px;
+            }
+
+            .warehouse-pagination nav {
+                display: flex;
+                justify-content: flex-end;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+
+            .warehouse-pagination .pagination {
+                margin: 0;
+                white-space: nowrap;
+            }
+
+            .warehouse-pagination .page-link {
+                padding: .4rem .68rem;
+                color: #304f9e;
+                border-color: #dfe6f3;
+            }
+
+            .warehouse-pagination .page-item.active .page-link {
+                background: #304f9e;
+                border-color: #304f9e;
+                color: #fff;
+            }
+
+            .warehouse-pagination .page-item.disabled .page-link {
+                color: #9aa8bd;
+            }
+
             @media(max-width:900px) {
                 .warehouse-summary {
                     grid-template-columns: repeat(2, minmax(0, 1fr))
@@ -113,6 +150,16 @@
                         class="fas fa-clipboard-check me-1"></i> Mulai Stok Opname</a>
             </div>
             @include('gudang_persediaan.partials.nav')
+            <form method="GET" action="{{ route('gudang-persediaan.index') }}" class="warehouse-filter">
+                <div class="input-group">
+                    <input type="search" name="cari" value="{{ $cari ?? '' }}" class="form-control"
+                        placeholder="Cari produk, kode, kategori, atau satuan" aria-label="Cari stok">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i> Cari</button>
+                    @if (!empty($cari))
+                        <a href="{{ route('gudang-persediaan.index') }}" class="btn btn-outline-secondary">Reset</a>
+                    @endif
+                </div>
+            </form>
             <div class="warehouse-summary">
                 <div class="warehouse-card"><small>Total
                         produk</small><strong>{{ number_format($jumlahProduk, 0, ',', '.') }}</strong></div>
@@ -125,7 +172,7 @@
                 </div>
             </div>
             <div class="warehouse-table-wrap">
-                <table class="table table-hover warehouse-table" id="table1">
+                <table class="table table-hover warehouse-table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -141,7 +188,7 @@
                     <tbody>
                         @foreach ($stok as $item)
                             <tr>
-                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ ($stok->firstItem() ?? 1) + $loop->index }}</td>
                                 <td class="fw-semibold">{{ $item->nm_produk }}</td>
                                 <td>{{ $item->kode_accurate ?: '-' }}</td>
                                 <td><span
@@ -163,6 +210,12 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+            <div class="warehouse-pagination d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                <small class="text-muted">
+                    Menampilkan {{ $stok->firstItem() ?? 0 }}–{{ $stok->lastItem() ?? 0 }} dari {{ $stok->total() }} produk
+                </small>
+                <div>{{ $stok->onEachSide(1)->links('pagination::bootstrap-5') }}</div>
             </div>
 
         </div>

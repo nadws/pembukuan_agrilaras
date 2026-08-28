@@ -4,22 +4,50 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class GudangPersediaanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stok = $this->stockRows();
+        // Di halaman ringkasan hanya tampilkan produk yang memiliki saldo
+        // (atau minus). Produk dengan saldo tepat 0 disembunyikan agar daftar
+        // gudang tidak penuh; halaman Telur memiliki aturan tampilannya sendiri.
+        $cari = trim((string) $request->input('cari'));
+        $stokSemua = $this->stockRows()
+            ->filter(fn ($row) => (float) $row->stok != 0)
+            ->when($cari !== '', function (Collection $rows) use ($cari) {
+                $needle = mb_strtolower($cari);
+
+                return $rows->filter(function ($row) use ($needle) {
+                    return str_contains(mb_strtolower((string) $row->nm_produk), $needle)
+                        || str_contains(mb_strtolower((string) $row->kode_accurate), $needle)
+                        || str_contains(mb_strtolower((string) $row->kategori), $needle)
+                        || str_contains(mb_strtolower((string) $row->nm_satuan), $needle);
+                });
+            })
+            ->values();
+
+        $perPage = 15;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $stok = new LengthAwarePaginator(
+            $stokSemua->forPage($page, $perPage)->values(),
+            $stokSemua->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('gudang_persediaan.index', [
             'title' => 'Gudang',
             'stok' => $stok,
-            'jumlahProduk' => $stok->count(),
-            'produkAdaStok' => $stok->where('stok', '>', 0)->count(),
-            'produkKosong' => $stok->where('stok', '<=', 0)->count(),
-            'nilaiPersediaan' => $stok->sum(fn ($row) => max(0, (float) $row->nilai_stok)),
+            'cari' => $cari,
+            'jumlahProduk' => $stokSemua->count(),
+            'produkAdaStok' => $stokSemua->where('stok', '>', 0)->count(),
+            'produkKosong' => $stokSemua->where('stok', '<=', 0)->count(),
+            'nilaiPersediaan' => $stokSemua->sum(fn ($row) => max(0, (float) $row->nilai_stok)),
             'opnameTerakhir' => DB::table('gudang_opname_perencanaan')->max('tanggal'),
         ]);
     }
@@ -37,6 +65,7 @@ class GudangPersediaanController extends Controller
             ->leftJoin('tb_gudang as g', 'g.id_gudang', '=', 'p.gudang_id')
             ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
             ->where('p.kategori_id', 1)
+            ->whereRaw('COALESCE(st.stok, 0) <> 0')
             ->when($request->filled('gudang'), fn ($q) => $q->where('p.gudang_id', $request->integer('gudang')))
             ->when($request->filled('cari'), function ($q) use ($request) {
                 $cari = '%' . trim((string) $request->input('cari')) . '%';
@@ -60,6 +89,7 @@ class GudangPersediaanController extends Controller
         $ringkasan = DB::table('tb_produk as p')
             ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
             ->where('p.kategori_id', 1)
+            ->whereRaw('COALESCE(st.stok, 0) <> 0')
             ->selectRaw('COUNT(p.id_produk) as total_produk')
             ->selectRaw('SUM(CASE WHEN COALESCE(st.stok, 0) > 0 THEN 1 ELSE 0 END) as tersedia')
             ->selectRaw('SUM(CASE WHEN COALESCE(st.stok, 0) <= 0 THEN 1 ELSE 0 END) as kosong')
@@ -76,7 +106,7 @@ class GudangPersediaanController extends Controller
         ]);
     }
 
-    public function opnameBarangUmum()
+    public function opnameBarangUmum(Request $request)
     {
         $saldo = DB::table('pembukuan_baru_stok')
             ->select('id_produk')
@@ -84,11 +114,13 @@ class GudangPersediaanController extends Controller
             ->selectRaw('SUM(qty * harga_satuan) as nilai_masuk')
             ->groupBy('id_produk');
 
+        $tampilkanKosong = $request->boolean('tampilkan_kosong');
         $items = DB::table('tb_produk as p')
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
             ->leftJoinSub($saldo, 'st', 'st.id_produk', '=', 'p.id_produk')
             ->where('p.kategori_id', 1)
             ->where('p.kontrol_stok', 'Y')
+            ->when(!$tampilkanKosong, fn ($q) => $q->whereRaw('COALESCE(st.qty_masuk, 0) <> 0'))
             ->orderBy('p.nm_produk')
             ->get([
                 'p.id_produk',
@@ -101,6 +133,7 @@ class GudangPersediaanController extends Controller
         return view('pembukuan_baru.jurnal_penyesuaian.stok_opname', [
             'title' => 'Stok Opname Barang Umum',
             'items' => $items,
+            'tampilkanKosong' => $tampilkanKosong,
         ]);
     }
 

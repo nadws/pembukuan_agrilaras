@@ -56,6 +56,21 @@
                 margin-bottom: 0;
             }
 
+            .aksi-buttons {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+            }
+
+            .aksi-buttons .btn,
+            .aksi-buttons form {
+                flex: 0 0 auto;
+                margin: 0;
+            }
+
             .purchase-table thead th {
                 padding: 12px;
                 border-color: #4f69b6;
@@ -161,7 +176,7 @@
                             <th class="text-end">Total</th>
                             <th>Status</th>
                             <th>Status Stok</th>
-                            <th width="110" class="text-center">Aksi</th>
+                            <th width="140" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -204,6 +219,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
+                                    <div class="aksi-buttons">
                                     <a href="{{ route('transaksi.faktur-pembelian.detail', $item) }}"
                                         class="btn btn-outline-primary btn-sm" title="Detail">
                                         <i class="fas fa-eye"></i>
@@ -218,6 +234,7 @@
                                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
                                         </form>
                                     @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
