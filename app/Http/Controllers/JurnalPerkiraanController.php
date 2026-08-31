@@ -9,6 +9,7 @@ use App\Models\AkunPerkiraan;
 use App\Models\ImporJurnalPerkiraan;
 use App\Models\JurnalPerkiraan;
 use App\Services\ImporJurnalPerkiraanService;
+use App\Services\LaporanArusKasPerkiraanService;
 use App\Services\LaporanLabaRugiPerkiraanService;
 use App\Services\LaporanNeracaPerkiraanService;
 use Carbon\Carbon;
@@ -148,6 +149,211 @@ class JurnalPerkiraanController extends Controller
             'start' => $start,
             'end' => $end,
         ]);
+    }
+
+    public function budgetLabaRugi(Request $request): View
+    {
+        $tahun = (int) $request->input('tahun', now()->year);
+        if ($tahun < 2000 || $tahun > 2100) {
+            $tahun = now()->year;
+        }
+
+        $accounts = AkunPerkiraan::query()
+            ->whereIn('tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
+            ->where('aktif', true)
+            ->whereNotIn('id_akun_perkiraan', AkunPerkiraan::query()
+                ->whereNotNull('id_akun_induk')->select('id_akun_induk'))
+            ->orderBy('tipe_akun')->orderBy('kode_perkiraan')->get();
+
+        $budget = DB::table('budget_laba_rugi')
+            ->where('tahun', $tahun)
+            ->get()->groupBy('id_akun_perkiraan')
+            ->map(fn ($rows) => $rows->keyBy('bulan'));
+
+        return view('jurnal_perkiraan.budget_laba_rugi', [
+            'title' => 'Kelola Budget Laba Rugi',
+            'tahun' => $tahun,
+            'years' => range(now()->year - 5, now()->year + 3),
+            'months' => [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'],
+            'accounts' => $accounts,
+            'budget' => $budget,
+        ]);
+    }
+
+    public function arusKas(Request $request, LaporanArusKasPerkiraanService $service): View
+    {
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+        $cashRoot = AkunPerkiraan::query()->where('kode_perkiraan', '1101')->first();
+        $cashAccounts = AkunPerkiraan::query()
+            ->where('aktif', true)
+            ->when($cashRoot, fn ($query) => $query->where('id_akun_induk', $cashRoot->getKey()), fn ($query) => $query
+                ->where(function ($query) {
+                    $query->where('nama', 'like', '%Kas%')
+                        ->orWhere('nama', 'like', '%Bank%')
+                        ->orWhere('nama', 'like', '%BCA%');
+                }))
+            ->whereExists(fn ($query) => $query->selectRaw('1')->from('jurnal_perkiraan as jp')
+                ->whereColumn('jp.id_akun_perkiraan', 'akun_perkiraan.id_akun_perkiraan'))
+            ->orderBy('kode_perkiraan')
+            ->get();
+
+        $filters = $request->validate([
+            'akun' => ['nullable', 'array'],
+            'akun.*' => ['integer'],
+            'bulan_dari' => ['nullable', 'integer', 'between:1,12'],
+            'tahun_dari' => ['nullable', 'integer', 'between:2000,2100'],
+            'bulan_sampai' => ['nullable', 'integer', 'between:1,12'],
+            'tahun_sampai' => ['nullable', 'integer', 'between:2000,2100'],
+        ]);
+        $preferred = $cashAccounts->firstWhere('nama', 'BCA 0513277722 (Cost-1)');
+        $selectedIds = collect($filters['akun'] ?? [])->map(fn ($id) => (int) $id)->intersect($cashAccounts->pluck('id_akun_perkiraan'))->values();
+        $selectedAccounts = $cashAccounts->whereIn('id_akun_perkiraan', $selectedIds)->values();
+        if ($selectedAccounts->isEmpty()) {
+            $selectedAccounts = collect([$preferred ?? $cashAccounts->first()])->filter()->values();
+        }
+        $selectedAccount = $selectedAccounts->first();
+        $start = Carbon::create(
+            (int) ($filters['tahun_dari'] ?? now()->year),
+            (int) ($filters['bulan_dari'] ?? 1),
+            1
+        )->startOfMonth();
+        $end = Carbon::create(
+            (int) ($filters['tahun_sampai'] ?? now()->year),
+            (int) ($filters['bulan_sampai'] ?? now()->month),
+            1
+        )->endOfMonth();
+        if ($start->gt($end)) {
+            throw ValidationException::withMessages(['bulan_sampai' => 'Periode akhir harus setelah periode awal.']);
+        }
+        if ($start->diffInMonths($end) > 23) {
+            throw ValidationException::withMessages(['bulan_sampai' => 'Maksimal laporan 24 bulan.']);
+        }
+
+        return view('jurnal_perkiraan.arus_kas', [
+            'title' => 'Laporan Arus Kas',
+            'months' => $months,
+            'years' => range(now()->year - 5, now()->year + 1),
+            'cashAccounts' => $cashAccounts,
+            'selectedAccount' => $selectedAccount,
+            'selectedAccounts' => $selectedAccounts,
+            'start' => $start,
+            'end' => $end,
+            'result' => $selectedAccounts->isNotEmpty() ? $service->buat($selectedAccounts, $start, $end) : null,
+        ]);
+    }
+
+    public function detailArusKas(Request $request): View
+    {
+        $data = $request->validate([
+            'akun_kas' => ['required'],
+            'akun_lawan' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'kategori' => ['nullable', 'string', 'max:60'],
+            'nilai' => ['nullable', 'numeric', 'min:0'],
+            'tanggal_awal' => ['required', 'date'],
+            'tanggal_akhir' => ['required', 'date', 'after_or_equal:tanggal_awal'],
+        ]);
+        $akunKasIds = is_array($data['akun_kas']) ? array_map('intval', $data['akun_kas']) : [(int) $data['akun_kas']];
+        $akunKasAccounts = AkunPerkiraan::whereIn('id_akun_perkiraan', $akunKasIds)->get();
+        abort_if($akunKasAccounts->count() !== count(array_unique($akunKasIds)), 404);
+        $akunKas = $akunKasAccounts->first();
+        $akunLawan = AkunPerkiraan::findOrFail($data['akun_lawan']);
+        $kategori = trim((string) ($data['kategori'] ?? ''));
+        $rows = JurnalPerkiraan::query()
+            ->with('akun:id_akun_perkiraan,kode_perkiraan,nama')
+            ->where('id_akun_perkiraan', $akunLawan->getKey())
+            ->whereBetween('tanggal', [$data['tanggal_awal'], $data['tanggal_akhir']])
+            ->whereHas('impor', fn ($query) => $query->where('status', 'aktif'))
+            ->whereExists(function ($query) use ($data, $akunKasIds) {
+                $query->selectRaw('1')->from('jurnal_perkiraan as kas')
+                    ->whereColumn('kas.id_impor_jurnal_perkiraan', 'jurnal_perkiraan.id_impor_jurnal_perkiraan')
+                    ->whereColumn('kas.tanggal', 'jurnal_perkiraan.tanggal')
+                    ->whereColumn('kas.nomor_transaksi', 'jurnal_perkiraan.nomor_transaksi')
+                    ->whereRaw("COALESCE(kas.tipe_transaksi, '') = COALESCE(jurnal_perkiraan.tipe_transaksi, '')")
+                    ->whereIn('kas.id_akun_perkiraan', $akunKasIds);
+            })
+            ->orderBy('tanggal')->orderBy('nomor_transaksi')->orderBy('urutan_detail')->get();
+        if ($kategori && $akunLawan->tipe_akun === 'APAY') {
+            $descriptionCache = [];
+            $rows = $rows->filter(function ($row) use ($kategori, &$descriptionCache) {
+                $key = implode('|', [$row->id_impor_jurnal_perkiraan, $row->tanggal, $row->nomor_transaksi, $row->tipe_transaksi]);
+                $text = strtolower((string) ($descriptionCache[$key] ??= DB::table('jurnal_perkiraan')
+                    ->where('id_impor_jurnal_perkiraan', $row->id_impor_jurnal_perkiraan)
+                    ->whereDate('tanggal', $row->tanggal)
+                    ->where('nomor_transaksi', $row->nomor_transaksi)
+                    ->whereRaw("COALESCE(tipe_transaksi, '') = ?", [(string) $row->tipe_transaksi])
+                    ->pluck('deskripsi')->filter()->implode(' ')));
+                $needle = strtolower($kategori);
+                if ($needle === 'pakan') return (bool) preg_match('/pakan|pokh?pan|newhope|al100|524a/', $text);
+                if ($needle === 'vitamin & vaksin') return (bool) preg_match('/vaksin|vitamin|obat|virkon|flytox|hostazym|elitox/', $text);
+                if ($needle === 'pullet / ayam') return (bool) preg_match('/pullet|ayam/', $text);
+                if ($needle === 'telur') return (bool) preg_match('/telur|rak telur/', $text);
+                return ! preg_match('/pakan|pokh?pan|newhope|al100|524a|vaksin|vitamin|obat|virkon|flytox|hostazym|elitox|pullet|ayam|telur|rak telur/', $text);
+            })->values();
+        }
+        $rawTotal = (float) $rows->sum(fn ($row) => abs((float) $row->debit - (float) $row->kredit));
+        $expectedTotal = array_key_exists('nilai', $data) ? (float) $data['nilai'] : $rawTotal;
+        $scale = $rawTotal > 0 ? $expectedTotal / $rawTotal : 1;
+        $rows = $rows->map(function ($row) use ($scale) {
+            $row->nilai_detail = round(abs((float) $row->debit - (float) $row->kredit) * $scale, 2);
+            return $row;
+        });
+        if ($rows->isNotEmpty()) {
+            $rounding = round($expectedTotal - (float) $rows->sum('nilai_detail'), 2);
+            $rows->last()->nilai_detail = round($rows->last()->nilai_detail + $rounding, 2);
+        }
+        return view('jurnal_perkiraan.arus_kas_detail', [
+            'title' => 'Detail Arus Kas', 'rows' => $rows, 'akunKas' => $akunKas, 'akunKasAccounts' => $akunKasAccounts, 'akunLawan' => $akunLawan,
+            'kategori' => $kategori, 'tanggalAwal' => $data['tanggal_awal'], 'tanggalAkhir' => $data['tanggal_akhir'],
+            'total' => $expectedTotal,
+        ]);
+    }
+
+    public function simpanBudgetLabaRugi(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'tahun' => ['required', 'integer', 'between:2000,2100'],
+            'budget' => ['nullable', 'array'],
+            'budget.*' => ['array'],
+            'budget.*.*' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $accountIds = AkunPerkiraan::query()
+            ->whereIn('tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
+            ->where('aktif', true)->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->flip();
+        $rows = [];
+        $now = now();
+        foreach ($data['budget'] ?? [] as $accountId => $months) {
+            if (! $accountIds->has((int) $accountId)) {
+                continue;
+            }
+            foreach ($months as $month => $nominal) {
+                if ((int) $month < 1 || (int) $month > 12 || $nominal === null || $nominal === '') {
+                    continue;
+                }
+                $rows[] = [
+                    'id_akun_perkiraan' => (int) $accountId,
+                    'tahun' => (int) $data['tahun'],
+                    'bulan' => (int) $month,
+                    'nominal' => (float) $nominal,
+                    'dibuat_oleh' => auth()->id(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        DB::transaction(function () use ($data, $rows) {
+            DB::table('budget_laba_rugi')->where('tahun', $data['tahun'])->delete();
+            if ($rows) {
+                DB::table('budget_laba_rugi')->insert($rows);
+            }
+        });
+
+        return redirect()->route('jurnal-perkiraan.laba-rugi.budget', ['tahun' => $data['tahun']])
+            ->with('sukses', 'Budget laba rugi tahun '.$data['tahun'].' berhasil disimpan.');
     }
 
     public function neraca(Request $request, LaporanNeracaPerkiraanService $service): View

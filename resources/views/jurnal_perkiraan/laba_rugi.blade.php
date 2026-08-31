@@ -4,6 +4,7 @@
             <div><h5 class="mb-0">CV AGRI LARAS</h5><small>{{ $title }}</small></div>
             <div class="d-flex gap-2">
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#parameterLaporan"><i class="fas fa-calendar-alt me-1"></i> Parameter Laporan</button>
+                <a href="{{ route('jurnal-perkiraan.laba-rugi.budget', ['tahun'=>request('tahun_dari',now()->year)]) }}" class="btn btn-warning btn-sm"><i class="fas fa-coins me-1"></i> Kelola Budget</a>
                 @if ($result)
                     <a href="{{ route('jurnal-perkiraan.laba-rugi.export', request()->only(['bulan_dari', 'tahun_dari', 'bulan_sampai', 'tahun_sampai'])) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
                 @endif
@@ -17,6 +18,7 @@
         @endif
 
         @if ($result)
+            <style>.laporan-accurate .budget-column{background:#fff9e8}.laporan-accurate .variance-good{color:#16834b;font-weight:700}.laporan-accurate .variance-bad{color:#d33a42;font-weight:700}</style>
             @php
                 $periods = $result['periods'];
                 $formatNumber = function ($value) {
@@ -42,43 +44,43 @@
             </div>
             <div class="table-responsive laporan-scroll">
                 <table class="table table-sm laporan-accurate align-middle">
-                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end" style="min-width:155px">Total (IDR)</th></tr></thead>
+                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end" style="min-width:155px">Total Aktual</th><th class="text-end budget-column" style="min-width:145px">Budget</th><th class="text-end" style="min-width:145px">Selisih</th></tr></thead>
                     <tbody>
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PENDAPATAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['revenueRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan', 'values' => $result['revenue']])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan', 'values' => $result['revenue'], 'budget'=>$result['revenueBudget'], 'isIncome'=>true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA POKOK PENJUALAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA POKOK PENJUALAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['cogsRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Pokok Penjualan', 'values' => $result['cogs']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA KOTOR', 'values' => $result['gross'], 'highlight' => true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Pokok Penjualan', 'values' => $result['cogs'], 'budget'=>$result['cogsBudget'], 'isIncome'=>false])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA KOTOR', 'values' => $result['gross'], 'budget'=>$result['grossBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA OPERASIONAL</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA OPERASIONAL</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['operatingRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Operasional', 'values' => $result['operating']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'PENDAPATAN OPERASIONAL', 'values' => $result['operatingIncome'], 'highlight' => true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Operasional', 'values' => $result['operating'], 'budget'=>$result['operatingBudget'], 'isIncome'=>false])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'PENDAPATAN OPERASIONAL', 'values' => $result['operatingIncome'], 'budget'=>$result['operatingIncomeBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN DAN BIAYA NON OPERASIONAL</td></tr>
-                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 2 }}">Pendapatan Non Operasional</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PENDAPATAN DAN BIAYA NON OPERASIONAL</td></tr>
+                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 4 }}">Pendapatan Non Operasional</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['otherIncomeRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan Non Operasional', 'values' => $result['otherIncome']])
-                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 2 }}">Biaya Non Operasional</td></tr>
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan Non Operasional', 'values' => $result['otherIncome'], 'budget'=>$result['otherIncomeBudget'], 'isIncome'=>true])
+                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 4 }}">Biaya Non Operasional</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['otherExpenseRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Non Operasional', 'values' => $result['otherExpense']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan dan Biaya Non Operasional', 'values' => $result['otherNet']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI SEBELUM PENYUSUTAN', 'values' => $result['beforeDepreciation'], 'highlight' => true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Non Operasional', 'values' => $result['otherExpense'], 'budget'=>$result['otherExpenseBudget'], 'isIncome'=>false])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan dan Biaya Non Operasional', 'values' => $result['otherNet'], 'budget'=>$result['otherNetBudget'], 'isIncome'=>true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI SEBELUM PENYUSUTAN', 'values' => $result['beforeDepreciation'], 'budget'=>$result['beforeDepreciationBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA PENYUSUTAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA PENYUSUTAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['depreciationRows']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Penyusutan', 'values' => $result['depreciationTotal']])
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Sebelum Pajak)', 'values' => $result['beforeTax'], 'highlight' => true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Penyusutan', 'values' => $result['depreciationTotal'], 'budget'=>$result['depreciationBudget'], 'isIncome'=>false])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Sebelum Pajak)', 'values' => $result['beforeTax'], 'budget'=>$result['beforeTaxBudget'], 'isIncome'=>true, 'highlight' => true])
 
                         @if ($result['taxRows']->isNotEmpty())
-                            <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PAJAK PENGHASILAN</td></tr>
+                            <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PAJAK PENGHASILAN</td></tr>
                             @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['taxRows']])
-                            @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pajak Penghasilan', 'values' => $result['taxTotal']])
+                            @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pajak Penghasilan', 'values' => $result['taxTotal'], 'budget'=>$result['taxBudget'], 'isIncome'=>false])
                         @endif
-                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Setelah Pajak)', 'values' => $result['afterTax'], 'highlight' => true])
+                        @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Setelah Pajak)', 'values' => $result['afterTax'], 'budget'=>$result['afterTaxBudget'], 'isIncome'=>true, 'highlight' => true])
                     </tbody>
                 </table>
             </div>

@@ -249,8 +249,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/batch/{impor_jurnal_perkiraan}', 'detailBatch')->name('detail-batch');
         Route::get('/template', 'template')->name('template');
         Route::get('/laporan/laba-rugi', 'labaRugi')->name('laba-rugi');
+        Route::get('/laporan/laba-rugi/budget', 'budgetLabaRugi')->name('laba-rugi.budget');
+        Route::post('/laporan/laba-rugi/budget', 'simpanBudgetLabaRugi')->name('laba-rugi.budget.simpan');
         Route::get('/laporan/laba-rugi/export', 'exportLabaRugi')->name('laba-rugi.export');
         Route::get('/laporan/laba-rugi/akun/{akun_perkiraan}', 'detailAkun')->name('detail-akun');
+        Route::get('/laporan/arus-kas', 'arusKas')->name('arus-kas');
+        Route::get('/laporan/arus-kas/detail', 'detailArusKas')->name('arus-kas-detail');
         Route::get('/laporan/neraca', 'neraca')->name('neraca');
         Route::get('/laporan/neraca/cetak', 'cetakNeraca')->name('neraca.cetak');
     });

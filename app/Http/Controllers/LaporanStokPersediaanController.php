@@ -36,7 +36,7 @@ class LaporanStokPersediaanController extends Controller
             ->selectRaw('SUM(CASE WHEN s.pcs_kredit > 0 THEN s.pcs_kredit ELSE 0 END) as total_pakai')
             ->selectRaw('SUM(s.pcs - s.pcs_kredit) as stok_akhir')
             ->selectRaw('SUM(CASE WHEN s.pcs > 0 THEN s.total_rp + s.biaya_dll ELSE 0 END) as nilai_masuk')
-            ->havingRaw('SUM(s.pcs - s.pcs_kredit) <> 0')
+            ->havingRaw('ROUND(SUM(s.pcs - s.pcs_kredit), 2) <> 0')
             ->orderBy('p.kategori')->orderBy('p.nm_produk')
             ->paginate(20)->withQueryString();
 

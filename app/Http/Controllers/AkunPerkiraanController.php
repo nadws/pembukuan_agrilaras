@@ -570,6 +570,98 @@ class AkunPerkiraanController extends Controller
         $stokAwalTotal = (float) ($total_populasi->stok_awal ?? 0);
         $biayaOperasionalTotal = (float) ($biaya_operasional->debit ?? 0);
 
+        /*
+         * Nilai rupiah laporan kandang harus berasal dari sumber yang sama dengan
+         * laporan laba rugi. Jurnal belum menyimpan id_kandang, sehingga total
+         * jurnal dibagikan ke kandang berdasarkan aktivitas operasionalnya.
+         */
+        $nilaiJurnal = DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->where('i.status', 'aktif')
+            ->where('a.aktif', true)
+            ->whereBetween('j.tanggal', [$tgl1, $tgl2])
+            ->whereIn('a.tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
+            ->groupBy('a.kode_perkiraan', 'a.tipe_akun')
+            ->select('a.kode_perkiraan', 'a.tipe_akun')
+            ->selectRaw('SUM(j.debit) AS debit, SUM(j.kredit) AS kredit')
+            ->get();
+
+        $nilaiKode = $nilaiJurnal->mapWithKeys(fn ($row) => [
+            $row->kode_perkiraan => in_array($row->tipe_akun, ['REVE', 'OINC'], true)
+                ? (float) $row->kredit - (float) $row->debit
+                : (float) $row->debit - (float) $row->kredit,
+        ]);
+        $totalPendapatanJurnal = (float) $nilaiJurnal
+            ->whereIn('tipe_akun', ['REVE', 'OINC'])
+            ->sum(fn ($row) => (float) $row->kredit - (float) $row->debit);
+        $totalBiayaJurnal = (float) $nilaiJurnal
+            ->whereIn('tipe_akun', ['COGS', 'EXPS', 'OEXP'])
+            ->sum(fn ($row) => (float) $row->debit - (float) $row->kredit);
+
+        $pemakaianProduk = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->whereBetween('s.tgl', [$tgl1, $tgl2])
+            ->whereIn('s.id_kandang', $kandang->pluck('id_kandang'))
+            ->groupBy('s.id_kandang', 'p.kategori')
+            ->select('s.id_kandang', 'p.kategori')
+            ->selectRaw('SUM(s.total_rp) AS total_rp')
+            ->get();
+
+        $idsKandang = $kandang->pluck('id_kandang')->map(fn ($id) => (int) $id)->all();
+        $bagi = function (float $total, array $bobot) use ($idsKandang): array {
+            $hasil = array_fill_keys($idsKandang, 0.0);
+            $jumlahBobot = array_sum($bobot);
+            $pembagi = $jumlahBobot != 0.0 ? $bobot : array_fill_keys($idsKandang, 1.0);
+            $jumlahPembagi = array_sum($pembagi);
+            $sisa = $total;
+
+            foreach ($idsKandang as $index => $id) {
+                $nilai = $index === array_key_last($idsKandang)
+                    ? $sisa
+                    : ($jumlahPembagi > 0 ? $total * (($pembagi[$id] ?? 0) / $jumlahPembagi) : 0);
+                $hasil[$id] = $nilai;
+                $sisa -= $nilai;
+            }
+
+            return $hasil;
+        };
+
+        $bobotTelur = $bobotAyam = $bobotPakan = $bobotVitamin = $bobotVaksin = $bobotRak = $bobotUmum = [];
+        foreach ($kandang as $item) {
+            $id = (int) $item->id_kandang;
+            $telur = (float) ($totalTelur[$id]->kuml_kg ?? 0) - ((float) ($totalTelur[$id]->kuml_pcs ?? 0) / 180);
+            $bobotTelur[$id] = max(0, $telur);
+            $bobotAyam[$id] = (float) ($populasi[$id]->jual ?? 0) + (float) ($populasi[$id]->afkir ?? 0);
+            $bobotPakan[$id] = (float) optional($pemakaianProduk->first(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) === 'pakan'))->total_rp;
+            $bobotVitamin[$id] = (float) $pemakaianProduk->filter(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) !== 'pakan')->sum('total_rp');
+            $bobotVaksin[$id] = (float) ($vaksin[$id]->ttl_rp ?? 0);
+            $bobotRak[$id] = (float) ($totalTelur[$id]->kuml_pcs ?? 0);
+            $bobotUmum[$id] = (float) $item->stok_awal;
+        }
+
+        $totalPerKategori = [
+            'jual_telur' => (float) ($nilaiKode['400001'] ?? 0),
+            'jual_ayam' => (float) ($nilaiKode['400002'] ?? 0),
+            'pakan' => (float) ($nilaiKode['5101-04'] ?? 0),
+            'vitamin' => (float) ($nilaiKode['5101-03'] ?? 0),
+            'vaksin' => (float) ($nilaiKode['5102-02'] ?? 0),
+            'rak' => (float) ($nilaiKode['5101-01'] ?? 0),
+        ];
+        $totalPerKategori['pendapatan_lain'] = $totalPendapatanJurnal - $totalPerKategori['jual_telur'] - $totalPerKategori['jual_ayam'];
+        $totalPerKategori['operasional'] = $totalBiayaJurnal - $totalPerKategori['pakan'] - $totalPerKategori['vitamin'] - $totalPerKategori['vaksin'] - $totalPerKategori['rak'];
+
+        $nilaiKandang = [
+            'jual_telur' => $bagi($totalPerKategori['jual_telur'], $bobotTelur),
+            'jual_ayam' => $bagi($totalPerKategori['jual_ayam'], $bobotAyam),
+            'pendapatan_lain' => $bagi($totalPerKategori['pendapatan_lain'], $bobotUmum),
+            'pakan' => $bagi($totalPerKategori['pakan'], $bobotPakan),
+            'vitamin' => $bagi($totalPerKategori['vitamin'], $bobotVitamin),
+            'vaksin' => $bagi($totalPerKategori['vaksin'], $bobotVaksin),
+            'rak' => $bagi($totalPerKategori['rak'], $bobotRak),
+            'operasional' => $bagi($totalPerKategori['operasional'], $bobotUmum),
+        ];
+
         return view('akun-perkiraan.laba-rugi-kandang2', compact(
             'kandang',
             'totalTelur',
@@ -590,6 +682,7 @@ class AkunPerkiraanController extends Controller
             'hargaRataAyam',
             'stokAwalTotal',
             'biayaOperasionalTotal'
+            , 'nilaiKandang', 'totalPerKategori', 'totalPendapatanJurnal', 'totalBiayaJurnal'
         ));
     }
 

@@ -53,7 +53,7 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
         return array_merge(
             ['Kode Akun', 'Deskripsi'],
             $this->periods->map(fn ($period) => $period->translatedFormat('F Y').' (IDR)')->all(),
-            ['Total (IDR)']
+            ['Total Aktual (IDR)', 'Budget (IDR)', 'Selisih (IDR)']
         );
     }
 
@@ -86,44 +86,44 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
     {
         $this->section('PENDAPATAN');
         $this->accounts($this->result['revenueRows']);
-        $this->total('Jumlah Pendapatan', $this->result['revenue']);
+        $this->total('Jumlah Pendapatan', $this->result['revenue'], $this->result['revenueBudget'], true);
 
         $this->section('BIAYA POKOK PENJUALAN');
         $this->accounts($this->result['cogsRows']);
-        $this->total('Jumlah Biaya Pokok Penjualan', $this->result['cogs']);
-        $this->total('LABA KOTOR', $this->result['gross'], true);
+        $this->total('Jumlah Biaya Pokok Penjualan', $this->result['cogs'], $this->result['cogsBudget'], false);
+        $this->total('LABA KOTOR', $this->result['gross'], $this->result['grossBudget'], true, true);
 
         $this->section('BIAYA OPERASIONAL');
         $this->accounts($this->result['operatingRows']);
-        $this->total('Jumlah Biaya Operasional', $this->result['operating']);
-        $this->total('PENDAPATAN OPERASIONAL', $this->result['operatingIncome'], true);
+        $this->total('Jumlah Biaya Operasional', $this->result['operating'], $this->result['operatingBudget'], false);
+        $this->total('PENDAPATAN OPERASIONAL', $this->result['operatingIncome'], $this->result['operatingIncomeBudget'], true, true);
 
         $this->section('PENDAPATAN DAN BIAYA NON OPERASIONAL');
         $this->section('Pendapatan Non Operasional');
         $this->accounts($this->result['otherIncomeRows']);
-        $this->total('Jumlah Pendapatan Non Operasional', $this->result['otherIncome']);
+        $this->total('Jumlah Pendapatan Non Operasional', $this->result['otherIncome'], $this->result['otherIncomeBudget'], true);
         $this->section('Biaya Non Operasional');
         $this->accounts($this->result['otherExpenseRows']);
-        $this->total('Jumlah Biaya Non Operasional', $this->result['otherExpense']);
-        $this->total('Jumlah Pendapatan dan Biaya Non Operasional', $this->result['otherNet']);
-        $this->total('LABA/RUGI SEBELUM PENYUSUTAN', $this->result['beforeDepreciation'], true);
+        $this->total('Jumlah Biaya Non Operasional', $this->result['otherExpense'], $this->result['otherExpenseBudget'], false);
+        $this->total('Jumlah Pendapatan dan Biaya Non Operasional', $this->result['otherNet'], $this->result['otherNetBudget'], true);
+        $this->total('LABA/RUGI SEBELUM PENYUSUTAN', $this->result['beforeDepreciation'], $this->result['beforeDepreciationBudget'], true, true);
 
         $this->section('BIAYA PENYUSUTAN');
         $this->accounts($this->result['depreciationRows']);
-        $this->total('Jumlah Biaya Penyusutan', $this->result['depreciationTotal']);
-        $this->total('LABA/RUGI BERSIH (Sebelum Pajak)', $this->result['beforeTax'], true);
+        $this->total('Jumlah Biaya Penyusutan', $this->result['depreciationTotal'], $this->result['depreciationBudget'], false);
+        $this->total('LABA/RUGI BERSIH (Sebelum Pajak)', $this->result['beforeTax'], $this->result['beforeTaxBudget'], true, true);
 
         if ($this->result['taxRows']->isNotEmpty()) {
             $this->section('PAJAK PENGHASILAN');
             $this->accounts($this->result['taxRows']);
-            $this->total('Jumlah Pajak Penghasilan', $this->result['taxTotal']);
+            $this->total('Jumlah Pajak Penghasilan', $this->result['taxTotal'], $this->result['taxBudget'], false);
         }
-        $this->total('LABA/RUGI BERSIH (Setelah Pajak)', $this->result['afterTax'], true);
+        $this->total('LABA/RUGI BERSIH (Setelah Pajak)', $this->result['afterTax'], $this->result['afterTaxBudget'], true, true);
     }
 
     private function section(string $label): void
     {
-        $this->rows[] = array_merge(['', $label], array_fill(0, $this->periods->count() + 1, null));
+        $this->rows[] = array_merge(['', $label], array_fill(0, $this->periods->count() + 3, null));
         $this->sectionRows[] = count($this->rows) + 1;
     }
 
@@ -134,13 +134,23 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
             $this->rows[] = array_merge([
                 (string) $account['kode'],
                 str_repeat('    ', max(0, $account['depth'] - 1)).$account['nama'],
-            ], $values, [(float) $account['total']]);
+            ], $values, [
+                (float) $account['total'],
+                (float) $account['budget_total'],
+                $this->variance($account['total'], $account['budget_total'], $account['is_income']),
+            ]);
         }
     }
 
-    private function total(string $label, array $values, bool $highlight = false): void
+    private function total(string $label, array $values, array $budget, bool $isIncome, bool $highlight = false): void
     {
-        $this->rows[] = array_merge(['', $label], $this->numericValues($values), [(float) $this->sum($values)]);
+        $actualTotal = $this->sum($values);
+        $budgetTotal = $this->sum($budget);
+        $this->rows[] = array_merge(['', $label], $this->numericValues($values), [
+            (float) $actualTotal,
+            (float) $budgetTotal,
+            $this->variance($actualTotal, $budgetTotal, $isIncome),
+        ]);
         $excelRow = count($this->rows) + 1;
         if ($highlight) {
             $this->highlightRows[] = $excelRow;
@@ -158,4 +168,10 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
     {
         return array_reduce($values, fn ($carry, $value) => bcadd($carry, $value, 12), '0.000000000000');
     }
+
+    private function variance(string $actual, string $budget, bool $isIncome): float
+    {
+        return (float) ($isIncome ? bcsub($actual, $budget, 12) : bcsub($budget, $actual, 12));
+    }
+
 }

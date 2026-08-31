@@ -14,10 +14,14 @@ class LaporanLabaRugiPerkiraanService
 
     private array $raw = [];
 
+    private array $budgetRaw = [];
+
     private array $periodKeys = [];
 
     public function buat(Carbon $awal, Carbon $akhir): array
     {
+        $this->raw = [];
+        $this->budgetRaw = [];
         $periods = collect(CarbonPeriod::create($awal->copy()->startOfMonth(), '1 month', $akhir->copy()->startOfMonth()))
             ->map(fn ($date) => Carbon::instance($date)->startOfMonth());
         $this->periodKeys = $periods->map->format('Y-m')->all();
@@ -27,6 +31,17 @@ class LaporanLabaRugiPerkiraanService
             ->orderBy('kode_perkiraan')
             ->get()
             ->keyBy('id_akun_perkiraan');
+
+        DB::table('budget_laba_rugi')
+            ->whereRaw('(tahun * 100 + bulan) BETWEEN ? AND ?', [
+                (int) $awal->format('Ym'), (int) $akhir->format('Ym'),
+            ])
+            ->whereIn('id_akun_perkiraan', $this->accounts->keys())
+            ->get(['id_akun_perkiraan', 'tahun', 'bulan', 'nominal'])
+            ->each(function ($item) {
+                $period = sprintf('%04d-%02d', $item->tahun, $item->bulan);
+                $this->budgetRaw[$item->id_akun_perkiraan][$period] = (string) $item->nominal;
+            });
 
         DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', 'j.id_impor_jurnal_perkiraan')
@@ -80,11 +95,28 @@ class LaporanLabaRugiPerkiraanService
         $beforeTax = $this->subtract($beforeDepreciation, $depreciationTotal);
         $afterTax = $this->subtract($beforeTax, $taxTotal);
 
+        $revenueBudget = $this->sumBudgetAccountIds($this->idsForType('REVE'));
+        $cogsBudget = $this->sumBudgetAccountIds($this->idsForType('COGS'));
+        $operatingBudget = $this->sumBudgetAccountIds(array_diff($this->idsForType('EXPS'), $depreciationIds));
+        $otherIncomeBudget = $this->sumBudgetAccountIds($this->idsForType('OINC'));
+        $otherExpenseBudget = $this->sumBudgetAccountIds(array_diff($this->idsForType('OEXP'), $taxIds));
+        $depreciationBudget = $this->sumBudgetAccountIds($depreciationIds);
+        $taxBudget = $this->sumBudgetAccountIds($taxIds);
+        $grossBudget = $this->subtract($revenueBudget, $cogsBudget);
+        $operatingIncomeBudget = $this->subtract($grossBudget, $operatingBudget);
+        $otherNetBudget = $this->subtract($otherIncomeBudget, $otherExpenseBudget);
+        $beforeDepreciationBudget = $this->add($operatingIncomeBudget, $otherNetBudget);
+        $beforeTaxBudget = $this->subtract($beforeDepreciationBudget, $depreciationBudget);
+        $afterTaxBudget = $this->subtract($beforeTaxBudget, $taxBudget);
+
         return compact(
             'periods', 'revenueRows', 'cogsRows', 'operatingRows', 'otherIncomeRows', 'otherExpenseRows',
             'depreciationRows', 'taxRows', 'revenue', 'cogs', 'gross', 'operating', 'operatingIncome',
             'otherIncome', 'otherExpense', 'otherNet', 'beforeDepreciation', 'depreciationTotal',
-            'beforeTax', 'taxTotal', 'afterTax'
+            'beforeTax', 'taxTotal', 'afterTax', 'revenueBudget', 'cogsBudget', 'grossBudget',
+            'operatingBudget', 'operatingIncomeBudget', 'otherIncomeBudget', 'otherExpenseBudget',
+            'otherNetBudget', 'beforeDepreciationBudget', 'depreciationBudget', 'beforeTaxBudget',
+            'taxBudget', 'afterTaxBudget'
         );
     }
 
@@ -121,6 +153,8 @@ class LaporanLabaRugiPerkiraanService
             'has_children' => count($children) > 0,
             'values' => $values,
             'total' => $this->total($values),
+            'budget_total' => $this->total($this->aggregateBudgetNode($account->getKey())),
+            'is_income' => in_array($account->tipe_akun, ['REVE', 'OINC'], true),
         ]], $children);
     }
 
@@ -137,6 +171,23 @@ class LaporanLabaRugiPerkiraanService
         foreach ($ids as $id) {
             foreach ($this->periodKeys as $period) {
                 $result[$period] = bcadd($result[$period], $this->raw[$id][$period] ?? '0.000000000000', 12);
+            }
+        }
+
+        return $result;
+    }
+
+    private function aggregateBudgetNode(int $id): array
+    {
+        return $this->sumBudgetAccountIds($this->subtreeIds($id));
+    }
+
+    private function sumBudgetAccountIds(array $ids): array
+    {
+        $result = array_fill_keys($this->periodKeys, '0.000000000000');
+        foreach ($ids as $id) {
+            foreach ($this->periodKeys as $period) {
+                $result[$period] = bcadd($result[$period], $this->budgetRaw[$id][$period] ?? '0.000000000000', 12);
             }
         }
 

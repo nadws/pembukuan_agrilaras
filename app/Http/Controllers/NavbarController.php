@@ -342,6 +342,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Melihat posisi aset, kewajiban, dan ekuitas berdasarkan jurnal perkiraan.',
             ],
             [
+                'judul' => 'Laporan Arus Kas',
+                'route' => 'jurnal-perkiraan.arus-kas',
+                'img' => 'money-flow.png',
+                'deskripsi' => 'Melihat aliran masuk dan keluar setiap rekening kas atau bank menurut akun lawannya.',
+            ],
+            [
                 'judul' => 'Laporan Stok Persediaan',
                 'route' => 'laporan.stok-persediaan',
                 'img' => 'warehouse.png',
