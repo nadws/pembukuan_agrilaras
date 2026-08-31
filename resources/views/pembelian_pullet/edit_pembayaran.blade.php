@@ -1,0 +1,12 @@
+<x-theme.app title="Edit Pembayaran Pullet" table="Y" sizeCard="8">
+    <x-slot name="cardHeader"><div class="d-flex justify-content-between align-items-center"><div><h5 class="mb-1">Edit Pembayaran Pullet</h5><small class="text-muted">{{ $p->nomor }} — {{ $p->nama_pullet }}</small></div><a href="{{ route('pembelian-pullet.cicilan',$p->id) }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Kembali</a></div></x-slot>
+    <x-slot name="cardBody">
+        @if(isset($errors)&&$errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+        <div class="alert alert-info">Perubahan pembayaran akan otomatis memperbarui total uang muka dan dua baris jurnal terkait.</div>
+        <form method="POST" action="{{ route('pembelian-pullet.update-pembayaran',[$p->id,$payment->id]) }}" class="p-3 border rounded">@csrf @method('PUT')
+            <div class="row g-3"><div class="col-md-4"><label class="form-label">Tanggal pembayaran</label><input type="date" name="tanggal" class="form-control" value="{{ old('tanggal',$payment->tanggal) }}" required></div><div class="col-md-4"><label class="form-label">Nominal pembayaran</label><input type="number" name="nominal" class="form-control" min="1" max="{{ $maksimal }}" value="{{ old('nominal',$payment->nominal) }}" required><small class="text-muted">Maksimal Rp {{ number_format($maksimal,0,',','.') }}</small></div><div class="col-md-4"><label class="form-label">Dibayar dari</label><select name="id_akun_pembayaran" class="form-select select-search" required><option value="">Pilih akun</option>@foreach($accounts as $a)<option value="{{ $a->id_akun_perkiraan }}" @selected(old('id_akun_pembayaran',$payment->id_akun_pembayaran)==$a->id_akun_perkiraan)>{{ $a->kode_perkiraan }} - {{ $a->nama }}</option>@endforeach</select></div><div class="col-12"><label class="form-label">Keterangan / catatan</label><textarea name="keterangan" class="form-control" rows="3" maxlength="1000">{{ old('keterangan',$payment->keterangan) }}</textarea></div></div>
+            <div class="text-end mt-3"><button class="btn btn-primary"><i class="fas fa-save me-1"></i>Simpan Perubahan</button></div>
+        </form>
+    </x-slot>
+    @section('scripts')<script>if(window.jQuery&&jQuery.fn.select2)jQuery('.select-search').select2({width:'100%'});</script>@endsection
+</x-theme.app>

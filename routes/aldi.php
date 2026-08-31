@@ -24,10 +24,22 @@ use App\Http\Controllers\ProdukTelurMasterController;
 use App\Http\Controllers\RakController;
 use App\Http\Controllers\StokTelurMtdController;
 use App\Http\Controllers\SuplierController;
+use App\Http\Controllers\PembelianPulletController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
+    Route::controller(PembelianPulletController::class)->prefix('transaksi/pembelian-pullet')->name('pembelian-pullet.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{id}/cicilan', 'cicilan')->name('cicilan');
+        Route::post('/{id}/cicilan', 'storeCicilan')->name('store-cicilan');
+        Route::get('/{id}/pembayaran/{pembayaran}/edit', 'editPembayaran')->name('edit-pembayaran');
+        Route::put('/{id}/pembayaran/{pembayaran}', 'updatePembayaran')->name('update-pembayaran');
+        Route::get('/{id}/masuk-kandang', 'finalize')->name('finalize');
+        Route::post('/{id}/masuk-kandang', 'storeFinalize')->name('store-finalize');
+    });
     Route::get('/403', function () {
         view('error.403');
     })->name('403');

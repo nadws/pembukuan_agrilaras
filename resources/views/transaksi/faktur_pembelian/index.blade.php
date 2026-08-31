@@ -24,6 +24,15 @@
                 --invoice-soft: #f5f7fc;
             }
 
+            .purchase-invoice-page .purchase-filter,
+            .purchase-invoice-page .purchase-table-wrap {
+                box-shadow: 0 4px 18px rgba(32, 55, 110, .06);
+            }
+
+            .purchase-invoice-page .pagination { justify-content: flex-end; margin-bottom: 0; }
+            .purchase-invoice-page .pagination .page-link { border: 0; margin: 0 2px; border-radius: 7px; color: #3455a1; }
+            .purchase-invoice-page .pagination .active .page-link { background: #3455a1; color: #fff; }
+
             .purchase-filter {
                 padding: 14px;
                 margin-bottom: 16px;

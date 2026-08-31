@@ -40,118 +40,164 @@ class PenjualanAyamController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $r)
     {
-        $penjualan = DB::select("SELECT *, sum(a.h_satuan * a.qty) as total, count(*) as ttl_produk  FROM `invoice_ayam` as a
-        LEFT JOIN customer as b ON a.id_customer = b.id_customer
-        WHERE a.lokasi = 'mtd'
-        GROUP BY a.urutan");
+        $tgl1 = $this->tgl1;
+        $tgl2 = $this->tgl2;
+        $pencarian = trim((string) $r->input('pencarian', ''));
+        $perPage = in_array((int) $r->input('per_page', 20), [20, 50, 100], true)
+            ? (int) $r->input('per_page', 20)
+            : 20;
 
-        $ttlRp = 0;
-        $ttlRpBelumDiCek = 0;
-        foreach ($penjualan as $v) {
-            $ttlRp += $v->total;
-            if ($v->cek != 'Y') {
-                $ttlRpBelumDiCek += $v->total;
-            }
-        }
+        $dasar = DB::table('invoice_ayam as a')
+            ->leftJoin('customer as b', 'a.id_customer', '=', 'b.id_customer')
+            ->where('a.lokasi', 'mtd')
+            ->whereBetween('a.tgl', [$tgl1, $tgl2])
+            ->when($pencarian !== '', function ($query) use ($pencarian) {
+                $query->where(function ($subQuery) use ($pencarian) {
+                    $subQuery->where('a.no_nota', 'like', "%{$pencarian}%")
+                        ->orWhere('a.customer', 'like', "%{$pencarian}%")
+                        ->orWhere('b.nm_customer', 'like', "%{$pencarian}%");
+                });
+            });
+
+        $total = (clone $dasar)
+            ->selectRaw('COALESCE(SUM(a.h_satuan * a.qty), 0) as total')
+            ->selectRaw("COALESCE(SUM(CASE WHEN a.cek != 'Y' OR a.cek IS NULL THEN a.h_satuan * a.qty ELSE 0 END), 0) as belum_dicek")
+            ->first();
+
+        $penjualan = (clone $dasar)
+            ->select('a.urutan', 'a.no_nota')
+            ->selectRaw('MAX(a.tgl) as tgl')
+            ->selectRaw('MAX(a.customer) as customer')
+            ->selectRaw('MAX(b.nm_customer) as nm_customer')
+            ->selectRaw('SUM(a.qty) as qty')
+            ->selectRaw('MAX(a.h_satuan) as h_satuan')
+            ->selectRaw('SUM(a.h_satuan * a.qty) as total')
+            ->selectRaw('MAX(a.cek) as cek')
+            ->selectRaw('MAX(a.admin_cek) as admin_cek')
+            ->groupBy('a.urutan', 'a.no_nota')
+            ->orderByRaw("MAX(CASE WHEN a.cek = 'Y' THEN 1 ELSE 0 END) ASC")
+            ->orderByRaw('MAX(a.tgl) DESC')
+            ->orderByDesc('a.urutan')
+            ->paginate($perPage)
+            ->withQueryString();
+
         $data = [
             'title' => 'Penjualan Ayam',
             'penjualan' => $penjualan,
-            'ttlRp' => $ttlRp,
-            'ttlRpBelumDiCek' => $ttlRpBelumDiCek,
+            'ttlRp' => (float) $total->total,
+            'ttlRpBelumDiCek' => (float) $total->belum_dicek,
+            'tgl1' => $tgl1,
+            'tgl2' => $tgl2,
+            'pencarian' => $pencarian,
+            'perPage' => $perPage,
         ];
         return view('penjualan_ayam.penjualan_ayam', $data);
     }
 
     public function cek(Request $r)
     {
+        $urutan = is_array($r->no_nota) ? reset($r->no_nota) : $r->no_nota;
+        $invoice = DB::table('invoice_ayam as a')
+            ->leftJoin('customer as b', 'a.id_customer', '=', 'b.id_customer')
+            ->where('a.lokasi', 'mtd')
+            ->where('a.urutan', $urutan)
+            ->select('a.*', DB::raw("COALESCE(b.nm_customer, NULLIF(a.customer, ''), CONCAT('Customer #', a.id_customer)) as nama_customer"))
+            ->get();
+        abort_if($invoice->isEmpty(), 404, 'Penjualan ayam tidak ditemukan.');
+
         $data = [
             'title' => 'Penerimaan Uang Penjualan Ayam',
-            'nota' => $r->no_nota,
-            'akun' => DB::table('akun')->get(),
-
+            'invoice' => $invoice,
+            'nota' => $invoice->first(),
+            'akun' => DB::table('akun_perkiraan')
+                ->where('aktif', 1)
+                ->whereIn('tipe_akun', ['BANK', 'AREC'])
+                ->orderBy('kode_perkiraan')
+                ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama', 'tipe_akun']),
         ];
         return view('penjualan_ayam.setor', $data);
     }
 
     public function save_cek(Request $r)
     {
-        $id_akun_penualan_ayam = 37;
-        $max = DB::table('notas')->latest('nomor_nota')->where('id_buku', '6')->first();
+        $validated = $r->validate([
+            'urutan' => ['required', 'integer'],
+            'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+        ]);
 
-        if (empty($max)) {
-            $nota_t = '1000';
-        } else {
-            $nota_t = $max->nomor_nota + 1;
+        $invoice = DB::table('invoice_ayam')
+            ->where('lokasi', 'mtd')
+            ->where('urutan', $validated['urutan'])
+            ->get();
+        if ($invoice->isEmpty()) {
+            return back()->withErrors(['urutan' => 'Penjualan ayam tidak ditemukan.']);
         }
-        DB::table('notas')->insert(['nomor_nota' => $nota_t, 'id_buku' => '6']);
 
+        $akunPembayaran = DB::table('akun_perkiraan')
+            ->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])
+            ->where('aktif', 1)
+            ->whereIn('tipe_akun', ['BANK', 'AREC'])
+            ->first();
+        $akunPenjualan = DB::table('akun_perkiraan')
+            ->where('aktif', 1)
+            ->where(function ($query) {
+                $query->where('kode_perkiraan', '400002')->orWhere('nama', 'Penjualan Ayam');
+            })
+            ->first();
+        if (! $akunPembayaran || ! $akunPenjualan) {
+            return back()->withErrors(['id_akun_pembayaran' => 'Akun pembayaran atau akun Penjualan Ayam belum tersedia/aktif.'])->withInput();
+        }
 
-        $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $id_akun_penualan_ayam)->first();
-        $akun = DB::table('akun')->where('id_akun', $id_akun_penualan_ayam)->first();
-        $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
+        $nota = (string) $invoice->first()->no_nota;
+        $tanggal = (string) $invoice->first()->tgl;
+        $total = round((float) $invoice->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan), 2);
+        $customer = DB::table('customer')->where('id_customer', $invoice->first()->id_customer)->value('nm_customer')
+            ?? $invoice->first()->customer
+            ?? 'Customer';
 
-        $data = [
-            'tgl' => $r->tgl,
-            'no_nota' => $r->no_nota,
-            'id_akun' => $id_akun_penualan_ayam,
-            'id_buku' => '6',
-            'ket' => 'Penjualan  ' . $r->no_nota . ':' . $r->nm_customer,
-            'debit' => '0',
-            'kredit' => $r->pembayaran,
-            'admin' => auth()->user()->name,
-            'no_urut' => $akun->inisial . '-' . $urutan,
-            'urutan' => $urutan,
-        ];
-        DB::table('jurnal')->insert($data);
-
-        $data = [
-            'tgl' => $r->tgl,
-            'no_nota' => $r->no_nota,
-            'debit' => 0,
-            'kredit' => $r->pembayaran,
-        ];
-        DB::table('bayar_ayam')->insert($data);
-
-        DB::table('invoice_ayam')->where('urutan', $r->urutan)->update(['cek' => 'Y', 'admin_cek' => auth()->user()->name]);
-
-
-        for ($x = 0; $x < count($r->id_akun); $x++) {
-            $max_akun = DB::table('jurnal')->latest('urutan')->where('id_akun', $r->id_akun[$x])->first();
-            $akun = DB::table('akun')->where('id_akun', $r->id_akun[$x])->first();
-
-            $urutan = empty($max_akun) ? '1001' : ($max_akun->urutan == 0 ? '1001' : $max_akun->urutan + 1);
-            $data = [
-                'tgl' => $r->tgl,
-                'no_nota' => $r->no_nota,
-                'id_akun' => $r->id_akun[$x],
-                'id_buku' => '6',
-                'ket' => 'Penjualan ayam di Martadah',
-                'debit' => $r->debit[$x],
-                'kredit' => $r->kredit[$x],
-                'admin' => auth()->user()->name,
-                'no_urut' => $akun->inisial . '-' . $urutan,
-                'urutan' => $urutan,
-            ];
-            DB::table('jurnal')->insert($data);
-            if ($r->id_akun[$x] == '66') {
-                // $nota = 'PA' . $nota_t;
-                // DB::table('invoice_ayam')->where('no_nota', $nota)->update(['status' => 'unpaid']);
-            } else {
-                $data = [
-                    'tgl' => $r->tgl,
-                    'no_nota' => $r->no_nota,
-                    'debit' => $r->debit[$x],
-                    'kredit' => $r->kredit[$x],
-                    'no_nota_piutang' => $r->no_nota,
-                    'admin' => Auth::user()->name,
-                ];
-                DB::table('bayar_ayam')->insert($data);
+        DB::transaction(function () use ($validated, $invoice, $akunPembayaran, $akunPenjualan, $nota, $tanggal, $total, $customer) {
+            $batchIds = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $nota)
+                ->where('tipe_transaksi', 'Penjualan Ayam')
+                ->pluck('id_impor_jurnal_perkiraan')->filter()->unique();
+            DB::table('jurnal_perkiraan')->where('nomor_transaksi', $nota)->where('tipe_transaksi', 'Penjualan Ayam')->delete();
+            if ($batchIds->isNotEmpty()) {
+                DB::table('impor_jurnal_perkiraan')->whereIn('id_impor_jurnal_perkiraan', $batchIds)->delete();
             }
-        }
 
-        return redirect()->route('penjualan_ayam.index')->with('sukses', 'Data berhasil ditambahkan');
+            $now = now();
+            $batch = DB::table('impor_jurnal_perkiraan')->insertGetId([
+                'nama_file' => 'Penjualan ayam Martadah ' . $nota,
+                'hash_file' => hash('sha256', 'penjualan-ayam-martadah|' . $nota),
+                'periode_awal' => $tanggal,
+                'periode_akhir' => $tanggal,
+                'jumlah_transaksi' => 1,
+                'jumlah_detail' => 2,
+                'total_debit' => $total,
+                'total_kredit' => $total,
+                'status' => 'aktif',
+                'diimpor_oleh' => auth()->id(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            DB::table('jurnal_perkiraan')->insert([
+                ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunPembayaran->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $nota, 'tipe_transaksi' => 'Penjualan Ayam', 'urutan_detail' => 1, 'deskripsi' => 'Penerimaan penjualan ayam dari ' . $customer, 'debit' => $total, 'kredit' => 0, 'created_at' => $now, 'updated_at' => $now],
+                ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunPenjualan->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $nota, 'tipe_transaksi' => 'Penjualan Ayam', 'urutan_detail' => 2, 'deskripsi' => 'Pendapatan penjualan ayam kepada ' . $customer, 'debit' => 0, 'kredit' => $total, 'created_at' => $now, 'updated_at' => $now],
+            ]);
+            DB::table('invoice_ayam')->where('lokasi', 'mtd')->where('urutan', $validated['urutan'])->update([
+                'cek' => 'Y',
+                'admin_cek' => auth()->user()->name,
+                'status' => $akunPembayaran->tipe_akun === 'AREC' ? 'unpaid' : 'paid',
+            ]);
+        });
+
+        return redirect()->route('penjualan_ayam.index', [
+            'period' => 'costume',
+            'tgl1' => date('Y-m-01', strtotime($tanggal)),
+            'tgl2' => date('Y-m-t', strtotime($tanggal)),
+        ])->with('sukses', 'Penjualan ayam berhasil disimpan ke jurnal perkiraan.');
     }
 
     public function penyetoran(Request $r)

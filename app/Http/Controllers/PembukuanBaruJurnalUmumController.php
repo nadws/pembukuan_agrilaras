@@ -42,7 +42,8 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
             ->where(function ($q) {
                 $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
-                    ->orWhere('j.tipe_transaksi', 'Pembelian Umum');
+                    ->orWhere('j.tipe_transaksi', 'Pembelian Umum')
+                    ->orWhere('j.tipe_transaksi', 'Pembelian Pullet');
             })
             ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
             ->when($cari, function ($query) use ($cari) {
@@ -59,9 +60,10 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $filterFaktur = function ($query) use ($tanggalAwal, $tanggalAkhir, $cari) {
             $query->where(function ($q) {
-                    $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
-                        ->orWhere('j.tipe_transaksi', 'Pembelian Umum');
-                })
+                $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+                    ->orWhere('j.tipe_transaksi', 'Pembelian Umum')
+                    ->orWhere('j.tipe_transaksi', 'Pembelian Pullet');
+            })
                 ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
                 ->when($cari, function ($query) use ($cari) {
                     $query->where(function ($q) use ($cari) {
@@ -100,19 +102,19 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $detailFaktur = $kelompok === 'faktur-pembelian' && $jurnalFaktur->count()
             ? $jurnalFakturDetailQuery
-                ->whereIn('j.nomor_transaksi', $jurnalFaktur->getCollection()->pluck('nomor_transaksi'))
-                ->get([
-                    'j.id_jurnal_perkiraan',
-                    'j.tanggal',
-                    'j.nomor_transaksi',
-                    'j.tipe_transaksi',
-                    'j.deskripsi',
-                    'j.debit',
-                    'j.kredit',
-                    'a.kode_perkiraan',
-                    'a.nama as nama_akun',
-                ])
-                ->groupBy('nomor_transaksi')
+            ->whereIn('j.nomor_transaksi', $jurnalFaktur->getCollection()->pluck('nomor_transaksi'))
+            ->get([
+                'j.id_jurnal_perkiraan',
+                'j.tanggal',
+                'j.nomor_transaksi',
+                'j.tipe_transaksi',
+                'j.deskripsi',
+                'j.debit',
+                'j.kredit',
+                'a.kode_perkiraan',
+                'a.nama as nama_akun',
+            ])
+            ->groupBy('nomor_transaksi')
             : collect();
 
         [$jurnalPelunasan, $detailPelunasan, $ringkasanPelunasan] = $this->jurnalGroupedByTransaction(
@@ -163,7 +165,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         );
 
         [$jurnalPenyesuaian, $detailPenyesuaian, $ringkasanPenyesuaian] = $this->jurnalGroupedByTransaction(
-            tipeTransaksi: ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva'],
+            tipeTransaksi: ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva','Penyesuaian Ayam'],
             tanggalAwal: $tanggalAwal,
             tanggalAkhir: $tanggalAkhir,
             cari: $cari,
@@ -176,32 +178,32 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $ringkasanManual = $kelompok === 'manual'
             ? (clone $batchManualQuery)
-                ->reorder()
-                ->selectRaw('COALESCE(SUM(i.jumlah_detail), 0) as jumlah_detail')
-                ->selectRaw('COALESCE(SUM(i.total_debit), 0) as total_debit')
-                ->selectRaw('COALESCE(SUM(i.total_kredit), 0) as total_kredit')
-                ->first()
+            ->reorder()
+            ->selectRaw('COALESCE(SUM(i.jumlah_detail), 0) as jumlah_detail')
+            ->selectRaw('COALESCE(SUM(i.total_debit), 0) as total_debit')
+            ->selectRaw('COALESCE(SUM(i.total_kredit), 0) as total_kredit')
+            ->first()
             : (object) ['jumlah_detail' => 0, 'total_debit' => 0, 'total_kredit' => 0];
 
         $detailManual = $kelompok === 'manual' && $batch->isNotEmpty()
             ? DB::table('jurnal_perkiraan as j')
-                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-                ->whereIn(
-                    'j.id_impor_jurnal_perkiraan',
-                    $batch->getCollection()->pluck('id_impor_jurnal_perkiraan')
-                )
-                ->orderBy('j.id_impor_jurnal_perkiraan')
-                ->orderBy('j.urutan_detail')
-                ->get([
-                    'j.id_impor_jurnal_perkiraan',
-                    'j.nomor_transaksi',
-                    'j.deskripsi',
-                    'j.debit',
-                    'j.kredit',
-                    'a.kode_perkiraan',
-                    'a.nama as nama_akun',
-                ])
-                ->groupBy('id_impor_jurnal_perkiraan')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->whereIn(
+                'j.id_impor_jurnal_perkiraan',
+                $batch->getCollection()->pluck('id_impor_jurnal_perkiraan')
+            )
+            ->orderBy('j.id_impor_jurnal_perkiraan')
+            ->orderBy('j.urutan_detail')
+            ->get([
+                'j.id_impor_jurnal_perkiraan',
+                'j.nomor_transaksi',
+                'j.deskripsi',
+                'j.debit',
+                'j.kredit',
+                'a.kode_perkiraan',
+                'a.nama as nama_akun',
+            ])
+            ->groupBy('id_impor_jurnal_perkiraan')
             : collect();
 
         return view('pembukuan_baru.jurnal_umum.index', [
@@ -349,7 +351,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             'batchManual' => $batch,
             'noTransaksi' => $rows->first()->nomor_transaksi,
             'jurnalTanggal' => $rows->first()->tanggal,
-            'detailAwal' => $rows->map(fn ($row) => [
+            'detailAwal' => $rows->map(fn($row) => [
                 'id_akun_perkiraan' => $row->id_akun_perkiraan,
                 'deskripsi' => $row->deskripsi,
                 'debit' => (float) $row->debit,
@@ -379,7 +381,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             $item['debit'] = round((float) ($item['debit'] ?? 0), 2);
             $item['kredit'] = round((float) ($item['kredit'] ?? 0), 2);
             return $item;
-        })->filter(fn ($item) => $item['debit'] > 0 || $item['kredit'] > 0)->values();
+        })->filter(fn($item) => $item['debit'] > 0 || $item['kredit'] > 0)->values();
 
         if ($detail->count() < 2) {
             return back()->withErrors(['detail' => 'Minimal isi 2 baris jurnal.'])->withInput();
@@ -497,7 +499,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'jumlah' => round((float) $item['jumlah'], 2),
                 ];
             })
-            ->filter(fn ($item) => $item['jumlah'] > 0)
+            ->filter(fn($item) => $item['jumlah'] > 0)
             ->values();
 
         $akunKas = DB::table('akun_perkiraan')
@@ -552,17 +554,17 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'updated_at' => $sekarang,
                 ];
             })->push([
-                    'id_impor_jurnal_perkiraan' => $batchId,
-                    'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
-                    'tanggal' => $validated['tanggal'],
-                    'nomor_transaksi' => $validated['nomor_transaksi'],
-                    'tipe_transaksi' => 'Jurnal Biaya',
-                    'urutan_detail' => $detail->count() + 1,
-                    'deskripsi' => 'Pembayaran biaya dari ' . $akunKas->nama,
-                    'debit' => 0,
-                    'kredit' => $total,
-                    'created_at' => $sekarang,
-                    'updated_at' => $sekarang,
+                'id_impor_jurnal_perkiraan' => $batchId,
+                'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
+                'tanggal' => $validated['tanggal'],
+                'nomor_transaksi' => $validated['nomor_transaksi'],
+                'tipe_transaksi' => 'Jurnal Biaya',
+                'urutan_detail' => $detail->count() + 1,
+                'deskripsi' => 'Pembayaran biaya dari ' . $akunKas->nama,
+                'debit' => 0,
+                'kredit' => $total,
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
             ])->all();
 
             DB::table('jurnal_perkiraan')->insert($rows);
@@ -588,8 +590,8 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         abort_if($rows->isEmpty(), 404, 'Transaksi biaya tidak ditemukan.');
 
-        $kasRow = $rows->first(fn ($r) => (float) $r->kredit > 0 && (float) $r->debit == 0);
-        $debitRows = $rows->filter(fn ($r) => (float) $r->debit > 0)->values();
+        $kasRow = $rows->first(fn($r) => (float) $r->kredit > 0 && (float) $r->debit == 0);
+        $debitRows = $rows->filter(fn($r) => (float) $r->debit > 0)->values();
 
         $detail = $debitRows->map(function ($r) {
             return [
@@ -630,7 +632,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'jumlah' => round((float) $item['jumlah'], 2),
                 ];
             })
-            ->filter(fn ($item) => $item['jumlah'] > 0)
+            ->filter(fn($item) => $item['jumlah'] > 0)
             ->values();
 
         $akunKas = DB::table('akun_perkiraan')
@@ -795,7 +797,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'jumlah' => round((float) $item['jumlah'], 2),
                 ];
             })
-            ->filter(fn ($item) => $item['jumlah'] > 0)
+            ->filter(fn($item) => $item['jumlah'] > 0)
             ->values();
 
         $akunAktiva = $this->akunAktivaGantungDefault();
@@ -873,17 +875,17 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'updated_at' => $sekarang,
                 ];
             })->push([
-                    'id_impor_jurnal_perkiraan' => $batchId,
-                    'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
-                    'tanggal' => $validated['tanggal'],
-                    'nomor_transaksi' => $validated['nomor_transaksi'],
-                    'tipe_transaksi' => 'Aktiva Gantung',
-                    'urutan_detail' => $detail->count() + 1,
-                    'deskripsi' => 'Pembayaran aktiva gantung ' . $aset->nama_aset . ' dari ' . $akunKas->nama,
-                    'debit' => 0,
-                    'kredit' => $total,
-                    'created_at' => $sekarang,
-                    'updated_at' => $sekarang,
+                'id_impor_jurnal_perkiraan' => $batchId,
+                'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
+                'tanggal' => $validated['tanggal'],
+                'nomor_transaksi' => $validated['nomor_transaksi'],
+                'tipe_transaksi' => 'Aktiva Gantung',
+                'urutan_detail' => $detail->count() + 1,
+                'deskripsi' => 'Pembayaran aktiva gantung ' . $aset->nama_aset . ' dari ' . $akunKas->nama,
+                'debit' => 0,
+                'kredit' => $total,
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
             ])->all();
 
             DB::table('jurnal_perkiraan')->insert($rows);
@@ -946,7 +948,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'jumlah' => round((float) $item['jumlah'], 2),
                 ];
             })
-            ->filter(fn ($item) => $item['jumlah'] > 0)
+            ->filter(fn($item) => $item['jumlah'] > 0)
             ->values();
 
         $akunAktiva = $this->akunAktivaGantungDefault();
@@ -1304,8 +1306,8 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         abort_if($rows->isEmpty(), 404, 'Transaksi pembalik aktiva gantung tidak ditemukan.');
 
-        $debitRow = $rows->first(fn ($r) => (float) $r->debit > 0);
-        $kreditRow = $rows->first(fn ($r) => (float) $r->kredit > 0);
+        $debitRow = $rows->first(fn($r) => (float) $r->debit > 0);
+        $kreditRow = $rows->first(fn($r) => (float) $r->kredit > 0);
 
         return view('pembukuan_baru.jurnal_umum.edit_pembalik_aktiva_gantung', [
             'title' => 'Edit Pembalik Aktiva Gantung',
@@ -1600,26 +1602,26 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $detail = $aktivaGantung->count()
             ? DB::table('aktiva_gantung_transaksi as t')
-                ->leftJoin('akun_perkiraan as aa', 'aa.id_akun_perkiraan', '=', 't.id_akun_aktiva_gantung')
-                ->leftJoin('akun_perkiraan as ak', 'ak.id_akun_perkiraan', '=', 't.id_akun_kas')
-                ->whereIn('t.aktiva_gantung_id', $aktivaGantung->getCollection()->pluck('id'))
-                ->whereBetween('t.tanggal', [$tanggalAwal, $tanggalAkhir])
-                ->when($cari, function ($query) use ($cari) {
-                    $query->where(function ($q) use ($cari) {
-                        $q->where('t.nomor_transaksi', 'like', "%{$cari}%")
-                            ->orWhere('t.keterangan', 'like', "%{$cari}%");
-                    });
-                })
-                ->orderByDesc('t.tanggal')
-                ->orderByDesc('t.id')
-                ->get([
-                    't.*',
-                    'aa.kode_perkiraan as kode_akun_aktiva',
-                    'aa.nama as nama_akun_aktiva',
-                    'ak.kode_perkiraan as kode_akun_kas',
-                    'ak.nama as nama_akun_kas',
-                ])
-                ->groupBy('aktiva_gantung_id')
+            ->leftJoin('akun_perkiraan as aa', 'aa.id_akun_perkiraan', '=', 't.id_akun_aktiva_gantung')
+            ->leftJoin('akun_perkiraan as ak', 'ak.id_akun_perkiraan', '=', 't.id_akun_kas')
+            ->whereIn('t.aktiva_gantung_id', $aktivaGantung->getCollection()->pluck('id'))
+            ->whereBetween('t.tanggal', [$tanggalAwal, $tanggalAkhir])
+            ->when($cari, function ($query) use ($cari) {
+                $query->where(function ($q) use ($cari) {
+                    $q->where('t.nomor_transaksi', 'like', "%{$cari}%")
+                        ->orWhere('t.keterangan', 'like', "%{$cari}%");
+                });
+            })
+            ->orderByDesc('t.tanggal')
+            ->orderByDesc('t.id')
+            ->get([
+                't.*',
+                'aa.kode_perkiraan as kode_akun_aktiva',
+                'aa.nama as nama_akun_aktiva',
+                'ak.kode_perkiraan as kode_akun_kas',
+                'ak.nama as nama_akun_kas',
+            ])
+            ->groupBy('aktiva_gantung_id')
             : collect();
 
         return [$aktivaGantung, $detail, $summary];
@@ -1672,24 +1674,24 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $detail = $jurnal->count()
             ? DB::table('jurnal_perkiraan as j')
-                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-                ->tap($filter)
-                ->whereIn('j.nomor_transaksi', $jurnal->getCollection()->pluck('nomor_transaksi'))
-                ->orderBy('j.tanggal')
-                ->orderBy('j.nomor_transaksi')
-                ->orderBy('j.urutan_detail')
-                ->get([
-                    'j.id_jurnal_perkiraan',
-                    'j.tanggal',
-                    'j.nomor_transaksi',
-                    'j.tipe_transaksi',
-                    'j.deskripsi',
-                    'j.debit',
-                    'j.kredit',
-                    'a.kode_perkiraan',
-                    'a.nama as nama_akun',
-                ])
-                ->groupBy('nomor_transaksi')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->whereIn('j.nomor_transaksi', $jurnal->getCollection()->pluck('nomor_transaksi'))
+            ->orderBy('j.tanggal')
+            ->orderBy('j.nomor_transaksi')
+            ->orderBy('j.urutan_detail')
+            ->get([
+                'j.id_jurnal_perkiraan',
+                'j.tanggal',
+                'j.nomor_transaksi',
+                'j.tipe_transaksi',
+                'j.deskripsi',
+                'j.debit',
+                'j.kredit',
+                'a.kode_perkiraan',
+                'a.nama as nama_akun',
+            ])
+            ->groupBy('nomor_transaksi')
             : collect();
 
         return [$jurnal, $detail, $summary];
@@ -1804,7 +1806,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'keterangan' => trim($item['keterangan'] ?? ''),
                 ];
             })
-            ->filter(fn ($item) => $item['subtotal'] > 0)
+            ->filter(fn($item) => $item['subtotal'] > 0)
             ->values();
 
         $akunPembayaran = DB::table('akun_perkiraan')
@@ -1964,7 +1966,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     'keterangan' => trim($item['keterangan'] ?? ''),
                 ];
             })
-            ->filter(fn ($item) => $item['subtotal'] > 0)
+            ->filter(fn($item) => $item['subtotal'] > 0)
             ->values();
 
         $akunPembayaran = DB::table('akun_perkiraan')

@@ -323,10 +323,16 @@ class GudangPersediaanController extends Controller
             $tanggal = date('Y-m-d');
         }
 
+        // Filter stok yang tidak 0
+        $stokSemua = $this->stockRows($tanggal);
+        $stokTampil = $stokSemua->filter(fn($item) => (float)$item->stok != 0);
+        $stokKosong = $stokSemua->filter(fn($item) => (float)$item->stok == 0);
+
         return view('gudang_persediaan.opname', [
             'title' => 'Stok Opname Gudang',
             'tanggal' => $tanggal,
-            'stok' => $this->stockRows($tanggal),
+            'stok' => $stokTampil,
+            'stokKosong' => $stokKosong,
             'kategori' => DB::table('tb_produk_perencanaan')->distinct()->orderBy('kategori')->pluck('kategori'),
         ]);
     }
@@ -362,6 +368,11 @@ class GudangPersediaanController extends Controller
             $nomorOpname = 'OPG-' . Carbon::parse($validated['tanggal'])->format('Ymd') . '-' . str_pad((string) $opnameId, 6, '0', STR_PAD_LEFT);
             DB::table('gudang_opname_perencanaan')->where('id', $opnameId)->update(['nomor_opname' => $nomorOpname]);
 
+            // Untuk jurnal perkiraan
+            $jurnalPerkiraanData = [];
+            $totalDebit = 0;
+            $totalKredit = 0;
+
             foreach ($validated['produk'] as $idProduk) {
                 $mutasi = DB::table('stok_produk_perencanaan')
                     ->where('id_pakan', $idProduk)
@@ -383,6 +394,7 @@ class GudangPersediaanController extends Controller
                 $hargaSatuan = $stokSistem > 0 ? max(0, $nilaiSistem / $stokSistem) : $this->historicalUnitCost($idProduk, $validated['tanggal']);
                 $stokFisik = round((float) $validated['stok_fisik'][$idProduk], 4);
                 $selisih = round($stokFisik - $stokSistem, 4);
+                $nilaiSelisih = round(abs($selisih) * $hargaSatuan, 2);
 
                 DB::table('stok_produk_perencanaan')->insert([
                     'id_kandang' => 0,
@@ -395,7 +407,7 @@ class GudangPersediaanController extends Controller
                     'check' => 'Y',
                     'cek_admin' => auth()->user()->name,
                     'opname' => 'T',
-                    'total_rp' => round(abs($selisih) * $hargaSatuan, 2),
+                    'total_rp' => $nilaiSelisih,
                     'biaya_dll' => 0,
                     'no_nota' => $nomorOpname,
                     'h_opname' => 'Y',
@@ -409,10 +421,118 @@ class GudangPersediaanController extends Controller
                     'stok_fisik' => $stokFisik,
                     'selisih' => $selisih,
                     'harga_satuan' => round($hargaSatuan, 6),
-                    'nilai_selisih' => round($selisih * $hargaSatuan, 2),
+                    'nilai_selisih' => $nilaiSelisih,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
+
+                // Jika ada selisih, buat jurnal perkiraan
+                if ($selisih != 0 && $nilaiSelisih > 0) {
+                    // Ambil kategori produk untuk menentukan akun
+                    $produk = DB::table('tb_produk_perencanaan')->where('id_produk', $idProduk)->first();
+                    $kategori = $produk->kategori ?? 'pakan';
+                    
+                    // Tentukan kode akun berdasarkan kategori
+                    // Pakan: BPP 5101-04, Persediaan 110403
+                    // Vitamin/Obat: BPP 5101-03, Persediaan 110404
+                    if ($kategori === 'pakan') {
+                        $kodeAkunBiaya = '5101-04';
+                        $kodeAkunPersediaan = '110403';
+                    } elseif (in_array($kategori, ['obat_pakan', 'obat_air', 'vitamin'])) {
+                        $kodeAkunBiaya = '5101-03';
+                        $kodeAkunPersediaan = '110404';
+                    } else {
+                        // Default untuk kategori lain, skip jurnal perkiraan
+                        continue;
+                    }
+                    
+                    // Ambil id_akun_perkiraan dari tabel akun_perkiraan
+                    $akunBiaya = DB::table('akun_perkiraan')->where('kode_perkiraan', $kodeAkunBiaya)->first();
+                    $akunPersediaan = DB::table('akun_perkiraan')->where('kode_perkiraan', $kodeAkunPersediaan)->first();
+                    
+                    if ($akunPersediaan && $akunBiaya) {
+                        if ($selisih > 0) {
+                            // Stok fisik > sistem: tambah persediaan, kurangi biaya
+                            $jurnalPerkiraanData[] = [
+                                'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                                'tanggal' => $validated['tanggal'],
+                                'nomor_transaksi' => $nomorOpname,
+                                'tipe_transaksi' => 'Stok Opname',
+                                'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                                'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik > sistem)',
+                                'debit' => $nilaiSelisih,
+                                'kredit' => 0,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                            $jurnalPerkiraanData[] = [
+                                'id_akun_perkiraan' => $akunBiaya->id_akun_perkiraan,
+                                'tanggal' => $validated['tanggal'],
+                                'nomor_transaksi' => $nomorOpname,
+                                'tipe_transaksi' => 'Stok Opname',
+                                'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                                'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik > sistem)',
+                                'debit' => 0,
+                                'kredit' => $nilaiSelisih,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                        } else {
+                            // Stok fisik < sistem: kurangi persediaan, tambah biaya
+                            $jurnalPerkiraanData[] = [
+                                'id_akun_perkiraan' => $akunBiaya->id_akun_perkiraan,
+                                'tanggal' => $validated['tanggal'],
+                                'nomor_transaksi' => $nomorOpname,
+                                'tipe_transaksi' => 'Stok Opname',
+                                'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                                'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik < sistem)',
+                                'debit' => $nilaiSelisih,
+                                'kredit' => 0,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                            $jurnalPerkiraanData[] = [
+                                'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                                'tanggal' => $validated['tanggal'],
+                                'nomor_transaksi' => $nomorOpname,
+                                'tipe_transaksi' => 'Stok Opname',
+                                'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                                'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik < sistem)',
+                                'debit' => 0,
+                                'kredit' => $nilaiSelisih,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                        }
+                        $totalDebit += $nilaiSelisih;
+                        $totalKredit += $nilaiSelisih;
+                    }
+                }
+            }
+
+            // Simpan batch dan detail jurnal perkiraan
+            if (!empty($jurnalPerkiraanData)) {
+                $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
+                    'nama_file' => 'Opname Gudang - ' . $nomorOpname,
+                    'hash_file' => hash('sha256', 'opname-gudang|' . $nomorOpname . '|' . $validated['tanggal']),
+                    'periode_awal' => $validated['tanggal'],
+                    'periode_akhir' => $validated['tanggal'],
+                    'jumlah_transaksi' => 1,
+                    'jumlah_detail' => count($jurnalPerkiraanData),
+                    'total_debit' => $totalDebit,
+                    'total_kredit' => $totalKredit,
+                    'status' => 'aktif',
+                    'diimpor_oleh' => auth()->id(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+                
+                // Set id_impor_jurnal_perkiraan untuk semua detail
+                foreach ($jurnalPerkiraanData as &$detail) {
+                    $detail['id_impor_jurnal_perkiraan'] = $batchId;
+                }
+                
+                DB::table('jurnal_perkiraan')->insert($jurnalPerkiraanData);
             }
 
             return $opnameId;
@@ -452,7 +572,9 @@ class GudangPersediaanController extends Controller
     {
         $mutasi = DB::table('stok_produk_perencanaan')
             ->select('id_pakan')
-            ->selectRaw('SUM(pcs - pcs_kredit) as stok')
+            // Normalisasi selisih floating point yang sangat kecil agar stok
+            // seperti -0,000000005 tidak dianggap sebagai stok minus.
+            ->selectRaw('ROUND(SUM(pcs - pcs_kredit), 4) as stok')
             ->selectRaw('SUM(CASE WHEN pcs > 0 THEN total_rp + biaya_dll ELSE 0 END) - SUM(CASE WHEN pcs_kredit > 0 THEN total_rp ELSE 0 END) as nilai_stok')
             ->when($tanggal, fn ($query) => $query->whereDate('tgl', '<=', $tanggal))
             ->groupBy('id_pakan');

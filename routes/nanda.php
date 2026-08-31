@@ -48,6 +48,7 @@ use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\ForecastController;
 use App\Http\Controllers\Jurnal_aktivaController;
 use App\Http\Controllers\LaporanLabarugiKandangController;
+use App\Http\Controllers\LaporanStokPersediaanController;
 use App\Http\Controllers\MedionController;
 use App\Http\Controllers\MasterAkunPerkiraanController;
 use App\Http\Controllers\PenjualanAyamController;
@@ -97,6 +98,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/history-perencanaan', 'history_perencanaan')->name('history_perencanaan');
         Route::get('/penjualan-martadah', 'penjualan_martadah')->name('penjualan_martadah');
         Route::get('/penjualan-martadah/telur', 'penjualan_martadah_telur')->name('penjualan_martadah_telur');
+        Route::get('/laporan', 'laporan')->name('laporan');
     });
 
     Route::controller(BarangUmumController::class)
@@ -249,6 +251,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/laba-rugi', 'labaRugi')->name('laba-rugi');
         Route::get('/laporan/laba-rugi/export', 'exportLabaRugi')->name('laba-rugi.export');
         Route::get('/laporan/laba-rugi/akun/{akun_perkiraan}', 'detailAkun')->name('detail-akun');
+        Route::get('/laporan/neraca', 'neraca')->name('neraca');
+        Route::get('/laporan/neraca/cetak', 'cetakNeraca')->name('neraca.cetak');
     });
 
 
@@ -688,6 +692,10 @@ Route::controller(Laporan_layerController::class)->group(function () {
 });
 Route::controller(DokumentasiLaporanLayerController::class)->group(function () {
     Route::get('/dokumentasi_laporan_layer', 'index')->name('dokumentasi_laporan_layer');
+});
+Route::controller(LaporanStokPersediaanController::class)->group(function () {
+    Route::get('/laporan/stok-persediaan', 'index')->name('laporan.stok-persediaan');
+    Route::get('/laporan/stok-persediaan/{produk}', 'detail')->name('laporan.stok-persediaan.detail');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');

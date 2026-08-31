@@ -186,10 +186,17 @@ class NavbarController extends Controller
     {
         $data = [
             [
-                'judul' => 'Faktur Pembelian',
+                'judul' => 'Pembelian stok',
                 'route' => 'transaksi.faktur-pembelian.index',
                 'img' => 'invoice.png',
                 'deskripsi' => 'Mencatat dan mengelola faktur pembelian dari pemasok.',
+            ],
+            [
+                'judul' => 'Pembelian Pullet',
+                  'route' => 'pembelian-pullet.index',
+                  'params' => [],
+                'img' => 'buy.png',
+                'deskripsi' => 'Mencatat pembelian dan biaya pullet melalui jurnal pembelian pullet.',
             ],
             [
                 'judul' => 'Penerimaan Stok',
@@ -313,6 +320,39 @@ class NavbarController extends Controller
         return redirect()->route('penjualan_martadah_cek', ['lokasi' => 'mtd']);
     }
 
+    public function laporan()
+    {
+        $data = [
+            [
+                'judul' => 'Laporan Layer',
+                'route' => 'laporan_layer',
+                'img' => 'report.png',
+                'deskripsi' => 'Melihat laporan produksi, populasi, pakan, dan performa layer.',
+            ],
+            [
+                'judul' => 'Laporan Laba Rugi',
+                'route' => 'jurnal-perkiraan.laba-rugi',
+                'img' => 'finance.png',
+                'deskripsi' => 'Melihat laporan laba rugi dari jurnal dan master akun perkiraan.',
+            ],
+            [
+                'judul' => 'Laporan Neraca',
+                'route' => 'jurnal-perkiraan.neraca',
+                'img' => 'ledger.png',
+                'deskripsi' => 'Melihat posisi aset, kewajiban, dan ekuitas berdasarkan jurnal perkiraan.',
+            ],
+            [
+                'judul' => 'Laporan Stok Persediaan',
+                'route' => 'laporan.stok-persediaan',
+                'img' => 'warehouse.png',
+                'deskripsi' => 'Melihat stok pakan, vitamin, vaksin, serta riwayat pembelian dan pemakaian.',
+            ],
+        ];
+        $title = 'Laporan';
+
+        return view('navbar.data_master', compact(['data', 'title']));
+    }
+
     public function pembelian()
     {
         $data = [
@@ -393,12 +433,6 @@ class NavbarController extends Controller
                 'route' => 'pembukuan-baru.buku-besar.index',
                 'img' => 'ledger.png',
                 'deskripsi' => 'Ringkasan dan detail transaksi dari akun perkiraan serta jurnal perkiraan.',
-            ],
-            [
-                'judul' => 'Laporan Laba Rugi',
-                'route' => 'jurnal-perkiraan.laba-rugi',
-                'img' => 'finance.png',
-                'deskripsi' => 'Laporan laba rugi dari jurnal dan master akun perkiraan.',
             ],
         ];
         $title = 'Pembukuan Baru';

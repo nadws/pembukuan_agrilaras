@@ -52,12 +52,12 @@
                                     @endif
                                 </div>
                             @endif
-                            {{ $cardHeader }}
+                            {{ $cardHeader ?? '' }}
 
                         </div>
                         <div class="card-body">
 
-                            {{ $cardBody }}
+                            {{ $cardBody ?? $slot }}
                         </div>
                         @if (!empty($cardFooter))
                             <div class="card-footer">

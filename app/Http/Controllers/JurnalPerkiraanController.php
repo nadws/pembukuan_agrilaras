@@ -10,6 +10,7 @@ use App\Models\ImporJurnalPerkiraan;
 use App\Models\JurnalPerkiraan;
 use App\Services\ImporJurnalPerkiraanService;
 use App\Services\LaporanLabaRugiPerkiraanService;
+use App\Services\LaporanNeracaPerkiraanService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -146,6 +147,42 @@ class JurnalPerkiraanController extends Controller
             'result' => $result,
             'start' => $start,
             'end' => $end,
+        ]);
+    }
+
+    public function neraca(Request $request, LaporanNeracaPerkiraanService $service): View
+    {
+        $latestJournalDate = DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->max('j.tanggal');
+
+        $data = $request->validate([
+            'tanggal' => ['nullable', 'date'],
+        ]);
+        $reportDate = Carbon::parse($data['tanggal'] ?? $latestJournalDate ?? now()->toDateString())->startOfDay();
+
+        return view('jurnal_perkiraan.neraca', [
+            'title' => 'Laporan Neraca',
+            'reportDate' => $reportDate,
+            'result' => $service->buat($reportDate),
+        ]);
+    }
+
+    public function cetakNeraca(Request $request, LaporanNeracaPerkiraanService $service): View
+    {
+        $latestJournalDate = DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->max('j.tanggal');
+
+        $data = $request->validate(['tanggal' => ['nullable', 'date']]);
+        $reportDate = Carbon::parse($data['tanggal'] ?? $latestJournalDate ?? now()->toDateString())->startOfDay();
+
+        return view('jurnal_perkiraan.neraca_cetak', [
+            'title' => 'Cetak Laporan Neraca',
+            'reportDate' => $reportDate,
+            'result' => $service->buat($reportDate),
         ]);
     }
 

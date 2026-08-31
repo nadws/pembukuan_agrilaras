@@ -190,23 +190,55 @@ class Stok_pakanController extends Controller
         } else {
             $no_nota = $max->nomor_nota + 1;
         }
+        
+        $now = now();
+        $totalDebit = 0;
+        $totalKredit = 0;
+        $jurnalPerkiraanData = [];
+        
         // $no_nota = strtoupper(str()->random(5));
         for ($x = 0; $x < count($r->id_pakan); $x++) {
             $id_pakan = $r->id_pakan[$x];
+            
+            // Ambil kategori produk untuk menentukan akun
+            $produk = DB::table('tb_produk_perencanaan')->where('id_produk', $id_pakan)->first();
+            $kategori = $produk->kategori ?? 'pakan';
+            
+            // Tentukan kode akun berdasarkan kategori
+            // Pakan: BPP 5101-04, Persediaan 110403
+            // Vitamin/Obat: BPP 5101-03, Persediaan 110404
+            if ($kategori === 'pakan') {
+                $kodeAkunBiaya = '5101-04';
+                $kodeAkunPersediaan = '110403';
+            } elseif (in_array($kategori, ['obat_pakan', 'obat_air', 'vitamin'])) {
+                $kodeAkunBiaya = '5101-03';
+                $kodeAkunPersediaan = '110404';
+            } else {
+                // Skip jurnal perkiraan untuk kategori lain
+                continue;
+            }
+            
+            // Ambil id_akun_perkiraan dari tabel akun_perkiraan
+            $akunBiaya = DB::table('akun_perkiraan')->where('kode_perkiraan', $kodeAkunBiaya)->first();
+            $akunPersediaan = DB::table('akun_perkiraan')->where('kode_perkiraan', $kodeAkunPersediaan)->first();
+            
             $hrga = DB::selectOne("SELECT sum(a.total_rp/a.pcs) as rata_rata
             FROM stok_produk_perencanaan as a 
             where a.id_pakan = '$id_pakan' and a.pcs != '0' and a.h_opname ='T'
             group by a.id_pakan;");
 
             $selisih = $r->stk_program[$x] - $r->stk_aktual[$x];
+            $nilaiSelisih = abs($selisih) * $hrga->rata_rata;
 
             if ($selisih < 0) {
+                // Stok fisik lebih banyak dari sistem (ada penambahan)
                 $qty_selisih = $selisih * -1;
 
+                // Jurnal lama (tetap dipertahankan)
                 $data = [
                     'id_akun' => '522',
                     'id_buku' => '4',
-                    'ket' => 'Penyesuian stok pakan',
+                    'ket' => 'Penyesuian stok ' . ($kategori === 'pakan' ? 'pakan' : 'vitamin'),
                     'debit' => $qty_selisih * $hrga->rata_rata,
                     'kredit' => '0',
                     'tgl' => $r->tgl,
@@ -217,7 +249,7 @@ class Stok_pakanController extends Controller
                 $data = [
                     'id_akun' => '521',
                     'id_buku' => '4',
-                    'ket' => 'Penyesuian stok pakan',
+                    'ket' => 'Penyesuian stok ' . ($kategori === 'pakan' ? 'pakan' : 'vitamin'),
                     'debit' => 0,
                     'kredit' => $qty_selisih * $hrga->rata_rata,
                     'tgl' => $r->tgl,
@@ -225,12 +257,45 @@ class Stok_pakanController extends Controller
                     'admin' => Auth::user()->name,
                 ];
                 DB::table('jurnal')->insert($data);
+                
+                // Jurnal Perkiraan baru
+                if ($akunPersediaan && $akunBiaya) {
+                    $jurnalPerkiraanData[] = [
+                        'id_akun_perkiraan' => $akunBiaya->id_akun_perkiraan,
+                        'tanggal' => $r->tgl,
+                        'nomor_transaksi' => 'JPP-' . $no_nota,
+                        'tipe_transaksi' => 'Stok Opname',
+                        'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                        'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik > sistem)',
+                        'debit' => $nilaiSelisih,
+                        'kredit' => 0,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $jurnalPerkiraanData[] = [
+                        'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                        'tanggal' => $r->tgl,
+                        'nomor_transaksi' => 'JPP-' . $no_nota,
+                        'tipe_transaksi' => 'Stok Opname',
+                        'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                        'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik > sistem)',
+                        'debit' => 0,
+                        'kredit' => $nilaiSelisih,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $totalDebit += $nilaiSelisih;
+                    $totalKredit += $nilaiSelisih;
+                }
             } else {
+                // Stok fisik lebih sedikit dari sistem (ada pengurangan/kehilangan)
                 $qty_selisih = $selisih;
+                
+                // Jurnal lama (tetap dipertahankan)
                 $data = [
                     'id_akun' => '521',
                     'id_buku' => '4',
-                    'ket' => 'Penyesuian stok pakan',
+                    'ket' => 'Penyesuian stok ' . ($kategori === 'pakan' ? 'pakan' : 'vitamin'),
                     'debit' => $qty_selisih * $hrga->rata_rata,
                     'kredit' => '0',
                     'tgl' => $r->tgl,
@@ -241,7 +306,7 @@ class Stok_pakanController extends Controller
                 $data = [
                     'id_akun' => '522',
                     'id_buku' => '4',
-                    'ket' => 'Penyesuian stok pakan',
+                    'ket' => 'Penyesuian stok ' . ($kategori === 'pakan' ? 'pakan' : 'vitamin'),
                     'debit' => 0,
                     'kredit' => $qty_selisih * $hrga->rata_rata,
                     'tgl' => $r->tgl,
@@ -249,9 +314,37 @@ class Stok_pakanController extends Controller
                     'admin' => Auth::user()->name,
                 ];
                 DB::table('jurnal')->insert($data);
+                
+                // Jurnal Perkiraan baru
+                if ($akunPersediaan && $akunBiaya) {
+                    $jurnalPerkiraanData[] = [
+                        'id_akun_perkiraan' => $akunPersediaan->id_akun_perkiraan,
+                        'tanggal' => $r->tgl,
+                        'nomor_transaksi' => 'JPP-' . $no_nota,
+                        'tipe_transaksi' => 'Stok Opname',
+                        'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                        'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik < sistem)',
+                        'debit' => $nilaiSelisih,
+                        'kredit' => 0,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $jurnalPerkiraanData[] = [
+                        'id_akun_perkiraan' => $akunBiaya->id_akun_perkiraan,
+                        'tanggal' => $r->tgl,
+                        'nomor_transaksi' => 'JPP-' . $no_nota,
+                        'tipe_transaksi' => 'Stok Opname',
+                        'urutan_detail' => (count($jurnalPerkiraanData) + 1),
+                        'deskripsi' => 'Penyesuaian stok opname ' . $produk->nm_produk . ' (fisik < sistem)',
+                        'debit' => 0,
+                        'kredit' => $nilaiSelisih,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $totalDebit += $nilaiSelisih;
+                    $totalKredit += $nilaiSelisih;
+                }
             }
-
-
 
             DB::table('stok_produk_perencanaan')->where(['id_pakan' => $r->id_pakan[$x], 'opname' => 'T'])->update(['opname' => 'Y', 'no_nota' => $no_nota]);
             $data = [
@@ -266,6 +359,32 @@ class Stok_pakanController extends Controller
             ];
             DB::table('stok_produk_perencanaan')->insert($data);
         }
+        
+        // Simpan batch dan detail jurnal perkiraan
+        if (!empty($jurnalPerkiraanData)) {
+            $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
+                'nama_file' => 'Opname Pakan/Vitamin - JPP-' . $no_nota,
+                'hash_file' => hash('sha256', 'opname-pakan-vitamin|' . $no_nota . '|' . $r->tgl),
+                'periode_awal' => $r->tgl,
+                'periode_akhir' => $r->tgl,
+                'jumlah_transaksi' => 1,
+                'jumlah_detail' => count($jurnalPerkiraanData),
+                'total_debit' => $totalDebit,
+                'total_kredit' => $totalKredit,
+                'status' => 'aktif',
+                'diimpor_oleh' => auth()->id(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            
+            // Set id_impor_jurnal_perkiraan untuk semua detail
+            foreach ($jurnalPerkiraanData as &$detail) {
+                $detail['id_impor_jurnal_perkiraan'] = $batchId;
+            }
+            
+            DB::table('jurnal_perkiraan')->insert($jurnalPerkiraanData);
+        }
+        
         return redirect()->route('produk_telur')->with('sukses', 'Data berhasil di simpan');
     }
 
