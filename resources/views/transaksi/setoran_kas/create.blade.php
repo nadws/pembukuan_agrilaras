@@ -100,7 +100,7 @@
 
             #tabelJurnal {
                 width: 100%;
-                min-width: 1120px;
+                min-width: 1030px;
                 font-size: 13px;
                 border-collapse: separate;
                 border-spacing: 0;
@@ -283,10 +283,10 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label mb-1 small fw-bold" style="color: #0f172a !important;">Cari No. Transaksi / Deskripsi</label>
+                                <label class="form-label mb-1 small fw-bold" style="color: #0f172a !important;">Cari No. Transaksi / Customer</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                                    <input type="text" id="cariJurnal" class="form-control" placeholder="Ketik untuk mencari...">
+                                    <input type="text" id="cariJurnal" class="form-control" placeholder="Cari nomor transaksi, customer, atau asal...">
                                 </div>
                             </div>
                         </div>
@@ -302,8 +302,8 @@
                                 </th>
                                 <th width="110">Tanggal</th>
                                 <th width="140">No. Transaksi</th>
-                                <th width="230">Akun Kas Sumber</th>
-                                <th>Deskripsi</th>
+                                <th width="190">Customer</th>
+                                <th width="150">Asal</th>
                                 <th width="150" class="text-end">Nominal</th>
                                 <th width="160" class="text-end">Nominal Aktual</th>
                                 <th width="140" class="text-end">Selisih</th>
@@ -318,17 +318,14 @@
                                 </tr>
                             @endif
                             @forelse($jurnalBelumDisetorkan as $jurnal)
-                                <tr class="baris-jurnal" style="display: none;" data-akun-id="{{ $jurnal->id_akun_perkiraan }}" data-text="{{ strtolower($jurnal->nomor_transaksi . ' ' . $jurnal->deskripsi . ' ' . $jurnal->nama . ' ' . $jurnal->kode_perkiraan) }}">
+                                <tr class="baris-jurnal" style="display: none;" data-akun-id="{{ $jurnal->id_akun_perkiraan }}" data-text="{{ strtolower($jurnal->nomor_transaksi . ' ' . $jurnal->asal . ' ' . $jurnal->nama_customer) }}">
                                     <td class="text-center">
                                         <input type="checkbox" name="jurnal_terpilih[]" value="{{ $jurnal->id_jurnal_perkiraan }}" data-nominal="{{ round($jurnal->debit) }}" class="form-check-input jurnal-checkbox" style="cursor: pointer;">
                                     </td>
                                     <td class="tanggal-text">{{ \Carbon\Carbon::parse($jurnal->tanggal)->format('d/m/Y') }}</td>
                                     <td class="no-transaksi-text">{{ $jurnal->nomor_transaksi }}</td>
-                                    <td>
-                                        <span class="akun-sumber-badge">{{ $jurnal->kode_perkiraan }}</span>
-                                        <span class="akun-sumber-nama">{{ $jurnal->nama }}</span>
-                                    </td>
-                                    <td class="deskripsi-text">{{ $jurnal->deskripsi }}</td>
+                                    <td class="fw-semibold">{{ $jurnal->nama_customer }}</td>
+                                    <td class="deskripsi-text fw-semibold">{{ $jurnal->asal }}</td>
                                     <td class="text-end nominal-text">
                                         Rp {{ number_format($jurnal->debit, 0, ',', '.') }}
                                     </td>
@@ -346,7 +343,7 @@
                             @empty
                                 <tr id="rowEmpty">
                                     <td colspan="8" class="text-center text-muted py-4">
-                                        Tidak ada jurnal penjualan yang belum disetorkan
+                                        Tidak ada jurnal penjualan atau setoran kas yang belum disetorkan
                                     </td>
                                 </tr>
                             @endforelse
@@ -472,12 +469,22 @@
                         const keyword = String($('#cariJurnal').val() || '').toLowerCase().trim();
                         let visibleCount = 0;
 
+                        // Otomatis uncheck transaksi dari akun kas sumber lain agar tidak tergabung
+                        $('.baris-jurnal').each(function() {
+                            const $row = $(this);
+                            const rowAkun = String($row.attr('data-akun-id') || '').trim();
+                            if (rowAkun !== selectedAkun) {
+                                $row.find('.jurnal-checkbox').prop('checked', false);
+                            }
+                        });
+
                         if (!selectedAkun) {
                             $('.baris-jurnal').hide();
                             $('#rowFilterMessage td').text('Pilih akun kas sumber untuk menampilkan jurnal yang tersedia');
                             $('#rowFilterMessage').show();
                             $('#badgeJumlahItem').text('0 Transaksi Tampil');
                             updateSelectAllState();
+                            updateTotal();
                             return;
                         }
 
@@ -503,6 +510,7 @@
                         $('#rowFilterMessage').toggle(visibleCount === 0);
                         $('#badgeJumlahItem').text(visibleCount + ' Transaksi Tampil');
                         updateSelectAllState();
+                        updateTotal();
                     }
 
                     function updateSelectAllState() {
@@ -599,6 +607,16 @@
                     // Event: individual checkbox
                     $(document).off('change', '.jurnal-checkbox')
                                .on('change', '.jurnal-checkbox', function() {
+                        if ($(this).is(':checked')) {
+                            const currentAkunId = String($(this).closest('.baris-jurnal').attr('data-akun-id') || '').trim();
+                            // Pastikan tidak ada transaksi dari akun kas sumber lain yang ikut tercentang
+                            $('.jurnal-checkbox:checked').each(function() {
+                                const rowAkunId = String($(this).closest('.baris-jurnal').attr('data-akun-id') || '').trim();
+                                if (rowAkunId !== currentAkunId) {
+                                    $(this).prop('checked', false);
+                                }
+                            });
+                        }
                         updateSelectAllState();
                         updateTotal();
                     });

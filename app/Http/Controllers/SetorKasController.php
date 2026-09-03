@@ -61,14 +61,36 @@ class SetorKasController extends Controller
         $jurnalBelumDisetorkan = DB::table('jurnal_perkiraan as j')
             ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->leftJoinSub($this->customerTransactionSubquery(), 'customer_transaksi', function ($join) {
+                $join->on('customer_transaksi.nomor_transaksi', '=', 'j.nomor_transaksi');
+            })
             ->where('i.status', 'aktif')
             ->where('i.sumber_data', 'sistem')
             ->whereIn('j.id_akun_perkiraan', $akunSumberTerpilih)
             ->where('j.debit', '>', 0) // Hanya yang masuk (debit)
+            ->where(function ($query) {
+                $query->whereNotNull('customer_transaksi.nama_customer')
+                    ->orWhere('j.tipe_transaksi', 'like', '%Setoran Kas%');
+            })
             ->whereNotIn('j.id_jurnal_perkiraan', function($query) {
                 $query->select('jurnal_perkiraan_id')->from('setoran_kas_detail');
             })
-            ->select('j.id_jurnal_perkiraan', 'j.tanggal', 'j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
+            ->select(
+                'j.id_jurnal_perkiraan',
+                'j.tanggal',
+                'j.nomor_transaksi',
+                'j.tipe_transaksi',
+                'j.debit',
+                'j.id_akun_perkiraan',
+                'a.kode_perkiraan',
+                'a.nama',
+                DB::raw("COALESCE(customer_transaksi.nama_customer, '0') as nama_customer"),
+                DB::raw("CASE
+                    WHEN LOWER(j.tipe_transaksi) LIKE '%telur%' THEN 'Penjualan Telur'
+                    WHEN LOWER(j.tipe_transaksi) LIKE '%ayam%' THEN 'Penjualan Ayam'
+                    ELSE 'Setoran Kas'
+                END as asal")
+            )
             ->orderByDesc('j.tanggal')
             ->get();
 
@@ -157,11 +179,18 @@ class SetorKasController extends Controller
         $jurnalTerpilih = DB::table('jurnal_perkiraan as j')
             ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->leftJoinSub($this->customerTransactionSubquery(), 'customer_transaksi', function ($join) {
+                $join->on('customer_transaksi.nomor_transaksi', '=', 'j.nomor_transaksi');
+            })
             ->whereIn('j.id_jurnal_perkiraan', $validated['jurnal_terpilih'])
             ->where('i.status', 'aktif')
             ->where('i.sumber_data', 'sistem')
             ->whereIn('j.id_akun_perkiraan', $akunSumberTerpilih)
             ->where('j.debit', '>', 0)
+            ->where(function ($query) {
+                $query->whereNotNull('customer_transaksi.nama_customer')
+                    ->orWhere('j.tipe_transaksi', 'like', '%Setoran Kas%');
+            })
             ->whereNotIn('j.id_jurnal_perkiraan', function ($query) {
                 $query->select('jurnal_perkiraan_id')->from('setoran_kas_detail');
             })
@@ -171,6 +200,12 @@ class SetorKasController extends Controller
         if ($jurnalTerpilih->count() !== $idJurnalDiminta->count()) {
             return back()
                 ->withErrors(['jurnal_terpilih' => 'Ada jurnal impor, jurnal yang sudah disetorkan, atau jurnal yang tidak valid dalam pilihan. Silakan pilih ulang.'])
+                ->withInput();
+        }
+
+        if ($jurnalTerpilih->pluck('id_akun_perkiraan')->unique()->count() > 1) {
+            return back()
+                ->withErrors(['jurnal_terpilih' => 'Transaksi yang disetorkan harus berasal dari satu akun kas sumber yang sama agar setoran tidak tercampur.'])
                 ->withInput();
         }
 
@@ -417,6 +452,43 @@ class SetorKasController extends Controller
             ->whereNotNull('id_akun_induk')
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+    }
+
+    private function customerTransactionSubquery()
+    {
+        $penjualanTelur = DB::table('invoice_telur as transaksi')
+            ->leftJoin('customer as customer_utama', 'customer_utama.id_customer', '=', 'transaksi.id_customer')
+            ->leftJoin('customer as customer_kedua', 'customer_kedua.id_customer', '=', 'transaksi.id_customer2')
+            ->selectRaw("transaksi.no_nota as nomor_transaksi, MAX(COALESCE(NULLIF(TRIM(customer_utama.nm_customer), ''), NULLIF(TRIM(customer_kedua.nm_customer), ''), NULLIF(TRIM(transaksi.customer), ''))) as nama_customer")
+            ->groupBy('transaksi.no_nota');
+
+        $penjualanAyam = DB::table('invoice_ayam as transaksi')
+            ->leftJoin('customer as customer_utama', 'customer_utama.id_customer', '=', 'transaksi.id_customer')
+            ->leftJoin('customer as customer_kedua', 'customer_kedua.id_customer', '=', 'transaksi.id_customer2')
+            ->selectRaw("transaksi.no_nota as nomor_transaksi, MAX(COALESCE(NULLIF(TRIM(customer_utama.nm_customer), ''), NULLIF(TRIM(customer_kedua.nm_customer), ''), NULLIF(TRIM(transaksi.customer), ''))) as nama_customer")
+            ->groupBy('transaksi.no_nota');
+
+        $penjualanUmum = DB::table('penjualan_agl as transaksi')
+            ->leftJoin('customer as customer_utama', 'customer_utama.id_customer', '=', 'transaksi.id_customer')
+            ->selectRaw("CASE
+                WHEN NULLIF(TRIM(transaksi.nota_manual), '') IS NOT NULL THEN transaksi.nota_manual
+                WHEN transaksi.lokasi = 'alpa' THEN CONCAT('PU-', transaksi.urutan)
+                ELSE CONCAT('PUM-', transaksi.urutan)
+            END as nomor_transaksi")
+            ->selectRaw("MAX(COALESCE(NULLIF(TRIM(customer_utama.nm_customer), ''), NULLIF(NULLIF(TRIM(CAST(transaksi.id_customer AS CHAR)), ''), '0'))) as nama_customer")
+            ->groupBy('nomor_transaksi');
+
+        $semuaCustomer = $penjualanTelur
+            ->unionAll($penjualanAyam)
+            ->unionAll($penjualanUmum);
+
+        return DB::query()
+            ->fromSub($semuaCustomer, 'sumber_customer')
+            ->select('nomor_transaksi')
+            ->selectRaw('MAX(nama_customer) as nama_customer')
+            ->whereNotNull('nama_customer')
+            ->whereRaw("TRIM(nama_customer) <> ''")
+            ->groupBy('nomor_transaksi');
     }
 
     private function configuredSourceAccountIds($availableAccounts): array
