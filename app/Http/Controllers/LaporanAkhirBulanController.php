@@ -464,9 +464,17 @@ class LaporanAkhirBulanController extends Controller
     private function transactionTypeGroups(): array
     {
         return [
-            'faktur_penjualan' => ['label' => 'Faktur Penjualan', 'codes' => ['FJ', 'SI', 'Faktur Penjualan']],
-            'penerimaan_penjualan' => ['label' => 'Penerimaan Penjualan', 'codes' => ['CP', 'KJ', 'KM', 'KN', 'KR', 'MU', 'Penerimaan Penjualan']],
-            'transfer_penjualan' => ['label' => 'Transfer / Setoran Penjualan', 'codes' => ['BT', 'TB']],
+            'faktur_penjualan' => ['label' => 'Faktur Penjualan', 'codes' => [
+                'FJ', 'SI', 'Faktur Penjualan',
+                'Penjualan Telur', 'Penjualan Ayam', 'Penjualan Umum',
+            ]],
+            'penerimaan_penjualan' => ['label' => 'Penerimaan Penjualan', 'codes' => [
+                'CP', 'KJ', 'KM', 'KN', 'KR', 'MU', 'Penerimaan Penjualan',
+                'Pelunasan Piutang Telur', 'Pelunasan Piutang Ayam', 'Pelunasan Piutang Umum',
+            ]],
+            'transfer_penjualan' => ['label' => 'Transfer / Setoran Penjualan', 'codes' => [
+                'BT', 'TB', 'Setoran Kas Penjualan',
+            ]],
             'jurnal_umum' => ['label' => 'Jurnal Umum / Saldo Awal', 'codes' => ['JU', 'JV']],
             'lainnya' => ['label' => 'Transaksi Lainnya', 'codes' => ['Lainnya']],
         ];
