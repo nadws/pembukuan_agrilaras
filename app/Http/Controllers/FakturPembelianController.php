@@ -404,6 +404,24 @@ class FakturPembelianController extends Controller
          $pph23Manual = round((float) ($validated['pph23_manual'] ?? 0), 2);
          $totalPph23 = $pph23Manual;
          $akunPph23 = $totalPph23 > 0 ? $this->akunAktif('210203') : null;
+         // Simpan PPh 23 ke dalam biaya_lain (menempel pada ongkir) agar tersimpan & dipakai rebuild jurnal
+         if ($totalPph23 > 0) {
+             $biayaLain = collect($biayaLain)->map(function ($b) use ($totalPph23) {
+                 if ($b['kode'] === 'ongkir') {
+                     $b['pph23_nominal'] = $totalPph23;
+                 }
+                 return $b;
+             })->values()->all();
+         }
+         // Simpan PPh 23 ke dalam biaya_lain (menempel pada ongkir) agar tersimpan & dipakai rebuild jurnal
+         if ($totalPph23 > 0) {
+             $biayaLain = collect($biayaLain)->map(function ($b) use ($totalPph23) {
+                 if ($b['kode'] === 'ongkir') {
+                     $b['pph23_nominal'] = $totalPph23;
+                 }
+                 return $b;
+             })->values()->all();
+         }
 
         $produk = ProdukPerencanaan::query()
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
@@ -740,25 +758,38 @@ class FakturPembelianController extends Controller
              'item.*.satuan' => ['nullable', 'string', 'max:20'],
              'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
              'item.*.subtotal' => ['required', 'numeric', 'min:0'],
-             'item.*.id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
              'item.*.no_batch' => ['nullable', 'string', 'max:50'],
              'item.*.tanggal_expired' => ['nullable', 'date'],
          ]);
 
-        $items = $this->normalisasiItemFaktur($validated['item']);
-        $diskonTotal = round((float) ($validated['diskon_total'] ?? 0), 2);
+$items = $this->normalisasiItemFaktur($validated['item']);
+         $diskonTotal = round((float) ($validated['diskon_total'] ?? 0), 2);
 
-        if ($diskonTotal > $items->sum(fn($item) => (float) $item['subtotal'])) {
-            return back()
-                ->withErrors(['diskon_total' => 'Diskon tidak boleh lebih besar dari total pembelian.'])
-                ->withInput();
-        }
+         if ($diskonTotal > $items->sum(fn($item) => (float) $item['subtotal'])) {
+             return back()
+                 ->withErrors(['diskon_total' => 'Diskon tidak boleh lebih besar dari total pembelian.'])
+                 ->withInput();
+         }
 
          $items = $this->terapkanDiskonKeItem($items, $diskonTotal);
          $akunHutangPakan = $this->akunAktif('210221');
          $akunHutangEkspedisi = $this->akunAktif('210222');
          $akunPph23 = $this->akunAktif('210203');
          $akunHutangLainnya = $this->akunAktif('210220');
+         
+         // Satu faktur hanya berisi satu sumber produk. Untuk faktur Barang Umum,
+         // paksa sumbernya agar tidak terpengaruh oleh baris lama/JS browser.
+         if ($validated['jenis_faktur'] === 'barang_umum') {
+             $items = $items->map(function ($item) {
+                 $item['sumber_produk'] = 'barang_umum';
+                 return $item;
+             });
+         }
+         // Item otomatis masuk ke Hutang Pakan (sama seperti tambah data).
+         $items = $items->map(function ($item) use ($akunHutangPakan) {
+             $item['id_akun_pembayaran'] = (int) $akunHutangPakan->id_akun_perkiraan;
+             return $item;
+         });
          
          $biayaLain = $this->normalisasiBiayaLain($validated['biaya_lain'] ?? [], $akunHutangEkspedisi, $akunHutangLainnya);
          $pph23Manual = round((float) ($validated['pph23_manual'] ?? 0), 2);
@@ -782,9 +813,9 @@ class FakturPembelianController extends Controller
         $akunHutang = $this->akunAktif('210220');
         $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
             ->map(fn ($id) => (int) $id)->unique()->values();
-        $akunPembayaran = $this->akunPembayaranPembelianAktif()
+        $akunPembayaran = collect([$akunHutangPakan])
             ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
-        $akunBiaya = $this->akunPembayaranPembelianAktif()
+        $akunBiaya = collect([$akunHutangEkspedisi, $akunHutangLainnya])
             ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
         $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk) {
             return $this->kodeAkunPersediaanItem(
@@ -805,7 +836,7 @@ class FakturPembelianController extends Controller
                  ->withInput();
          }
 
-         DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutangPakan, $akunHutangEkspedisi, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23, $akunPph23) {
+         DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutang, $akunHutangPakan, $akunHutangEkspedisi, $akunHutangLainnya, $akunPph23, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23) {
              $noFakturLama = $faktur_pembelian->no_faktur;
              $totalQty = $items->sum(fn($item) => (float) $item['qty']);
              $totalHarga = $items->sum(fn($item) => (float) $item['subtotal']);
@@ -855,7 +886,7 @@ class FakturPembelianController extends Controller
                 ]);
             }
 
-            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPembayaran->union($akunBiaya), $akunPersediaan, $noFakturLama, $totalBiayaLain, $biayaLain);
+            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPembayaran->union($akunBiaya), $akunPersediaan, $noFakturLama, $totalBiayaLain, $biayaLain, $akunHutangPakan);
         });
 
         return redirect()
@@ -1451,7 +1482,8 @@ class FakturPembelianController extends Controller
         $akunPersediaan,
         string $noFakturLama,
         float $totalBiayaLain = 0,
-        array $biayaLain = []
+        array $biayaLain = [],
+        ?object $akunHutangPakan = null
     ): void {
         $sekarang = now();
         $totalItem = $items->sum(fn($item) => (float) $item['subtotal']);

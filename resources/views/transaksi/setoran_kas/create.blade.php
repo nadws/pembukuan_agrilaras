@@ -72,6 +72,13 @@
                 color: #0f172a !important;
                 font-weight: 500;
             }
+            .nominal-aktual-input {
+                min-width: 120px;
+                text-align: right;
+            }
+            .selisih-positif { color: #16a34a !important; font-weight: 700; }
+            .selisih-negatif { color: #dc2626 !important; font-weight: 700; }
+            .selisih-nol     { color: #64748b !important; font-weight: 500; }
         </style>
 
         <form action="{{ route('transaksi.setoran-kas.store') }}" method="POST" id="formSetoranKas">
@@ -125,7 +132,7 @@
                         <small class="text-muted">Centang transaksi yang ingin disetorkan</small>
                     </div>
                     <div>
-                        <span class="badge bg-primary fs-6" id="badgeJumlahItem">{{ $jurnalBelumDisetorkan->count() }} Transaksi Tersedia</span>
+                        <span class="badge bg-primary fs-6" id="badgeJumlahItem">0 Transaksi Tampil</span>
                     </div>
                 </div>
 
@@ -134,9 +141,14 @@
                     <div class="card-body p-3">
                         <div class="row g-2 align-items-center">
                             <div class="col-md-6">
-                                <label class="form-label mb-1 small fw-bold text-dark">Filter Akun Kas Sumber</label>
-                                <select id="filterAkunSumber" class="form-select select2 select-search-akun" data-placeholder="-- Semua Akun Kas Sumber --">
-                                    <option value="">-- Semua Akun Kas Sumber --</option>
+                                <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                    <label class="form-label mb-0 small fw-bold" style="color: #0f172a !important;">Filter Akun Kas Sumber</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" data-bs-toggle="modal" data-bs-target="#modalPengaturanAkunSumber">
+                                        <i class="fas fa-cog me-1"></i> Atur Akun
+                                    </button>
+                                </div>
+                                <select id="filterAkunSumber" class="form-select select2 select-search-akun" data-placeholder="-- Pilih Akun Kas Sumber --">
+                                    <option value="">-- Pilih Akun Kas Sumber --</option>
                                     @foreach($jurnalBelumDisetorkan->unique('id_akun_perkiraan') as $sumber)
                                         <option value="{{ $sumber->id_akun_perkiraan }}">
                                             {{ $sumber->kode_perkiraan }} - {{ $sumber->nama }}
@@ -145,7 +157,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label mb-1 small fw-bold text-dark">Cari No. Transaksi / Deskripsi</label>
+                                <label class="form-label mb-1 small fw-bold" style="color: #0f172a !important;">Cari No. Transaksi / Deskripsi</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
                                     <input type="text" id="cariJurnal" class="form-control" placeholder="Ketik untuk mencari...">
@@ -167,13 +179,22 @@
                                 <th width="230">Akun Kas Sumber</th>
                                 <th>Deskripsi</th>
                                 <th width="150" class="text-end">Nominal</th>
+                                <th width="160" class="text-end">Nominal Aktual</th>
+                                <th width="140" class="text-end">Selisih</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyJurnal">
+                            @if($jurnalBelumDisetorkan->isNotEmpty())
+                                <tr id="rowFilterMessage">
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        Pilih akun kas sumber untuk menampilkan jurnal yang tersedia
+                                    </td>
+                                </tr>
+                            @endif
                             @forelse($jurnalBelumDisetorkan as $jurnal)
-                                <tr class="baris-jurnal" data-akun-id="{{ $jurnal->id_akun_perkiraan }}" data-text="{{ strtolower($jurnal->nomor_transaksi . ' ' . $jurnal->deskripsi . ' ' . $jurnal->nama . ' ' . $jurnal->kode_perkiraan) }}">
+                                <tr class="baris-jurnal" style="display: none;" data-akun-id="{{ $jurnal->id_akun_perkiraan }}" data-text="{{ strtolower($jurnal->nomor_transaksi . ' ' . $jurnal->deskripsi . ' ' . $jurnal->nama . ' ' . $jurnal->kode_perkiraan) }}">
                                     <td class="text-center">
-                                        <input type="checkbox" name="jurnal_terpilih[]" value="{{ $jurnal->id_jurnal_perkiraan }}" data-nominal="{{ $jurnal->debit }}" class="form-check-input jurnal-checkbox" style="cursor: pointer;">
+                                        <input type="checkbox" name="jurnal_terpilih[]" value="{{ $jurnal->id_jurnal_perkiraan }}" data-nominal="{{ round($jurnal->debit) }}" class="form-check-input jurnal-checkbox" style="cursor: pointer;">
                                     </td>
                                     <td class="tanggal-text">{{ \Carbon\Carbon::parse($jurnal->tanggal)->format('d/m/Y') }}</td>
                                     <td class="no-transaksi-text">{{ $jurnal->nomor_transaksi }}</td>
@@ -185,10 +206,20 @@
                                     <td class="text-end nominal-text">
                                         Rp {{ number_format($jurnal->debit, 0, ',', '.') }}
                                     </td>
+                                    <td class="text-end">
+                                        <input type="number"
+                                               name="nominal_aktual[{{ $jurnal->id_jurnal_perkiraan }}]"
+                                               class="form-control form-control-sm nominal-aktual-input text-end"
+                                               value="{{ round($jurnal->debit) }}"
+                                               min="0" step="1"
+                                               data-nominal="{{ round($jurnal->debit) }}"
+                                               data-id="{{ $jurnal->id_jurnal_perkiraan }}">
+                                    </td>
+                                    <td class="text-end selisih-cell selisih-nol">Rp 0</td>
                                 </tr>
                             @empty
                                 <tr id="rowEmpty">
-                                    <td colspan="6" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         Tidak ada jurnal penjualan yang belum disetorkan
                                     </td>
                                 </tr>
@@ -202,13 +233,30 @@
                 @enderror
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="row mb-3 g-3">
+                <div class="col-md-4">
                     <div class="card bg-light border">
                         <div class="card-body">
-                            <small class="text-muted d-block mb-1">Total Nominal Setoran Terpilih</small>
+                            <small class="text-muted d-block mb-1">Total Nominal (Jurnal)</small>
                             <h4 id="totalNominal" class="mb-0 text-primary fw-bold">Rp 0</h4>
                             <small class="text-muted" id="totalTerpilihCount">0 transaksi dipilih</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light border">
+                        <div class="card-body">
+                            <small class="text-muted d-block mb-1">Total Nominal Aktual (Disetorkan)</small>
+                            <h4 id="totalAktual" class="mb-0 text-success fw-bold">Rp 0</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border" id="cardSelisih">
+                        <div class="card-body">
+                            <small class="text-muted d-block mb-1">Selisih (Aktual − Nominal)</small>
+                            <h4 id="totalSelisih" class="mb-0 fw-bold selisih-nol">Rp 0</h4>
+                            <small id="keteranganSelisih" class="text-muted">Tidak ada selisih</small>
                         </div>
                     </div>
                 </div>
@@ -223,6 +271,46 @@
                 </button>
             </div>
         </form>
+
+        <div class="modal fade" id="modalPengaturanAkunSumber" tabindex="-1" aria-labelledby="modalPengaturanAkunSumberLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <form action="{{ route('transaksi.setoran-kas.source-account-settings') }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title" id="modalPengaturanAkunSumberLabel">Pengaturan Akun Kas Sumber</h5>
+                                <small class="text-muted">Pilih akun yang boleh muncul dan diproses pada setoran kas.</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="form-label fw-bold">Akun kas/bank yang digunakan</label>
+                            <select name="akun_sumber[]" id="pengaturanAkunSumber" class="form-select" multiple required data-placeholder="Cari dan pilih akun kas sumber">
+                                @foreach($akunSumberTersedia as $akun)
+                                    <option value="{{ $akun->id_akun_perkiraan }}" @selected(in_array((int) $akun->id_akun_perkiraan, array_map('intval', old('akun_sumber', $akunSumberTerpilih))))>
+                                        {{ $akun->kode_perkiraan }} - {{ $akun->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted d-block mt-2">Minimal satu akun harus dipilih. Akun yang tidak dipilih tidak akan muncul dalam daftar jurnal.</small>
+                            @error('akun_sumber', 'sourceAccountSetting')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
+                            @enderror
+                            @error('akun_sumber.*', 'sourceAccountSetting')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Simpan Pengaturan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <script>
             (function() {
@@ -242,6 +330,15 @@
                                 });
                             }
                         });
+
+                        const $sourceSetting = $('#pengaturanAkunSumber');
+                        if (!$sourceSetting.hasClass('select2-hidden-accessible')) {
+                            $sourceSetting.select2({
+                                width: '100%',
+                                placeholder: $sourceSetting.data('placeholder'),
+                                dropdownParent: $('#modalPengaturanAkunSumber')
+                            });
+                        }
                     }
 
                     function filterTable() {
@@ -249,12 +346,21 @@
                         const keyword = String($('#cariJurnal').val() || '').toLowerCase().trim();
                         let visibleCount = 0;
 
+                        if (!selectedAkun) {
+                            $('.baris-jurnal').hide();
+                            $('#rowFilterMessage td').text('Pilih akun kas sumber untuk menampilkan jurnal yang tersedia');
+                            $('#rowFilterMessage').show();
+                            $('#badgeJumlahItem').text('0 Transaksi Tampil');
+                            updateSelectAllState();
+                            return;
+                        }
+
                         $('.baris-jurnal').each(function() {
                             const $row = $(this);
                             const rowAkun = String($row.attr('data-akun-id') || '').trim();
                             const rowText = String($row.attr('data-text') || '').toLowerCase();
 
-                            const matchAkun = !selectedAkun || rowAkun === selectedAkun;
+                            const matchAkun = rowAkun === selectedAkun;
                             const matchText = !keyword || rowText.includes(keyword);
 
                             if (matchAkun && matchText) {
@@ -265,6 +371,10 @@
                             }
                         });
 
+                        $('#rowFilterMessage td').text(keyword
+                            ? 'Tidak ada jurnal yang sesuai dengan pencarian'
+                            : 'Tidak ada jurnal yang tersedia untuk akun ini');
+                        $('#rowFilterMessage').toggle(visibleCount === 0);
                         $('#badgeJumlahItem').text(visibleCount + ' Transaksi Tampil');
                         updateSelectAllState();
                     }
@@ -276,37 +386,83 @@
                             $selectAll.prop('checked', false).prop('indeterminate', false);
                             return;
                         }
-
-                        const allChecked = $visibleCbs.length > 0 && $visibleCbs.filter(':checked').length === $visibleCbs.length;
+                        const allChecked = $visibleCbs.filter(':checked').length === $visibleCbs.length;
                         const someChecked = $visibleCbs.filter(':checked').length > 0;
-
                         $selectAll.prop('checked', allChecked);
                         $selectAll.prop('indeterminate', someChecked && !allChecked);
                     }
 
-                    function updateTotal() {
-                        let total = 0;
-                        let count = 0;
-                        $('.jurnal-checkbox:checked').each(function() {
-                            const nominal = parseFloat($(this).attr('data-nominal') || $(this).data('nominal')) || 0;
-                            total += nominal;
-                            count++;
-                        });
-                        $('#totalNominal').text('Rp ' + Number(total).toLocaleString('id-ID'));
-                        $('#totalTerpilihCount').text(count + ' transaksi dipilih');
+                    // Update selisih cell for a single row
+                    function updateRowSelisih($input) {
+                        const $row = $input.closest('tr');
+                        const nominal = parseFloat($input.attr('data-nominal')) || 0;
+                        const aktual = parseFloat($input.val()) || 0;
+                        const selisih = aktual - nominal;
+                        const $cell = $row.find('.selisih-cell');
+
+                        $cell.removeClass('selisih-positif selisih-negatif selisih-nol');
+                        if (selisih > 0) {
+                            $cell.addClass('selisih-positif').text('+Rp ' + selisih.toLocaleString('id-ID'));
+                        } else if (selisih < 0) {
+                            $cell.addClass('selisih-negatif').text('−Rp ' + Math.abs(selisih).toLocaleString('id-ID'));
+                        } else {
+                            $cell.addClass('selisih-nol').text('Rp 0');
+                        }
                     }
 
-                    // Event listeners via jQuery delegation
+                    function updateTotal() {
+                        let totalNominal = 0;
+                        let totalAktual  = 0;
+                        let count = 0;
+
+                        $('.jurnal-checkbox:checked').each(function() {
+                            const $row = $(this).closest('tr');
+                            const nominal = parseFloat($(this).attr('data-nominal')) || 0;
+                            const aktual  = parseFloat($row.find('.nominal-aktual-input').val()) || 0;
+                            totalNominal += nominal;
+                            totalAktual  += aktual;
+                            count++;
+                        });
+
+                        const selisih = totalAktual - totalNominal;
+
+                        $('#totalNominal').text('Rp ' + totalNominal.toLocaleString('id-ID'));
+                        $('#totalTerpilihCount').text(count + ' transaksi dipilih');
+                        $('#totalAktual').text('Rp ' + totalAktual.toLocaleString('id-ID'));
+
+                        const $ts = $('#totalSelisih');
+                        const $ks = $('#keteranganSelisih');
+                        const $card = $('#cardSelisih');
+                        $ts.removeClass('selisih-positif selisih-negatif selisih-nol text-success text-danger');
+                        $card.removeClass('border-success border-danger');
+
+                        if (selisih > 0) {
+                            $ts.addClass('selisih-positif').text('+Rp ' + selisih.toLocaleString('id-ID'));
+                            $ks.text('Lebih → masuk Pendapatan Selisih Lebih Bayar');
+                            $card.addClass('border-success');
+                        } else if (selisih < 0) {
+                            $ts.addClass('selisih-negatif').text('−Rp ' + Math.abs(selisih).toLocaleString('id-ID'));
+                            $ks.text('Kurang → masuk Kerugian Selisih Kurang Bayar');
+                            $card.addClass('border-danger');
+                        } else {
+                            $ts.addClass('selisih-nol').text('Rp 0');
+                            $ks.text('Tidak ada selisih');
+                        }
+                    }
+
+                    // Event: filter dropdown
                     $(document).off('change select2:select select2:clear select2:unselect', '#filterAkunSumber')
                                .on('change select2:select select2:clear select2:unselect', '#filterAkunSumber', function() {
                         filterTable();
                     });
 
+                    // Event: search input
                     $(document).off('input keyup paste', '#cariJurnal')
                                .on('input keyup paste', '#cariJurnal', function() {
                         filterTable();
                     });
 
+                    // Event: select all
                     $(document).off('change', '#selectAll')
                                .on('change', '#selectAll', function() {
                         const isChecked = $(this).is(':checked');
@@ -314,12 +470,21 @@
                         updateTotal();
                     });
 
+                    // Event: individual checkbox
                     $(document).off('change', '.jurnal-checkbox')
                                .on('change', '.jurnal-checkbox', function() {
                         updateSelectAllState();
                         updateTotal();
                     });
 
+                    // Event: nominal aktual input changed
+                    $(document).off('input change', '.nominal-aktual-input')
+                               .on('input change', '.nominal-aktual-input', function() {
+                        updateRowSelisih($(this));
+                        updateTotal();
+                    });
+
+                    // Form submit validation
                     $('#formSetoranKas').off('submit').on('submit', function(e) {
                         const checkedCount = $('.jurnal-checkbox:checked').length;
                         if (checkedCount === 0) {
@@ -328,7 +493,19 @@
                         }
                     });
 
+                    // Init all selisih cells and totals
+                    $('.nominal-aktual-input').each(function() {
+                        updateRowSelisih($(this));
+                    });
+                    filterTable();
                     updateTotal();
+
+                    @if(isset($errors) && $errors->sourceAccountSetting->any())
+                        const settingModalElement = document.getElementById('modalPengaturanAkunSumber');
+                        if (settingModalElement && window.bootstrap) {
+                            window.bootstrap.Modal.getOrCreateInstance(settingModalElement).show();
+                        }
+                    @endif
                 }
 
                 if (document.readyState === 'loading') {
@@ -337,7 +514,6 @@
                     setupSetoranHandler();
                 }
 
-                // Fallback run after small timeout to ensure jQuery/Select2 full ready
                 setTimeout(setupSetoranHandler, 300);
             })();
         </script>
