@@ -756,6 +756,7 @@ Route::controller(SetorKasController::class)
         Route::get('/create', 'create')->name('create');
         Route::post('/pengaturan-akun-sumber', 'saveSourceAccountSettings')->name('source-account-settings');
         Route::post('/', 'store')->name('store');
+        Route::get('/{setorKas}/cetak', 'cetak')->name('cetak');
         Route::get('/{setorKas}', 'show')->name('show');
         Route::delete('/{setorKas}', 'destroy')->name('destroy');
     });

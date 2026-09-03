@@ -8,9 +8,14 @@
                     Tanggal: <strong style="color: #0f172a !important;">{{ $setorKas->tanggal_setoran->format('d/m/Y') }}</strong>
                 </span>
             </div>
-            <a href="{{ route('transaksi.setoran-kas.index') }}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('transaksi.setoran-kas.cetak', $setorKas) }}" target="_blank" class="btn btn-primary btn-sm">
+                    <i class="fas fa-print me-1"></i> Cetak
+                </a>
+                <a href="{{ route('transaksi.setoran-kas.index') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar
+                </a>
+            </div>
         </div>
     </x-slot>
 

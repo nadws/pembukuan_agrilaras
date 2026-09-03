@@ -13,19 +13,106 @@
 
     <x-slot name="cardBody">
         <style>
+            .setoran-create-page {
+                --setoran-primary: #29468f;
+                --setoran-border: #dce3f2;
+                --setoran-soft: #f5f7fc;
+                --setoran-text: #172554;
+            }
+
+            .setoran-form-panel,
+            .journal-panel {
+                border: 1px solid var(--setoran-border);
+                border-radius: 12px;
+                background: #ffffff;
+                box-shadow: 0 4px 18px rgba(32, 55, 110, .06);
+            }
+
+            .setoran-form-panel {
+                padding: 18px;
+                margin-bottom: 18px;
+            }
+
+            .panel-heading {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e9eef7;
+            }
+
+            .panel-heading-icon {
+                display: grid;
+                width: 36px;
+                height: 36px;
+                flex: 0 0 36px;
+                border-radius: 9px;
+                color: #3155a5;
+                background: #e8edfa;
+                place-items: center;
+            }
+
+            .panel-heading h6 {
+                margin: 0 0 2px;
+                color: var(--setoran-text) !important;
+                font-weight: 700;
+            }
+
+            .panel-heading small { color: #70809d !important; }
+
+            .setoran-create-page .form-label {
+                color: #536078 !important;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .setoran-create-page .form-control,
+            .setoran-create-page .form-select,
+            .setoran-create-page .select2-container .select2-selection {
+                border-color: var(--setoran-border) !important;
+                border-radius: 8px !important;
+            }
+
+            .setoran-create-page .form-control,
+            .setoran-create-page .form-select {
+                min-height: 42px;
+            }
+
+            .journal-panel { overflow: hidden; }
+
+            .journal-panel-header {
+                padding: 16px 18px 12px;
+            }
+
+            .source-filter-card {
+                margin: 0 18px 16px;
+                border: 1px solid var(--setoran-border) !important;
+                border-radius: 10px;
+                background: var(--setoran-soft) !important;
+            }
+
+            .journal-table-wrap {
+                max-height: 500px;
+                overflow: auto;
+                border-top: 1px solid var(--setoran-border);
+            }
+
             #tabelJurnal {
                 width: 100%;
+                min-width: 1120px;
                 font-size: 13px;
                 border-collapse: separate;
                 border-spacing: 0;
             }
             #tabelJurnal thead th {
-                background: #f1f5f9 !important;
-                color: #0f172a !important;
+                background: var(--setoran-primary) !important;
+                color: #ffffff !important;
                 font-weight: 700;
                 font-size: 12.5px;
-                padding: 10px 12px;
-                border-bottom: 2px solid #cbd5e1 !important;
+                padding: 12px;
+                border: 0 !important;
+                white-space: nowrap;
             }
             #tabelJurnal tbody td {
                 padding: 10px 12px;
@@ -74,17 +161,55 @@
             }
             .nominal-aktual-input {
                 min-width: 120px;
+                min-height: 34px !important;
                 text-align: right;
             }
             .selisih-positif { color: #16a34a !important; font-weight: 700; }
             .selisih-negatif { color: #dc2626 !important; font-weight: 700; }
             .selisih-nol     { color: #64748b !important; font-weight: 500; }
+
+            .summary-card {
+                height: 100%;
+                border: 1px solid var(--setoran-border) !important;
+                border-radius: 12px !important;
+                background: #ffffff !important;
+                box-shadow: 0 4px 16px rgba(32, 55, 110, .05);
+            }
+
+            .summary-card .card-body { padding: 17px 18px; }
+            .summary-card small:first-child { color: #70809d !important; font-weight: 600; }
+            .summary-card h4 { margin-top: 5px; font-size: 21px; }
+            #cardSelisih.border-success { border-color: #86d5a3 !important; }
+            #cardSelisih.border-danger { border-color: #f3a6ae !important; }
+            .journal-panel > .text-danger { padding: 0 18px 14px; }
+
+            .form-actions {
+                padding-top: 3px;
+            }
+
+            @media (max-width: 767.98px) {
+                .setoran-form-panel { padding: 14px; }
+                .journal-panel-header { padding: 14px; }
+                .source-filter-card { margin: 0 12px 12px; }
+                .source-filter-card .card-body { padding: 12px !important; }
+                .source-filter-card .btn { padding: 4px 8px !important; }
+                .form-actions .btn { flex: 1 1 auto; }
+            }
         </style>
 
-        <form action="{{ route('transaksi.setoran-kas.store') }}" method="POST" id="formSetoranKas">
+        <form action="{{ route('transaksi.setoran-kas.store') }}" method="POST" id="formSetoranKas" class="setoran-create-page">
             @csrf
 
-            <div class="row mb-3">
+            <section class="setoran-form-panel">
+                <div class="panel-heading">
+                    <span class="panel-heading-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                    <div>
+                        <h6>Informasi Setoran</h6>
+                        <small>Lengkapi tanggal, akun tujuan, dan informasi referensi setoran.</small>
+                    </div>
+                </div>
+
+            <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Tanggal Setoran</label>
                     <input type="date" name="tanggal_setoran" class="form-control" value="{{ old('tanggal_setoran', now()->toDateString()) }}" required>
@@ -108,7 +233,7 @@
                 </div>
             </div>
 
-            <div class="row mb-3">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">No. Referensi (Opsional)</label>
                     <input type="text" name="nomor_referensi" class="form-control" value="{{ old('nomor_referensi') }}" placeholder="No. slip, bukti transfer, dll">
@@ -124,9 +249,10 @@
                     @enderror
                 </div>
             </div>
+            </section>
 
-            <div class="mb-3">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+            <div class="journal-panel mb-3">
+                <div class="journal-panel-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
                         <h6 class="mb-0 fw-bold">Pilih Jurnal Penjualan yang akan Disetorkan</h6>
                         <small class="text-muted">Centang transaksi yang ingin disetorkan</small>
@@ -137,7 +263,7 @@
                 </div>
 
                 {{-- Filter Akun Kas Sumber & Search --}}
-                <div class="card bg-light border mb-3 shadow-none">
+                <div class="card source-filter-card shadow-none">
                     <div class="card-body p-3">
                         <div class="row g-2 align-items-center">
                             <div class="col-md-6">
@@ -167,7 +293,7 @@
                     </div>
                 </div>
 
-                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <div class="journal-table-wrap">
                     <table class="table table-sm table-hover table-bordered align-middle mb-0" id="tabelJurnal">
                         <thead class="sticky-top" style="z-index: 1;">
                             <tr>
@@ -235,7 +361,7 @@
 
             <div class="row mb-3 g-3">
                 <div class="col-md-4">
-                    <div class="card bg-light border">
+                    <div class="card summary-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1">Total Nominal (Jurnal)</small>
                             <h4 id="totalNominal" class="mb-0 text-primary fw-bold">Rp 0</h4>
@@ -244,7 +370,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card bg-light border">
+                    <div class="card summary-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1">Total Nominal Aktual (Disetorkan)</small>
                             <h4 id="totalAktual" class="mb-0 text-success fw-bold">Rp 0</h4>
@@ -252,7 +378,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border" id="cardSelisih">
+                    <div class="card summary-card" id="cardSelisih">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1">Selisih (Aktual − Nominal)</small>
                             <h4 id="totalSelisih" class="mb-0 fw-bold selisih-nol">Rp 0</h4>
@@ -262,7 +388,7 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2 justify-content-end">
+            <div class="form-actions d-flex flex-wrap gap-2 justify-content-end">
                 <a href="{{ route('transaksi.setoran-kas.index') }}" class="btn btn-outline-secondary">
                     Batal
                 </a>

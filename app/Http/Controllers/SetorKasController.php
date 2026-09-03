@@ -23,10 +23,23 @@ class SetorKasController extends Controller
     {
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
         $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
+        $cari = trim((string) $request->input('cari', ''));
 
         $setoranKas = SetorKas::with('akunTujuan', 'detail')
             ->whereBetween('tanggal_setoran', [$tanggalAwal, $tanggalAkhir])
+            ->when($cari !== '', function ($query) use ($cari) {
+                $query->where(function ($query) use ($cari) {
+                    $query->where('nomor_setoran', 'like', "%{$cari}%")
+                        ->orWhere('nomor_referensi', 'like', "%{$cari}%")
+                        ->orWhere('keterangan', 'like', "%{$cari}%")
+                        ->orWhereHas('akunTujuan', function ($akunQuery) use ($cari) {
+                            $akunQuery->where('kode_perkiraan', 'like', "%{$cari}%")
+                                ->orWhere('nama', 'like', "%{$cari}%");
+                        });
+                });
+            })
             ->orderByDesc('tanggal_setoran')
+            ->orderByDesc('id')
             ->paginate(15)
             ->withQueryString();
 
@@ -35,6 +48,7 @@ class SetorKasController extends Controller
             'setoranKas' => $setoranKas,
             'tanggalAwal' => $tanggalAwal,
             'tanggalAkhir' => $tanggalAkhir,
+            'cari' => $cari,
         ]);
     }
 
@@ -341,6 +355,34 @@ class SetorKasController extends Controller
 
         return view('transaksi.setoran_kas.detail', [
             'title' => 'Detail Setoran Kas/Bank',
+            'setorKas' => $setorKas,
+            'jurnalHasil' => $jurnalHasil,
+        ]);
+    }
+
+    public function cetak(SetorKas $setorKas)
+    {
+        $setorKas->load('akunTujuan', 'detail.jurnalPerkiraan', 'detail.akunSumber');
+
+        $jurnalHasil = collect();
+        if ($setorKas->id_impor_jurnal_perkiraan) {
+            $jurnalHasil = DB::table('jurnal_perkiraan as j')
+                ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->where('j.id_impor_jurnal_perkiraan', $setorKas->id_impor_jurnal_perkiraan)
+                ->orderBy('j.urutan_detail')
+                ->select('j.*', 'a.kode_perkiraan', 'a.nama as nama_akun')
+                ->get();
+        } elseif ($setorKas->nomor_setoran) {
+            $jurnalHasil = DB::table('jurnal_perkiraan as j')
+                ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->where('j.nomor_transaksi', $setorKas->nomor_setoran)
+                ->orderBy('j.urutan_detail')
+                ->select('j.*', 'a.kode_perkiraan', 'a.nama as nama_akun')
+                ->get();
+        }
+
+        return view('transaksi.setoran_kas.cetak', [
+            'title' => 'Bukti Setoran Kas/Bank',
             'setorKas' => $setorKas,
             'jurnalHasil' => $jurnalHasil,
         ]);
