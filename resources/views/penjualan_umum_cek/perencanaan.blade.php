@@ -53,28 +53,26 @@
                             @endphp
                             @foreach ($id_jurnal as $no => $n)
                             @php
-                            $invoice = DB::selectOne("SELECT a.id_jurnal, a.id_akun, a.tgl, a.no_nota, b.nm_akun, a.ket,
-                            a.debit
-                            FROM jurnal as a
-                            left join akun as b on b.id_akun = a.id_akun
-                            where a.id_buku = '6' and a.id_jurnal = '$n' and a.setor ='T' and a.debit != '0'
-                            group by a.no_nota
-                            order by a.tgl ASC
-                            ");
-                            $total += $invoice->debit;
-                            $id_akun = $invoice->id_akun;
+                            $invoice = DB::table('jurnal_perkiraan as a')
+                            ->join('akun_perkiraan as b', 'b.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
+                            ->where('a.tipe_transaksi', 'Penjualan Umum')
+                            ->where('a.id_jurnal_perkiraan', $n)
+                            ->where('a.debit', '>', 0)
+                            ->first(['a.id_jurnal_perkiraan as id_jurnal', 'a.id_akun_perkiraan as id_akun', 'a.tanggal as tgl', 'a.nomor_transaksi as no_nota', 'b.nama as nm_akun', 'a.deskripsi as ket', 'a.debit']);
+                            $total += $invoice?->debit ?? 0;
+                            $id_akun = $invoice?->id_akun;
                             @endphp
                             <tr>
-                                <td>{{ tanggal($invoice->tgl) }}</td>
-                                <td>{{ $invoice->no_nota }}</td>
-                                <td>{{ $invoice->nm_akun }}</td>
-                                <td>{{ $invoice->ket }}</td>
-                                <td align="right">{{ number_format($invoice->debit, 0) }}</td>
+                                <td>{{ tanggal($invoice?->tgl) }}</td>
+                                <td>{{ $invoice?->no_nota }}</td>
+                                <td>{{ $invoice?->nm_akun }}</td>
+                                <td>{{ $invoice?->ket }}</td>
+                                <td align="right">{{ number_format($invoice?->debit ?? 0, 0) }}</td>
                             </tr>
-                            <input type="hidden" name="id_jurnal[]" value="{{ $invoice->id_jurnal }}">
-                            <input type="hidden" name="no_nota_jurnal[]" value="{{ $invoice->no_nota }}">
-                            <input type="hidden" name="nominal[]" value="{{ $invoice->debit }}">
-                            <input type="hidden" name="id_akun_pem[]" value="{{ $invoice->id_akun }}">
+                            <input type="hidden" name="id_jurnal[]" value="{{ $invoice?->id_jurnal }}">
+                            <input type="hidden" name="no_nota_jurnal[]" value="{{ $invoice?->no_nota }}">
+                            <input type="hidden" name="nominal[]" value="{{ $invoice?->debit }}">
+                            <input type="hidden" name="id_akun_pem[]" value="{{ $invoice?->id_akun }}">
                             @endforeach
 
 

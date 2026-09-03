@@ -1,7 +1,7 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="11">
 
     <x-slot name="cardHeader">
-        <h6>Terima Cek Invoice Penjaulan Umum</h6>
+        <h6>Terima Cek Invoice Penjualan Umum</h6>
     </x-slot>
 
 
@@ -10,9 +10,7 @@
             .select2-container--default .select2-selection--single .select2-selection__rendered {
                 color: #000000;
                 line-height: 36px;
-                /* font-size: 12px; */
                 width: 170px;
-
             }
         </style>
         <style>
@@ -38,22 +36,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                            $produk = DB::table('penjualan_agl as a')
-                            ->join('tb_produk as b', 'a.id_produk', 'b.id_produk')
-                            ->where('urutan', request()->get('no_nota')[0])
-                            ->get();
-                            @endphp
-                            @foreach ($produk as $no => $a)
-                            <input type="hidden" name="id_produk[]" value="{{ $a->id_produk }}">
-                            <tr>
-                                <td>{{ $no + 1 }}</td>
-                                <td>{{ $a->nm_produk }}</td>
-                                <td>{{ $a->qty }}</td>
-                                <td align="right">{{ number_format($a->rp_satuan, 0) }}</td>
-                                <td align="right">{{ number_format($a->total_rp, 0) }}</td>
-                                <td>{{ $a->admin }}</td>
-                            </tr>
+                            @foreach ($penjualan as $no => $a)
+                                <input type="hidden" name="id_produk[]" value="{{ $a->id_produk }}">
+                                <tr>
+                                    <td>{{ $no + 1 }}</td>
+                                    <td>{{ $a->nm_produk }}</td>
+                                    <td>{{ $a->qty }}</td>
+                                    <td align="right">{{ number_format($a->rp_satuan, 0) }}</td>
+                                    <td align="right">{{ number_format($a->total_rp, 0) }}</td>
+                                    <td>{{ $a->admin }}</td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -73,43 +65,30 @@
                         </thead>
                         <tbody>
                             @php
-                            $total = 0;
-                            @endphp
-                            @foreach ($nota as $no => $n)
-                            @php
-                            $hutang = DB::selectOne("SELECT *,a.id_customer as nm_customer, sum(a.total_rp) as total,
-                            count(*) as ttl_produk FROM
-                            `penjualan_agl` as a
-                            LEFT JOIN customer as b ON a.id_customer = b.id_customer
-                            WHERE a.urutan = '$n'
-                            GROUP BY a.urutan;");
-                            $total += $hutang->total;
+                                $total = 0;
+                                $kode = $head->kode ?? 'PUM';
+                                $totalNota = (float) $penjualan->sum('total_rp');
+                                $total += $totalNota;
                             @endphp
                             <tr>
-                                <td>{{ $hutang->kode }}-{{ $n }}</td>
+                                <td>{{ $kode }}-{{ $head->urutan }}</td>
                                 <td>
-                                    {{ tanggal($hutang->tgl) }}
-                                    <input type="hidden" name="tgl[]" value="{{ $hutang->tgl }}">
-                                    <input type="hidden" name="urutan[]" value="{{ $hutang->urutan }}">
-                                    <input type="hidden" name="nm_customer[]" value="{{ $hutang->nm_customer }}">
+                                    {{ tanggal($head->tgl) }}
+                                    <input type="hidden" name="tgl[]" value="{{ $head->tgl }}">
+                                    <input type="hidden" name="urutan[]" value="{{ $head->urutan }}">
+                                    <input type="hidden" name="nm_customer[]" value="{{ $customer }}">
                                     <input type="hidden" name="no_nota[]"
-                                        value="{{ $hutang->kode }}-{{ $hutang->urutan }}">
+                                        value="{{ $kode }}-{{ $head->urutan }}">
                                     <input type="hidden" name="pembayaran[]"
-                                        class="form-control bayar_biasa bayar_biasa{{ $no + 1 }}"
-                                        style="text-align: right" value="{{ $hutang->total }}">
+                                        class="form-control bayar_biasa bayar_biasa1" style="text-align: right"
+                                        value="{{ $totalNota }}">
                                 </td>
-                                <td>{{ $hutang->nm_customer }}</td>
+                                <td>{{ $customer }}</td>
                                 <td align="right">
-                                    Rp {{ number_format($hutang->total, 0) }}
-
+                                    Rp {{ number_format($totalNota, 0) }}
                                 </td>
                             </tr>
-                            @endforeach
-
-
                         </tbody>
-
-
                     </table>
 
                 </div>
@@ -120,33 +99,37 @@
 
                     <hr style="border: 1px solid blue">
 
-                    {{-- <input type="hidden" name="ket" value="{{ implode(',', $no_nota) }}"> --}}
                     <div class="row">
                         <div class="col-lg-6">
                             <h6>Total</h6>
                         </div>
                         <div class="col-lg-6">
                             <h6 class="total float-end">Rp {{ number_format($total, 2, ',', '.') }}</h6>
-                            <input type="hidden" class="total_semua_biasa" name="total_penjualan" value="{{ $total }}">
+                            <input type="hidden" class="total_semua_biasa" name="total_penjualan"
+                                value="{{ $total }}">
                         </div>
 
                         <div class="col-lg-5 mt-2">
                             <label for="">Pilih Akun Pembayaran</label>
-                            <select name="id_akun[]" id="" class="select2_add" required>
+                            <select name="id_akun[]" class="select2_add" required>
                                 <option value="">-Pilih Akun-</option>
                                 @foreach ($akun as $a)
-                                <option value="{{ $a->id_akun }}">{{ $a->nm_akun }}</option>
+                                    <option value="{{ $a->id_akun_perkiraan }}">{{ $a->kode_perkiraan }} -
+                                        {{ $a->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-lg-3 mt-2">
                             <label for="">Debit</label>
-                            <input type="text" class="form-control debit debit1" count="1" style="text-align: right">
-                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1" value="0">
+                            <input type="text" class="form-control debit debit1" count="1"
+                                style="text-align: right">
+                            <input type="hidden" name="debit[]" class="form-control debit_biasa debit_biasa1"
+                                value="0">
                         </div>
                         <div class="col-lg-3 mt-2">
                             <label for="">Kredit</label>
-                            <input type="text" class="form-control kredit kredit1" count="1" style="text-align: right">
+                            <input type="text" class="form-control kredit kredit1" count="1"
+                                style="text-align: right">
                             <input type="hidden" name="kredit[]" class="form-control kredit_biasa kredit_biasa1"
                                 value="0">
                         </div>
@@ -193,15 +176,15 @@
             <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true"></span>
             Loading...
         </button>
-        <a href="{{ route('terima_invoice_mtd') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
+        <a href="{{ route('penjualan_umum_cek') }}" class="float-end btn btn-outline-primary me-2">Batal</a>
         </form>
     </x-slot>
 
 
 
     @section('scripts')
-    <script>
-        $(document).ready(function() {
+        <script>
+            $(document).ready(function() {
                 $(document).on("keyup", ".debit", function() {
                     var count = $(this).attr("count");
                     var input = $(this).val();
@@ -321,7 +304,7 @@
                 $(document).on("click", ".tbh_pembayaran", function() {
                     count = count + 1;
                     $.ajax({
-                        url: "/tbh_pembayaran?count=" + count,
+                        url: "/tbh_pembayaran_martadah?count=" + count,
                         type: "Get",
                         success: function(data) {
                             $("#load_pembayaran").append(data);
@@ -394,6 +377,6 @@
 
                 });
             });
-    </script>
+        </script>
     @endsection
 </x-theme.app>

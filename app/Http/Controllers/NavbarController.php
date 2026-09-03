@@ -315,6 +315,12 @@ class NavbarController extends Controller
                 'img' => 'penjualan.png',
                 'deskripsi' => 'Melihat, memeriksa, dan mengelola penjualan ayam Martadah.',
             ],
+            [
+                'judul' => 'Penjualan Umum',
+                'route' => 'penjualan_martadah_umum',
+                'img' => 'penjualan.png',
+                'deskripsi' => 'Melihat dan memeriksa penjualan umum Martadah.',
+            ],
         ];
         $title = 'Penjualan Martadah';
 

@@ -662,7 +662,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/save_bayar_piutang_ayam', 'save_bayar_piutang')->name('save_bayar_piutang_ayam');
     });
     Route::controller(Penjualan_umum_cekController::class)->group(function () {
+        Route::get('/penjualan-martadah/umum', 'index')->name('penjualan_martadah_umum');
         Route::get('/penjualan_umum_cek', 'index')->name('penjualan_umum_cek');
+        Route::get('/detail_penjualan_umum_mtd/{urutan}', 'detailMartadah')->name('penjualan_umum_mtd.detail');
         Route::get('/penyetoran_penjualan_umum', 'penyetoran')->name('penyetoran_penjualan_umum');
         Route::get('/penjualan_umum_perencanaan_setor', 'perencanaan_setor')->name('penjualan_umum_perencanaan_setor');
         Route::get('/penjualan_umum_get_history_perencanaan', 'get_history_perencanaan')->name('penjualan_umum_get_history_perencanaan');
