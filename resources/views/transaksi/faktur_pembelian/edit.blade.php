@@ -284,38 +284,84 @@
                 </table>
             </div>
 
-            @php($biayaLama = is_array($faktur->biaya_lain) ? $faktur->biaya_lain : (json_decode($faktur->biaya_lain ?? '[]', true) ?: []))
-            <div class="row justify-content-end mb-3">
-                <div class="col-12 biaya-section mb-3"><div class="d-flex align-items-center justify-content-between mb-2"><h6 class="mb-0">Biaya Lain-lain</h6></div><div class="item-table-wrap"><table class="table biaya-table mb-0"><thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th>Nominal</th></tr></thead><tbody>
-                    @foreach(['ongkir' => 'Ongkir', 'admin' => 'Admin'] as $kode => $label)
-                        @php($biayaItem = collect($biayaLama)->firstWhere('kode', $kode))
-                        <tr><td><select name="biaya_lain[{{ $kode }}][id_akun]" class="form-select select-search-akun" data-placeholder="Cari akun pembayaran"><option value="">-- Pilih akun --</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}" @selected(old('biaya_lain.'.$kode.'.id_akun', $biayaItem['id_akun'] ?? '') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></td><td class="fw-semibold">{{ $label }}</td><td><input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control" value="{{ old('biaya_lain.'.$kode.'.nominal', $biayaItem['nominal'] ?? 0) }}" placeholder="0"></td></tr>
-                    @endforeach
-                </tbody></table></div></div>
+             @php($biayaLama = is_array($faktur->biaya_lain) ? $faktur->biaya_lain : (json_decode($faktur->biaya_lain ?? '[]', true) ?: []))
+             <div class="row justify-content-end mb-3">
+                 <div class="col-lg-6 biaya-section mb-3">
+                     <div class="d-flex align-items-center justify-content-between mb-2">
+                         <div>
+                             <h6 class="mb-0">Biaya Tambahan (Ekspedisi, Admin, dll.)</h6>
+                             <small class="text-muted">Opsional. Biaya ini akan ditambahkan ke total HPP dan dialokasikan ke akun pembayaran masing-masing.</small>
+                         </div>
+                     </div>
+                     <div class="item-table-wrap">
+                         <table class="table biaya-table mb-0">
+                             <thead>
+                                 <tr>
+                                     <th width="350">Akun Pembayaran</th>
+                                     <th width="250">Jenis Biaya</th>
+                                     <th>Nominal Biaya (Rp)</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 @foreach(['ongkir' => 'Biaya Ekspedisi / Ongkir', 'admin' => 'Biaya Admin'] as $kode => $label)
+                                     @php($biayaItem = collect($biayaLama)->firstWhere('kode', $kode))
+                                     <tr>
+                                         <td>
+                                             <select name="biaya_lain[{{ $kode }}][id_akun]" class="form-select select-search-akun" data-placeholder="Pilih akun pembayaran">
+                                                 <option value="">-- Pilih Akun Pembayaran --</option>
+                                                 @foreach($akunPembayaran as $akun)
+                                                     <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('biaya_lain.'.$kode.'.id_akun', $biayaItem['id_akun'] ?? '') == $akun->id_akun_perkiraan)>
+                                                         {{ $akun->kode_perkiraan }} - {{ $akun->nama }}
+                                                     </option>
+                                                 @endforeach
+                                             </select>
+                                         </td>
+                                         <td class="fw-semibold align-middle">{{ $label }}</td>
+                                         <td>
+                                             <input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control input-biaya-lain" value="{{ old('biaya_lain.'.$kode.'.nominal', $biayaItem['nominal'] ?? 0) }}" placeholder="0">
+                                         </td>
+                                     </tr>
+                                 @endforeach
+                                <tr>
+                                    <td colspan="2" class="fw-semibold align-middle">Potongan PPh 23 (Manual)</td>
+                                    <td>
+                                        <input type="number" min="0" step="0.01" name="pph23_manual" class="form-control input-pph23-manual" value="{{ old('pph23_manual', 0) }}" placeholder="0">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="col-lg-6 col-md-8">
                     <div class="grand-total-box">
                         <div class="row g-2 align-items-end text-start mb-2">
-                                <div class="col-md-7">
+                            <div class="col-md-7">
                                 <label class="form-label" for="diskon_total">Diskon</label>
                                 <input type="number" step="0.01" min="0" id="diskon_total"
                                     name="diskon_total" class="form-control text-end"
                                     value="{{ old('diskon_total', $faktur->diskon_total ?? 0) }}">
                             </div>
                             <div class="col-md-5 text-md-end">
-                                <div class="label" id="payment-total-label">TOTAL HPP / PEMBAYARAN</div>
+                                <div class="label" id="payment-total-label">TOTAL HPP</div>
                                 <div class="value" id="grand-total-display">Rp 0</div>
                             </div>
                         </div>
                         <div class="summary-row">
-                            <span>Total sebelum diskon</span>
+                            <span>Total Item Produk</span>
                             <span id="subtotal-display">Rp 0</span>
                         </div>
                         <div class="summary-row">
                             <span>Diskon</span>
                             <span id="diskon-display">Rp 0</span>
                         </div>
+                        <div class="summary-row">
+                            <span>Total Biaya Tambahan</span>
+                            <span id="biaya-lain-display">Rp 0</span>
+                        </div>
+                        <div class="summary-row"><span>Potongan PPh 23 (kredit hutang pajak)</span><span id="pph23-display">Rp 0</span></div>
                         <div class="summary-row net">
-                            <span>Nilai masuk HPP/persediaan</span>
+                            <span>Total Hutang Supplier</span>
                             <span id="net-total-display">Rp 0</span>
                         </div>
                     </div>
@@ -466,25 +512,38 @@
                 }
 
                 function hitungUlangSemua() {
-                    let subtotal = 0;
+                     let subtotal = 0;
 
-                    tbody.querySelectorAll('.baris-item').forEach((baris, i) => {
-                        baris.querySelector('.nomor-baris').textContent = i + 1;
-                        subtotal += angkaInput(baris.querySelector('.input-subtotal'));
-                    });
+                     tbody.querySelectorAll('.baris-item').forEach((baris, i) => {
+                         baris.querySelector('.nomor-baris').textContent = i + 1;
+                         subtotal += angkaInput(baris.querySelector('.input-subtotal'));
+                     });
 
-                    const diskon = Math.min(angkaInput(diskonTotalInput), subtotal);
-                    const totalBersih = Math.max(subtotal - diskon, 0);
+                     let totalBiayaLain = 0;
+                     document.querySelectorAll('.input-biaya-lain').forEach((input) => {
+                         totalBiayaLain += angkaInput(input);
+                     });
 
-                    if (angkaInput(diskonTotalInput) > subtotal) {
-                        isiAngka(diskonTotalInput, subtotal);
-                    }
+                     const diskon = Math.min(angkaInput(diskonTotalInput), subtotal);
+                     const totalBersih = Math.max(subtotal - diskon + totalBiayaLain, 0);
+                     const pph23ManualInput = document.querySelector('.input-pph23-manual');
+                     const pph23 = pph23ManualInput ? angkaInput(pph23ManualInput) : 0;
+                     const totalHutangSupplier = Math.max(totalBersih - pph23, 0);
 
-                    subtotalDisplay.textContent = formatRupiah(subtotal);
-                    diskonDisplay.textContent = formatRupiah(diskon);
-                    grandTotalDisplay.textContent = formatRupiah(totalBersih);
-                    netTotalDisplay.textContent = formatRupiah(totalBersih);
-                }
+                     if (angkaInput(diskonTotalInput) > subtotal) {
+                         isiAngka(diskonTotalInput, subtotal);
+                     }
+
+                     subtotalDisplay.textContent = formatRupiah(subtotal);
+                     diskonDisplay.textContent = formatRupiah(diskon);
+                     const biayaLainDisplay = document.getElementById('biaya-lain-display');
+                     if (biayaLainDisplay) {
+                         biayaLainDisplay.textContent = formatRupiah(totalBiayaLain);
+                     }
+                     grandTotalDisplay.textContent = formatRupiah(totalBersih);
+                     document.getElementById('pph23-display').textContent = formatRupiah(pph23);
+                     netTotalDisplay.textContent = formatRupiah(totalHutangSupplier);
+                 }
 
                 function produkCocok(kategori) {
                     const jenis = jenisTerpilih();
@@ -529,24 +588,22 @@
                     const html = clone.querySelector('.baris-item').outerHTML.replaceAll('__INDEX__', indexBaris);
                     tbody.insertAdjacentHTML('beforeend', html);
 
-                    const baris = tbody.querySelector('.baris-item:last-child');
-                    const selectProduk = baris.querySelector('.select-produk');
-                    const selectAkun = baris.querySelector('.select-akun-pembayaran');
-                    baris.querySelector('.input-qty').value = data.qty ?? '';
-                    baris.querySelector('.input-harga').value = data.harga_satuan ?? '';
-                    baris.querySelector('.input-subtotal').value = data.subtotal ?? '';
-                    selectProduk.value = data.pakan_id ?? '';
-                    selectAkun.value = data.id_akun_pembayaran ?? '';
+                    const barisBaru = tbody.querySelector('.baris-item:last-child');
+                    const selectAkun = barisBaru.querySelector('.select-akun-pembayaran');
+                    const selectProduk = barisBaru.querySelector('.select-produk');
+                    const defaultAkun = selectAkun.options[1] ? selectAkun.options[1].value : '';
 
+                    selectAkun.value = data.id_akun_pembayaran ?? defaultAkun;
+                    barisBaru.querySelector('.input-qty').value = data.qty ?? '';
+                    barisBaru.querySelector('.input-harga').value = data.harga_satuan ?? '';
+                    barisBaru.querySelector('.input-subtotal').value = data.subtotal ?? '';
+                    selectProduk.value = data.pakan_id ?? '';
                     indexBaris++;
                     filterProduk();
-                    initSelectSearch(baris);
+                    initSelectSearch(barisBaru);
                     if (window.jQuery && jQuery.fn.select2) {
-                        jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change');
-                        jQuery(selectAkun).val(data.id_akun_pembayaran ?? null).trigger('change');
-                    }
-                    if (!data.subtotal) {
-                        hitungBaris(baris, 'harga');
+                        jQuery(selectAkun).val(data.id_akun_pembayaran ?? defaultAkun).trigger('change.select2');
+                        jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change.select2');
                     }
                     hitungUlangSemua();
                 }
@@ -598,6 +655,10 @@
 
                 btnTambah.addEventListener('click', () => tambahBaris());
                 diskonTotalInput.addEventListener('input', hitungUlangSemua);
+                document.querySelectorAll('.input-biaya-lain').forEach((input) => {
+                    input.addEventListener('input', hitungUlangSemua);
+                });
+                document.querySelector('.input-pph23-manual')?.addEventListener('input', hitungUlangSemua);
                 jenisRadios.forEach((radio) => radio.addEventListener('change', updateJenisFaktur));
 
                 initSelectSearch();

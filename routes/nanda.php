@@ -18,6 +18,7 @@ use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\JurnalPenyesuaianController;
 use App\Http\Controllers\JurnalPerkiraanController;
 use App\Http\Controllers\Laporan_layerController;
+use App\Http\Controllers\LaporanAkhirBulanController;
 use App\Http\Controllers\NavbarController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\OpnamemtdController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\Produk_telurController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
+use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\StokMasukController;
 use App\Http\Controllers\ProyekController;
 use App\Http\Controllers\Saldo;
@@ -427,7 +429,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
         // URL lama tetap dipertahankan sebagai pintu masuk, tetapi proses opname
         // barang umum sekarang dilakukan dari modul Gudang.
-        Route::get('/stok-opname', fn () => redirect()->route('gudang-persediaan.barang-umum'))->name('stok-opname');
+        Route::get('/stok-opname', fn() => redirect()->route('gudang-persediaan.barang-umum'))->name('stok-opname');
         Route::post('/stok-opname', 'simpanStokOpname')->name('stok-opname.store');
         Route::get('/penyusutan-aktiva', 'penyusutanAktiva')->name('penyusutan-aktiva');
         Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
@@ -701,6 +703,11 @@ Route::controller(LaporanStokPersediaanController::class)->group(function () {
     Route::get('/laporan/stok-persediaan', 'index')->name('laporan.stok-persediaan');
     Route::get('/laporan/stok-persediaan/{produk}', 'detail')->name('laporan.stok-persediaan.detail');
 });
+Route::controller(LaporanAkhirBulanController::class)->group(function () {
+    Route::get('/laporan/akhir-bulan', 'index')->name('laporan.akhir-bulan');
+    Route::get('/laporan/akhir-bulan/penarikan/{akun}', 'detailPenarikan')->name('laporan.akhir-bulan.penarikan-detail');
+    Route::get('/laporan/akhir-bulan/penjualan/{akun}', 'detailPenjualan')->name('laporan.akhir-bulan.penjualan-detail');
+});
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');
     Route::get('/export_pullet_medion', 'export')->name('export_pullet_medion');
@@ -737,4 +744,15 @@ Route::controller(ForecastController::class)
     ->name('forecast.')
     ->group(function () {
         Route::get('/detailEggProduction', 'detailEggProduction')->name('detailEggProduction');
+    });
+
+Route::controller(SetorKasController::class)
+    ->prefix('transaksi/setoran-kas')
+    ->name('transaksi.setoran-kas.')
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{setorKas}', 'show')->name('show');
+        Route::delete('/{setorKas}', 'destroy')->name('destroy');
     });

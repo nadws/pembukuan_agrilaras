@@ -64,6 +64,18 @@
                 font-weight: 800;
             }
 
+            .debt-breakdown {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .debt-breakdown .debt-summary-item {
+                border: 1px solid var(--debt-border);
+                border-radius: 10px;
+            }
+
             .debt-nav {
                 gap: 8px;
                 margin-bottom: 14px;
@@ -95,7 +107,7 @@
             }
 
             .debt-table {
-                min-width: 1060px;
+                min-width: 1080px;
                 margin-bottom: 0;
             }
 
@@ -142,6 +154,7 @@
                 .debt-summary {
                     grid-template-columns: 1fr;
                 }
+                .debt-breakdown { grid-template-columns: 1fr; }
             }
         </style>
 
@@ -187,6 +200,12 @@
                 </div>
             </div>
 
+            <div class="debt-breakdown">
+                <div class="debt-summary-item"><div class="label">Hutang barang/produk</div><div class="value">Rp {{ number_format($totalHutangBarang, 0, ',', '.') }}</div></div>
+                <div class="debt-summary-item"><div class="label">Hutang ongkir</div><div class="value">Rp {{ number_format($totalHutangOngkir, 0, ',', '.') }}</div></div>
+                <div class="debt-summary-item"><div class="label">Hutang admin</div><div class="value">Rp {{ number_format($totalHutangAdmin, 0, ',', '.') }}</div></div>
+            </div>
+
             <ul class="nav nav-pills debt-nav">
                 <li class="nav-item">
                     <a class="nav-link {{ $status === 'berjalan' ? 'active' : '' }}"
@@ -210,10 +229,10 @@
                         <tr>
                             <th width="55">No</th>
                             <th>Tanggal</th>
-                            <th>Nomor Faktur</th>
-                            <th>Jenis</th>
+                            <th>Nomor Tagihan</th>
+                            <th>Komponen</th>
                             <th>Pemasok</th>
-                            <th class="text-end">Total Hutang</th>
+                            <th class="text-end">Nilai Tagihan</th>
                             <th class="text-end">Sudah Dibayar</th>
                             <th class="text-end">Sisa Hutang</th>
                             <th>Status</th>
@@ -229,10 +248,10 @@
                             <tr>
                                 <td>{{ $faktur->firstItem() + $nomor }}</td>
                                 <td>{{ tanggal($item->tanggal_faktur) }}</td>
-                                <td>{{ $item->no_faktur }}</td>
-                                <td>{{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}</td>
+                                <td><strong>{{ $item->nomor_tagihan }}</strong><div class="small text-muted">Faktur induk: {{ $item->no_faktur }}</div></td>
+                                <td><span class="status-badge {{ $item->komponen_hutang === 'barang' ? 'status-sebagian' : 'status-belum_lunas' }}">{{ $item->nama_komponen }}</span></td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
-                                <td class="text-end">Rp {{ number_format($item->total_hutang, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($item->nominal_hutang, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_bayar, 0, ',', '.') }}</td>
                                 <td class="text-end fw-bold">Rp {{ number_format($sisaHutang, 0, ',', '.') }}</td>
                                 <td>
@@ -242,7 +261,7 @@
                                 </td>
                                 <td class="text-center">
                                     @if ($sisaHutang > 0)
-                                        <a href="{{ route('transaksi.buku-hutang.pelunasan', $item) }}"
+                                        <a href="{{ route('transaksi.buku-hutang.pelunasan', ['faktur_pembelian'=>$item->id,'komponen'=>$item->komponen_hutang]) }}"
                                             class="btn btn-primary btn-sm">
                                             Bayar
                                         </a>

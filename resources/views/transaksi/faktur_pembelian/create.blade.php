@@ -293,27 +293,6 @@
                             </select>
                         </div>
                         <div class="col-lg-3 col-md-6">
-                            <label class="form-label" for="metode_pembayaran">Metode Pembayaran</label>
-                            <select id="metode_pembayaran" name="metode_pembayaran" class="form-select" required>
-                                <option value="hutang" @selected(old('metode_pembayaran', 'hutang') === 'hutang')>Hutang</option>
-                                <option value="tunai" @selected(old('metode_pembayaran') === 'tunai')>Tunai / Bank</option>
-                            </select>
-                        </div>
-                        {{-- <div class="col-lg-3 col-md-6">
-                            <label class="form-label" for="jatuh_tempo">Jatuh Tempo</label>
-                            <input type="date" id="jatuh_tempo" name="jatuh_tempo" class="form-control"
-                                value="{{ old('jatuh_tempo') }}">
-                        </div> --}}
-                        <div class="col-lg-4 col-md-6" id="akun-pembayaran-wrap">
-                            <label class="form-label" for="id_akun_pembayaran">Akun Pembayaran</label>
-                            <select id="id_akun_pembayaran" name="id_akun_pembayaran" class="form-select select-search-akun" data-placeholder="Cari kas atau bank">
-                                <option value="">-- Pilih Kas / Bank --</option>
-                                @foreach($akunPembayaran as $akun)
-                                    <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('id_akun_pembayaran') == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-lg-8 col-md-6">
                             <label class="form-label" for="keterangan">Keterangan</label>
                             <input type="text" id="keterangan" name="keterangan" class="form-control"
                                 value="{{ old('keterangan') }}" placeholder="Catatan tambahan (opsional)">
@@ -324,7 +303,7 @@
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div>
                         <h6 class="mb-0">Daftar Item Pembelian</h6>
-                        <small class="text-muted">Isi produk, jumlah, dan harga pembelian.</small>
+                        <small class="text-muted">Semua pembelian otomatis dicatat sebagai hutang. Isi produk dan nilainya.</small>
                     </div>
                     <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-item">
                         <i class="fas fa-plus me-1"></i> Tambah Item
@@ -336,7 +315,7 @@
                         <thead>
                             <tr>
                                 <th width="40">No</th>
-                                <th width="230">Produk</th>
+                                <th width="250">Produk</th>
                                 <th width="110">Qty</th>
                                 <th width="110">Satuan</th>
                                 <th width="140">Harga Satuan</th>
@@ -353,6 +332,41 @@
                 </div>
 
                 <div class="row justify-content-end mb-3">
+                    <div class="col-lg-6 biaya-section mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <h6 class="mb-0">Biaya Tambahan (Ekspedisi, Admin, dll.)</h6>
+                                <small class="text-muted">Opsional. Biaya ini ditambahkan ke total HPP dan otomatis masuk ke hutang.</small>
+                            </div>
+                        </div>
+                        <div class="item-table-wrap">
+                            <table class="table biaya-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="250">Jenis Biaya</th>
+                                        <th>Nominal Biaya (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(['ongkir' => 'Biaya Ekspedisi / Ongkir', 'admin' => 'Biaya Admin'] as $kode => $label)
+                                        <tr>
+                                            <td class="fw-semibold align-middle">{{ $label }}</td>
+                                            <td>
+                                                <input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control input-biaya-lain" value="{{ old('biaya_lain.'.$kode.'.nominal', 0) }}" placeholder="0">
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr>
+                                        <td class="fw-semibold align-middle">Potongan PPh 23 (Manual)</td>
+                                        <td>
+                                            <input type="number" min="0" step="0.01" name="pph23_manual" class="form-control input-pph23-manual" value="{{ old('pph23_manual', 0) }}" placeholder="0">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="col-lg-6 col-md-8">
                         <div class="grand-total-box">
                             <div class="row g-2 align-items-end text-start mb-2">
@@ -363,20 +377,28 @@
                                         value="{{ old('diskon_total', 0) }}">
                                 </div>
                                 <div class="col-md-5 text-md-end">
-                                    <div class="label" id="payment-total-label">TOTAL HPP / PEMBAYARAN</div>
+                                    <div class="label" id="payment-total-label">TOTAL HPP</div>
                                     <div class="value" id="grand-total-display">Rp 0</div>
                                 </div>
                             </div>
                             <div class="summary-row">
-                                <span>Total sebelum diskon</span>
+                                <span>Total Item Produk</span>
                                 <span id="subtotal-display">Rp 0</span>
                             </div>
                             <div class="summary-row">
                                 <span>Diskon</span>
                                 <span id="diskon-display">Rp 0</span>
                             </div>
+                            <div class="summary-row">
+                                <span>Total Biaya Tambahan</span>
+                                <span id="biaya-lain-display">Rp 0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Potongan PPh 23 (kredit hutang pajak)</span>
+                                <span id="pph23-display">Rp 0</span>
+                            </div>
                             <div class="summary-row net">
-                                <span>Nilai masuk HPP/persediaan</span>
+                                <span>Total Hutang Supplier</span>
                                 <span id="net-total-display">Rp 0</span>
                             </div>
                         </div>
@@ -552,25 +574,38 @@
                 }
 
                 function hitungUlangSemua() {
-                    let subtotal = 0;
+                     let subtotal = 0;
 
-                    tbody.querySelectorAll('.baris-item').forEach((baris, i) => {
-                        baris.querySelector('.nomor-baris').textContent = i + 1;
-                        subtotal += angkaInput(baris.querySelector('.input-subtotal'));
-                    });
+                     tbody.querySelectorAll('.baris-item').forEach((baris, i) => {
+                         baris.querySelector('.nomor-baris').textContent = i + 1;
+                         subtotal += angkaInput(baris.querySelector('.input-subtotal'));
+                     });
 
-                    const diskon = Math.min(angkaInput(diskonTotalInput), subtotal);
-                    const totalBersih = Math.max(subtotal - diskon, 0);
+                     let totalBiayaLain = 0;
+                     document.querySelectorAll('.input-biaya-lain').forEach((input) => {
+                         totalBiayaLain += angkaInput(input);
+                     });
 
-                    if (angkaInput(diskonTotalInput) > subtotal) {
-                        isiAngka(diskonTotalInput, subtotal);
-                    }
+                     const diskon = Math.min(angkaInput(diskonTotalInput), subtotal);
+                     const totalBersih = Math.max(subtotal - diskon + totalBiayaLain, 0);
+                     const pph23ManualInput = document.querySelector('.input-pph23-manual');
+                     const pph23 = pph23ManualInput ? angkaInput(pph23ManualInput) : 0;
+                     const totalHutangSupplier = Math.max(totalBersih - pph23, 0);
 
-                    subtotalDisplay.textContent = formatRupiah(subtotal);
-                    diskonDisplay.textContent = formatRupiah(diskon);
-                    grandTotalDisplay.textContent = formatRupiah(totalBersih);
-                    netTotalDisplay.textContent = formatRupiah(totalBersih);
-                }
+                     if (angkaInput(diskonTotalInput) > subtotal) {
+                         isiAngka(diskonTotalInput, subtotal);
+                     }
+
+                     subtotalDisplay.textContent = formatRupiah(subtotal);
+                     diskonDisplay.textContent = formatRupiah(diskon);
+                     const biayaLainDisplay = document.getElementById('biaya-lain-display');
+                     if (biayaLainDisplay) {
+                         biayaLainDisplay.textContent = formatRupiah(totalBiayaLain);
+                     }
+                     grandTotalDisplay.textContent = formatRupiah(totalBersih);
+                     document.getElementById('pph23-display').textContent = formatRupiah(pph23);
+                     netTotalDisplay.textContent = formatRupiah(totalHutangSupplier);
+                 }
 
                 function tambahBaris(data = {}) {
                     const clone = template.content.cloneNode(true);
@@ -579,6 +614,7 @@
                     tbody.insertAdjacentHTML('beforeend', html);
                     const barisBaru = tbody.querySelector('.baris-item:last-child');
                     const selectProduk = barisBaru.querySelector('.select-produk');
+
                     barisBaru.querySelector('.input-qty').value = data.qty ?? '';
                     barisBaru.querySelector('.input-harga').value = data.harga_satuan ?? '';
                     barisBaru.querySelector('.input-subtotal').value = data.subtotal ?? '';
@@ -587,7 +623,7 @@
                     filterProduk();
                     initSelectSearch(barisBaru);
                     if (window.jQuery && jQuery.fn.select2) {
-                        jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change');
+                        jQuery(selectProduk).val(data.pakan_id ?? null).trigger('change.select2');
                     }
                     cekHargaRataRata(selectProduk);
                     hitungUlangSemua();
@@ -705,19 +741,11 @@
 
                 btnTambah.addEventListener('click', tambahBaris);
                 diskonTotalInput.addEventListener('input', hitungUlangSemua);
+                document.querySelectorAll('.input-biaya-lain').forEach((input) => {
+                    input.addEventListener('input', hitungUlangSemua);
+                });
+                document.querySelector('.input-pph23-manual')?.addEventListener('input', hitungUlangSemua);
                 jenisRadios.forEach((radio) => radio.addEventListener('change', updateJenisFaktur));
-                const metodePembayaran = document.getElementById('metode_pembayaran');
-                const akunPembayaranWrap = document.getElementById('akun-pembayaran-wrap');
-                const akunPembayaran = document.getElementById('id_akun_pembayaran');
-                function updateMetodePembayaran() {
-                    const tunai = metodePembayaran.value === 'tunai';
-                    akunPembayaranWrap.style.display = tunai ? 'block' : 'none';
-                    akunPembayaran.required = tunai;
-                    akunPembayaran.disabled = !tunai;
-                    document.getElementById('payment-total-label').textContent = tunai ? 'TOTAL HPP / PEMBAYARAN' : 'TOTAL HPP / HUTANG';
-                }
-                metodePembayaran.addEventListener('change', updateMetodePembayaran);
-                updateMetodePembayaran();
                 initSelectSearch();
                 updateJenisFaktur();
 

@@ -22,6 +22,7 @@ use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\ProdukPerencanaanController;
 use App\Http\Controllers\ProdukTelurMasterController;
 use App\Http\Controllers\RakController;
+use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\StokTelurMtdController;
 use App\Http\Controllers\SuplierController;
 use App\Http\Controllers\PembelianPulletController;

@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">{{ $faktur->no_faktur }} - {{ $faktur->supplier->nm_suplier ?? '-' }}</small>
+                <small class="text-muted">{{ $tagihan->nomor_tagihan }} - {{ $faktur->supplier->nm_suplier ?? '-' }}</small>
             </div>
             <a href="{{ route('transaksi.buku-hutang.index') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Buku Hutang
@@ -138,8 +138,8 @@
                     <div class="pay-panel-body">
                         <div class="summary-grid">
                             <div class="summary-box">
-                                <div class="label">Total hutang</div>
-                                <div class="value">Rp {{ number_format($faktur->total_hutang, 0, ',', '.') }}</div>
+                                <div class="label">Nilai tagihan {{ strtolower($tagihan->nama_komponen) }}</div>
+                                <div class="value">Rp {{ number_format($tagihan->nominal_hutang, 0, ',', '.') }}</div>
                             </div>
                             <div class="summary-box">
                                 <div class="label">Sudah dibayar</div>
@@ -151,7 +151,7 @@
                             </div>
                         </div>
 
-                        <div class="table-responsive mb-3">
+                        @if($komponen === 'barang')<div class="table-responsive mb-3">
                             <table class="table table-bordered align-middle detail-table">
                                 <thead>
                                     <tr>
@@ -174,24 +174,11 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        @if (count($faktur->biaya_lain ?? []))
-                            <h6 class="mb-2">Biaya Lain-lain</h6>
-                            <div class="table-responsive mb-3">
-                                <table class="table table-sm table-bordered align-middle detail-table">
-                                    <thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th class="text-end">Nominal</th></tr></thead>
-                                    <tbody>
-                                        @foreach (($faktur->biaya_lain ?? []) as $biaya)
-                                            @php($akunBiayaItem = $akunBiaya[$biaya['id_akun'] ?? 0] ?? null)
-                                            <tr><td>{{ $akunBiayaItem?->kode_perkiraan ?? '-' }} - {{ $akunBiayaItem?->nama ?? 'Akun tidak ditemukan' }}</td><td>{{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'Biaya lain') }}</td><td class="text-end">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</td></tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                        </div>@else
+                            <div class="alert alert-light border mb-3"><strong>{{ $tagihan->nama_komponen }}</strong><div class="text-muted small">Tagihan biaya ini dipisahkan dari tagihan barang pada faktur {{ $faktur->no_faktur }}.</div></div>
                         @endif
 
-                        <h6 class="mb-2">Riwayat Pelunasan</h6>
+                        <h6 class="mb-2">Riwayat Pelunasan {{ $tagihan->nama_komponen }}</h6>
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered align-middle mb-0">
                                 <thead>
@@ -229,6 +216,7 @@
                         <form method="POST" action="{{ route('transaksi.buku-hutang.pelunasan.store', $faktur) }}"
                             class="pay-form">
                             @csrf
+                            <input type="hidden" name="komponen_hutang" value="{{ $komponen }}">
                             <div class="mb-3">
                                 <label class="form-label" for="tanggal_bayar">Tanggal bayar</label>
                                 <input type="date" id="tanggal_bayar" name="tanggal_bayar" class="form-control"

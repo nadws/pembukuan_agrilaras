@@ -91,6 +91,9 @@
                         <div class="value">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</div>
                     </div>
                 @endforeach
+                @php($totalPph23 = collect($faktur->biaya_lain ?? [])->sum('pph23_nominal'))
+                @if($totalPph23 > 0)<div class="col-lg-3 col-md-6"><div class="label">Potongan PPh 23</div><div class="value">Rp {{ number_format($totalPph23,0,',','.') }}</div></div>@endif
+                <div class="col-lg-3 col-md-6"><div class="label">Total Hutang Supplier</div><div class="value">Rp {{ number_format($faktur->total_hutang,0,',','.') }}</div></div>
                 <div class="col-lg-3 col-md-6">
                     <div class="label">Metode Pembayaran</div>
                     <div class="value">{{ match ($faktur->metode_pembayaran ?? 'hutang') {
@@ -118,7 +121,7 @@
                         <th>Satuan</th>
                         <th class="text-end">HPP / Satuan</th>
                         <th class="text-end">Subtotal Bersih</th>
-                        <th>Akun Pembayaran</th>
+                        <th>Akun Hutang</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -155,7 +158,7 @@
             <h6>Biaya Lain-lain</h6>
             <div class="table-responsive mb-3">
                 <table class="table table-bordered table-detail">
-                    <thead><tr><th>Akun Pembayaran</th><th>Jenis Biaya</th><th class="text-end">Nominal</th></tr></thead>
+                    <thead><tr><th>Akun Hutang</th><th>Jenis Biaya</th><th class="text-end">Biaya Bruto</th><th class="text-end">PPh 23</th><th class="text-end">Hutang Neto</th></tr></thead>
                     <tbody>
                         @foreach (($faktur->biaya_lain ?? []) as $biaya)
                             @php($akun = $akunBiaya[$biaya['id_akun'] ?? 0] ?? null)
@@ -163,6 +166,8 @@
                                 <td>{{ $akun?->kode_perkiraan ?? '-' }} - {{ $akun?->nama ?? 'Akun tidak ditemukan' }}</td>
                                 <td>{{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'Biaya lain') }}</td>
                                 <td class="text-end">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($biaya['pph23_nominal'] ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format(($biaya['nominal'] ?? 0)-($biaya['pph23_nominal'] ?? 0), 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

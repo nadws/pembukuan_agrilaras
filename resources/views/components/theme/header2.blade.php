@@ -16,43 +16,41 @@
                     aria-expanded="false">
                     <div class="avatar avatar-md2">
                         @php
-                        if (empty(auth()->user()->posisi->id_posisi)) {
-                        $idPosisi =1 ;
-                        $nama = 'No Name';
-                        $posisi = '-';
-                        } else {
-                        $idPosisi = auth()->user()->posisi->id_posisi;
-                        $nama = ucwords(auth()->user()->name);
-                        $posisi = ucwords(auth()->user()->posisi->nm_posisi);
-                        }
+                            if (empty(auth()->user()->posisi->id_posisi)) {
+                                $idPosisi = 1;
+                                $nama = 'No Name';
+                                $posisi = '-';
+                            } else {
+                                $idPosisi = auth()->user()->posisi->id_posisi;
+                                $nama = ucwords(auth()->user()->name);
+                                $posisi = ucwords(auth()->user()->posisi->nm_posisi);
+                            }
 
-
-                        $gambar = $idPosisi == 1 ? 'Admin' : 'Pengawas';
+                            $gambar = $idPosisi == 1 ? 'Admin' : 'Pengawas';
                         @endphp
-                        <img src='{{ asset("img/$gambar.png") }}' alt="Avatar">
+                        <img src='{{ asset('img/kitchen.png') }}' alt="Avatar">
                     </div>
                     <div class="text">
-                        <h6 class="user-dropdown-name">{{$nama}}</h6>
+                        <h6 class="user-dropdown-name">{{ $nama }}</h6>
                         <p class="user-dropdown-status text-sm text-muted">
                             {{ $posisi }}
                         </p>
                     </div>
                 </a>
                 @if (empty(auth()->user()->posisi->id_posisi))
-
                 @else
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="topbarUserDropdown">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a>
-                    </li>
-                    <li>
-                        <form id="myForm" method="post" action="{{ route('logout') }}">
-                            @csrf
-                        </form>
-                        <a class="dropdown-item" href="#"
-                            onclick="document.getElementById('myForm').submit();">Logout</a>
-                    </li>
-                </ul>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="topbarUserDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a>
+                        </li>
+                        <li>
+                            <form id="myForm" method="post" action="{{ route('logout') }}">
+                                @csrf
+                            </form>
+                            <a class="dropdown-item" href="#"
+                                onclick="document.getElementById('myForm').submit();">Logout</a>
+                        </li>
+                    </ul>
                 @endif
 
             </div>

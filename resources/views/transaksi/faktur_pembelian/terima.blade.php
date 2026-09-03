@@ -124,8 +124,10 @@
 
             @if ($faktur->jenis_faktur === 'pakan')
                 <div class="alert alert-info">
-                    Qty diterima diisi dalam zak. Saat masuk stok, 1 zak dihitung sebagai 50.000 gram.
+                    Qty diterima diisi dalam zak. Saat masuk stok, 1 zak dihitung sebagai 50.000 gram. Harga HPP sudah termasuk alokasi ongkir dan admin.
                 </div>
+            @elseif(count($faktur->biaya_lain ?? []))
+                <div class="alert alert-info">Harga HPP stok sudah termasuk alokasi ongkir dan admin dari faktur.</div>
             @endif
 
             <form method="POST" action="{{ route('transaksi.faktur-pembelian.terima.store', $faktur) }}"
@@ -150,7 +152,7 @@
                                 <th class="text-end" width="120">Qty Faktur</th>
                                 <th class="text-end" width="130">Qty Diterima</th>
                                 <th width="110">Satuan</th>
-                                <th class="text-end" width="150">Harga Satuan</th>
+                                <th class="text-end" width="150">HPP Satuan</th>
                                 <th class="text-end" width="150">Subtotal Terima</th>
                             </tr>
                         </thead>
@@ -159,6 +161,7 @@
                                 @php
                                     $qtyDiterima = (float) ($qtyDiterimaByProduk[$detail->pakan_id] ?? 0);
                                     $qtySisa = max((float) $detail->qty - $qtyDiterima, 0);
+                                    $hargaHpp = (float) ($hargaHppByDetail[$detail->id] ?? $detail->harga_satuan);
                                 @endphp
                                 <tr>
                                     <td>{{ $no + 1 }}</td>
@@ -179,14 +182,15 @@
                                             name="detail[{{ $detail->id }}][qty_diterima]"
                                             class="form-control text-end qty-terima"
                                             value="{{ old('detail.' . $detail->id . '.qty_diterima', $qtySisa) }}"
-                                            data-harga="{{ $detail->harga_satuan }}" @disabled($sudahDiterima)
+                                            data-harga="{{ $hargaHpp }}" @disabled($sudahDiterima)
                                             required>
                                     </td>
                                     <td>{{ $detail->satuan ?? '-' }}</td>
-                                    <td class="text-end">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}
+                                    <td class="text-end">Rp {{ number_format($hargaHpp, 0, ',', '.') }}
+                                        @if($hargaHpp != (float)$detail->harga_satuan)<div class="text-muted small">Harga faktur Rp {{ number_format($detail->harga_satuan,0,',','.') }}</div>@endif
                                     </td>
                                     <td class="text-end subtotal-terima">Rp
-                                        {{ number_format($qtySisa * $detail->harga_satuan, 0, ',', '.') }}</td>
+                                        {{ number_format($qtySisa * $hargaHpp, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

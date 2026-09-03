@@ -159,6 +159,7 @@ class ImporJurnalPerkiraanService
         return DB::transaction(function () use ($preview, $userId) {
             $batch = ImporJurnalPerkiraan::create([
                 'nama_file' => $preview['nama_file'],
+                'sumber_data' => 'impor',
                 'hash_file' => $preview['hash_file'],
                 'periode_awal' => $preview['periode_awal'],
                 'periode_akhir' => $preview['periode_akhir'],

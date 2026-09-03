@@ -234,6 +234,12 @@ class NavbarController extends Controller
                 'img' => 'shop.png',
                 'deskripsi' => 'Mencatat penjualan produk umum dari kategori produk umum.',
             ],
+            [
+                'judul' => 'Setoran Kas',
+                'route' => 'transaksi.setoran-kas.index',
+                'img' => 'deposit.png',
+                'deskripsi' => 'Menyetorkan penerimaan kas penjualan ke rekening bank atau kas tujuan.',
+            ],
 
         ];
         $title = 'Transaksi';
@@ -346,6 +352,12 @@ class NavbarController extends Controller
                 'route' => 'jurnal-perkiraan.arus-kas',
                 'img' => 'money-flow.png',
                 'deskripsi' => 'Melihat aliran masuk dan keluar setiap rekening kas atau bank menurut akun lawannya.',
+            ],
+            [
+                'judul' => 'Laporan Akhir Bulan',
+                'route' => 'laporan.akhir-bulan',
+                'img' => 'evaluation.png',
+                'deskripsi' => 'Ringkasan saldo piutang bulan lalu dan saldo piutang bulan yang dipilih.',
             ],
             [
                 'judul' => 'Laporan Stok Persediaan',
