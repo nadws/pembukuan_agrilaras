@@ -1,22 +1,19 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
-        <div class="row">
+        <div class="row align-items-center">
             <div class="col-lg-6">
-                <h6 class="float-start mt-1">{{ $title }}</h6> <br><br>
-                {{-- <p>Piutang Diceklis : Rp. <span class="piutangBayar">0</span></p> --}}
+                <h5 class="mb-0">{{ $title }}</h5>
             </div>
-            <div class="col-lg-6">
-                {{-- <x-theme.button modal="T" icon="fa-plus" addClass="float-end btn_bayar" teks="Setor" /> --}}
-                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-end" teks="" />
-                <x-theme.btn_filter />
+            <div class="col-lg-6 text-lg-end mt-2 mt-lg-0">
+                <x-theme.button modal="T" href="/produk_telur" icon="fa-home" addClass="float-lg-end" teks="" />
             </div>
         </div>
     </x-slot>
     <x-slot name="cardBody">
         <style>
             .mtd-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
-            .mtd-summary-card{padding:14px 16px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd}
-            .mtd-summary-card small{display:block;margin-bottom:4px;color:#71809a;font-weight:600}
+            .mtd-summary-card{padding:14px 16px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd;display:flex;flex-direction:column;gap:2px}
+            .mtd-summary-card small{color:#71809a;font-weight:600}
             .mtd-summary-card strong{color:#18366f;font-size:19px}
             .mtd-filter{padding:14px;border:1px solid #dce4f2;border-radius:12px;background:#fff}
             .mtd-filter label{font-size:12px;font-weight:700;color:#52627a}
@@ -101,7 +98,11 @@
                             @endforeach
                             <td class="text-center">
                                 @if ($i->cek == 'Y')
-                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i> Dicek</span>
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i> Dicek</span>
+                                        <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Edit setoran"><i class="fas fa-edit"></i> Edit</a>
+                                    </div>
                                 @else
                                     <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
                                         class="btn btn-sm btn-primary"><i class="fas fa-plus"></i>

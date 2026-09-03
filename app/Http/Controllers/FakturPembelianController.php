@@ -607,22 +607,8 @@ class FakturPembelianController extends Controller
                      'updated_at' => $sekarang,
                  ];
                  
-                 // Jika ada PPH, debit dari ekspedisi dan kredit ke akun pajak
+                 // Jika ada PPH, kredit ke akun pajak (hutang ekspedisi sudah dikurangi PPh di atas)
                  if ($pphUntukBiayaIni > 0) {
-                     $detailJurnal[] = [
-                         'id_impor_jurnal_perkiraan' => $batchId,
-                         'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
-                         'tanggal' => $validated['tanggal_faktur'],
-                         'nomor_transaksi' => $validated['no_faktur'],
-                         'tipe_transaksi' => $tipeJurnal,
-                         'urutan_detail' => $urutanDetail++,
-                         'deskripsi' => 'Potongan PPh 23 atas ' . strtolower($biaya['nama']) . ' pembelian ' . $validated['jenis_faktur'],
-                         'debit' => $pphUntukBiayaIni,
-                         'kredit' => 0,
-                         'created_at' => $sekarang,
-                         'updated_at' => $sekarang,
-                     ];
-                     
                      $detailJurnal[] = [
                          'id_impor_jurnal_perkiraan' => $batchId,
                          'id_akun_perkiraan' => $akunPph23->id_akun_perkiraan,
@@ -1589,22 +1575,8 @@ class FakturPembelianController extends Controller
                  'updated_at' => $sekarang,
              ];
              
-             // Jika ada PPH, debit dari ekspedisi dan kredit ke akun pajak
+             // Jika ada PPH, kredit ke akun pajak (hutang ekspedisi sudah dikurangi PPh di atas)
              if ($pphUntukBiayaIni > 0) {
-                 $detailJurnal[] = [
-                     'id_impor_jurnal_perkiraan' => $batchId,
-                     'id_akun_perkiraan' => $akunKredit->id_akun_perkiraan,
-                     'tanggal' => $faktur->tanggal_faktur,
-                     'nomor_transaksi' => $faktur->no_faktur,
-                     'tipe_transaksi' => $faktur->jenis_faktur === 'vitamin' ? 'Faktur Pembelian Vitamin & Vaksin' : 'Faktur Pembelian ' . ucfirst($faktur->jenis_faktur),
-                     'urutan_detail' => $urutanDetail++,
-                     'deskripsi' => 'Potongan PPh 23 atas ' . strtolower($biaya['nama']) . ' pembelian ' . $faktur->jenis_faktur,
-                     'debit' => $pphUntukBiayaIni,
-                     'kredit' => 0,
-                     'created_at' => $sekarang,
-                     'updated_at' => $sekarang,
-                 ];
-                 
                  $detailJurnal[] = [
                      'id_impor_jurnal_perkiraan' => $batchId,
                      'id_akun_perkiraan' => $akunPph23->id_akun_perkiraan,

@@ -3,8 +3,8 @@
     <x-slot name="cardHeader">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
-                <h5 class="mb-1 text-primary">Setor Penjualan Telur Martadah</h5>
-                <small class="text-muted">Periksa detail nota lalu tentukan akun penerimaan setoran.</small>
+                <h5 class="mb-1 text-primary">{{ $jurnal->isNotEmpty() ? 'Edit Setoran Penjualan Telur Martadah' : 'Setor Penjualan Telur Martadah' }}</h5>
+                <small class="text-muted">{{ $jurnal->isNotEmpty() ? 'Perbarui akun penerimaan setoran nota berikut.' : 'Periksa detail nota lalu tentukan akun penerimaan setoran.' }}</small>
             </div>
             <span class="badge bg-light text-primary px-3 py-2">{{ $nota }}</span>
         </div>
@@ -316,49 +316,61 @@
                             @php
                                 $debit = 0;
                                 $kredit = 0;
+                                $rowCount = $jurnal->count();
                             @endphp
-                            @foreach ($jurnal as $j)
+                            @foreach ($jurnal as $no => $j)
                                 @php
                                     $debit += $j->debit;
                                     $kredit += $j->kredit;
+                                    $count = $no + 1;
                                 @endphp
-                                <div class="col-lg-5 mt-2">
-                                    <label for="">Pilih Akun Setor</label>
-                                    <select name="" id="" class="select2_add" required disabled>
-                                        <option value="">-Pilih Akun-</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun_perkiraan }}"
-                                                {{ $a->id_akun_perkiraan == $j->id_akun_perkiraan ? 'SELECTED' : '' }}>
-                                                {{ $a->kode_perkiraan }} - {{ $a->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="id_akun[]" value="{{ $j->id_akun_perkiraan }}">
+                                <div class="row baris_bayar{{ $count }}">
+                                    <div class="col-lg-5 mt-2">
+                                        <label for="">Pilih Akun Setor</label>
+                                        <select name="id_akun[]" class="select2_add" required>
+                                            <option value="">-Pilih Akun-</option>
+                                            @foreach ($akun as $a)
+                                                <option value="{{ $a->id_akun_perkiraan }}"
+                                                    {{ $a->id_akun_perkiraan == $j->id_akun_perkiraan ? 'SELECTED' : '' }}>
+                                                    {{ $a->kode_perkiraan }} - {{ $a->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3 mt-2">
+                                        <label for="">Debit</label>
+                                        <input type="text" class="form-control debit debit{{ $count }}" count="{{ $count }}"
+                                            style="text-align: right"
+                                            value="Rp {{ number_format($j->debit, 2, ',', '.') }}">
+                                        <input type="hidden" name="debit[]"
+                                            class="form-control debit_biasa debit_biasa{{ $count }}" value="{{ $j->debit }}">
+                                    </div>
+                                    <div class="col-lg-3 mt-2">
+                                        <label for="">Kredit</label>
+                                        <input type="text" class="form-control kredit kredit{{ $count }}" count="{{ $count }}"
+                                            style="text-align: right"
+                                            value="Rp {{ number_format($j->kredit, 2, ',', '.') }}">
+                                        <input type="hidden" name="kredit[]"
+                                            class="form-control kredit_biasa kredit_biasa{{ $count }}" value="{{ $j->kredit }}">
+                                    </div>
+                                    @if ($loop->last)
+                                        <div class="col-lg-1 mt-2">
+                                            <label for="">aksi</label> <br>
+                                            <button type="button" class="btn rounded-pill delete_pembayaran"
+                                                count="{{ $count }}"><i class="fas fa-trash text-danger"></i></button>
+                                            <button type="button" class="btn rounded-pill tbh_pembayaran"
+                                                count="{{ $count }}"><i class="fas fa-plus text-success"></i></button>
+                                        </div>
+                                    @else
+                                        <div class="col-lg-1 mt-2">
+                                            <label for="">aksi</label> <br>
+                                            <button type="button" class="btn rounded-pill delete_pembayaran"
+                                                count="{{ $count }}"><i class="fas fa-trash text-danger"></i></button>
+                                        </div>
+                                    @endif
                                 </div>
-                                <div class="col-lg-3 mt-2">
-                                    <label for="">Debit</label>
-                                    <input type="text" class="form-control debit debit1" count="1"
-                                        style="text-align: right"
-                                        value="Rp {{ number_format($j->debit, 2, ',', '.') }}" readonly>
-                                    <input type="hidden" name="debit[]"
-                                        class="form-control debit_biasa debit_biasa1" value="{{ $j->debit }}">
-                                </div>
-                                <div class="col-lg-3 mt-2">
-                                    <label for="">Kredit</label>
-                                    <input type="text" class="form-control kredit kredit1" count="1"
-                                        style="text-align: right"
-                                        value="Rp {{ number_format($j->kredit, 2, ',', '.') }}" readonly>
-                                    <input type="hidden" name="kredit[]"
-                                        class="form-control kredit_biasa kredit_biasa1" value="{{ $j->kredit }}">
-                                </div>
-                                {{-- <div class="col-lg-1 mt-2">
-                            <label for="">aksi</label> <br>
-                            <button type="button" class="btn rounded-pill tbh_pembayaran" count="1">
-                                <i class="fas fa-plus text-success"></i>
-                            </button>
-                        </div> --}}
                             @endforeach
-                            {{-- <div id="load_pembayaran"></div> --}}
+                            <div id="load_pembayaran"></div>
 
                             <div class="row">
                                 <div class="col-lg-12">
@@ -374,25 +386,13 @@
                                     <h6 class="total_kredit float-end">Rp {{ number_format($total_semua, 0) }} </h6>
                                 </div>
                                 <div class="col-lg-5">
-                                    <select name="id_akun_sisa" id="" class="select2_add">
-                                        <option value="">-Pilih Akun-</option>
-                                        @foreach ($akun as $a)
-                                            <option value="{{ $a->id_akun_perkiraan }}">
-                                                {{ $a->kode_perkiraan }} - {{ $a->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="selisih" value="{{ $debit - $total_semua }}">
+                                    <h6 class="cselisih">Selisih</h6>
                                 </div>
                                 <div class="col-lg-3">
                                 </div>
                                 <div class="col-lg-4">
-                                    <h6
-                                        class="selisih float-end cselisih {{ $debit - $total_semua != 0 ? 'text-danger' : 'text-success' }}">
-                                        Rp
-                                        {{ number_format($debit - $total_semua) }}</h6>
+                                    <h6 class="selisih float-end cselisih">Rp {{ number_format($debit - $total_semua, 0) }}</h6>
                                 </div>
-
                             </div>
 
                         @endif
@@ -537,7 +537,7 @@
 
 
                 });
-                var count = 2;
+                var count = Math.max(1, $(".baris_bayar").length);
                 $(document).on("click", ".tbh_pembayaran", function() {
                     count = count + 1;
                     $.ajax({
