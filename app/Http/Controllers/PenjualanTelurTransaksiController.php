@@ -41,11 +41,56 @@ class PenjualanTelurTransaksiController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $totalRp = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoin('customer as c2', 'c2.id_customer', '=', 'i.id_customer2')
+            ->where('i.lokasi', 'alpa')
+            ->whereBetween('i.tgl', [$tanggalAwal, $tanggalAkhir])
+            ->when($cari !== '', function ($query) use ($cari) {
+                $query->where(function ($search) use ($cari) {
+                    $search->where('i.no_nota', 'like', "%{$cari}%")
+                        ->orWhere('c.nm_customer', 'like', "%{$cari}%")
+                        ->orWhere('c2.nm_customer', 'like', "%{$cari}%");
+                });
+            })
+            ->sum('i.total_rp');
+
+        $totalPcs = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoin('customer as c2', 'c2.id_customer', '=', 'i.id_customer2')
+            ->where('i.lokasi', 'alpa')
+            ->whereBetween('i.tgl', [$tanggalAwal, $tanggalAkhir])
+            ->when($cari !== '', function ($query) use ($cari) {
+                $query->where(function ($search) use ($cari) {
+                    $search->where('i.no_nota', 'like', "%{$cari}%")
+                        ->orWhere('c.nm_customer', 'like', "%{$cari}%")
+                        ->orWhere('c2.nm_customer', 'like', "%{$cari}%");
+                });
+            })
+            ->sum('i.pcs');
+
+        $totalKg = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoin('customer as c2', 'c2.id_customer', '=', 'i.id_customer2')
+            ->where('i.lokasi', 'alpa')
+            ->whereBetween('i.tgl', [$tanggalAwal, $tanggalAkhir])
+            ->when($cari !== '', function ($query) use ($cari) {
+                $query->where(function ($search) use ($cari) {
+                    $search->where('i.no_nota', 'like', "%{$cari}%")
+                        ->orWhere('c.nm_customer', 'like', "%{$cari}%")
+                        ->orWhere('c2.nm_customer', 'like', "%{$cari}%");
+                });
+            })
+            ->sum('i.kg_jual');
+
         return view('transaksi.penjualan_telur.index', compact(
             'penjualan',
             'tanggalAwal',
             'tanggalAkhir',
-            'cari'
+            'cari',
+            'totalRp',
+            'totalPcs',
+            'totalKg'
         ));
     }
 

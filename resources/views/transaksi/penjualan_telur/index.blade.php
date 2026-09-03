@@ -51,6 +51,28 @@
                 </div>
             </div>
         </form>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <div class="p-2 px-3 border rounded" style="background-color: #f8f9fa;">
+                    <small class="text-secondary d-block font-size-12 fw-semibold">Total Penjualan</small>
+                    <span class="fw-bold fs-6" style="color: #1e293b;">Rp {{ number_format($totalRp ?? 0, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-2 px-3 border rounded" style="background-color: #f8f9fa;">
+                    <small class="text-secondary d-block font-size-12 fw-semibold">Total Telur (Pcs)</small>
+                    <span class="fw-bold fs-6" style="color: #1e293b;">{{ number_format($totalPcs ?? 0, 0, ',', '.') }} Pcs</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-2 px-3 border rounded" style="background-color: #f8f9fa;">
+                    <small class="text-secondary d-block font-size-12 fw-semibold">Total Telur (Kg)</small>
+                    <span class="fw-bold fs-6" style="color: #1e293b;">{{ number_format($totalKg ?? 0, 2, ',', '.') }} Kg</span>
+                </div>
+            </div>
+        </div>
+
         <div class="egg-table-wrap">
             <table class="table table-hover align-middle egg-table">
                 <thead>
