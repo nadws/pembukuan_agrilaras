@@ -63,6 +63,12 @@
             </div>
         </header>
 
+        @php
+            $akunSumberUnik = $setorKas->detail->map(function($d) {
+                return ($d->akunSumber->kode_perkiraan ?? '') . ' - ' . ($d->akunSumber->nama ?? '');
+            })->unique()->filter()->values();
+        @endphp
+
         <section class="info-grid">
             <div class="info">
                 <span class="label">Tanggal Setoran</span>
@@ -80,6 +86,11 @@
                 <span class="label">Keterangan</span>
                 <span class="value">{{ $setorKas->keterangan ?: '-' }}</span>
             </div>
+            <div class="info">
+                <span class="label">Akun Kas Sumber</span>
+                <span class="value">{{ $akunSumberUnik->implode(', ') ?: '-' }}</span>
+            </div>
+            <div class="info"></div>
         </section>
 
         <div class="total-box">
@@ -91,10 +102,11 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 28mm;">Tanggal</th>
-                    <th style="width: 38mm;">No. Transaksi</th>
-                    <th>Akun Kas Sumber</th>
-                    <th style="width: 38mm;" class="right">Nominal</th>
+                    <th style="width: 25mm;">Tanggal</th>
+                    <th style="width: 32mm;">No. Transaksi</th>
+                    <th style="width: 42mm;">Customer</th>
+                    <th>Keterangan</th>
+                    <th style="width: 35mm;" class="right">Nominal</th>
                 </tr>
             </thead>
             <tbody>
@@ -102,16 +114,17 @@
                     <tr>
                         <td>{{ $detail->jurnalPerkiraan && $detail->jurnalPerkiraan->tanggal ? \Carbon\Carbon::parse($detail->jurnalPerkiraan->tanggal)->format('d/m/Y') : '-' }}</td>
                         <td>{{ $detail->jurnalPerkiraan->nomor_transaksi ?? '-' }}</td>
-                        <td>{{ $detail->akunSumber->kode_perkiraan ?? '-' }} - {{ $detail->akunSumber->nama ?? '-' }}</td>
+                        <td>{{ $detail->nama_customer ?? '-' }}</td>
+                        <td>{{ $detail->jurnalPerkiraan->deskripsi ?? '-' }}</td>
                         <td class="right">Rp {{ number_format($detail->nominal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="center muted">Tidak ada rincian transaksi</td></tr>
+                    <tr><td colspan="5" class="center muted">Tidak ada rincian transaksi</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="3" class="right">Total</td>
+                    <td colspan="4" class="right">Total</td>
                     <td class="right">Rp {{ number_format($setorKas->detail->sum('nominal'), 0, ',', '.') }}</td>
                 </tr>
             </tfoot>

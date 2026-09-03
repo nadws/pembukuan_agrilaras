@@ -168,6 +168,17 @@
                             <span class="akun-badge">{{ $setorKas->akunTujuan->kode_perkiraan ?? '-' }}</span>
                             <span class="info-field-val d-block">{{ $setorKas->akunTujuan->nama ?? '-' }}</span>
                         </div>
+                        @php
+                            $akunSumberUnik = $setorKas->detail->map(function($d) {
+                                return ($d->akunSumber->kode_perkiraan ?? '') . ' - ' . ($d->akunSumber->nama ?? '');
+                            })->unique()->filter()->values();
+                        @endphp
+                        <div class="col-12">
+                            <span class="info-field-label">Akun Kas Sumber</span>
+                            @foreach($akunSumberUnik as $asu)
+                                <span class="akun-badge" style="background-color: #fef3c7 !important; color: #92400e !important; border-color: #fde68a !important;">{{ $asu }}</span>
+                            @endforeach
+                        </div>
                         @if($setorKas->nomor_referensi)
                             <div class="col-sm-6">
                                 <span class="info-field-label">No. Referensi</span>
@@ -204,11 +215,12 @@
                 <table class="table table-hover table-bordered align-middle tabel-detail mb-0">
                     <thead>
                         <tr>
-                            <th width="120">Tanggal</th>
-                            <th width="150">No. Transaksi</th>
-                            <th width="240">Akun Kas Sumber</th>
+                            <th width="110">Tanggal</th>
+                            <th width="140">No. Transaksi</th>
+                            <th width="180">Customer</th>
+                            <th width="220">Akun Kas Sumber</th>
                             <th>Deskripsi</th>
-                            <th width="170" class="text-end">Nominal Disetor</th>
+                            <th width="160" class="text-end">Nominal Disetor</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,6 +231,9 @@
                                 </td>
                                 <td class="no-transaksi-text">
                                     {{ $detail->jurnalPerkiraan->nomor_transaksi ?? '-' }}
+                                </td>
+                                <td style="color: #0f172a !important; font-weight: 600;">
+                                    {{ $detail->nama_customer ?? '-' }}
                                 </td>
                                 <td>
                                     <span class="akun-badge">{{ $detail->akunSumber->kode_perkiraan ?? '-' }}</span>
@@ -233,13 +248,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-3">Tidak ada rincian transaksi</td>
+                                <td colspan="6" class="text-center text-muted py-3">Tidak ada rincian transaksi</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-end" style="color: #0f172a !important;">Total Nominal Transaksi:</th>
+                            <th colspan="5" class="text-end" style="color: #0f172a !important;">Total Nominal Transaksi:</th>
                             <th class="text-end" style="color: #1e40af !important; font-size: 14.5px; font-weight: 800;">
                                 Rp {{ number_format($setorKas->detail->sum('nominal'), 0, ',', '.') }}
                             </th>
@@ -302,6 +317,9 @@
 
         {{-- Actions --}}
         <div class="d-flex gap-2 justify-content-end pt-2">
+            <a href="{{ route('transaksi.setoran-kas.cetak', $setorKas) }}" target="_blank" class="btn btn-outline-primary">
+                <i class="fas fa-print me-1"></i> Cetak Bukti Setoran
+            </a>
             <form action="{{ route('transaksi.setoran-kas.destroy', $setorKas) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus setoran ini? Seluruh jurnal perkiraan terkait juga akan dihapus.')">
                 @csrf
                 @method('DELETE')

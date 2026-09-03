@@ -370,6 +370,7 @@ class SetorKasController extends Controller
     public function show(SetorKas $setorKas)
     {
         $setorKas->load('akunTujuan', 'detail.jurnalPerkiraan', 'detail.akunSumber');
+        $this->attachCustomerNamesToDetails($setorKas->detail);
 
         $jurnalHasil = collect();
         if ($setorKas->id_impor_jurnal_perkiraan) {
@@ -398,6 +399,7 @@ class SetorKasController extends Controller
     public function cetak(SetorKas $setorKas)
     {
         $setorKas->load('akunTujuan', 'detail.jurnalPerkiraan', 'detail.akunSumber');
+        $this->attachCustomerNamesToDetails($setorKas->detail);
 
         $jurnalHasil = collect();
         if ($setorKas->id_impor_jurnal_perkiraan) {
@@ -421,6 +423,41 @@ class SetorKasController extends Controller
             'setorKas' => $setorKas,
             'jurnalHasil' => $jurnalHasil,
         ]);
+    }
+
+    private function attachCustomerNamesToDetails($details)
+    {
+        $nomorTransaksiList = $details->map(function ($d) {
+            return $d->jurnalPerkiraan->nomor_transaksi ?? null;
+        })->filter()->unique()->values();
+
+        $customerMap = collect();
+        if ($nomorTransaksiList->isNotEmpty()) {
+            $customerMap = DB::table($this->customerTransactionSubquery(), 'c')
+                ->whereIn('c.nomor_transaksi', $nomorTransaksiList)
+                ->pluck('nama_customer', 'nomor_transaksi');
+        }
+
+        foreach ($details as $detail) {
+            $jp = $detail->jurnalPerkiraan;
+            if (!$jp) {
+                $detail->nama_customer = '-';
+                continue;
+            }
+
+            // Kalo dia dari setoran kas, customernya jadi '-'
+            $isSetoran = stripos($jp->tipe_transaksi ?? '', 'setoran') !== false
+                || stripos($jp->nomor_transaksi ?? '', 'SK-') === 0;
+
+            if ($isSetoran) {
+                $detail->nama_customer = '-';
+            } else {
+                $cust = $customerMap->get($jp->nomor_transaksi);
+                $detail->nama_customer = ($cust && trim($cust) !== '' && trim($cust) !== '0') ? trim($cust) : '-';
+            }
+        }
+
+        return $details;
     }
 
     public function destroy(SetorKas $setorKas)
