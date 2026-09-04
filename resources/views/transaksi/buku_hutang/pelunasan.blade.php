@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">{{ $tagihan->nomor_tagihan }} - {{ $faktur->supplier->nm_suplier ?? '-' }}</small>
+                <small class="text-muted">{{ $tagihan->nomor_tagihan }} - {{ $komponen === 'pph23' ? 'Kas Negara — PPh 23' : ($faktur->supplier->nm_suplier ?? '-') }}</small>
             </div>
             <a href="{{ route('transaksi.buku-hutang.index') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Buku Hutang
@@ -142,7 +142,7 @@
                                 <div class="value">Rp {{ number_format($tagihan->nominal_hutang, 0, ',', '.') }}</div>
                             </div>
                             <div class="summary-box">
-                                <div class="label">Sudah dibayar</div>
+                                    <div class="label">Hutang diselesaikan</div>
                                 <div class="value">Rp {{ number_format($totalTerbayar, 0, ',', '.') }}</div>
                             </div>
                             <div class="summary-box">
@@ -175,7 +175,7 @@
                                 </tbody>
                             </table>
                         </div>@else
-                            <div class="alert alert-light border mb-3"><strong>{{ $tagihan->nama_komponen }}</strong><div class="text-muted small">Tagihan biaya ini dipisahkan dari tagihan barang pada faktur {{ $faktur->no_faktur }}.</div></div>
+                            <div class="alert alert-light border mb-3"><strong>{{ $tagihan->nama_komponen }}</strong><div class="text-muted small">{{ $komponen === 'pph23' ? 'Pembayaran pajak ini mengurangi akun Hutang Pajak PPh 23 (210203), bukan hutang pemasok.' : 'Tagihan biaya ini dipisahkan dari tagihan barang.' }} Faktur {{ $faktur->no_faktur }}.</div></div>
                         @endif
 
                         <h6 class="mb-2">Riwayat Pelunasan {{ $tagihan->nama_komponen }}</h6>
@@ -186,6 +186,8 @@
                                         <th>Tanggal</th>
                                         <th>Akun Pembayaran</th>
                                         <th class="text-end">Jumlah</th>
+                                        <th class="text-end">Hutang dilunasi</th>
+                                        <th class="text-end">Selisih biaya</th>
                                         <th>Keterangan</th>
                                     </tr>
                                 </thead>
@@ -195,11 +197,13 @@
                                             <td>{{ tanggal($riwayat->tanggal_bayar) }}</td>
                                             <td>{{ $riwayat->kode_perkiraan }} - {{ $riwayat->nama_akun }}</td>
                                             <td class="text-end">Rp {{ number_format($riwayat->jumlah_bayar, 0, ',', '.') }}</td>
+                                            <td class="text-end">Rp {{ number_format($riwayat->hutang_dilunasi ?? $riwayat->jumlah_bayar, 0, ',', '.') }}</td>
+                                            <td class="text-end">Rp {{ number_format($riwayat->selisih_biaya ?? 0, 0, ',', '.') }}</td>
                                             <td>{{ $riwayat->keterangan ?: '-' }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">Belum ada pelunasan.</td>
+                                            <td colspan="6" class="text-center text-muted py-3">Belum ada pelunasan.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -236,10 +240,24 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" for="jumlah_bayar">Jumlah bayar</label>
-                                <input type="number" step="0.01" min="0.01" max="{{ $sisaHutang }}"
+                                <input type="number" step="0.01" min="{{ $komponen === 'barang' ? '0.01' : '0' }}" @if($komponen === 'barang') max="{{ $sisaHutang }}" @endif
                                     id="jumlah_bayar" name="jumlah_bayar" class="form-control text-end"
                                     value="{{ old('jumlah_bayar', $sisaHutang) }}" required>
                             </div>
+                            @if($komponen !== 'barang')
+                                <div class="alert alert-light border small">Pembayaran ini menyelesaikan seluruh sisa hutang {{ $tagihan->nama_komponen }}. Selisih lebih/kurang dicatat ke biaya, tanpa mengubah persediaan.</div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="id_akun_selisih">Akun biaya selisih</label>
+                                    <select id="id_akun_selisih" name="id_akun_selisih" class="form-select select-search-akun">
+                                        <option value="">Pilih jika ada selisih pembayaran</option>
+                                        @foreach($akunSelisih as $akun)
+                                            <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('id_akun_selisih', $komponen === 'ongkir' ? $akunSelisih->firstWhere('kode_perkiraan', '600001')?->id_akun_perkiraan : null) == $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('id_akun_selisih')<small class="text-danger">{{ $message }}</small>@enderror
+                                    <small class="d-block mt-2" id="preview-selisih"></small>
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label class="form-label" for="keterangan">Keterangan</label>
                                 <textarea id="keterangan" name="keterangan" class="form-control" rows="3"
@@ -247,7 +265,7 @@
                             </div>
 
                             <div class="total-pay-box mb-3">
-                                <div class="label">Maksimal pembayaran</div>
+                                <div class="label">{{ $komponen === 'barang' ? 'Maksimal pembayaran' : 'Hutang yang akan dilunasi' }}</div>
                                 <div class="value">Rp {{ number_format($sisaHutang, 0, ',', '.') }}</div>
                             </div>
 
@@ -269,11 +287,22 @@
     @section('scripts')
         <script>
             (function() {
+                const jumlah = document.getElementById('jumlah_bayar');
+                const preview = document.getElementById('preview-selisih');
+                if (jumlah && preview) {
+                    const update = () => {
+                        const selisih = Math.round(((Number(jumlah.value) || 0) - @json((float) $sisaHutang)) * 100) / 100;
+                        preview.textContent = selisih === 0 ? 'Tidak ada selisih.' : (selisih > 0 ? 'Tambahan biaya: Rp ' : 'Pengurang biaya: Rp ') + Math.abs(selisih).toLocaleString('id-ID');
+                        document.getElementById('id_akun_selisih').required = selisih !== 0;
+                    };
+                    jumlah.addEventListener('input', update);
+                    update();
+                }
                 if (!window.jQuery || !jQuery.fn.select2) return;
 
                 jQuery('.select-search-akun').select2({
                     width: '100%',
-                    placeholder: 'Cari kas atau bank',
+                    placeholder: 'Cari atau pilih akun',
                     allowClear: true,
                     matcher: function(params, data) {
                         if (data.element && data.element.disabled) {

@@ -158,7 +158,7 @@
             <h6>Biaya Lain-lain</h6>
             <div class="table-responsive mb-3">
                 <table class="table table-bordered table-detail">
-                    <thead><tr><th>Akun Hutang</th><th>Jenis Biaya</th><th class="text-end">Biaya Bruto</th><th class="text-end">PPh 23</th><th class="text-end">Hutang Neto</th></tr></thead>
+                    <thead><tr><th>Akun Hutang</th><th>Jenis Biaya</th><th class="text-end">Hutang Neto</th><th class="text-end">PPh 23</th><th class="text-end">Biaya Bruto (Ke HPP)</th></tr></thead>
                     <tbody>
                         @foreach (($faktur->biaya_lain ?? []) as $biaya)
                             @php($akun = $akunBiaya[$biaya['id_akun'] ?? 0] ?? null)
@@ -167,7 +167,7 @@
                                 <td>{{ $biaya['nama'] ?? ucfirst($biaya['kode'] ?? 'Biaya lain') }}</td>
                                 <td class="text-end">Rp {{ number_format($biaya['nominal'] ?? 0, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($biaya['pph23_nominal'] ?? 0, 0, ',', '.') }}</td>
-                                <td class="text-end">Rp {{ number_format(($biaya['nominal'] ?? 0)-($biaya['pph23_nominal'] ?? 0), 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format(($biaya['nominal'] ?? 0)+($biaya['pph23_nominal'] ?? 0), 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

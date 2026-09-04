@@ -66,7 +66,7 @@
 
             .debt-breakdown {
                 display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
                 gap: 10px;
                 margin-bottom: 14px;
             }
@@ -191,7 +191,7 @@
                     <div class="value">Rp {{ number_format($totalHutang, 0, ',', '.') }}</div>
                 </div>
                 <div class="debt-summary-item">
-                    <div class="label">Sudah dibayar</div>
+                    <div class="label">Hutang diselesaikan</div>
                     <div class="value">Rp {{ number_format($totalTerbayar, 0, ',', '.') }}</div>
                 </div>
                 <div class="debt-summary-item">
@@ -204,6 +204,7 @@
                 <div class="debt-summary-item"><div class="label">Hutang barang/produk</div><div class="value">Rp {{ number_format($totalHutangBarang, 0, ',', '.') }}</div></div>
                 <div class="debt-summary-item"><div class="label">Hutang ongkir</div><div class="value">Rp {{ number_format($totalHutangOngkir, 0, ',', '.') }}</div></div>
                 <div class="debt-summary-item"><div class="label">Hutang admin</div><div class="value">Rp {{ number_format($totalHutangAdmin, 0, ',', '.') }}</div></div>
+                <div class="debt-summary-item"><div class="label">Hutang PPh 23</div><div class="value">Rp {{ number_format($totalHutangPph23, 0, ',', '.') }}</div></div>
             </div>
 
             <ul class="nav nav-pills debt-nav">
@@ -231,7 +232,7 @@
                             <th>Tanggal</th>
                             <th>Nomor Tagihan</th>
                             <th>Komponen</th>
-                            <th>Pemasok</th>
+                            <th>Pemasok / Tujuan Pembayaran</th>
                             <th class="text-end">Nilai Tagihan</th>
                             <th class="text-end">Sudah Dibayar</th>
                             <th class="text-end">Sisa Hutang</th>
@@ -250,7 +251,7 @@
                                 <td>{{ tanggal($item->tanggal_faktur) }}</td>
                                 <td><strong>{{ $item->nomor_tagihan }}</strong><div class="small text-muted">Faktur induk: {{ $item->no_faktur }}</div></td>
                                 <td><span class="status-badge {{ $item->komponen_hutang === 'barang' ? 'status-sebagian' : 'status-belum_lunas' }}">{{ $item->nama_komponen }}</span></td>
-                                <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
+                                <td>{{ $item->komponen_hutang === 'pph23' ? 'Kas Negara — PPh 23' : ($item->supplier->nm_suplier ?? '-') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->nominal_hutang, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_bayar, 0, ',', '.') }}</td>
                                 <td class="text-end fw-bold">Rp {{ number_format($sisaHutang, 0, ',', '.') }}</td>

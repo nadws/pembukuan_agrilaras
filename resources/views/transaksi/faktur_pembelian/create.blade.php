@@ -336,7 +336,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
                                 <h6 class="mb-0">Biaya Tambahan (Ekspedisi, Admin, dll.)</h6>
-                                <small class="text-muted">Opsional. Biaya ini ditambahkan ke total HPP dan otomatis masuk ke hutang.</small>
+                                <small class="text-muted">Biaya ekspedisi diisi nominal bersih (net). PPh 23 ditambahkan otomatis ke HPP.</small>
                             </div>
                         </div>
                         <div class="item-table-wrap">
@@ -357,7 +357,7 @@
                                         </tr>
                                     @endforeach
                                     <tr>
-                                        <td class="fw-semibold align-middle">Potongan PPh 23 (Manual)</td>
+                                        <td class="fw-semibold align-middle">Potongan PPh 23 (Manual)<small class="d-block text-muted fw-normal">Masuk tagihan PPh 23 terpisah di Buku Hutang.</small></td>
                                         <td>
                                             <input type="number" min="0" step="0.01" name="pph23_manual" class="form-control input-pph23-manual" value="{{ old('pph23_manual', 0) }}" placeholder="0">
                                         </td>
