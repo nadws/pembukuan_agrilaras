@@ -42,9 +42,15 @@
             <form method="GET" action="{{ route('penjualan_martadah_cek') }}" class="mtd-filter row g-2 align-items-end mb-3">
                 <input type="hidden" name="lokasi" value="mtd">
                 <input type="hidden" name="period" value="costume">
-                <input type="hidden" name="tgl1" value="{{ $tgl1 }}">
-                <input type="hidden" name="tgl2" value="{{ $tgl2 }}">
-                <div class="col-md-7">
+                <div class="col-md-3">
+                    <label class="form-label">Dari tanggal</label>
+                    <input type="date" name="tgl1" value="{{ $tgl1 }}" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sampai tanggal</label>
+                    <input type="date" name="tgl2" value="{{ $tgl2 }}" class="form-control">
+                </div>
+                <div class="col-md-4">
                     <label class="form-label">Cari nomor nota atau pelanggan</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
@@ -60,8 +66,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" type="submit"><i class="fas fa-search me-1"></i> Tampilkan</button>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Tampilkan</button>
                     @if ($pencarian !== '')
                         <a class="btn btn-outline-secondary" title="Hapus pencarian"
                             href="{{ route('penjualan_martadah_cek', ['lokasi' => 'mtd', 'period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'per_page' => $perPage]) }}"><i class="fas fa-times"></i></a>

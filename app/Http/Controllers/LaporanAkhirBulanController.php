@@ -12,6 +12,8 @@ class LaporanAkhirBulanController extends Controller
     public function index(Request $request): View
     {
         $data = $request->validate([
+            'tgl1' => ['nullable', 'date_format:Y-m-d'],
+            'tgl2' => ['nullable', 'date_format:Y-m-d'],
             'bulan' => ['nullable', 'integer', 'between:1,12'],
             'tahun' => ['nullable', 'integer', 'between:2000,2100'],
             'tipe' => ['nullable', 'array'],
@@ -26,14 +28,8 @@ class LaporanAkhirBulanController extends Controller
             'akun_penjualan.*' => ['integer'],
         ]);
 
-        $month = (int) ($data['bulan'] ?? now()->month);
-        $year = (int) ($data['tahun'] ?? now()->year);
-        $selectedMonth = Carbon::create($year, $month, 1);
-        $currentCutoff = $selectedMonth->copy()->endOfMonth();
-        if ($selectedMonth->isSameMonth(now()) && $currentCutoff->gt(now())) {
-            $currentCutoff = now()->copy()->endOfDay();
-        }
-        $previousCutoff = $selectedMonth->copy()->subMonth()->endOfMonth();
+        [$startDate, $currentCutoff] = $this->reportPeriod($data);
+        $previousCutoff = $startDate->copy()->subDay()->endOfDay();
 
         $transactionTypeOptions = $this->transactionTypeGroups();
 
@@ -91,7 +87,7 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $withdrawalRows = $this->queryLedgerTable($selectedMonth, $currentCutoff, $selectedTypeCodes, $selectedAccountIds);
+        $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds);
         $withdrawalDebit = (float) $withdrawalRows->sum('debit');
         $withdrawalCredit = (float) $withdrawalRows->sum('kredit');
         $withdrawalTotal = $withdrawalDebit - $withdrawalCredit;
@@ -115,18 +111,14 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $penjualanRows = $this->queryLedgerTable($selectedMonth, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds);
+        $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds);
         $penjualanDebit = (float) $penjualanRows->sum('debit');
         $penjualanCredit = (float) $penjualanRows->sum('kredit');
         $penjualanTotal = $penjualanDebit - $penjualanCredit;
 
         return view('laporan.akhir_bulan', [
             'title' => 'Laporan Akhir Bulan',
-            'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
-            'years' => range(now()->year - 5, now()->year + 1),
-            'month' => $month,
-            'year' => $year,
-            'selectedMonth' => $selectedMonth,
+            'startDate' => $startDate,
             'previousCutoff' => $previousCutoff,
             'currentCutoff' => $currentCutoff,
             'rows' => $rows,
@@ -161,8 +153,10 @@ class LaporanAkhirBulanController extends Controller
     public function detailPenarikan(Request $request, int $akun): View
     {
         $data = $request->validate([
-            'bulan' => ['required', 'integer', 'between:1,12'],
-            'tahun' => ['required', 'integer', 'between:2000,2100'],
+            'tgl1' => ['nullable', 'date_format:Y-m-d'],
+            'tgl2' => ['nullable', 'date_format:Y-m-d'],
+            'bulan' => ['nullable', 'integer', 'between:1,12'],
+            'tahun' => ['nullable', 'integer', 'between:2000,2100'],
             'tipe' => ['nullable', 'array'],
             'tipe.*' => ['string', 'in:faktur_penjualan,penerimaan_penjualan,transfer_penjualan,jurnal_umum,lainnya'],
             'semua_tipe' => ['nullable', 'boolean'],
@@ -183,11 +177,7 @@ class LaporanAkhirBulanController extends Controller
             ->first();
         abort_unless($account, 404);
 
-        $start = Carbon::create((int) $data['tahun'], (int) $data['bulan'], 1)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
-        if ($start->isSameMonth(now()) && $end->gt(now())) {
-            $end = now()->copy()->endOfDay();
-        }
+        [$start, $end] = $this->reportPeriod($data);
 
         $transactionTypeOptions = $this->transactionTypeGroups();
         $userId = auth()->id();
@@ -253,8 +243,10 @@ class LaporanAkhirBulanController extends Controller
     public function detailPenjualan(Request $request, int $akun): View
     {
         $data = $request->validate([
-            'bulan' => ['required', 'integer', 'between:1,12'],
-            'tahun' => ['required', 'integer', 'between:2000,2100'],
+            'tgl1' => ['nullable', 'date_format:Y-m-d'],
+            'tgl2' => ['nullable', 'date_format:Y-m-d'],
+            'bulan' => ['nullable', 'integer', 'between:1,12'],
+            'tahun' => ['nullable', 'integer', 'between:2000,2100'],
             'tipe' => ['nullable', 'array'],
             'tipe.*' => ['string', 'in:faktur_penjualan,penerimaan_penjualan,transfer_penjualan,jurnal_umum,lainnya'],
             'semua_tipe' => ['nullable', 'boolean'],
@@ -275,11 +267,7 @@ class LaporanAkhirBulanController extends Controller
             ->first();
         abort_unless($account, 404);
 
-        $start = Carbon::create((int) $data['tahun'], (int) $data['bulan'], 1)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
-        if ($start->isSameMonth(now()) && $end->gt(now())) {
-            $end = now()->copy()->endOfDay();
-        }
+        [$start, $end] = $this->reportPeriod($data);
 
         $transactionTypeOptions = $this->transactionTypeGroups();
         $userId = auth()->id();
@@ -342,6 +330,22 @@ class LaporanAkhirBulanController extends Controller
         ]);
     }
 
+    private function reportPeriod(array $data): array
+    {
+        // Keep older month/year bookmarks working; explicit dates take precedence.
+        $legacyStart = Carbon::create((int) ($data['tahun'] ?? now()->year), (int) ($data['bulan'] ?? now()->month), 1)->startOfDay();
+        $defaultEnd = $legacyStart->isSameMonth(now()) ? now() : $legacyStart->copy()->endOfMonth();
+        $start = Carbon::parse($data['tgl1'] ?? $legacyStart->toDateString())->startOfDay();
+        $end = Carbon::parse($data['tgl2'] ?? $defaultEnd->toDateString())->endOfDay();
+        if ($end->lt($start)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tgl2' => 'Sampai tanggal harus sama atau setelah dari tanggal.',
+            ]);
+        }
+
+        return [$start, $end];
+    }
+
     private function getSavedSetting(string $kategori, array $defaultTypes, array $defaultAccountIds, ?int $userId): array
     {
         $setting = DB::table('laporan_akhir_bulan_setting')
@@ -400,17 +404,17 @@ class LaporanAkhirBulanController extends Controller
         }
     }
 
-    private function queryLedgerTable(Carbon $selectedMonth, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds)
+    private function queryLedgerTable(Carbon $startDate, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds)
     {
         // Exclude balance sheet / internal counterpart accounts that are not part of sales/deposit report:
         // Piutang (110301), Persediaan (1104xx), HPP (5101xx), Kas Kecil (110102), Biaya Adm Bank (720002xx)
         $excludedCodes = ['110301', '110401', '110402', '110405', '5101-01', '5101-02', '720002-01', '720002-03', '110102'];
 
         return DB::table('akun_perkiraan as a')
-            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($selectedMonth, $currentCutoff, $selectedTypeCodes) {
+            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes) {
                 $join->on('j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
                     ->whereBetween('j.tanggal', [
-                        $selectedMonth->copy()->startOfMonth()->toDateString(),
+                        $startDate->toDateString(),
                         $currentCutoff->toDateString(),
                     ]);
                 if ($selectedTypeCodes !== []) {

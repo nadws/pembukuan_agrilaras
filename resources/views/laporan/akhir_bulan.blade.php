@@ -70,20 +70,12 @@
                 @endif
 
                 <div class="col-sm-4">
-                    <label class="form-label fw-semibold">Bulan laporan</label>
-                    <select name="bulan" class="form-select">
-                        @foreach($months as $number => $name)
-                            <option value="{{ $number }}" @selected($month === $number)>{{ $name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="form-label fw-semibold" for="tgl1">Dari tanggal</label>
+                    <input type="date" id="tgl1" name="tgl1" class="form-control" value="{{ $startDate->toDateString() }}" required>
                 </div>
                 <div class="col-sm-3">
-                    <label class="form-label fw-semibold">Tahun</label>
-                    <select name="tahun" class="form-select">
-                        @foreach($years as $item)
-                            <option value="{{ $item }}" @selected($year === $item)>{{ $item }}</option>
-                        @endforeach
-                    </select>
+                    <label class="form-label fw-semibold" for="tgl2">Sampai tanggal</label>
+                    <input type="date" id="tgl2" name="tgl2" class="form-control" value="{{ $currentCutoff->toDateString() }}" required>
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i> Tampilkan</button>
@@ -100,14 +92,14 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="summary-card">
-                    <small>Saldo Piutang Bulan Lalu</small>
+                    <small>Saldo Piutang Awal</small>
                     <strong>{{ $fmt($previousTotal) }}</strong>
                     <span>Posisi s.d. {{ $previousCutoff->translatedFormat('d F Y') }}</span>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="summary-card">
-                    <small>Saldo Piutang Sekarang</small>
+                    <small>Saldo Piutang Akhir</small>
                     <strong>{{ $fmt($currentTotal) }}</strong>
                     <span>Posisi s.d. {{ $currentCutoff->translatedFormat('d F Y') }}</span>
                 </div>
@@ -134,7 +126,7 @@
                             </button>
                         </div>
                         <small class="text-muted">
-                            Periode {{ $selectedMonth->translatedFormat('F Y') }} · {{ $selectedTransactionTypes ? collect($selectedTransactionTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
+                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $selectedTransactionTypes ? collect($selectedTransactionTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
                         </small>
                     </div>
                     <div class="text-end">
@@ -157,8 +149,8 @@
                                 @php 
                                     $detailUrl = route('laporan.akhir-bulan.penarikan-detail', [
                                         'akun' => $row->id_akun_perkiraan,
-                                        'bulan' => $month,
-                                        'tahun' => $year,
+                                        'tgl1' => $startDate->toDateString(),
+                                        'tgl2' => $currentCutoff->toDateString(),
                                         'tipe' => $selectedTransactionTypes,
                                         'akun_filter' => $selectedAccountIds,
                                         'semua_tipe' => $allTransactionTypes ? 1 : null,
@@ -207,7 +199,7 @@
                             </button>
                         </div>
                         <small class="text-muted">
-                            Periode {{ $selectedMonth->translatedFormat('F Y') }} · {{ $selectedPenjualanTypes ? collect($selectedPenjualanTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
+                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $selectedPenjualanTypes ? collect($selectedPenjualanTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
                         </small>
                     </div>
                 </div>
@@ -225,8 +217,8 @@
                                 @php 
                                     $detailPenjualanUrl = route('laporan.akhir-bulan.penjualan-detail', [
                                         'akun' => $row->id_akun_perkiraan,
-                                        'bulan' => $month,
-                                        'tahun' => $year,
+                                        'tgl1' => $startDate->toDateString(),
+                                        'tgl2' => $currentCutoff->toDateString(),
                                         'tipe' => $selectedTransactionTypes,
                                         'akun_filter' => $selectedAccountIds,
                                         'semua_tipe' => $allTransactionTypes ? 1 : null,
@@ -274,8 +266,8 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <form method="get">
-                        <input type="hidden" name="bulan" value="{{ $month }}">
-                        <input type="hidden" name="tahun" value="{{ $year }}">
+                        <input type="hidden" name="tgl1" value="{{ $startDate->toDateString() }}">
+                        <input type="hidden" name="tgl2" value="{{ $currentCutoff->toDateString() }}">
 
                         {{-- Preserve Penjualan Filter --}}
                         @foreach($selectedPenjualanTypes as $type)
@@ -330,8 +322,8 @@
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
-                                'bulan' => $month,
-                                'tahun' => $year,
+                                'tgl1' => $startDate->toDateString(),
+                                'tgl2' => $currentCutoff->toDateString(),
                                 'semua_tipe' => 1,
                                 'akun' => $selectedAccountIds,
                                 'tipe_penjualan' => $selectedPenjualanTypes,
@@ -351,8 +343,8 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <form method="get">
-                        <input type="hidden" name="bulan" value="{{ $month }}">
-                        <input type="hidden" name="tahun" value="{{ $year }}">
+                        <input type="hidden" name="tgl1" value="{{ $startDate->toDateString() }}">
+                        <input type="hidden" name="tgl2" value="{{ $currentCutoff->toDateString() }}">
 
                         {{-- Preserve Penarikan Filter --}}
                         @foreach($selectedTransactionTypes as $type)
@@ -407,8 +399,8 @@
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
-                                'bulan' => $month,
-                                'tahun' => $year,
+                                'tgl1' => $startDate->toDateString(),
+                                'tgl2' => $currentCutoff->toDateString(),
                                 'tipe' => $selectedTransactionTypes,
                                 'akun' => $selectedAccountIds,
                                 'semua_tipe' => $allTransactionTypes ? 1 : null,

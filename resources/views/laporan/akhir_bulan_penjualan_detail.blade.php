@@ -6,8 +6,8 @@
                 <small>{{ $account->kode_perkiraan }} - {{ $account->nama }}</small>
             </div>
             <a href="{{ route('laporan.akhir-bulan', [
-                'bulan' => $start->month,
-                'tahun' => $start->year,
+                'tgl1' => $start->toDateString(),
+                'tgl2' => $end->toDateString(),
                 'tipe' => $selectedTransactionTypes,
                 'akun' => $selectedAccountIds,
                 'semua_tipe' => $allTransactionTypes ? 1 : null,
@@ -29,8 +29,8 @@
             <div class="text-muted">Periode {{ $start->translatedFormat('d F Y') }} s/d {{ $end->translatedFormat('d F Y') }} · {{ $selectedPenjualanTypes ? collect($selectedPenjualanTypes)->map(fn($type)=>$transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}</div>
         </div>
         <form method="get" class="detail-filter mb-3">
-            <input type="hidden" name="bulan" value="{{ $start->month }}">
-            <input type="hidden" name="tahun" value="{{ $start->year }}">
+            <input type="hidden" name="tgl1" value="{{ $start->toDateString() }}">
+            <input type="hidden" name="tgl2" value="{{ $end->toDateString() }}">
 
             @foreach($selectedTransactionTypes as $type)<input type="hidden" name="tipe[]" value="{{ $type }}">@endforeach 
             @foreach($selectedAccountIds as $accountId)<input type="hidden" name="akun[]" value="{{ $accountId }}">@endforeach 
