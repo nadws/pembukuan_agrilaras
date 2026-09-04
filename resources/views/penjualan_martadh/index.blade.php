@@ -42,13 +42,13 @@
             <form method="GET" action="{{ route('penjualan_martadah_cek') }}" class="mtd-filter row g-2 align-items-end mb-3">
                 <input type="hidden" name="lokasi" value="mtd">
                 <input type="hidden" name="period" value="costume">
-                <div class="col-md-3">
+                <div class="col-md-3 col-6">
                     <label class="form-label">Dari tanggal</label>
-                    <input type="date" name="tgl1" value="{{ $tgl1 }}" class="form-control">
+                    <input type="date" name="tgl1" class="form-control" value="{{ $tgl1 }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 col-6">
                     <label class="form-label">Sampai tanggal</label>
-                    <input type="date" name="tgl2" value="{{ $tgl2 }}" class="form-control">
+                    <input type="date" name="tgl2" class="form-control" value="{{ $tgl2 }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Cari nomor nota atau pelanggan</label>
@@ -58,6 +58,13 @@
                             placeholder="Masukkan nomor nota atau nama pelanggan">
                     </div>
                 </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button class="btn btn-primary flex-grow-1" type="submit"><i class="fas fa-search me-1"></i> Tampilkan</button>
+                    @if ($pencarian !== '')
+                        <a class="btn btn-outline-secondary" title="Hapus pencarian"
+                            href="{{ route('penjualan_martadah_cek', ['lokasi' => 'mtd', 'period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'per_page' => $perPage]) }}"><i class="fas fa-times"></i></a>
+                    @endif
+                </div>
                 <div class="col-md-2">
                     <label class="form-label">Data per halaman</label>
                     <select name="per_page" class="form-select">
@@ -65,13 +72,6 @@
                             <option value="{{ $jumlah }}" @selected($perPage === $jumlah)>{{ $jumlah }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="col-12 d-flex gap-2">
-                    <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Tampilkan</button>
-                    @if ($pencarian !== '')
-                        <a class="btn btn-outline-secondary" title="Hapus pencarian"
-                            href="{{ route('penjualan_martadah_cek', ['lokasi' => 'mtd', 'period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2, 'per_page' => $perPage]) }}"><i class="fas fa-times"></i></a>
-                    @endif
                 </div>
             </form>
             <div class="mtd-table-wrap">
