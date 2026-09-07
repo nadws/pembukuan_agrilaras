@@ -87,7 +87,7 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds);
+        $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds, false);
         $withdrawalDebit = (float) $withdrawalRows->sum('debit');
         $withdrawalCredit = (float) $withdrawalRows->sum('kredit');
         $withdrawalTotal = $withdrawalDebit - $withdrawalCredit;
@@ -111,7 +111,7 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds);
+        $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds, true);
         $penjualanDebit = (float) $penjualanRows->sum('debit');
         $penjualanCredit = (float) $penjualanRows->sum('kredit');
         $penjualanTotal = $penjualanDebit - $penjualanCredit;
@@ -197,15 +197,6 @@ class LaporanAkhirBulanController extends Controller
             ->where('j.id_akun_perkiraan', $account->id_akun_perkiraan)
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
             ->when($selectedTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedTypeCodes))
-            ->where(function ($q) {
-                $q->whereNull('j.deskripsi')
-                    ->orWhere(function ($w) {
-                        $w->where('j.deskripsi', 'not like', '%tagihan%')
-                            ->where('j.deskripsi', 'not like', '%bunga bank%')
-                            ->where('j.deskripsi', 'not like', '%biaya adm%')
-                            ->where('j.deskripsi', 'not like', '%biaya transportasi%');
-                    });
-            })
             ->when(trim((string) ($data['cari'] ?? '')), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('j.nomor_transaksi', 'like', "%{$search}%")
@@ -292,7 +283,6 @@ class LaporanAkhirBulanController extends Controller
                 $q->whereNull('j.deskripsi')
                     ->orWhere(function ($w) {
                         $w->where('j.deskripsi', 'not like', '%tagihan%')
-                            ->where('j.deskripsi', 'not like', '%bunga bank%')
                             ->where('j.deskripsi', 'not like', '%biaya adm%')
                             ->where('j.deskripsi', 'not like', '%biaya transportasi%');
                     });
@@ -406,14 +396,14 @@ class LaporanAkhirBulanController extends Controller
         }
     }
 
-    private function queryLedgerTable(Carbon $startDate, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds)
+    private function queryLedgerTable(Carbon $startDate, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds, bool $filterDesc = true)
     {
         // Exclude balance sheet / internal counterpart accounts that are not part of sales/deposit report:
         // Piutang (110301), Persediaan (1104xx), HPP (5101xx), Kas Kecil (110102), Biaya Adm Bank (720002xx)
         $excludedCodes = ['110301', '110401', '110402', '110405', '5101-01', '5101-02', '720002-01', '720002-03', '110102'];
 
         return DB::table('akun_perkiraan as a')
-            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes) {
+            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes, $filterDesc) {
                 $join->on('j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
                     ->whereBetween('j.tanggal', [
                         $startDate->toDateString(),
@@ -422,15 +412,16 @@ class LaporanAkhirBulanController extends Controller
                 if ($selectedTypeCodes !== []) {
                     $join->whereIn('j.tipe_transaksi', $selectedTypeCodes);
                 }
-                $join->where(function ($q) {
-                    $q->whereNull('j.deskripsi')
-                        ->orWhere(function ($w) {
-                            $w->where('j.deskripsi', 'not like', '%tagihan%')
-                                ->where('j.deskripsi', 'not like', '%bunga bank%')
-                                ->where('j.deskripsi', 'not like', '%biaya adm%')
-                                ->where('j.deskripsi', 'not like', '%biaya transportasi%');
-                        });
-                });
+                if ($filterDesc) {
+                    $join->where(function ($q) {
+                        $q->whereNull('j.deskripsi')
+                            ->orWhere(function ($w) {
+                                $w->where('j.deskripsi', 'not like', '%tagihan%')
+                                    ->where('j.deskripsi', 'not like', '%biaya adm%')
+                                    ->where('j.deskripsi', 'not like', '%biaya transportasi%');
+                            });
+                    });
+                }
             })
             ->leftJoin('impor_jurnal_perkiraan as i', function ($join) {
                 $join->on('i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
