@@ -37,7 +37,7 @@ class LaporanAkhirBulanController extends Controller
         $accounts = DB::table('akun_perkiraan as a')
             ->where('a.aktif', true)
             ->where('a.nama', 'like', '%Piutang%')
-            ->whereExists(fn ($query) => $query->selectRaw('1')->from('jurnal_perkiraan as j')
+            ->whereExists(fn($query) => $query->selectRaw('1')->from('jurnal_perkiraan as j')
                 ->whereColumn('j.id_akun_perkiraan', 'a.id_akun_perkiraan'))
             ->orderBy('a.kode_perkiraan')
             ->get(['a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama']);
@@ -64,8 +64,8 @@ class LaporanAkhirBulanController extends Controller
             ->orderBy('a.kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
 
-        $defaultAccountIds = $availableAccounts->whereIn('kode_perkiraan', $withdrawalAccountCodes)->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->all();
-        $defaultPenjualanAccountIds = $availableAccounts->whereIn('kode_perkiraan', $penjualanDefaultAccountCodes)->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->all();
+        $defaultAccountIds = $availableAccounts->whereIn('kode_perkiraan', $withdrawalAccountCodes)->pluck('id_akun_perkiraan')->map(fn($id) => (int) $id)->all();
+        $defaultPenjualanAccountIds = $availableAccounts->whereIn('kode_perkiraan', $penjualanDefaultAccountCodes)->pluck('id_akun_perkiraan')->map(fn($id) => (int) $id)->all();
         $userId = auth()->id();
 
         // 2. Laporan Penarikan Uang (load from saved setting if no query params)
@@ -74,19 +74,19 @@ class LaporanAkhirBulanController extends Controller
 
         if ($hasPenarikanInput) {
             $allTransactionTypes = (bool) ($data['semua_tipe'] ?? false);
-            $selectedTransactionTypes = collect($allTransactionTypes ? [] : ($data['tipe'] ?? ['faktur_penjualan', 'penerimaan_penjualan']))->filter(fn ($type) => isset($transactionTypeOptions[$type]))->values()->all();
+            $selectedTransactionTypes = collect($allTransactionTypes ? [] : ($data['tipe'] ?? ['faktur_penjualan', 'penerimaan_penjualan']))->filter(fn($type) => isset($transactionTypeOptions[$type]))->values()->all();
             $selectedAccountIds = array_key_exists('akun', $data)
-                ? collect($data['akun'] ?? [])->map(fn ($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all()
+                ? collect($data['akun'] ?? [])->map(fn($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all()
                 : $defaultAccountIds;
 
             $this->saveSetting('penarikan', $selectedTransactionTypes, $allTransactionTypes, $selectedAccountIds, $userId);
         } else {
             $allTransactionTypes = $savedPenarikan['semua_tipe'];
             $selectedTransactionTypes = $savedPenarikan['types'];
-            $selectedAccountIds = collect($savedPenarikan['accounts'])->map(fn ($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all();
+            $selectedAccountIds = collect($savedPenarikan['accounts'])->map(fn($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all();
         }
 
-        $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
+        $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
         $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds);
         $withdrawalDebit = (float) $withdrawalRows->sum('debit');
         $withdrawalCredit = (float) $withdrawalRows->sum('kredit');
@@ -98,19 +98,19 @@ class LaporanAkhirBulanController extends Controller
 
         if ($hasPenjualanInput) {
             $allPenjualanTypes = (bool) ($data['semua_tipe_penjualan'] ?? false);
-            $selectedPenjualanTypes = collect($allPenjualanTypes ? [] : ($data['tipe_penjualan'] ?? ['faktur_penjualan', 'penerimaan_penjualan']))->filter(fn ($type) => isset($transactionTypeOptions[$type]))->values()->all();
+            $selectedPenjualanTypes = collect($allPenjualanTypes ? [] : ($data['tipe_penjualan'] ?? ['faktur_penjualan', 'penerimaan_penjualan']))->filter(fn($type) => isset($transactionTypeOptions[$type]))->values()->all();
             $selectedPenjualanAccountIds = array_key_exists('akun_penjualan', $data)
-                ? collect($data['akun_penjualan'] ?? [])->map(fn ($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all()
+                ? collect($data['akun_penjualan'] ?? [])->map(fn($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all()
                 : $defaultPenjualanAccountIds;
 
             $this->saveSetting('penjualan', $selectedPenjualanTypes, $allPenjualanTypes, $selectedPenjualanAccountIds, $userId);
         } else {
             $allPenjualanTypes = $savedPenjualan['semua_tipe'];
             $selectedPenjualanTypes = $savedPenjualan['types'];
-            $selectedPenjualanAccountIds = collect($savedPenjualan['accounts'])->map(fn ($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all();
+            $selectedPenjualanAccountIds = collect($savedPenjualan['accounts'])->map(fn($id) => (int) $id)->intersect($availableAccounts->pluck('id_akun_perkiraan'))->values()->all();
         }
 
-        $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
+        $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
         $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds);
         $penjualanDebit = (float) $penjualanRows->sum('debit');
         $penjualanCredit = (float) $penjualanRows->sum('kredit');
@@ -186,17 +186,17 @@ class LaporanAkhirBulanController extends Controller
         $savedPenarikan = $this->getSavedSetting('penarikan', ['faktur_penjualan', 'penerimaan_penjualan'], [], $userId);
         $allTransactionTypes = array_key_exists('semua_tipe', $data) ? (bool) $data['semua_tipe'] : $savedPenarikan['semua_tipe'];
         $selectedTransactionTypes = array_key_exists('tipe', $data)
-            ? collect($allTransactionTypes ? [] : $data['tipe'])->filter(fn ($type) => isset($transactionTypeOptions[$type]))->values()->all()
+            ? collect($allTransactionTypes ? [] : $data['tipe'])->filter(fn($type) => isset($transactionTypeOptions[$type]))->values()->all()
             : $savedPenarikan['types'];
 
-        $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
+        $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
 
         $query = DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
             ->where('i.status', 'aktif')
             ->where('j.id_akun_perkiraan', $account->id_akun_perkiraan)
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
-            ->when($selectedTypeCodes !== [], fn ($query) => $query->whereIn('j.tipe_transaksi', $selectedTypeCodes))
+            ->when($selectedTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedTypeCodes))
             ->where(function ($q) {
                 $q->whereNull('j.deskripsi')
                     ->orWhere(function ($w) {
@@ -234,7 +234,7 @@ class LaporanAkhirBulanController extends Controller
             'transactionTypeOptions' => $transactionTypeOptions,
             'selectedTransactionTypes' => $selectedTransactionTypes,
             'allTransactionTypes' => $allTransactionTypes,
-            'selectedAccountIds' => collect($data['akun_filter'] ?? $savedPenarikan['accounts'])->map(fn ($id) => (int) $id)->values()->all(),
+            'selectedAccountIds' => collect($data['akun_filter'] ?? $savedPenarikan['accounts'])->map(fn($id) => (int) $id)->values()->all(),
             'selectedPenjualanTypes' => $data['tipe_penjualan'] ?? $savedPenjualan['types'],
             'allPenjualanTypes' => array_key_exists('semua_tipe_penjualan', $data) ? (bool) $data['semua_tipe_penjualan'] : $savedPenjualan['semua_tipe'] ?? false,
             'selectedPenjualanAccountIds' => $data['akun_penjualan'] ?? $savedPenjualan['accounts'],
@@ -277,17 +277,17 @@ class LaporanAkhirBulanController extends Controller
         $savedPenjualan = $this->getSavedSetting('penjualan', ['faktur_penjualan', 'penerimaan_penjualan'], [], $userId);
         $allPenjualanTypes = array_key_exists('semua_tipe_penjualan', $data) ? (bool) $data['semua_tipe_penjualan'] : $savedPenjualan['semua_tipe'];
         $selectedPenjualanTypes = array_key_exists('tipe_penjualan', $data)
-            ? collect($allPenjualanTypes ? [] : $data['tipe_penjualan'])->filter(fn ($type) => isset($transactionTypeOptions[$type]))->values()->all()
+            ? collect($allPenjualanTypes ? [] : $data['tipe_penjualan'])->filter(fn($type) => isset($transactionTypeOptions[$type]))->values()->all()
             : $savedPenjualan['types'];
 
-        $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn ($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
+        $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
 
         $query = DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
             ->where('i.status', 'aktif')
             ->where('j.id_akun_perkiraan', $account->id_akun_perkiraan)
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
-            ->when($selectedPenjualanTypeCodes !== [], fn ($query) => $query->whereIn('j.tipe_transaksi', $selectedPenjualanTypeCodes))
+            ->when($selectedPenjualanTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedPenjualanTypeCodes))
             ->where(function ($q) {
                 $q->whereNull('j.deskripsi')
                     ->orWhere(function ($w) {
@@ -328,7 +328,7 @@ class LaporanAkhirBulanController extends Controller
             'selectedAccountIds' => $data['akun_filter'] ?? $savedPenarikan['accounts'],
             'selectedPenjualanTypes' => $selectedPenjualanTypes,
             'allPenjualanTypes' => $allPenjualanTypes,
-            'selectedPenjualanAccountIds' => collect($data['akun_penjualan'] ?? $savedPenjualan['accounts'])->map(fn ($id) => (int) $id)->values()->all(),
+            'selectedPenjualanAccountIds' => collect($data['akun_penjualan'] ?? $savedPenjualan['accounts'])->map(fn($id) => (int) $id)->values()->all(),
         ]);
     }
 
@@ -471,15 +471,30 @@ class LaporanAkhirBulanController extends Controller
     {
         return [
             'faktur_penjualan' => ['label' => 'Faktur Penjualan', 'codes' => [
-                'FJ', 'SI', 'Faktur Penjualan',
-                'Penjualan Telur', 'Penjualan Ayam', 'Penjualan Umum',
+                'FJ',
+                'SI',
+                'Faktur Penjualan',
+                'Penjualan Telur',
+                'Penjualan Ayam',
+                'Penjualan Umum',
             ]],
             'penerimaan_penjualan' => ['label' => 'Penerimaan Penjualan', 'codes' => [
-                'CP', 'KJ', 'KM', 'KN', 'KR', 'MU', 'Penerimaan Penjualan',
-                'Pelunasan Piutang Telur', 'Pelunasan Piutang Ayam', 'Pelunasan Piutang Umum',
+                'CP',
+                'CC',
+                'KJ',
+                'KM',
+                'KN',
+                'KR',
+                'MU',
+                'Penerimaan Penjualan',
+                'Pelunasan Piutang Telur',
+                'Pelunasan Piutang Ayam',
+                'Pelunasan Piutang Umum',
             ]],
             'transfer_penjualan' => ['label' => 'Transfer / Setoran Penjualan', 'codes' => [
-                'BT', 'TB', 'Setoran Kas Penjualan',
+                'BT',
+                'TB',
+                'Setoran Kas Penjualan',
             ]],
             'jurnal_umum' => ['label' => 'Jurnal Umum / Saldo Awal', 'codes' => ['JU', 'JV']],
             'lainnya' => ['label' => 'Transaksi Lainnya', 'codes' => ['Lainnya']],
