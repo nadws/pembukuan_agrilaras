@@ -169,6 +169,7 @@ class LaporanAkhirBulanController extends Controller
             'akun_penjualan.*' => ['integer'],
             'cari' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'in:25,50,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $account = DB::table('akun_perkiraan')
@@ -235,7 +236,7 @@ class LaporanAkhirBulanController extends Controller
             'allTransactionTypes' => $allTransactionTypes,
             'selectedAccountIds' => collect($data['akun_filter'] ?? $savedPenarikan['accounts'])->map(fn ($id) => (int) $id)->values()->all(),
             'selectedPenjualanTypes' => $data['tipe_penjualan'] ?? $savedPenjualan['types'],
-            'allPenjualanTypes' => array_key_exists('semua_tipe_penjualan', $data) ? (bool) $data['semua_tipe_penjualan'] : $savedPenajalan['semua_tipe'] ?? false,
+            'allPenjualanTypes' => array_key_exists('semua_tipe_penjualan', $data) ? (bool) $data['semua_tipe_penjualan'] : $savedPenjualan['semua_tipe'] ?? false,
             'selectedPenjualanAccountIds' => $data['akun_penjualan'] ?? $savedPenjualan['accounts'],
         ]);
     }
@@ -259,6 +260,7 @@ class LaporanAkhirBulanController extends Controller
             'akun_penjualan.*' => ['integer'],
             'cari' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'in:25,50,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $account = DB::table('akun_perkiraan')

@@ -21,7 +21,7 @@
     </x-slot>
     <x-slot name="cardBody">
         <style>
-            .detail-filter{padding:14px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd}.detail-kpi{height:100%;padding:16px 18px;border:1px solid #e1e7f2;border-radius:12px;background:#fff;box-shadow:0 5px 15px rgba(35,60,115,.06)}.detail-kpi small{display:block;color:#7583a0;font-size:10px;font-weight:700;text-transform:uppercase}.detail-kpi strong{display:block;margin-top:5px;color:#18366f;font-size:20px}.detail-table{overflow:hidden;border:1px solid #dce4f2;border-radius:13px}.detail-table table{margin:0;min-width:1050px}.detail-table thead th{padding:11px;background:#304f9e;color:#fff;white-space:nowrap}.detail-table td{padding:10px}.amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.detail-pagination nav{display:flex;justify-content:flex-end}.detail-pagination .pagination{margin:0;gap:4px;flex-wrap:wrap}.detail-pagination .page-link{border-radius:7px}@media(max-width:575px){.detail-filter .btn{width:100%}}
+            .detail-filter{padding:14px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd}.detail-kpi{height:100%;padding:16px 18px;border:1px solid #e1e7f2;border-radius:12px;background:#fff;box-shadow:0 5px 15px rgba(35,60,115,.06)}.detail-kpi small{display:block;color:#7583a0;font-size:10px;font-weight:700;text-transform:uppercase}.detail-kpi strong{display:block;margin-top:5px;color:#18366f;font-size:20px}.detail-table{overflow:hidden;border:1px solid #dce4f2;border-radius:13px}.detail-table table{margin:0;min-width:1050px}.detail-table thead th{padding:11px;background:#304f9e;color:#fff;white-space:nowrap}.detail-table td{padding:10px}.amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.detail-pagination nav{display:flex;justify-content:flex-end}.detail-pagination .pagination{margin:0;gap:4px;flex-wrap:wrap}.detail-pagination .page-link{display:flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border:1px solid #dce4f1;border-radius:7px!important;color:#304f9e;font-size:13px;font-weight:500;text-decoration:none}.detail-pagination .page-item.active .page-link{background-color:#304f9e;border-color:#304f9e;color:#fff;font-weight:700}.detail-pagination .page-item.disabled .page-link{color:#9aa8bd;background-color:#f8fafc;border-color:#e2e8f0}.detail-pagination .page-link:hover:not(.active){background-color:#eef3ff;border-color:#b8c8eb;color:#17356f}@media(max-width:575px){.detail-filter .btn{width:100%}}
         </style>
         @php $fmt=fn($value)=>'Rp '.number_format((float)$value,0,',','.'); @endphp
         <div class="mb-3">
@@ -75,7 +75,7 @@
         </div>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
             <small class="text-muted">Menampilkan {{ $details->firstItem() ?? 0 }}–{{ $details->lastItem() ?? 0 }} dari {{ $details->total() }} transaksi</small>
-            <div class="detail-pagination">{{ $details->links() }}</div>
+            <div class="detail-pagination">{{ $details->onEachSide(1)->links('pagination::bootstrap-4') }}</div>
         </div>
     </x-slot>
 </x-theme.app>
