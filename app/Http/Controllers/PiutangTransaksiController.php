@@ -45,6 +45,22 @@ class PiutangTransaksiController extends Controller
                 ->orderByDesc('i.tgl')->orderByDesc('i.no_nota')->get();
         }
 
+        $paidByNota = DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', $jenis)
+            ->whereIn('no_nota', $piutang->pluck('no_nota')->all())
+            ->groupBy('no_nota')
+            ->pluck(DB::raw('SUM(jumlah_bayar)'), 'no_nota');
+        $piutang = $piutang->map(function ($item) use ($paidByNota) {
+            $item->nilai_piutang = (float) $item->total_rp;
+            $item->jumlah_dibayar = min($item->nilai_piutang, (float) ($paidByNota[$item->no_nota] ?? 0));
+            $item->sisa_piutang = max(0, $item->nilai_piutang - $item->jumlah_dibayar);
+            // Keep total_rp as the outstanding value for older view consumers.
+            $item->total_rp = $item->sisa_piutang;
+            return $item;
+        })->filter(fn ($item) => $item->total_rp > 0.005)->values();
+
+        $totalNilaiPiutang = (float) $piutang->sum('nilai_piutang');
+        $totalDibayar = (float) $piutang->sum('jumlah_dibayar');
         $totalPiutang = (float) $piutang->sum('total_rp');
         $jumlahFaktur = $piutang->pluck('no_nota')->unique()->count();
         $tabFilters = collect(['telur', 'ayam', 'umum'])->mapWithKeys(function ($tab) {
@@ -57,7 +73,7 @@ class PiutangTransaksiController extends Controller
             ]];
         })->all();
 
-        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalPiutang', 'jumlahFaktur', 'tabFilters'));
+        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters'));
     }
 
     public function importAccurate(Request $request)
@@ -251,10 +267,29 @@ class PiutangTransaksiController extends Controller
             return redirect()->route('transaksi.piutang.index', ['jenis' => $jenis])->withErrors(['nota' => 'Nota harus masih belum lunas dan berasal dari customer yang sama.']);
         }
 
-        $total = $jenis === 'ayam' ? $rows->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan) : $rows->sum(fn ($row) => (float) $row->total_rp);
+        $paidByNota = DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', $jenis)->whereIn('no_nota', $nota)
+            ->groupBy('no_nota')->pluck(DB::raw('SUM(jumlah_bayar)'), 'no_nota');
+        $noteSummaries = $rows->groupBy('no_nota')->map(function ($items, $noNota) use ($jenis, $paidByNota) {
+            $invoiceTotal = $jenis === 'ayam'
+                ? $items->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan)
+                : $items->sum(fn ($row) => (float) $row->total_rp);
+            $paid = (float) ($paidByNota[$noNota] ?? 0);
+
+            return (object) [
+                'item' => $items->first(), 'items' => $items,
+                'invoice_total' => $invoiceTotal, 'paid' => $paid,
+                'outstanding' => max(0, $invoiceTotal - $paid),
+            ];
+        });
+        if ($noteSummaries->contains(fn ($summary) => $summary->outstanding <= 0.005)) {
+            return redirect()->route('transaksi.piutang.index', ['jenis' => $jenis])
+                ->withErrors(['nota' => 'Salah satu nota sudah lunas. Silakan pilih ulang nota.']);
+        }
+        $total = $noteSummaries->sum('outstanding');
         $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
 
-        return view('transaksi.piutang.pelunasan', compact('jenis', 'nota', 'rows', 'total', 'akunPembayaran'));
+        return view('transaksi.piutang.pelunasan', compact('jenis', 'nota', 'rows', 'noteSummaries', 'total', 'akunPembayaran'));
     }
 
     public function storePelunasan(Request $request)
@@ -264,8 +299,14 @@ class PiutangTransaksiController extends Controller
             'tanggal_bayar' => ['required', 'date'],
             'id_akun_pembayaran' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'nota' => ['required', 'array', 'min:1'],
-            'nota.*' => ['required', 'string', 'max:100'],
+            'nota.*' => ['required', 'string', 'max:100', 'distinct'],
+            'jumlah_bayar' => ['required', 'array', 'min:1'],
+            'jumlah_bayar.*' => ['required', 'numeric', 'gt:0'],
         ]);
+
+        if (count($validated['nota']) !== count($validated['jumlah_bayar'])) {
+            return back()->withErrors(['jumlah_bayar' => 'Nominal pembayaran setiap nota belum lengkap.'])->withInput();
+        }
 
         $akunPembayaran = DB::table('akun_perkiraan')
             ->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])
@@ -302,7 +343,26 @@ class PiutangTransaksiController extends Controller
             return back()->withErrors(['nota' => 'Nota yang dilunasi harus berasal dari customer yang sama.'])->withInput();
         }
 
-        $total = $validated['jenis'] === 'ayam' ? $rows->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan) : $rows->sum(fn ($row) => (float) $row->total_rp);
+        $paidByNota = DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', $validated['jenis'])->whereIn('no_nota', $nota)
+            ->groupBy('no_nota')->pluck(DB::raw('SUM(jumlah_bayar)'), 'no_nota');
+        $requestedPayments = collect($validated['nota'])->mapWithKeys(
+            fn ($noNota, $index) => [$noNota => (float) $validated['jumlah_bayar'][$index]]
+        );
+        $outstandingByNota = $rows->groupBy('no_nota')->map(function ($items, $noNota) use ($validated, $paidByNota) {
+            $invoiceTotal = $validated['jenis'] === 'ayam'
+                ? $items->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan)
+                : $items->sum(fn ($row) => (float) $row->total_rp);
+            return max(0, $invoiceTotal - (float) ($paidByNota[$noNota] ?? 0));
+        });
+        foreach ($requestedPayments as $noNota => $amount) {
+            if (! isset($outstandingByNota[$noNota]) || $amount - $outstandingByNota[$noNota] > 0.005) {
+                return back()->withErrors([
+                    'jumlah_bayar' => "Pembayaran nota {$noNota} melebihi sisa piutang.",
+                ])->withInput();
+            }
+        }
+        $total = (float) $requestedPayments->sum();
         $akunPiutang = DB::table('jurnal_perkiraan as j')
             ->whereIn('j.nomor_transaksi', $nota)
             ->where('j.tipe_transaksi', $validated['jenis'] === 'ayam' ? 'Penjualan Ayam' : ($validated['jenis'] === 'umum' ? 'Penjualan Umum' : 'Penjualan Telur'))
@@ -319,7 +379,7 @@ class PiutangTransaksiController extends Controller
             return back()->withErrors(['nota' => 'Akun piutang aktif belum tersedia.'])->withInput();
         }
 
-        DB::transaction(function () use ($validated, $rows, $table, $akunPembayaran, $akunPiutang, $total, $tipeJurnal, $nota) {
+        DB::transaction(function () use ($validated, $rows, $table, $akunPembayaran, $akunPiutang, $total, $tipeJurnal, $nota, $requestedPayments, $outstandingByNota) {
             $now = now();
             $nomorTransaksi = 'PL-' . strtoupper($validated['jenis']) . '-' . $now->format('YmdHis');
             $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
@@ -342,17 +402,13 @@ class PiutangTransaksiController extends Controller
                 ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunPiutang->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => 2, 'deskripsi' => 'Pelunasan piutang ' . implode(', ', $nota), 'debit' => 0, 'kredit' => $total, 'created_at' => $now, 'updated_at' => $now],
             ]);
 
-            $paymentRows = $rows->groupBy('no_nota')->map(function ($items, $noNota) use ($validated, $table, $akunPembayaran, $batchId) {
-                $jumlah = $table === 'invoice_ayam'
-                    ? $items->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan)
-                    : $items->sum(fn ($row) => (float) $row->total_rp);
-
+            $paymentRows = $rows->groupBy('no_nota')->map(function ($items, $noNota) use ($validated, $akunPembayaran, $batchId, $requestedPayments) {
                 return [
                     'jenis' => $validated['jenis'],
                     'no_nota' => $noNota,
                     'id_customer' => $items->first()->id_customer,
                     'tanggal_bayar' => $validated['tanggal_bayar'],
-                    'jumlah_bayar' => $jumlah,
+                    'jumlah_bayar' => $requestedPayments[$noNota],
                     'id_akun_pembayaran' => $akunPembayaran->id_akun_perkiraan,
                     'id_impor_jurnal_perkiraan' => $batchId,
                     'created_at' => now(),
@@ -361,17 +417,21 @@ class PiutangTransaksiController extends Controller
             })->values()->all();
             DB::table('pelunasan_piutang_penjualan')->insert($paymentRows);
 
-            if ($validated['jenis'] === 'umum') {
-                DB::table($table)->where('lokasi', 'alpa')->whereIn('urutan', array_map(fn ($value) => (int) str_replace('PU-', '', $value), $nota))->update(['status' => 'paid']);
-            } else {
-                $update = DB::table($table)->whereIn('no_nota', $nota);
-                $validated['jenis'] === 'telur'
-                    ? $update->whereIn('lokasi', ['alpa', 'mtd'])
-                    : $update->where('lokasi', 'alpa');
-                $update->update(['status' => 'paid']);
+            foreach ($nota as $noNota) {
+                if ($outstandingByNota[$noNota] - $requestedPayments[$noNota] > 0.005) continue;
+                if ($validated['jenis'] === 'umum') {
+                    DB::table($table)->where('lokasi', 'alpa')
+                        ->where('urutan', (int) str_replace('PU-', '', $noNota))->update(['status' => 'paid']);
+                } else {
+                    $update = DB::table($table)->where('no_nota', $noNota);
+                    $validated['jenis'] === 'telur'
+                        ? $update->whereIn('lokasi', ['alpa', 'mtd'])
+                        : $update->where('lokasi', 'alpa');
+                    $update->update(['status' => 'paid']);
+                }
             }
         });
 
-        return redirect()->route('transaksi.piutang.index', ['jenis' => $validated['jenis']])->with('sukses', 'Pelunasan piutang berhasil disimpan.');
+        return redirect()->route('transaksi.piutang.index', ['jenis' => $validated['jenis']])->with('sukses', 'Pembayaran piutang berhasil disimpan. Nota yang masih memiliki sisa tetap dapat dicicil.');
     }
 }

@@ -10,15 +10,14 @@
         <form method="POST" action="{{ route('transaksi.piutang.pelunasan.store') }}">
             @csrf
             <input type="hidden" name="jenis" value="{{ $jenis }}">
-            @foreach($nota as $noNota)<input type="hidden" name="nota[]" value="{{ $noNota }}">@endforeach
             <div class="settle-box mb-3">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-3"><label class="form-label">Tanggal pembayaran</label><input type="date" name="tanggal_bayar" class="form-control" value="{{ date('Y-m-d') }}" required></div>
                     <div class="col-md-6"><label class="form-label">Dibayar melalui akun</label><select name="id_akun_pembayaran" class="form-select select2 piutang-account" required><option value="">Pilih kas atau bank</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}">{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></div>
-                    <div class="col-md-3 text-md-end"><div class="small text-muted">Total yang dilunasi</div><div class="settle-total">Rp {{ number_format($total, 0, ',', '.') }}</div></div>
+                    <div class="col-md-3 text-md-end"><div class="small text-muted">Total dibayar sekarang</div><div class="settle-total" id="payment-total">Rp {{ number_format($total, 0, ',', '.') }}</div></div>
                 </div>
             </div>
-            <div class="settle-table-wrap"><table class="table table-hover align-middle settle-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@else<th class="text-end">Qty</th>@endif<th class="text-end">Jumlah</th></tr></thead><tbody>@foreach($rows->groupBy('no_nota') as $noNota => $items)@php $item = $items->first(); $jumlah = $jenis === 'ayam' ? $items->sum(fn($row) => $row->qty * $row->h_satuan) : $items->sum(fn($row) => $row->total_rp); @endphp<tr><td>{{ $loop->iteration }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $noNota }}</td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($items->sum('qty'), 0, ',', '.') }}</td>@endif<td class="text-end">Rp {{ number_format($jumlah, 0, ',', '.') }}</td></tr>@endforeach</tbody></table></div>
+            <div class="settle-table-wrap"><table class="table table-hover align-middle settle-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@else<th class="text-end">Qty</th>@endif<th class="text-end">Nilai Nota</th><th class="text-end">Sudah Dibayar</th><th style="min-width:180px">Bayar Sekarang</th></tr></thead><tbody>@foreach($noteSummaries as $noNota => $summary)@php $item = $summary->item; $items = $summary->items; @endphp<tr><td>{{ $loop->iteration }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $noNota }}<input type="hidden" name="nota[]" value="{{ $noNota }}"></td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($items->sum('qty'), 0, ',', '.') }}</td>@endif<td class="text-end">Rp {{ number_format($summary->invoice_total, 0, ',', '.') }}</td><td class="text-end"><span class="d-block">Rp {{ number_format($summary->paid, 0, ',', '.') }}</span><small class="text-muted">Sisa Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small></td><td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" value="{{ old('jumlah_bayar.'.$loop->index, $summary->outstanding) }}" min="1" max="{{ $summary->outstanding }}" step="1" required></td></tr>@endforeach</tbody></table></div>
             <div class="text-end mt-3"><button type="submit" class="btn btn-success"><i class="fas fa-check-circle me-1"></i> Simpan Pelunasan</button></div>
         </form>
         <script>
@@ -28,6 +27,14 @@
                     if (account.hasClass('select2-hidden-accessible')) account.select2('destroy');
                     account.select2({ width: '100%', dropdownParent: $('.settle-box') });
                 }
+                const amounts = document.querySelectorAll('.payment-amount');
+                const total = document.getElementById('payment-total');
+                const refreshTotal = () => {
+                    const value = Array.from(amounts).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+                    total.textContent = 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+                };
+                amounts.forEach(input => input.addEventListener('input', refreshTotal));
+                refreshTotal();
             });
         </script>
     </x-slot>
