@@ -14,10 +14,10 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-md-3"><label class="form-label">Tanggal pembayaran</label><input type="date" name="tanggal_bayar" class="form-control" value="{{ date('Y-m-d') }}" required></div>
                     <div class="col-md-6"><label class="form-label">Dibayar melalui akun</label><select name="id_akun_pembayaran" class="form-select select2 piutang-account" required><option value="">Pilih kas atau bank</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}">{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></div>
-                    <div class="col-md-3 text-md-end"><div class="small text-muted">Total dibayar sekarang</div><div class="settle-total" id="payment-total">Rp {{ number_format($total, 0, ',', '.') }}</div></div>
+                    <div class="col-md-3 text-md-end"><div class="small text-muted">Total masuk kas/bank</div><div class="settle-total" id="payment-total">Rp {{ number_format($total, 0, ',', '.') }}</div></div>
                 </div>
             </div>
-            <div class="settle-table-wrap"><table class="table table-hover align-middle settle-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@else<th class="text-end">Qty</th>@endif<th class="text-end">Nilai Nota</th><th class="text-end">Sudah Dibayar</th><th style="min-width:180px">Bayar Sekarang</th></tr></thead><tbody>@foreach($noteSummaries as $noNota => $summary)@php $item = $summary->item; $items = $summary->items; @endphp<tr><td>{{ $loop->iteration }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $noNota }}<input type="hidden" name="nota[]" value="{{ $noNota }}"></td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($items->sum('qty'), 0, ',', '.') }}</td>@endif<td class="text-end">Rp {{ number_format($summary->invoice_total, 0, ',', '.') }}</td><td class="text-end"><span class="d-block">Rp {{ number_format($summary->paid, 0, ',', '.') }}</span><small class="text-muted">Sisa Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small></td><td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" value="{{ old('jumlah_bayar.'.$loop->index, $summary->outstanding) }}" min="1" max="{{ $summary->outstanding }}" step="1" required></td></tr>@endforeach</tbody></table></div>
+            <div class="settle-table-wrap"><table class="table table-hover align-middle settle-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@else<th class="text-end">Qty</th>@endif<th class="text-end">Nilai Nota</th><th class="text-end">Sudah Dibayar</th><th style="min-width:180px">Bayar Sekarang</th><th style="min-width:260px">Selisih Pembayaran</th></tr></thead><tbody>@foreach($noteSummaries as $noNota => $summary)@php $item = $summary->item; $items = $summary->items; @endphp<tr><td>{{ $loop->iteration }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $noNota }}<input type="hidden" name="nota[]" value="{{ $noNota }}"></td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($items->sum('qty'), 0, ',', '.') }}</td>@endif<td class="text-end">Rp {{ number_format($summary->invoice_total, 0, ',', '.') }}</td><td class="text-end"><span class="d-block">Rp {{ number_format($summary->paid, 0, ',', '.') }}</span><small class="text-muted">Sisa Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small></td><td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" value="{{ old('jumlah_bayar.'.$loop->index, $summary->outstanding) }}" min="1" max="{{ $summary->outstanding }}" step="1" required></td><td><div class="input-group"><select name="jenis_selisih[]" class="form-select difference-type"><option value="tidak" @selected(old('jenis_selisih.'.$loop->index, 'tidak') === 'tidak')>Tanpa selisih</option><option value="lebih" @selected(old('jenis_selisih.'.$loop->index) === 'lebih')>Lebih bayar</option><option value="kurang" @selected(old('jenis_selisih.'.$loop->index) === 'kurang')>Kurang bayar</option></select><input type="number" name="selisih[]" class="form-control difference-amount text-end" value="{{ old('selisih.'.$loop->index, 0) }}" min="0" step="1"></div></td></tr>@endforeach</tbody></table></div>
             <div class="text-end mt-3"><button type="submit" class="btn btn-success"><i class="fas fa-check-circle me-1"></i> Simpan Pelunasan</button></div>
         </form>
         <script>
@@ -28,12 +28,23 @@
                     account.select2({ width: '100%', dropdownParent: $('.settle-box') });
                 }
                 const amounts = document.querySelectorAll('.payment-amount');
+                const differenceTypes = document.querySelectorAll('.difference-type');
+                const differences = document.querySelectorAll('.difference-amount');
                 const total = document.getElementById('payment-total');
                 const refreshTotal = () => {
-                    const value = Array.from(amounts).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+                    let value = 0;
+                    amounts.forEach((input, index) => {
+                        value += Number(input.value) || 0;
+                        const difference = Number(differences[index].value) || 0;
+                        if (differenceTypes[index].value === 'lebih') value += difference;
+                        if (differenceTypes[index].value === 'kurang') value -= difference;
+                        differences[index].readOnly = differenceTypes[index].value === 'tidak';
+                    });
                     total.textContent = 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
                 };
                 amounts.forEach(input => input.addEventListener('input', refreshTotal));
+                differences.forEach(input => input.addEventListener('input', refreshTotal));
+                differenceTypes.forEach(input => input.addEventListener('change', refreshTotal));
                 refreshTotal();
             });
         </script>
