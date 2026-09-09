@@ -15,7 +15,16 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ImporJurnalPerkiraanService
 {
-    private const HEADERS = ['tanggal', 'no transaksi', 'tipe transaksi', 'kode perkiraan', 'nama perkiraan', 'deskripsi', 'debit', 'kredit'];
+    private const HEADER_ALIASES = [
+        'tanggal' => ['tanggal'],
+        'nomor' => ['no transaksi', 'nomor transaksi', 'no nota', 'nomor nota'],
+        'tipe' => ['tipe transaksi', 'tipe jurnal'],
+        'kode' => ['kode perkiraan', 'kode akun'],
+        'nama' => ['nama perkiraan', 'nama akun'],
+        'deskripsi' => ['deskripsi', 'keterangan'],
+        'debit' => ['debit'],
+        'kredit' => ['kredit'],
+    ];
 
     public function pratinjau(UploadedFile $file): array
     {
@@ -28,9 +37,20 @@ class ImporJurnalPerkiraanService
         $rows = $sheet->toArray(null, true, true, false);
         $headers = array_map(fn ($value) => $this->normalizeHeader($value), array_shift($rows) ?? []);
 
-        if (array_slice($headers, 0, 8) !== self::HEADERS) {
+        $columns = [];
+        foreach (self::HEADER_ALIASES as $key => $aliases) {
+            foreach ($aliases as $alias) {
+                $index = array_search($alias, $headers, true);
+                if ($index !== false) {
+                    $columns[$key] = $index;
+                    break;
+                }
+            }
+        }
+
+        if (count($columns) !== count(self::HEADER_ALIASES)) {
             throw ValidationException::withMessages([
-                'file' => 'Header harus: Tanggal | No. Transaksi | Tipe Transaksi | Kode Perkiraan | Nama Perkiraan | Deskripsi | Debit | Kredit.',
+                'file' => 'Header wajib: Tanggal | No Nota | Kode Akun | Nama Akun | Keterangan | Debit | Kredit | Tipe Jurnal.',
             ]);
         }
 
@@ -44,19 +64,19 @@ class ImporJurnalPerkiraanService
 
         foreach ($rows as $index => $row) {
             $line = $index + 2;
-            if (collect(array_slice($row, 0, 8))->every(fn ($value) => $value === null || $value === '')) {
+            if (collect($columns)->every(fn ($column) => ($row[$column] ?? null) === null || ($row[$column] ?? '') === '')) {
                 continue;
             }
 
             $rowErrors = [];
-            $tanggal = $this->parseDate($row[0] ?? null);
-            $nomor = trim((string) ($row[1] ?? ''));
-            $tipe = Str::squish((string) ($row[2] ?? ''));
-            $kode = trim((string) ($row[3] ?? ''));
-            $nama = Str::squish((string) ($row[4] ?? ''));
-            $deskripsi = trim((string) ($row[5] ?? '')) ?: null;
-            $debit = $this->parseDecimal($row[6] ?? null);
-            $kredit = $this->parseDecimal($row[7] ?? null);
+            $tanggal = $this->parseDate($row[$columns['tanggal']] ?? null);
+            $nomor = trim((string) ($row[$columns['nomor']] ?? ''));
+            $tipe = Str::squish((string) ($row[$columns['tipe']] ?? ''));
+            $kode = trim((string) ($row[$columns['kode']] ?? ''));
+            $nama = Str::squish((string) ($row[$columns['nama']] ?? ''));
+            $deskripsi = trim((string) ($row[$columns['deskripsi']] ?? '')) ?: null;
+            $debit = $this->parseDecimal($row[$columns['debit']] ?? null);
+            $kredit = $this->parseDecimal($row[$columns['kredit']] ?? null);
 
             if (! $tanggal) {
             $rowErrors[] = 'Tanggal tidak valid.';

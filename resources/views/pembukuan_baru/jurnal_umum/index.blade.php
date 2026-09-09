@@ -5,7 +5,7 @@
                 <h5 class="mb-1">{{ $title }}</h5>
                 <small class="text-muted">Jurnal umum manual untuk pembukuan baru</small>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
                 <a href="{{ route('akuntansi_baru') }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left me-1"></i> Pembukuan Baru
                 </a>
@@ -35,7 +35,49 @@
     </x-slot>
 
     <x-slot name="cardBody">
+        @if(isset($errors) && $errors->has('file_jurnal'))
+            <div class="alert alert-danger"><strong>Import jurnal gagal.</strong><br>{{ $errors->first('file_jurnal') }}</div>
+        @endif
+
+        <div class="journal-import-actions mb-3">
+            <div>
+                <div class="fw-bold text-primary"><i class="fas fa-file-excel me-1"></i> Import Jurnal Umum</div>
+                <small class="text-muted">Unduh format Excel, isi jurnal, kemudian unggah kembali.</small>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('pembukuan-baru.jurnal-umum.import.template') }}" class="btn btn-outline-success">
+                    <i class="fas fa-file-download me-1"></i> Download Format Import
+                </a>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importJurnalUmumModal">
+                    <i class="fas fa-file-import me-1"></i> Import Jurnal
+                </button>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('pembukuan-baru.jurnal-umum.import') }}" enctype="multipart/form-data">
+            @csrf
+            <x-theme.modal title="Import Jurnal Umum" idModal="importJurnalUmumModal" size="modal-lg">
+                <div class="alert alert-info">
+                    Gunakan file Excel dari tombol <strong>Format Import</strong>. Setiap nomor nota harus memiliki total debit dan kredit yang seimbang.
+                </div>
+                <label class="form-label fw-bold">File jurnal</label>
+                <input type="file" name="file_jurnal" class="form-control" accept=".xlsx,.xls" required>
+                <small class="text-muted d-block mt-2">Kolom: Tanggal, No Nota, Kode Akun, Nama Akun, Keterangan, Debit, Kredit, dan Tipe Jurnal.</small>
+            </x-theme.modal>
+        </form>
+
         <style>
+            .journal-import-actions {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 14px 16px;
+                border: 1px solid #cfe2d6;
+                border-radius: 12px;
+                background: linear-gradient(135deg, #f2fbf5, #fff);
+            }
+
             .journal-filter {
                 padding: 14px;
                 margin-bottom: 14px;
@@ -150,6 +192,15 @@
             }
 
             @media (max-width: 768px) {
+                .journal-import-actions {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .journal-import-actions .btn {
+                    flex: 1 1 auto;
+                }
+
                 .journal-summary {
                     grid-template-columns: 1fr;
                 }

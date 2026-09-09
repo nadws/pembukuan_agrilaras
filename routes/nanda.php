@@ -153,6 +153,8 @@ Route::middleware('auth')->group(function () {
         ->name('pembukuan-baru.jurnal-umum.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/import/template', 'templateImport')->name('import.template');
+            Route::post('/import', 'import')->name('import');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/manual/{id}/edit', 'editManual')->name('manual.edit');

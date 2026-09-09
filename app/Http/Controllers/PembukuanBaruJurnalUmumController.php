@@ -2,13 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TemplateJurnalUmumImportExport;
+use App\Services\ImporJurnalPerkiraanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PembukuanBaruJurnalUmumController extends Controller
 {
+    public function templateImport(): BinaryFileResponse
+    {
+        $accounts = DB::table('akun_perkiraan')->where('aktif', 1)
+            ->orderBy('kode_perkiraan')->get(['kode_perkiraan', 'nama']);
+
+        return Excel::download(new TemplateJurnalUmumImportExport($accounts), 'format-import-jurnal-umum.xlsx');
+    }
+
+    public function import(Request $request, ImporJurnalPerkiraanService $service): RedirectResponse
+    {
+        $validated = $request->validate([
+            'file_jurnal' => ['required', 'file', 'mimes:xlsx,xls', 'max:20480'],
+        ]);
+
+        $preview = $service->pratinjau($validated['file_jurnal']);
+        if ($preview['errors'] ?? []) {
+            $messages = collect($preview['errors'])->take(20)->map(function ($error) {
+                $line = ($error['baris'] ?? '-') === '-' ? '' : 'Baris ' . $error['baris'] . ': ';
+                return $line . ($error['pesan'] ?? 'Data tidak valid.');
+            })->implode(' | ');
+
+            return back()->withErrors(['file_jurnal' => $messages]);
+        }
+
+        $preview['nama_file'] = 'Jurnal umum manual import - ' . $validated['file_jurnal']->getClientOriginalName();
+        $batch = $service->simpan($preview, auth()->id());
+
+        return redirect()->route('pembukuan-baru.jurnal-umum.index', [
+            'kelompok' => 'manual',
+            'tanggal_awal' => $batch->periode_awal,
+            'tanggal_akhir' => $batch->periode_akhir,
+        ])->with('sukses', "{$batch->jumlah_detail} baris dari {$batch->jumlah_transaksi} jurnal berhasil diimport.");
+    }
+
     public function index(Request $request): View
     {
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
