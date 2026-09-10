@@ -366,6 +366,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Ringkasan saldo piutang bulan lalu dan saldo piutang bulan yang dipilih.',
             ],
             [
+                'judul' => 'Laporan Pendapatan',
+                'route' => 'laporan.pendapatan',
+                'img' => 'invoice.png',
+                'deskripsi' => 'Gabungan pendapatan penjualan telur, umum, dan ayam per nota.',
+            ],
+            [
                 'judul' => 'Laporan Stok Persediaan',
                 'route' => 'laporan.stok-persediaan',
                 'img' => 'warehouse.png',

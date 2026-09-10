@@ -19,6 +19,7 @@ use App\Http\Controllers\JurnalPenyesuaianController;
 use App\Http\Controllers\JurnalPerkiraanController;
 use App\Http\Controllers\Laporan_layerController;
 use App\Http\Controllers\LaporanAkhirBulanController;
+use App\Http\Controllers\LaporanPendapatanController;
 use App\Http\Controllers\NavbarController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\OpnamemtdController;
@@ -712,6 +713,10 @@ Route::controller(LaporanAkhirBulanController::class)->group(function () {
     Route::get('/laporan/akhir-bulan', 'index')->name('laporan.akhir-bulan');
     Route::get('/laporan/akhir-bulan/penarikan/{akun}', 'detailPenarikan')->name('laporan.akhir-bulan.penarikan-detail');
     Route::get('/laporan/akhir-bulan/penjualan/{akun}', 'detailPenjualan')->name('laporan.akhir-bulan.penjualan-detail');
+});
+Route::controller(LaporanPendapatanController::class)->group(function () {
+    Route::get('/laporan/pendapatan', 'index')->name('laporan.pendapatan');
+    Route::get('/laporan/pendapatan/export', 'export')->name('laporan.pendapatan.export');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');
