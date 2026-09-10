@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\BukuBesarBaruDetailExport;
 use App\Exports\BukuBesarBaruExport;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -67,29 +68,62 @@ class PembukuanBaruBukuBesarController extends Controller
         $akun = DB::table('akun_perkiraan')->where('id_akun_perkiraan', $id)->first();
         abort_if(! $akun, 404);
 
-        $detail = DB::table('jurnal_perkiraan')
-            ->where('id_akun_perkiraan', $id)
-            ->whereBetween('tanggal', [$tgl1, $tgl2])
-            ->when($r->cari, function ($q) use ($r) {
-                $q->where(function ($w) use ($r) {
-                    $w->where('nomor_transaksi', 'like', '%' . $r->cari . '%')
-                        ->orWhere('deskripsi', 'like', '%' . $r->cari . '%')
-                        ->orWhere('tipe_transaksi', 'like', '%' . $r->cari . '%');
-                });
-            })
-            ->orderBy('tanggal')
-            ->orderBy('id_jurnal_perkiraan')
-            ->orderBy('nomor_transaksi')
-            ->paginate(20)
-            ->withQueryString();
+        $rows = $this->queryDetailAktif($id, $tgl1, $tgl2, (string) $r->cari)->get();
 
-        $saldo = 0;
-        foreach ($detail as $d) {
+        $saldoAwal = $this->saldoAwalAktif($id, $tgl1);
+        $saldo = $saldoAwal;
+        foreach ($rows as $d) {
             $saldo += (float) $d->debit - (float) $d->kredit;
             $d->saldo = $saldo;
         }
 
-        return view('pembukuan_baru.buku_besar.detail', compact('akun', 'detail', 'tgl1', 'tgl2') + ['title' => 'Detail Buku Besar']);
+        $perPage = 20;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $detail = new LengthAwarePaginator(
+            $rows->forPage($page, $perPage)->values(),
+            $rows->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $r->url(),
+                'query' => $r->query(),
+            ]
+        );
+
+        $saldoAkhir = $saldo;
+
+        return view('pembukuan_baru.buku_besar.detail', compact('akun', 'detail', 'tgl1', 'tgl2', 'saldoAwal', 'saldoAkhir') + ['title' => 'Detail Buku Besar']);
+    }
+
+    private function saldoAwalAktif(int $id, string $tgl1): float
+    {
+        return (float) DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->where('j.id_akun_perkiraan', $id)
+            ->whereDate('j.tanggal', '<', $tgl1)
+            ->selectRaw('COALESCE(SUM(j.debit - j.kredit), 0) as saldo')
+            ->value('saldo');
+    }
+
+    private function queryDetailAktif(int $id, string $tgl1, string $tgl2, string $cari = '')
+    {
+        return DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->where('j.id_akun_perkiraan', $id)
+            ->whereBetween('j.tanggal', [$tgl1, $tgl2])
+            ->when($cari !== '', function ($q) use ($cari) {
+                $q->where(function ($w) use ($cari) {
+                    $w->where('j.nomor_transaksi', 'like', '%' . $cari . '%')
+                        ->orWhere('j.deskripsi', 'like', '%' . $cari . '%')
+                        ->orWhere('j.tipe_transaksi', 'like', '%' . $cari . '%');
+                });
+            })
+            ->select('j.*')
+            ->orderBy('j.tanggal')
+            ->orderBy('j.id_jurnal_perkiraan')
+            ->orderBy('j.nomor_transaksi');
     }
 
     public function exportDetail(Request $r, int $id): BinaryFileResponse
@@ -98,22 +132,9 @@ class PembukuanBaruBukuBesarController extends Controller
         $akun = DB::table('akun_perkiraan')->where('id_akun_perkiraan', $id)->first();
         abort_if(! $akun, 404);
 
-        $rows = DB::table('jurnal_perkiraan')
-            ->where('id_akun_perkiraan', $id)
-            ->whereBetween('tanggal', [$tgl1, $tgl2])
-            ->when($r->cari, function ($q) use ($r) {
-                $q->where(function ($w) use ($r) {
-                    $w->where('nomor_transaksi', 'like', '%' . $r->cari . '%')
-                        ->orWhere('deskripsi', 'like', '%' . $r->cari . '%')
-                        ->orWhere('tipe_transaksi', 'like', '%' . $r->cari . '%');
-                });
-            })
-            ->orderBy('tanggal')
-            ->orderBy('id_jurnal_perkiraan')
-            ->orderBy('nomor_transaksi')
-            ->get();
+        $rows = $this->queryDetailAktif($id, $tgl1, $tgl2, (string) $r->cari)->get();
 
-        $saldo = 0;
+        $saldo = $this->saldoAwalAktif($id, $tgl1);
         foreach ($rows as $d) {
             $saldo += (float) $d->debit - (float) $d->kredit;
             $d->saldo = $saldo;

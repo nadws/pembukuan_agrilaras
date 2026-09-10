@@ -258,6 +258,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/laba-rugi/export', 'exportLabaRugi')->name('laba-rugi.export');
         Route::get('/laporan/laba-rugi/akun/{akun_perkiraan}', 'detailAkun')->name('detail-akun');
         Route::get('/laporan/arus-kas', 'arusKas')->name('arus-kas');
+        Route::get('/laporan/arus-kas/export', 'exportArusKas')->name('arus-kas.export');
         Route::get('/laporan/arus-kas/detail', 'detailArusKas')->name('arus-kas-detail');
         Route::get('/laporan/neraca', 'neraca')->name('neraca');
         Route::get('/laporan/neraca/cetak', 'cetakNeraca')->name('neraca.cetak');

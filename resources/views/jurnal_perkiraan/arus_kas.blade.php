@@ -2,7 +2,12 @@
     <x-slot name="cardHeader">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div><h5 class="mb-0">CV AGRI LARAS</h5><small>{{ $title }}</small></div>
-            <a href="{{ route('laporan') }}" class="btn btn-light btn-sm"><i class="fas fa-arrow-left me-1"></i> Daftar Laporan</a>
+            <div class="d-flex gap-2 flex-wrap">
+                @if($result)
+                    <a href="{{ route('jurnal-perkiraan.arus-kas.export', request()->only(['akun', 'bulan_dari', 'tahun_dari', 'bulan_sampai', 'tahun_sampai'])) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
+                @endif
+                <a href="{{ route('laporan') }}" class="btn btn-light btn-sm"><i class="fas fa-arrow-left me-1"></i> Daftar Laporan</a>
+            </div>
         </div>
     </x-slot>
     <x-slot name="cardBody">

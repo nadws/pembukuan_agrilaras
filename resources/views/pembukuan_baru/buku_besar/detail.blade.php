@@ -51,6 +51,15 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr class="table-light">
+                        <td>{{ date('d-m-Y', strtotime($tgl1)) }}</td>
+                        <td class="fw-semibold">Saldo Awal</td>
+                        <td><span class="badge bg-secondary">Saldo Awal</span></td>
+                        <td>Saldo sebelum {{ date('d-m-Y', strtotime($tgl1)) }}</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end fw-bold">Rp {{ number_format($saldoAwal ?? 0, 0, ',', '.') }}</td>
+                    </tr>
                     @forelse($detail as $d)
                         <tr>
                             <td>{{ date('d-m-Y', strtotime($d->tanggal)) }}</td>
@@ -70,7 +79,10 @@
             </table>
         </div>
         <div class="d-flex flex-wrap justify-content-between align-items-center mt-3">
-            <small class="text-muted">Menampilkan {{ $detail->firstItem() ?? 0 }}–{{ $detail->lastItem() ?? 0 }} dari {{ $detail->total() }} transaksi</small>
+            <div>
+                <small class="text-muted d-block">Menampilkan {{ $detail->firstItem() ?? 0 }}–{{ $detail->lastItem() ?? 0 }} dari {{ $detail->total() }} transaksi</small>
+                <strong>Saldo akhir periode: Rp {{ number_format($saldoAkhir ?? 0, 0, ',', '.') }}</strong>
+            </div>
             {{ $detail->onEachSide(1)->links('pagination::bootstrap-5') }}
         </div>
     </x-slot>

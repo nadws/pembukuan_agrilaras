@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\TemplateJurnalPerkiraanExport;
+use App\Exports\LaporanArusKasPerkiraanExport;
 use App\Exports\LaporanLabaRugiPerkiraanExport;
 use App\Http\Requests\PratinjauJurnalPerkiraanRequest;
 use App\Models\AkunPerkiraan;
@@ -442,6 +443,62 @@ class JurnalPerkiraanController extends Controller
         $filename = "laba-rugi-{$start->format('Y-m')}-sampai-{$end->format('Y-m')}.xlsx";
 
         return Excel::download(new LaporanLabaRugiPerkiraanExport($service->buat($start, $end)), $filename);
+    }
+
+    public function exportArusKas(Request $request, LaporanArusKasPerkiraanService $service): BinaryFileResponse
+    {
+        $filters = $request->validate([
+            'akun' => ['nullable', 'array'],
+            'akun.*' => ['integer'],
+            'bulan_dari' => ['nullable', 'integer', 'between:1,12'],
+            'tahun_dari' => ['nullable', 'integer', 'between:2000,2100'],
+            'bulan_sampai' => ['nullable', 'integer', 'between:1,12'],
+            'tahun_sampai' => ['nullable', 'integer', 'between:2000,2100'],
+        ]);
+
+        $cashRoot = AkunPerkiraan::query()->where('kode_perkiraan', '1101')->first();
+        $cashAccounts = AkunPerkiraan::query()
+            ->where('aktif', true)
+            ->when($cashRoot, fn ($query) => $query->where('id_akun_induk', $cashRoot->getKey()), fn ($query) => $query
+                ->where(function ($query) {
+                    $query->where('nama', 'like', '%Kas%')
+                        ->orWhere('nama', 'like', '%Bank%')
+                        ->orWhere('nama', 'like', '%BCA%');
+                }))
+            ->whereExists(fn ($query) => $query->selectRaw('1')->from('jurnal_perkiraan as jp')
+                ->whereColumn('jp.id_akun_perkiraan', 'akun_perkiraan.id_akun_perkiraan'))
+            ->orderBy('kode_perkiraan')
+            ->get();
+
+        $preferred = $cashAccounts->firstWhere('nama', 'BCA 0513277722 (Cost-1)');
+        $selectedIds = collect($filters['akun'] ?? [])->map(fn ($id) => (int) $id)->intersect($cashAccounts->pluck('id_akun_perkiraan'))->values();
+        $selectedAccounts = $cashAccounts->whereIn('id_akun_perkiraan', $selectedIds)->values();
+        if ($selectedAccounts->isEmpty()) {
+            $selectedAccounts = collect([$preferred ?? $cashAccounts->first()])->filter()->values();
+        }
+
+        $start = Carbon::create(
+            (int) ($filters['tahun_dari'] ?? now()->year),
+            (int) ($filters['bulan_dari'] ?? 1),
+            1
+        )->startOfMonth();
+        $end = Carbon::create(
+            (int) ($filters['tahun_sampai'] ?? now()->year),
+            (int) ($filters['bulan_sampai'] ?? now()->month),
+            1
+        )->endOfMonth();
+        if ($start->gt($end)) {
+            throw ValidationException::withMessages(['bulan_sampai' => 'Periode akhir harus setelah periode awal.']);
+        }
+        if ($start->diffInMonths($end) > 23) {
+            throw ValidationException::withMessages(['bulan_sampai' => 'Maksimal laporan 24 bulan.']);
+        }
+
+        abort_if($selectedAccounts->isEmpty(), 422, 'Belum ada akun kas atau bank yang memiliki jurnal.');
+
+        $filename = 'arus-kas-'.$start->format('Y-m').'-sampai-'.$end->format('Y-m').'.xlsx';
+
+        return Excel::download(new LaporanArusKasPerkiraanExport($service->buat($selectedAccounts, $start, $end)), $filename);
     }
 
     public function template(): BinaryFileResponse
