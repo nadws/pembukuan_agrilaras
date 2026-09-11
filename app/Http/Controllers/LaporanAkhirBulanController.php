@@ -57,7 +57,9 @@ class LaporanAkhirBulanController extends Controller
 
         // Accounts list for modals
         $withdrawalAccountCodes = ['110103', '110105', '110107', '110108', '110109', '110110', '110111'];
-        $penjualanDefaultAccountCodes = ['110103', '110105', '110107', '110108', '110109', '110110', '110111', '400001', '400002', '400003', '400004', '400005', '400006', '400007', '600003-02', '600011-01', '710010'];
+        // Preset sesuai laporan Accurate: kas/bank penjualan, akun pendapatan,
+        // serta akun biaya/pendapatan yang muncul pada laporan uang penjualan.
+        $penjualanDefaultAccountCodes = ['110103', '110105', '110107', '110108', '110109', '400001', '400002', '400003', '720001', '710001', '110110', '110111', '600011-01', '710010'];
 
         $availableAccounts = DB::table('akun_perkiraan as a')
             ->where('a.aktif', true)
@@ -112,6 +114,21 @@ class LaporanAkhirBulanController extends Controller
 
         $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
         $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds, true);
+        // Urutan tampilan mengikuti laporan Accurate, bukan urutan kode akun.
+        $penjualanOrder = [
+            '110107', // BCA penjualan telur
+            '110105', // Bank Mandiri penjualan umum
+            '600011-01', // Biaya listrik
+            '110108', // Kas penjualan telur - Banjarmasin
+            '110109', // Kas penjualan telur - Martadah
+            '110110', // Kas penjualan umum & ayam - Banjarmasin
+            '110111', // Kas penjualan umum & ayam - Martadah
+            '710010', // Pendapatan diluar usaha lainnya
+            '400002', // Penjualan ayam
+            '400001', // Penjualan telur
+            '400003', // Penjualan umum
+        ];
+        $penjualanRows = $penjualanRows->sortBy(fn ($row) => array_search((string) $row->kode_perkiraan, $penjualanOrder, true) ?? PHP_INT_MAX)->values();
         $penjualanDebit = (float) $penjualanRows->sum('debit');
         $penjualanCredit = (float) $penjualanRows->sum('kredit');
         $penjualanTotal = $penjualanDebit - $penjualanCredit;
@@ -280,11 +297,13 @@ class LaporanAkhirBulanController extends Controller
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
             ->when($selectedPenjualanTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedPenjualanTypeCodes))
             ->where(function ($q) {
-                $q->whereNull('j.deskripsi')
-                    ->orWhere(function ($w) {
-                        $w->where('j.deskripsi', 'not like', '%tagihan%')
+                            $q->whereNull('j.deskripsi')
+                            ->orWhere(function ($w) {
+                                $w->where('j.deskripsi', 'not like', '%tagihan%')
+                                    ->where('j.deskripsi', 'not like', '%bunga bank%')
                             ->where('j.deskripsi', 'not like', '%biaya adm%')
-                            ->where('j.deskripsi', 'not like', '%biaya transportasi%');
+                            ->where('j.deskripsi', 'not like', '%biaya transportasi%')
+                            ->where('j.deskripsi', 'not like', 'Pembayaran Hutang%');
                     });
             })
             ->when(trim((string) ($data['cari'] ?? '')), function ($query, $search) {
@@ -416,9 +435,11 @@ class LaporanAkhirBulanController extends Controller
                     $join->where(function ($q) {
                         $q->whereNull('j.deskripsi')
                             ->orWhere(function ($w) {
-                                $w->where('j.deskripsi', 'not like', '%tagihan%')
+                        $w->where('j.deskripsi', 'not like', '%tagihan%')
+                            ->where('j.deskripsi', 'not like', '%bunga bank%')
                                     ->where('j.deskripsi', 'not like', '%biaya adm%')
-                                    ->where('j.deskripsi', 'not like', '%biaya transportasi%');
+                                    ->where('j.deskripsi', 'not like', '%biaya transportasi%')
+                                    ->where('j.deskripsi', 'not like', 'Pembayaran Hutang%');
                             });
                     });
                 }

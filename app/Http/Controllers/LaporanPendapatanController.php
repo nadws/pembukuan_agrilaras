@@ -19,7 +19,8 @@ class LaporanPendapatanController extends Controller
             'tanggal_akhir' => ['nullable', 'date', 'after_or_equal:tanggal_awal'],
             'kategori' => ['nullable', 'string', 'in:telur,umum,ayam'],
             'lokasi' => ['nullable', 'string', 'in:alpa,mtd'],
-            'pembayaran' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'pembayaran' => ['nullable', 'array'],
+            'pembayaran.*' => ['integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'per_page' => ['nullable', 'integer', 'in:25,50,100'],
         ]);
 
@@ -27,10 +28,10 @@ class LaporanPendapatanController extends Controller
         $tanggalAkhir = $filters['tanggal_akhir'] ?? date('Y-m-d');
         $kategori = $filters['kategori'] ?? '';
         $lokasi = $filters['lokasi'] ?? '';
-        $pembayaranId = isset($filters['pembayaran']) ? (int) $filters['pembayaran'] : 0;
+        $pembayaranIds = collect($filters['pembayaran'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all();
         $perPage = (int) ($filters['per_page'] ?? 50);
 
-        [$allRows, $baseIds, $pembayaranId] = $this->resolveRows($tanggalAwal, $tanggalAkhir, $kategori, $lokasi, $pembayaranId);
+        [$allRows, $baseIds, $pembayaranIds] = $this->resolveRows($tanggalAwal, $tanggalAkhir, $kategori, $lokasi, $pembayaranIds);
         $akunPembayaran = $this->akunPembayaranOptions($baseIds);
         $totals = $this->totals($allRows);
         $summary = $this->productSummary($allRows);
@@ -53,7 +54,7 @@ class LaporanPendapatanController extends Controller
             'tanggalAkhir' => $tanggalAkhir,
             'kategori' => $kategori,
             'lokasi' => $lokasi,
-            'pembayaranId' => $pembayaranId,
+            'pembayaranIds' => $pembayaranIds,
             'akunPembayaran' => $akunPembayaran,
             'perPage' => $perPage,
             'summary' => $summary,
@@ -68,16 +69,17 @@ class LaporanPendapatanController extends Controller
             'tanggal_akhir' => ['nullable', 'date', 'after_or_equal:tanggal_awal'],
             'kategori' => ['nullable', 'string', 'in:telur,umum,ayam'],
             'lokasi' => ['nullable', 'string', 'in:alpa,mtd'],
-            'pembayaran' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'pembayaran' => ['nullable', 'array'],
+            'pembayaran.*' => ['integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
         ]);
 
         $tanggalAwal = $filters['tanggal_awal'] ?? date('Y-m-01');
         $tanggalAkhir = $filters['tanggal_akhir'] ?? date('Y-m-d');
         $kategori = $filters['kategori'] ?? '';
         $lokasi = $filters['lokasi'] ?? '';
-        $pembayaranId = isset($filters['pembayaran']) ? (int) $filters['pembayaran'] : 0;
+        $pembayaranIds = collect($filters['pembayaran'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all();
 
-        [$rows] = $this->resolveRows($tanggalAwal, $tanggalAkhir, $kategori, $lokasi, $pembayaranId);
+        [$rows] = $this->resolveRows($tanggalAwal, $tanggalAkhir, $kategori, $lokasi, $pembayaranIds);
         $filename = "laporan-pendapatan-{$tanggalAwal}-sampai-{$tanggalAkhir}.xlsx";
 
         return Excel::download(
@@ -87,21 +89,19 @@ class LaporanPendapatanController extends Controller
     }
 
     /**
-     * Ambil baris + reset pembayaran basi ke Semua bila tidak ada di hasil.
-     * @return array{0:\Illuminate\Support\Collection,1:\Illuminate\Support\Collection,2:int}
+     * Ambil baris + buang pilihan pembayaran yang tidak ada di hasil.
+     * @return array{0:\Illuminate\Support\Collection,1:\Illuminate\Support\Collection,2:array}
      */
-    private function resolveRows(string $tanggalAwal, string $tanggalAkhir, string $kategori, string $lokasi, int $pembayaranId): array
+    private function resolveRows(string $tanggalAwal, string $tanggalAkhir, string $kategori, string $lokasi, array $pembayaranIds): array
     {
         $base = $this->fetchRows($tanggalAwal, $tanggalAkhir, $kategori, $lokasi);
         $baseIds = $base->pluck('pembayaran_ids')->flatten()->map(fn ($id) => (int) $id)->filter()->unique()->values();
-        if ($pembayaranId > 0 && ! $baseIds->contains($pembayaranId)) {
-            $pembayaranId = 0;
-        }
-        $rows = $pembayaranId > 0
-            ? $base->filter(fn ($row) => in_array($pembayaranId, $row['pembayaran_ids'] ?? [], false))->values()
+        $pembayaranIds = array_values(array_intersect($pembayaranIds, $baseIds->all()));
+        $rows = ! empty($pembayaranIds)
+            ? $base->filter(fn ($row) => ! empty(array_intersect($pembayaranIds, $row['pembayaran_ids'] ?? [])))->values()
             : $base;
 
-        return [$rows, $baseIds, $pembayaranId];
+        return [$rows, $baseIds, $pembayaranIds];
     }
 
     /**
@@ -164,8 +164,8 @@ class LaporanPendapatanController extends Controller
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
                 ->when($lokasi !== '', fn ($q) => $q->where('p.lokasi', $lokasi), fn ($q) => $q->whereIn('p.lokasi', $lokasiOptions))
                 ->whereBetween('p.tgl', [$tanggalAwal, $tanggalAkhir])
-                ->groupBy('p.urutan', 'p.tgl', 'p.lokasi', 'c.nm_customer')
-                ->select('p.urutan', 'p.tgl', 'p.lokasi', 'c.nm_customer')
+                ->groupBy('p.urutan', 'p.tgl', 'p.lokasi', 'p.kode', 'p.id_customer', 'c.nm_customer')
+                ->select('p.urutan', 'p.tgl', 'p.lokasi', 'p.kode', 'p.id_customer', 'c.nm_customer')
                 ->selectRaw("MAX(p.nota_manual) as nota_manual")
                 ->selectRaw('SUM(p.total_rp) as total_rp')
                 ->get();
@@ -173,12 +173,17 @@ class LaporanPendapatanController extends Controller
             foreach ($umum as $row) {
                 $nota = trim((string) ($row->nota_manual ?? ''));
                 if ($nota === '') {
-                    $nota = 'PU-'.$row->urutan;
+                    $nota = trim((string) ($row->kode ?? '')) !== '' ? $row->kode.'-'.$row->urutan : 'PUM-'.$row->urutan;
                 }
+                // id_customer kadang berisi nama langsung (mis. 'warno').
+                $rawCustomer = trim((string) ($row->id_customer ?? ''));
+                $customer = trim((string) ($row->nm_customer ?? '')) !== ''
+                    ? (string) $row->nm_customer
+                    : ($rawCustomer !== '' && ! is_numeric($rawCustomer) ? $rawCustomer : '-');
                 $rows->push([
                     'no_nota' => $nota,
                     'tgl' => (string) $row->tgl,
-                    'customer' => (string) ($row->nm_customer ?: '-'),
+                    'customer' => $customer,
                     'kategori' => 'umum',
                     'lokasi' => $this->lokasiLabel((string) ($row->lokasi ?? '')),
                     'lokasi_raw' => (string) ($row->lokasi ?? ''),
@@ -199,7 +204,10 @@ class LaporanPendapatanController extends Controller
             return $rows;
         }
 
-        $notas = $rows->pluck('no_nota')->unique()->values()->all();
+        // Jurnal penjualan umum memakai prefix PUM-, bukan PU-.
+        $notas = $rows->map(fn ($row) => (($row['kategori'] ?? '') === 'umum' && isset($row['urutan']))
+            ? 'PUM-'.$row['urutan']
+            : $row['no_nota'])->unique()->values()->all();
         $pembayaran = DB::table('jurnal_perkiraan as j')
             ->leftJoin('impor_jurnal_perkiraan as imp', 'imp.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
             ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
@@ -211,16 +219,44 @@ class LaporanPendapatanController extends Controller
             ->get()
             ->groupBy('nomor_transaksi');
 
-        return $rows->map(function ($row) use ($pembayaran) {
-            $candidates = $pembayaran->get($row['no_nota'], collect());
+        $piutang = $this->piutangFallback();
+
+        return $rows->map(function ($row) use ($pembayaran, $piutang) {
+            $key = (($row['kategori'] ?? '') === 'umum' && isset($row['urutan']))
+                ? 'PUM-'.$row['urutan']
+                : $row['no_nota'];
+            $candidates = $pembayaran->get($key, collect());
             $label = $candidates
                 ->map(fn ($item) => trim(collect([$item->kode_perkiraan ?? '', $item->nama ?? ''])->filter()->implode(' - ')))
                 ->filter()->unique()->implode(', ');
+            // Tanpa metode pembayaran = masuk Piutang Usaha IDR.
+            if ($label === '' && $piutang) {
+                $row['pembayaran'] = $piutang['label'];
+                $row['pembayaran_ids'] = [$piutang['id']];
+
+                return $row;
+            }
             $row['pembayaran'] = $label !== '' ? $label : '-';
             $row['pembayaran_ids'] = $candidates->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->unique()->values()->all();
 
             return $row;
         });
+    }
+
+    private function piutangFallback(): ?array
+    {
+        $akun = DB::table('akun_perkiraan')
+            ->where('kode_perkiraan', '110301')
+            ->where('aktif', 1)
+            ->first(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+        if (! $akun) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $akun->id_akun_perkiraan,
+            'label' => trim($akun->kode_perkiraan.' - '.$akun->nama),
+        ];
     }
 
     private function akunPembayaranOptions($availableIds = null)
@@ -290,15 +326,20 @@ class LaporanPendapatanController extends Controller
                 ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 'i.id_produk')
                 ->whereIn('i.no_nota', $telurRows->pluck('no_nota')->unique()->all())
                 ->whereIn('i.lokasi', $telurRows->pluck('lokasi_raw')->unique()->all())
-                ->groupBy('i.id_produk')
+                ->groupBy('i.id_produk', 'i.tipe')
                 ->select('i.id_produk')
-                ->selectRaw('MAX(p.nm_telur) as nama')
+                ->selectRaw('MAX(p.nm_telur) as nama, MAX(i.tipe) as tipe_jual')
                 ->selectRaw('SUM(i.pcs) as pcs, SUM(i.kg_jual) as kg, SUM(i.total_rp) as total')
-                ->orderBy('nama')
+                ->orderBy('nama')->orderBy('tipe_jual')
                 ->get();
             foreach ($items as $item) {
+                $nama = trim((string) ($item->nama ?? '')) !== '' ? (string) $item->nama : 'Telur (tanpa nama)';
+                $tipeJual = strtoupper(trim((string) ($item->tipe_jual ?? '')));
+                if (! in_array($tipeJual, ['PCS', 'KG'], true)) {
+                    $tipeJual = '-';
+                }
                 $summary->push([
-                    'produk' => trim((string) ($item->nama ?? '')) !== '' ? (string) $item->nama : 'Telur (tanpa nama)',
+                    'produk' => $nama.' ('.$tipeJual.')',
                     'tipe' => 'telur',
                     'pcs' => (float) $item->pcs,
                     'kg' => (float) $item->kg,
