@@ -94,6 +94,17 @@ class LaporanAkhirBulanController extends Controller
         $withdrawalCredit = (float) $withdrawalRows->sum('kredit');
         $withdrawalTotal = $withdrawalDebit - $withdrawalCredit;
 
+        // Laporan Bank Cost mengikuti filter Accurate: tiga akun biaya bank,
+        // tanpa transaksi transfer/penerimaan/saldo dan tanpa akun utang usaha.
+        $bankCostRows = $this->queryBankCost($startDate, $currentCutoff);
+        $bankCostDebit = (float) $bankCostRows->sum('debit');
+        $bankCostCredit = (float) $bankCostRows->sum('kredit');
+        $bankCostTotal = $bankCostDebit - $bankCostCredit;
+        $bankProjectRows = $this->queryBankProject($startDate, $currentCutoff);
+        $bankProjectDebit = (float) $bankProjectRows->sum('debit');
+        $bankProjectCredit = (float) $bankProjectRows->sum('kredit');
+        $bankProjectTotal = $bankProjectDebit - $bankProjectCredit;
+
         // 3. Laporan Uang Penjualan (load from saved setting if no query params)
         $savedPenjualan = $this->getSavedSetting('penjualan', ['faktur_penjualan', 'penerimaan_penjualan'], $defaultPenjualanAccountIds, $userId);
         $hasPenjualanInput = $request->has('tipe_penjualan') || $request->has('akun_penjualan') || $request->has('semua_tipe_penjualan');
@@ -147,6 +158,14 @@ class LaporanAkhirBulanController extends Controller
             'withdrawalDebit' => $withdrawalDebit,
             'withdrawalCredit' => $withdrawalCredit,
             'withdrawalTotal' => $withdrawalTotal,
+            'bankCostRows' => $bankCostRows,
+            'bankCostDebit' => $bankCostDebit,
+            'bankCostCredit' => $bankCostCredit,
+            'bankCostTotal' => $bankCostTotal,
+            'bankProjectRows' => $bankProjectRows,
+            'bankProjectDebit' => $bankProjectDebit,
+            'bankProjectCredit' => $bankProjectCredit,
+            'bankProjectTotal' => $bankProjectTotal,
             'selectedTransactionTypes' => $selectedTransactionTypes,
             'allTransactionTypes' => $allTransactionTypes,
             'selectedAccountIds' => $selectedAccountIds,
@@ -466,6 +485,44 @@ class LaporanAkhirBulanController extends Controller
                 return $row->debit != 0 || $row->kredit != 0;
             })
             ->values();
+    }
+
+    private function queryBankCost(Carbon $startDate, Carbon $currentCutoff)
+    {
+        return DB::table('akun_perkiraan as a')
+            ->join('jurnal_perkiraan as j', 'j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
+            ->join('impor_jurnal_perkiraan as i', function ($join) {
+                $join->on('i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')->where('i.status', 'aktif');
+            })
+            ->whereIn('a.kode_perkiraan', ['110102', '110113', '210101'])
+            ->where('a.nama', 'not like', '%Utang usaha%')
+            ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
+            ->where(function ($q) {
+                $q->whereNull('j.deskripsi')->orWhere(function ($w) {
+                    $w->where('j.deskripsi', 'not like', '%transfer%')
+                        ->where('j.deskripsi', 'not like', '%penerimaan%')
+                        ->where('j.deskripsi', 'not like', '%saldo%');
+                });
+            })
+            ->select('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
+            ->selectRaw('COALESCE(SUM(j.debit),0) debit, COALESCE(SUM(j.kredit),0) kredit')
+            ->groupBy('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
+            ->orderBy('a.kode_perkiraan')->get()
+            ->map(function ($row) { $row->debit = (float) $row->debit; $row->kredit = (float) $row->kredit; $row->total = $row->debit - $row->kredit; return $row; })
+            ->filter(fn ($row) => $row->debit != 0 || $row->kredit != 0)->values();
+    }
+
+    private function queryBankProject(Carbon $startDate, Carbon $currentCutoff)
+    {
+        return DB::table('akun_perkiraan as a')->join('jurnal_perkiraan as j', 'j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
+            ->join('impor_jurnal_perkiraan as i', function ($join) { $join->on('i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')->where('i.status', 'aktif'); })
+            ->whereIn('a.kode_perkiraan', ['110101', '110114'])
+            ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
+            ->where(function ($q) { $q->whereNull('j.deskripsi')->orWhere(function ($w) { $w->where('j.deskripsi', 'not like', '%pemindahan%')->where('j.deskripsi', 'not like', '%saldo%'); }); })
+            ->select('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')->selectRaw('COALESCE(SUM(j.debit),0) debit, COALESCE(SUM(j.kredit),0) kredit')
+            ->groupBy('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')->orderBy('a.kode_perkiraan')->get()
+            ->map(function ($row) { $row->debit = (float) $row->debit; $row->kredit = (float) $row->kredit; $row->total = $row->debit - $row->kredit; return $row; })
+            ->filter(fn ($row) => $row->debit != 0 || $row->kredit != 0)->values();
     }
 
     private function balance(int $accountId, Carbon $cutoff): float

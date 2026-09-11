@@ -33,6 +33,11 @@
             .penjualan-report th:first-child, .penjualan-report td:first-child { width: 48%; }
             .penjualan-report th.amount, .penjualan-report td.amount { width: 26%; }
             .penjualan-report .total-row td { border-top: 2px solid #198754; background: #f0fdf4; }
+            .bank-cost-report { border-color: #d8d2f0; }
+            .bank-cost-report thead th { background: #6f42c1; }
+            .bank-cost-report .total-row td { border-top: 2px solid #6f42c1; background: #f5f1ff; }
+            .bank-project-report thead th { background: #0d6efd; }
+            .bank-project-report .total-row td { border-top: 2px solid #0d6efd; background: #eef6ff; }
 
             .gear-button { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 8px; font-size: 13px; }
             .transaction-check { padding: 10px 12px; border: 1px solid #e1e7f2; border-radius: 10px; background: #f9fbff; }
@@ -255,6 +260,31 @@
                     </table>
                 </div>
             </div>
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100 bank-cost-report">
+                    <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div><h5 class="mb-0">Laporan Bank Cost</h5><small class="text-muted">Filter akun 110102, 110113, 210101 · tanpa transfer, penerimaan, saldo, dan utang usaha</small></div>
+                    <strong class="text-primary">{{ $fmt($bankCostTotal) }}</strong>
+                </div>
+                <div class="withdrawal-report bank-cost-report table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>Nama Akun</th><th class="amount">Debit</th><th class="amount">Kredit</th><th class="amount">Total</th></tr></thead><tbody>
+                @forelse($bankCostRows as $row)<tr><td><strong>{{ $row->nama }}</strong><small class="d-block text-muted">{{ $row->kode_perkiraan }}</small></td><td class="amount">{{ $fmt($row->debit) }}</td><td class="amount">{{ $fmt($row->kredit) }}</td><td class="amount">{{ $fmt($row->total) }}</td></tr>@empty<tr><td colspan="4" class="text-center text-muted">Tidak ada transaksi bank cost.</td></tr>@endforelse
+                @if($bankCostRows->isNotEmpty())<tr class="total-row"><td>Total</td><td class="amount">{{ $fmt($bankCostDebit) }}</td><td class="amount">{{ $fmt($bankCostCredit) }}</td><td class="amount">{{ $fmt($bankCostTotal) }}</td></tr>@endif
+                </tbody></table></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100 bank-project-report"><div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2"><div><h5 class="mb-0">Laporan Bank Proyek</h5><small class="text-muted">Akun 110101 dan 110114 · tanpa pembelian, pemindahan, dan saldo</small></div><strong class="text-primary">{{ $fmt($bankProjectTotal) }}</strong></div>
+                    <div class="withdrawal-report bank-project-report table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>Nama Akun</th><th class="amount">Debit</th><th class="amount">Kredit</th><th class="amount">Total</th></tr></thead><tbody>
+                    @forelse($bankProjectRows as $row)<tr><td><strong>{{ $row->nama }}</strong><small class="d-block text-muted">{{ $row->kode_perkiraan }}</small></td><td class="amount">{{ $fmt($row->debit) }}</td><td class="amount">{{ $fmt($row->kredit) }}</td><td class="amount">{{ $fmt($row->total) }}</td></tr>@empty<tr><td colspan="4" class="text-center text-muted">Tidak ada transaksi bank proyek.</td></tr>@endforelse
+                    @if($bankProjectRows->isNotEmpty())<tr class="total-row"><td>Total</td><td class="amount">{{ $fmt($bankProjectDebit) }}</td><td class="amount">{{ $fmt($bankProjectCredit) }}</td><td class="amount">{{ $fmt($bankProjectTotal) }}</td></tr>@endif
+                    </tbody></table></div>
+                </div></div>
+            </div>
+        </div>
         </div>
 
         <p class="small text-muted mb-0">

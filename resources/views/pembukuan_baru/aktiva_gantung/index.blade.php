@@ -59,12 +59,12 @@
 
         <div class="table-responsive border rounded">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-primary"><tr><th>No</th><th>Kode</th><th>Nama Aktiva Gantung</th><th>Keterangan</th><th>Status</th><th class="text-end">Saldo Terkumpul</th></tr></thead>
+                <thead class="table-primary"><tr><th>No</th><th>Kode</th><th>Nama Aktiva Gantung</th><th>Keterangan</th><th>Status</th><th class="text-end">Saldo Terkumpul</th><th width="70">Aksi</th></tr></thead>
                 <tbody>
                     @forelse ($aktivaGantung as $no => $item)
-                        <tr><td>{{ $aktivaGantung->firstItem() + $no }}</td><td>{{ $item->kode }}</td><td><strong>{{ $item->nama_aset }}</strong></td><td>{{ $item->keterangan ?: '-' }}</td><td><span class="badge bg-{{ $item->status === 'gantung' ? 'warning' : 'success' }}">{{ ucfirst($item->status) }}</span></td><td class="text-end">Rp {{ number_format($item->total_saldo, 0, ',', '.') }}</td></tr>
+                        <tr><td>{{ $aktivaGantung->firstItem() + $no }}</td><td>{{ $item->kode }}</td><td><strong>{{ $item->nama_aset }}</strong></td><td>{{ $item->keterangan ?: '-' }}</td><td><span class="badge bg-{{ $item->status === 'gantung' ? 'warning' : 'success' }}">{{ ucfirst($item->status) }}</span></td><td class="text-end">Rp {{ number_format($item->total_saldo, 0, ',', '.') }}</td><td>@if(in_array($item->id, $saldoAwalIds ?? []))<a href="{{ route('pembukuan-baru.aktiva-gantung.saldo-awal.edit', $item->id) }}" class="btn btn-outline-primary btn-sm" title="Edit saldo awal"><i class="fas fa-edit"></i></a>@else<span class="text-muted">-</span>@endif</td></tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-muted py-5">Belum ada data aktiva gantung.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-5">Belum ada data aktiva gantung.</td></tr>
                     @endforelse
                 </tbody>
             </table>

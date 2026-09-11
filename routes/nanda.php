@@ -442,6 +442,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('pembukuan-baru/aktiva-gantung')->name('pembukuan-baru.aktiva-gantung.')->controller(AktivaGantungController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/saldo-awal', 'storeSaldoAwal')->name('saldo-awal.store');
+        Route::get('/saldo-awal/{id}/edit', 'editSaldoAwal')->name('saldo-awal.edit');
+        Route::put('/saldo-awal/{id}', 'updateSaldoAwal')->name('saldo-awal.update');
     });
     Route::prefix('pembukuan-baru/buku-besar')->name('pembukuan-baru.buku-besar.')->controller(PembukuanBaruBukuBesarController::class)->group(function () {
         Route::get('/', 'index')->name('index');

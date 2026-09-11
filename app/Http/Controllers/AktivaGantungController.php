@@ -24,6 +24,10 @@ class AktivaGantungController extends Controller
                 ->selectRaw('COALESCE(s.total_saldo, 0) as total_saldo')
                 ->orderByDesc('ag.id')
                 ->paginate(15),
+            'saldoAwalIds' => DB::table('aktiva_gantung_transaksi')
+                ->where('sumber', 'saldo_awal')
+                ->distinct()
+                ->pluck('aktiva_gantung_id')->all(),
             'totalSaldo' => DB::table('aktiva_gantung_transaksi')->sum('jumlah'),
             'akunAktivaGantung' => DB::table('akun_perkiraan')
                 ->where('aktif', 1)
@@ -77,6 +81,69 @@ class AktivaGantungController extends Controller
 
         return redirect()->route('pembukuan-baru.aktiva-gantung.index')
             ->with('sukses', 'Saldo awal aktiva gantung berhasil disimpan tanpa membuat jurnal baru.');
+    }
+
+    public function editSaldoAwal(int $id): View
+    {
+        $aset = DB::table('aktiva_gantung')->where('id', $id)->first();
+        abort_unless($aset, 404);
+        $transaksi = DB::table('aktiva_gantung_transaksi')
+            ->where('aktiva_gantung_id', $id)
+            ->where('sumber', 'saldo_awal')
+            ->orderBy('id')
+            ->first();
+        abort_unless($transaksi, 404, 'Aktiva ini tidak memiliki transaksi saldo awal.');
+
+        return view('pembukuan_baru.aktiva_gantung.edit_saldo_awal', [
+            'title' => 'Edit Saldo Awal Aktiva Gantung',
+            'aset' => $aset,
+            'transaksi' => $transaksi,
+            'akunAktivaGantung' => DB::table('akun_perkiraan')
+                ->where('aktif', 1)
+                ->where('kode_perkiraan', 'like', '1105%')
+                ->orderBy('kode_perkiraan')
+                ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']),
+        ]);
+    }
+
+    public function updateSaldoAwal(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'nama_aset' => ['required', 'string', 'max:255'],
+            'id_akun_aktiva_gantung' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'jumlah' => ['required', 'numeric', 'min:0.01'],
+            'keterangan_aset' => ['nullable', 'string', 'max:255'],
+            'keterangan_transaksi' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $aset = DB::table('aktiva_gantung')->where('id', $id)->first();
+        abort_unless($aset, 404);
+        $transaksi = DB::table('aktiva_gantung_transaksi')
+            ->where('aktiva_gantung_id', $id)
+            ->where('sumber', 'saldo_awal')
+            ->orderBy('id')
+            ->first();
+        abort_unless($transaksi, 404, 'Aktiva ini tidak memiliki transaksi saldo awal.');
+
+        DB::transaction(function () use ($id, $transaksi, $validated) {
+            $sekarang = now();
+            DB::table('aktiva_gantung')->where('id', $id)->update([
+                'nama_aset' => trim($validated['nama_aset']),
+                'keterangan' => $validated['keterangan_aset'] ?? null,
+                'updated_at' => $sekarang,
+            ]);
+            DB::table('aktiva_gantung_transaksi')->where('id', $transaksi->id)->update([
+                'tanggal' => $validated['tanggal'],
+                'id_akun_aktiva_gantung' => $validated['id_akun_aktiva_gantung'],
+                'jumlah' => round((float) $validated['jumlah'], 2),
+                'keterangan' => $validated['keterangan_transaksi'] ?? null,
+                'updated_at' => $sekarang,
+            ]);
+        });
+
+        return redirect()->route('pembukuan-baru.aktiva-gantung.index')
+            ->with('sukses', 'Saldo awal aktiva gantung berhasil diperbarui tanpa membuat jurnal baru.');
     }
 
     private function generateKode(): string
