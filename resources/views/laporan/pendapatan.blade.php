@@ -46,10 +46,10 @@
                     @forelse($rows as $row)
                         <tr>
                             <td>{{ $rows->firstItem()+$loop->index }}</td>
-                            <td><span class="badge bg-primary">{{ ucfirst($row['kategori']) }}</span></td>
+                            <td>{{ ucfirst($row['kategori']) }}</td>
                             <td>{{ \Carbon\Carbon::parse($row['tgl'])->format('d-m-Y') }}</td>
                             <td class="fw-semibold">{{ $row['no_nota'] }}</td>
-                            <td><span class="badge bg-secondary">{{ $row['lokasi'] ?? '-' }}</span></td>
+                            <td>{{ $row['lokasi'] ?? '-' }}</td>
                             <td>{{ $row['customer'] }}</td>
                             <td class="amount">{{ $fmt($row['total']) }}</td>
                             <td><small class="text-muted">{{ $row['pembayaran'] ?? '-' }}</small></td>
@@ -83,7 +83,7 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="fw-semibold">{{ $item['produk'] }}</td>
-                                <td><span class="badge bg-primary">{{ ucfirst($item['tipe']) }}</span></td>
+                                <td>{{ ucfirst($item['tipe']) }}</td>
                                 <td class="amount">{{ number_format($item['pcs'], 0, '.', ',') }}</td>
                                 <td class="amount">{{ number_format($item['kg'], 2, '.', ',') }}</td>
                                 <td class="amount">{{ $fmt($item['total']) }}</td>
