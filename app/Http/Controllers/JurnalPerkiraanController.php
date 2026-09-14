@@ -115,6 +115,7 @@ class JurnalPerkiraanController extends Controller
 
     public function labaRugi(Request $request, LaporanLabaRugiPerkiraanService $service): View
     {
+        $isMobile = (bool) preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', (string) $request->userAgent());
         $months = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
             7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
@@ -133,6 +134,9 @@ class JurnalPerkiraanController extends Controller
             ]);
             $start = Carbon::create($data['tahun_dari'], $data['bulan_dari'], 1)->startOfMonth();
             $end = Carbon::create($data['tahun_sampai'], $data['bulan_sampai'], 1)->startOfMonth();
+            if ($isMobile) {
+                $end = $start->copy();
+            }
             if ($start->gt($end)) {
                 throw ValidationException::withMessages(['bulan_sampai' => 'Periode akhir harus setelah periode awal.']);
             }
@@ -149,6 +153,7 @@ class JurnalPerkiraanController extends Controller
             'result' => $result,
             'start' => $start,
             'end' => $end,
+            'isMobile' => $isMobile,
         ]);
     }
 

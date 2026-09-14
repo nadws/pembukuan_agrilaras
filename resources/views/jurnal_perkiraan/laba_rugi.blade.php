@@ -2,11 +2,10 @@
     <x-slot name="cardHeader">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div><h5 class="mb-0">CV AGRI LARAS</h5><small>{{ $title }}</small></div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 report-actions">
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#parameterLaporan"><i class="fas fa-calendar-alt me-1"></i> Parameter Laporan</button>
-                <a href="{{ route('jurnal-perkiraan.laba-rugi.budget', ['tahun'=>request('tahun_dari',now()->year)]) }}" class="btn btn-warning btn-sm"><i class="fas fa-coins me-1"></i> Kelola Budget</a>
                 @if ($result)
-                    <a href="{{ route('jurnal-perkiraan.laba-rugi.export', request()->only(['bulan_dari', 'tahun_dari', 'bulan_sampai', 'tahun_sampai'])) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
+                    <a href="{{ route('jurnal-perkiraan.laba-rugi.export', ['bulan_dari'=>$start->month, 'tahun_dari'=>$start->year, 'bulan_sampai'=>$end->month, 'tahun_sampai'=>$end->year]) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
                 @endif
                 <a href="{{ route('jurnal-perkiraan.index') }}" class="btn btn-light btn-sm">Riwayat Import</a>
             </div>
@@ -44,39 +43,39 @@
             </div>
             <div class="table-responsive laporan-scroll">
                 <table class="table table-sm laporan-accurate align-middle">
-                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end" style="min-width:155px">Total Aktual</th><th class="text-end budget-column" style="min-width:145px">Budget</th><th class="text-end" style="min-width:145px">Selisih</th></tr></thead>
+                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end period-total-column" style="min-width:155px">Total Aktual</th></tr></thead>
                     <tbody>
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PENDAPATAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['revenueRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan', 'values' => $result['revenue'], 'budget'=>$result['revenueBudget'], 'isIncome'=>true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA POKOK PENJUALAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA POKOK PENJUALAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['cogsRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Pokok Penjualan', 'values' => $result['cogs'], 'budget'=>$result['cogsBudget'], 'isIncome'=>false])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA KOTOR', 'values' => $result['gross'], 'budget'=>$result['grossBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA OPERASIONAL</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA OPERASIONAL</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['operatingRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Operasional', 'values' => $result['operating'], 'budget'=>$result['operatingBudget'], 'isIncome'=>false])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'PENDAPATAN OPERASIONAL', 'values' => $result['operatingIncome'], 'budget'=>$result['operatingIncomeBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PENDAPATAN DAN BIAYA NON OPERASIONAL</td></tr>
-                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 4 }}">Pendapatan Non Operasional</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN DAN BIAYA NON OPERASIONAL</td></tr>
+                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 2 }}">Pendapatan Non Operasional</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['otherIncomeRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan Non Operasional', 'values' => $result['otherIncome'], 'budget'=>$result['otherIncomeBudget'], 'isIncome'=>true])
-                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 4 }}">Biaya Non Operasional</td></tr>
+                        <tr class="subsection-row"><td colspan="{{ $periods->count() + 2 }}">Biaya Non Operasional</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['otherExpenseRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Non Operasional', 'values' => $result['otherExpense'], 'budget'=>$result['otherExpenseBudget'], 'isIncome'=>false])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pendapatan dan Biaya Non Operasional', 'values' => $result['otherNet'], 'budget'=>$result['otherNetBudget'], 'isIncome'=>true])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI SEBELUM PENYUSUTAN', 'values' => $result['beforeDepreciation'], 'budget'=>$result['beforeDepreciationBudget'], 'isIncome'=>true, 'highlight' => true])
 
-                        <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">BIAYA PENYUSUTAN</td></tr>
+                        <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA PENYUSUTAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['depreciationRows']])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Penyusutan', 'values' => $result['depreciationTotal'], 'budget'=>$result['depreciationBudget'], 'isIncome'=>false])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Sebelum Pajak)', 'values' => $result['beforeTax'], 'budget'=>$result['beforeTaxBudget'], 'isIncome'=>true, 'highlight' => true])
 
                         @if ($result['taxRows']->isNotEmpty())
-                            <tr class="section-row"><td colspan="{{ $periods->count() + 4 }}">PAJAK PENGHASILAN</td></tr>
+                            <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PAJAK PENGHASILAN</td></tr>
                             @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['taxRows']])
                             @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Pajak Penghasilan', 'values' => $result['taxTotal'], 'budget'=>$result['taxBudget'], 'isIncome'=>false])
                         @endif
@@ -96,7 +95,8 @@
                     <ul class="nav nav-tabs mb-4"><li class="nav-item"><span class="nav-link active text-danger">Umum</span></li><li class="nav-item"><span class="nav-link disabled">Kolom</span></li></ul>
                     <h5 class="border-bottom pb-2 mb-4">Tanggal</h5>
                     <div class="row align-items-center mb-3"><label class="col-md-3 col-form-label">Dari Periode</label><div class="col-md-5"><select name="bulan_dari" class="form-select">@foreach ($months as $number => $name)<option value="{{ $number }}" @selected((int) request('bulan_dari', now()->month) === $number)>{{ $name }}</option>@endforeach</select></div><div class="col-md-4"><select name="tahun_dari" class="form-select">@foreach ($years as $year)<option value="{{ $year }}" @selected((int) request('tahun_dari', now()->year) === $year)>{{ $year }}</option>@endforeach</select></div></div>
-                    <div class="row align-items-center"><label class="col-md-3 col-form-label">s/d Periode</label><div class="col-md-5"><select name="bulan_sampai" class="form-select">@foreach ($months as $number => $name)<option value="{{ $number }}" @selected((int) request('bulan_sampai', now()->month) === $number)>{{ $name }}</option>@endforeach</select></div><div class="col-md-4"><select name="tahun_sampai" class="form-select">@foreach ($years as $year)<option value="{{ $year }}" @selected((int) request('tahun_sampai', now()->year) === $year)>{{ $year }}</option>@endforeach</select></div></div>
+                    <div class="row align-items-center end-period-fields"><label class="col-md-3 col-form-label">s/d Periode</label><div class="col-md-5"><select name="bulan_sampai" class="form-select">@foreach ($months as $number => $name)<option value="{{ $number }}" @selected((int) request('bulan_sampai', now()->month) === $number)>{{ $name }}</option>@endforeach</select></div><div class="col-md-4"><select name="tahun_sampai" class="form-select">@foreach ($years as $year)<option value="{{ $year }}" @selected((int) request('tahun_sampai', now()->year) === $year)>{{ $year }}</option>@endforeach</select></div></div>
+                    <div class="mobile-period-note alert alert-info mt-3 mb-0"><i class="fas fa-mobile-alt me-1"></i> Pada handphone laporan ditampilkan untuk satu bulan.</div>
                 </div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Tampilkan Laporan</button></div></form>
             </div></div>
         </div>
@@ -151,6 +151,22 @@
             .laporan-accurate .subsection-row td { font-weight:700; padding-left:24px; }
             .laporan-accurate .report-total td { border-top:1px solid #495057; border-bottom:1px solid #495057; font-weight:700; }
             .laporan-accurate .report-highlight td { background:#f6f8fb; border-top:2px solid #212529; border-bottom:2px solid #212529; font-weight:700; }
+            .mobile-period-note { display:none; }
+            @media (max-width: 767.98px) {
+                .report-actions { width:100%; display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); }
+                .report-actions .btn { display:flex; align-items:center; justify-content:center; min-height:40px; white-space:nowrap; }
+                .laporan-scroll { height:auto; min-height:0; max-height:calc(100vh - 250px); border:1px solid #dfe5f1; border-radius:10px; }
+                .laporan-accurate { font-size:12px; margin-bottom:0; }
+                .laporan-accurate thead th:first-child,
+                .laporan-accurate tbody tr > td:first-child { min-width:190px !important; max-width:210px; }
+                .laporan-accurate th, .laporan-accurate td { padding:.55rem .45rem; }
+                .laporan-accurate .period-total-column { display:none; }
+                .laporan-accurate .account-row > td:first-child { padding-left:12px !important; }
+                .end-period-fields { display:none; }
+                .mobile-period-note { display:block; }
+                #parameterLaporan .modal-dialog { margin:.5rem; }
+                #parameterLaporan .modal-body { padding:1rem; }
+            }
         </style>
         @if ($result)
             <script>
@@ -170,6 +186,16 @@
                 });
             </script>
         @endif
+        <script>
+            (() => {
+                const form = document.querySelector('#parameterLaporan form');
+                if (!form || !window.matchMedia('(max-width: 767.98px)').matches) return;
+                form.addEventListener('submit', () => {
+                    form.elements.bulan_sampai.value = form.elements.bulan_dari.value;
+                    form.elements.tahun_sampai.value = form.elements.tahun_dari.value;
+                });
+            })();
+        </script>
         @if (! $result)<script>new bootstrap.Modal(document.getElementById('parameterLaporan')).show();</script>@endif
     @endsection
 </x-theme.app>
