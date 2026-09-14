@@ -203,7 +203,15 @@ class PembukuanBaruJurnalUmumController extends Controller
         );
 
         [$jurnalPenyesuaian, $detailPenyesuaian, $ringkasanPenyesuaian] = $this->jurnalGroupedByTransaction(
-            tipeTransaksi: ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva','Penyesuaian Ayam'],
+            tipeTransaksi: [
+                'Stok Opname',
+                'Penyusutan Aktiva',
+                'Penyesuaian Aktiva',
+                'Penyesuaian Ayam',
+                'Pemakaian Pakan',
+                'Pemakaian Vitamin',
+                'Pemakaian Vaksin',
+            ],
             tanggalAwal: $tanggalAwal,
             tanggalAkhir: $tanggalAkhir,
             cari: $cari,

@@ -117,7 +117,7 @@
 
                             <tr class="section-row"><td colspan="2">EKUITAS</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['equityRows']])
-                            <tr class="account-row profit-row"><td><span class="account-link"><span>Laba/Rugi Berjalan</span></span></td><td class="text-end">{{ $formatNumber($result['currentProfit']) }}</td></tr>
+                            <tr class="account-row profit-row"><td><span class="account-link"><span>Laba/Rugi Tahun Ini</span></span></td><td class="text-end">{{ $formatNumber($result['currentProfit']) }}</td></tr>
                             <tr class="total-row"><td>JUMLAH EKUITAS</td><td class="text-end">{{ $formatNumber($result['totalEquity']) }}</td></tr>
                             <tr class="grand-total"><td>TOTAL KEWAJIBAN DAN EKUITAS</td><td class="text-end">{{ $formatNumber($result['liabilitiesAndEquity']) }}</td></tr>
                         </tbody>

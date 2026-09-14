@@ -104,7 +104,7 @@
     $right[] = $line('TOTAL KEWAJIBAN', $result['totalLiabilities'], 'total');
     $right[] = $line('EKUITAS', null, 'section');
     $appendAccounts($right, $result['equityRows']);
-    $right[] = $line('Laba/Rugi Berjalan', $result['currentProfit']);
+    $right[] = $line('Laba/Rugi Tahun Ini', $result['currentProfit']);
     $right[] = $line('JUMLAH EKUITAS', $result['totalEquity'], 'total');
     $right[] = $line('TOTAL KEWAJIBAN DAN EKUITAS', $result['liabilitiesAndEquity'], 'grand');
     $rowCount = max(count($left), count($right));

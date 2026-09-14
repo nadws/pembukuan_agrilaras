@@ -50,6 +50,17 @@ class LaporanNeracaPerkiraanService
                     : bcsub((string) $item->kredit, (string) $item->debit, 12);
             });
 
+        $awalTahun = $tanggal->copy()->startOfYear();
+        $currentProfit = $this->profitForPeriod($awalTahun, $tanggal);
+        $retainedProfit = $this->profitForPeriod(null, $awalTahun->copy()->subDay());
+        $retainedAccount = $this->accounts->first(
+            fn ($account) => mb_strtolower(trim($account->nama)) === 'laba ditahan'
+        );
+        if ($retainedAccount) {
+            $id = $retainedAccount->getKey();
+            $this->raw[$id] = bcadd($this->raw[$id] ?? '0.000000000000', $retainedProfit, 12);
+        }
+
         $cashRows = $this->rowsForTypes(['BANK']);
         $receivableRows = $this->rowsForTypes(['AREC']);
         $inventoryRows = $this->rowsForTypes(['INTR']);
@@ -77,7 +88,6 @@ class LaporanNeracaPerkiraanService
         $longTermLiabilities = $this->sumTypes(['LTLY']);
         $totalLiabilities = bcadd($currentLiabilities, $longTermLiabilities, 12);
         $baseEquity = $this->sumTypes(['EQTY']);
-        $currentProfit = $this->currentProfit($tanggal);
         $totalEquity = bcadd($baseEquity, $currentProfit, 12);
         $liabilitiesAndEquity = bcadd($totalLiabilities, $totalEquity, 12);
         $difference = bcsub($totalAssets, $liabilitiesAndEquity, 12);
@@ -147,14 +157,15 @@ class LaporanNeracaPerkiraanService
         );
     }
 
-    private function currentProfit(Carbon $tanggal): string
+    private function profitForPeriod(?Carbon $tanggalAwal, Carbon $tanggalAkhir): string
     {
         $totals = DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
             ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
             ->where('i.status', 'aktif')
             ->where('a.aktif', true)
-            ->whereDate('j.tanggal', '<=', $tanggal->toDateString())
+            ->when($tanggalAwal, fn ($query) => $query->whereDate('j.tanggal', '>=', $tanggalAwal->toDateString()))
+            ->whereDate('j.tanggal', '<=', $tanggalAkhir->toDateString())
             ->whereIn('a.tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
             ->groupBy('a.tipe_akun')
             ->select('a.tipe_akun')
