@@ -71,30 +71,184 @@
         </div>
             </div>
             <div class="col-lg-6">
-            <h6 class="section-title">Rangkuman per Produk</h6>
-            <small class="text-muted d-block mb-2 section-sub">Mengikuti filter di atas — totalnya harus klop dengan total pendapatan.</small>
+            <h6 class="section-title">Rangkuman Telur</h6>
+            <small class="text-muted d-block mb-2 section-sub">Klik Detail untuk rincian per nota — selisih ≥ Rp10.000 dari rata-rata global ditandai merah.</small>
             <div class="income-table summary-table table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
-                        <tr><th>No</th><th>Produk</th><th>Tipe</th><th class="amount">Pcs</th><th class="amount">Kg</th><th class="amount">Total Rupiah</th></tr>
+                        <tr><th>No</th><th>Produk</th><th>Tipe</th><th class="amount">Pcs</th><th class="amount">Kg Jual</th><th class="amount">Qty Setara (Kg)</th><th class="amount">Rata-rata</th><th class="amount">Total Rupiah</th><th></th></tr>
                     </thead>
                     <tbody>
-                        @forelse($summary as $item)
+                        @if(!empty($telurSummary))
+                            <tr>
+                                <td>1</td>
+                                <td class="fw-semibold">{{ $telurSummary['produk'] }}</td>
+                                <td>{{ ucfirst($telurSummary['tipe']) }}</td>
+                                <td class="amount">{{ number_format($telurSummary['pcs'], 0, '.', ',') }}</td>
+                                <td class="amount">{{ number_format($telurSummary['kg'], 2, '.', ',') }}</td>
+                                <td class="amount">{{ number_format($telurSummary['qty_setara'], 2, '.', ',') }}</td>
+                                <td class="amount">{{ $fmt($telurSummary['rata2']) }}<small class="text-muted">/{{ $telurSummary['satuan'] }}</small></td>
+                                <td class="amount">{{ $fmt($telurSummary['total']) }}</td>
+                                <td><button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalDetailTelur"><i class="fas fa-eye me-1"></i>Detail</button></td>
+                            </tr>
+                        @else
+                            <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada penjualan telur pada periode ini.</td></tr>
+                        @endif
+                    </tbody>
+                    @if(!empty($telurSummary))
+                    <tfoot>
+                        <tr class="fw-bold table-light"><td colspan="7" class="text-end">Total Telur</td><td class="amount">{{ $fmt($telurSummary['total']) }}</td><td></td></tr>
+                    </tfoot>
+                    @endif
+                </table>
+                <small class="text-muted d-block mt-1 section-sub">Qty Setara: penjualan PCS dikonversi 1 butir = 63 gram agar rata-rata Rp/Kg sebanding dengan penjualan KG.</small>
+            </div>
+            <div class="modal fade" id="modalDetailTelur" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">Rincian Penjualan Telur per Nota</h5>
+                                @if(!empty($telurSummary) && $telurSummary['rata2'] > 0)
+                                <small class="text-muted">Rata-rata global: {{ $fmt($telurSummary['rata2']) }}/kg — baris merah = selisih ≥ Rp10.000 dari rata-rata global.</small>
+                                @endif
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            @php $global = !empty($telurSummary) ? (float) $telurSummary['rata2'] : 0; $batasSelisih = 10000; @endphp
+                            <div class="income-table table-responsive" style="max-height:60vh">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr><th>No</th><th>Nota</th><th>Tanggal</th><th>Lokasi</th><th>Customer</th><th>Jual</th><th class="amount">Pcs</th><th class="amount">Kg</th><th class="amount">Qty Setara</th><th class="amount">Total</th><th class="amount">Rata-rata</th><th></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($telurDetail as $d)
+                                            @php
+                                                $merah = $global > 0 && abs($d['rata2'] - $global) >= $batasSelisih;
+                                            @endphp
+                                            <tr @if($merah) class="table-danger" @endif>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td class="fw-semibold">{{ $d['no_nota'] }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($d['tgl'])->format('d-m-Y') }}</td>
+                                                <td>{{ $d['lokasi'] }}</td>
+                                                <td>{{ $d['customer'] }}</td>
+                                                <td>{{ $d['tipe_jual'] }}</td>
+                                                <td class="amount">{{ number_format($d['pcs'], 0, '.', ',') }}</td>
+                                                <td class="amount">{{ number_format($d['kg'], 2, '.', ',') }}</td>
+                                                <td class="amount">{{ number_format($d['qty_setara'], 2, '.', ',') }}</td>
+                                                <td class="amount">{{ $fmt($d['total']) }}</td>
+                                                <td class="amount">{{ $fmt($d['rata2']) }}</td>
+                                                <td><button type="button" class="btn btn-sm btn-outline-primary btn-komponen-nota" data-no-nota="{{ $d['no_nota'] }}" data-lokasi="{{ $d['lokasi_raw'] }}" data-bs-toggle="modal" data-bs-target="#modalKomponenNota" title="Lihat komponen invoice"><i class="fas fa-eye"></i></button></td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="12" class="text-center text-muted py-4">Tidak ada rincian nota telur.</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="modalKomponenNota" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">Komponen Invoice <span id="komponenNotaJudul"></span></h5>
+                                <small class="text-muted" id="komponenNotaSub"></small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="income-table table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr><th>No</th><th>Produk</th><th>Jual</th><th class="amount">Pcs</th><th class="amount">Kg Kotor</th><th class="amount">Kg Jual</th><th class="amount">Ikat</th><th class="amount">Rp Satuan</th><th class="amount">Qty Setara (Kg)</th><th class="amount">Rata-rata</th><th class="amount">Total</th></tr>
+                                    </thead>
+                                    <tbody id="komponenNotaBody">
+                                        <tr><td colspan="11" class="text-center text-muted py-4">Memuat...</td></tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="fw-bold table-light"><td colspan="10" class="text-end">Total</td><td class="amount" id="komponenNotaTotal"></td></tr>
+                                    </tfoot>
+                                </table>
+                                <small class="text-muted d-block mt-1 section-sub">Baris PCS dikonversi 1 butir = 63 gram dulu baru dihitung rata-rata Rp/Kg-nya.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var rupiah = function (v) { return 'Rp ' + Number(v || 0).toLocaleString('id-ID', {maximumFractionDigits: 0}); };
+                var angka = function (v, d) { return Number(v || 0).toLocaleString('id-ID', {minimumFractionDigits: d, maximumFractionDigits: d}); };
+                document.querySelectorAll('.btn-komponen-nota').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var noNota = btn.getAttribute('data-no-nota');
+                        var lokasi = btn.getAttribute('data-lokasi');
+                        document.getElementById('komponenNotaJudul').textContent = noNota;
+                        document.getElementById('komponenNotaSub').textContent = 'Memuat...';
+                        document.getElementById('komponenNotaBody').innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">Memuat...</td></tr>';
+                        document.getElementById('komponenNotaTotal').textContent = '';
+                        fetch("{{ route('laporan.pendapatan.detail-nota') }}?no_nota=" + encodeURIComponent(noNota) + "&lokasi=" + encodeURIComponent(lokasi), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                            .then(function (res) { if (!res.ok) { throw new Error('Gagal memuat (' + res.status + ')'); } return res.json(); })
+                            .then(function (data) {
+                                document.getElementById('komponenNotaSub').textContent = (data.tgl || '') + ' · ' + (data.lokasi || '') + ' · ' + (data.customer || '');
+                                var html = '';
+                                (data.lines || []).forEach(function (l, i) {
+                                    html += '<tr><td>' + (i + 1) + '</td><td class="fw-semibold">' + l.produk + '</td><td>' + l.tipe + '</td>'
+                                        + '<td class="amount">' + angka(l.pcs, 0) + '</td><td class="amount">' + angka(l.kg, 2) + '</td>'
+                                        + '<td class="amount">' + angka(l.kg_jual, 2) + '</td><td class="amount">' + angka(l.ikat, 2) + '</td>'
+                                        + '<td class="amount">' + rupiah(l.rp_satuan) + '</td>'
+                                        + '<td class="amount">' + angka(l.qty_setara, 2) + '</td><td class="amount">' + rupiah(l.rata2) + '</td>'
+                                        + '<td class="amount">' + rupiah(l.total) + '</td></tr>';
+                                });
+                                if (!html) { html = '<tr><td colspan="11" class="text-center text-muted py-4">Tidak ada baris invoice.</td></tr>'; }
+                                document.getElementById('komponenNotaBody').innerHTML = html;
+                                document.getElementById('komponenNotaTotal').textContent = rupiah(data.total);
+                            })
+                            .catch(function (err) {
+                                document.getElementById('komponenNotaSub').textContent = '';
+                                document.getElementById('komponenNotaBody').innerHTML = '<tr><td colspan="11" class="text-center text-danger py-4">' + err.message + '</td></tr>';
+                            });
+                    });
+                });
+            });
+            </script>
+            <h6 class="section-title mt-3">Rangkuman per Produk</h6>
+            <small class="text-muted d-block mb-2 section-sub">Produk selain telur — mengikuti filter di atas.</small>
+            <div class="income-table summary-table table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr><th>No</th><th>Produk</th><th>Tipe</th><th class="amount">Pcs</th><th class="amount">Kg Jual</th><th class="amount">Qty Setara (Kg)</th><th class="amount">Rata-rata</th><th class="amount">Total Rupiah</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse($summaryLain as $item)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="fw-semibold">{{ $item['produk'] }}</td>
                                 <td>{{ ucfirst($item['tipe']) }}</td>
                                 <td class="amount">{{ number_format($item['pcs'], 0, '.', ',') }}</td>
                                 <td class="amount">{{ number_format($item['kg'], 2, '.', ',') }}</td>
+                                <td class="amount">{{ $item['qty_setara'] === null ? '-' : number_format($item['qty_setara'], 2, '.', ',') }}</td>
+                                <td class="amount">{{ $fmt($item['rata2']) }}<small class="text-muted">/{{ $item['satuan'] }}</small></td>
                                 <td class="amount">{{ $fmt($item['total']) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada rangkuman produk pada periode ini.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted py-4">Tidak ada rangkuman produk lain pada periode ini.</td></tr>
                         @endforelse
                     </tbody>
-                    @if($summary->isNotEmpty())
+                    @if($summaryLain->isNotEmpty())
                     <tfoot>
-                        <tr class="fw-bold table-light"><td colspan="5" class="text-end">Total Rangkuman</td><td class="amount">{{ $fmt($summary->sum('total')) }}</td></tr>
+                        <tr class="fw-bold table-light"><td colspan="7" class="text-end">Total Rangkuman</td><td class="amount">{{ $fmt($summaryLain->sum('total')) }}</td></tr>
                     </tfoot>
                     @endif
                 </table>

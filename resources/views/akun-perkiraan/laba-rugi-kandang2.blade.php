@@ -701,6 +701,19 @@
                             </tr>
 
                             <tr>
+                                <td class="td_layer">Populasi Sekarang</td>
+                                @php $total_populasi_sekarang = 0; @endphp
+                                @foreach ($kandang as $k)
+                                    @php
+                                        $populasiSekarang = max(0, (float) $k->stok_awal - (float) ($populasiKumulatif[$k->id_kandang] ?? 0));
+                                        $total_populasi_sekarang += $populasiSekarang;
+                                    @endphp
+                                    <td class="td_layer text-end">{{ number_format($populasiSekarang, 0) }}</td>
+                                @endforeach
+                                <td class="text-end td_layer">{{ number_format($total_populasi_sekarang, 0) }}</td>
+                            </tr>
+
+                            <tr>
                                 <td class="td_layer">Total Telur</td>
                                 @php
                                     $ttl_telur = 0;

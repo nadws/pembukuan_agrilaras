@@ -36,6 +36,10 @@ class LaporanPendapatanController extends Controller
         $totals = $this->totals($allRows);
         $summary = $this->productSummary($allRows);
         $paySummary = $this->paymentSummary($allRows);
+        $telurSummary = $summary->firstWhere('tipe', 'telur');
+        $summaryLain = $summary->where('tipe', '!=', 'telur')->values();
+        $telurRows = $allRows->where('kategori', 'telur');
+        $telurDetail = $this->telurDetail($tanggalAwal, $tanggalAkhir, $telurRows);
 
         $page = max(1, (int) $request->input('page', 1));
         $paginated = new LengthAwarePaginator(
@@ -58,6 +62,9 @@ class LaporanPendapatanController extends Controller
             'akunPembayaran' => $akunPembayaran,
             'perPage' => $perPage,
             'summary' => $summary,
+            'telurSummary' => $telurSummary,
+            'summaryLain' => $summaryLain,
+            'telurDetail' => $telurDetail,
             'paySummary' => $paySummary,
         ]);
     }
@@ -314,7 +321,9 @@ class LaporanPendapatanController extends Controller
 
     /**
      * Rangkuman per produk dari nota-nota yang sudah tersaring filter.
-     * @return \Illuminate\Support\Collection<int, array{produk:string,tipe:string,pcs:float,kg:float,total:float}>
+     * Telur digabung satu baris: pcs = total butir penjualan PCS,
+     * kg = total kg penjualan KG, qty setara = kg + pcs*63/1000 (1 butir = 63 gram).
+     * @return \Illuminate\Support\Collection<int, array{produk:string,tipe:string,tipe_jual:string,pcs:float,kg:float,qty_setara:float|null,rata2:float,satuan:string,total:float}>
      */
     private function productSummary($rows)
     {
@@ -322,30 +331,29 @@ class LaporanPendapatanController extends Controller
 
         $telurRows = $rows->where('kategori', 'telur');
         if ($telurRows->isNotEmpty()) {
-            $items = DB::table('invoice_telur as i')
-                ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 'i.id_produk')
+            $telur = DB::table('invoice_telur as i')
                 ->whereIn('i.no_nota', $telurRows->pluck('no_nota')->unique()->all())
                 ->whereIn('i.lokasi', $telurRows->pluck('lokasi_raw')->unique()->all())
-                ->groupBy('i.id_produk', 'i.tipe')
-                ->select('i.id_produk')
-                ->selectRaw('MAX(p.nm_telur) as nama, MAX(i.tipe) as tipe_jual')
-                ->selectRaw('SUM(i.pcs) as pcs, SUM(i.kg_jual) as kg, SUM(i.total_rp) as total')
-                ->orderBy('nama')->orderBy('tipe_jual')
-                ->get();
-            foreach ($items as $item) {
-                $nama = trim((string) ($item->nama ?? '')) !== '' ? (string) $item->nama : 'Telur (tanpa nama)';
-                $tipeJual = strtoupper(trim((string) ($item->tipe_jual ?? '')));
-                if (! in_array($tipeJual, ['PCS', 'KG'], true)) {
-                    $tipeJual = '-';
-                }
-                $summary->push([
-                    'produk' => $nama.' ('.$tipeJual.')',
-                    'tipe' => 'telur',
-                    'pcs' => (float) $item->pcs,
-                    'kg' => (float) $item->kg,
-                    'total' => (float) $item->total,
-                ]);
-            }
+                ->selectRaw("SUM(CASE WHEN UPPER(i.tipe) = 'PCS' THEN i.pcs ELSE 0 END) as pcs")
+                ->selectRaw("SUM(CASE WHEN UPPER(i.tipe) = 'KG' THEN i.kg_jual ELSE 0 END) as kg")
+                ->selectRaw('SUM(i.total_rp) as total')
+                ->first();
+            $pcsTelur = (float) ($telur->pcs ?? 0);
+            $kgTelur = (float) ($telur->kg ?? 0);
+            $totalTelur = (float) ($telur->total ?? 0);
+            // 1 butir = 63 gram -> kg setara agar rata-rata Rp/Kg gabungan valid.
+            $qtySetaraTelur = $kgTelur + $pcsTelur * 63 / 1000;
+            $summary->push([
+                'produk' => 'Telur',
+                'tipe' => 'telur',
+                'tipe_jual' => 'CAMPURAN',
+                'pcs' => $pcsTelur,
+                'kg' => $kgTelur,
+                'qty_setara' => $qtySetaraTelur,
+                'rata2' => $qtySetaraTelur > 0 ? $totalTelur / $qtySetaraTelur : 0,
+                'satuan' => 'kg',
+                'total' => $totalTelur,
+            ]);
         }
 
         $ayamRows = $rows->where('kategori', 'ayam');
@@ -355,12 +363,18 @@ class LaporanPendapatanController extends Controller
                 ->whereIn('i.lokasi', $ayamRows->pluck('lokasi_raw')->unique()->all())
                 ->selectRaw('SUM(i.qty) as pcs, SUM(i.qty * i.h_satuan) as total')
                 ->first();
+            $pcsAyam = (float) ($total->pcs ?? 0);
+            $totalAyam = (float) ($total->total ?? 0);
             $summary->push([
                 'produk' => 'Ayam',
                 'tipe' => 'ayam',
-                'pcs' => (float) ($total->pcs ?? 0),
+                'tipe_jual' => '-',
+                'pcs' => $pcsAyam,
                 'kg' => 0,
-                'total' => (float) ($total->total ?? 0),
+                'qty_setara' => null,
+                'rata2' => $pcsAyam > 0 ? $totalAyam / $pcsAyam : 0,
+                'satuan' => 'ekor',
+                'total' => $totalAyam,
             ]);
         }
 
@@ -377,16 +391,130 @@ class LaporanPendapatanController extends Controller
                 ->orderBy('nama')
                 ->get();
             foreach ($items as $item) {
+                $pcsUmum = (float) $item->pcs;
+                $totalUmum = (float) $item->total;
                 $summary->push([
                     'produk' => trim((string) ($item->nama ?? '')) !== '' ? (string) $item->nama : 'Umum (tanpa nama)',
                     'tipe' => 'umum',
-                    'pcs' => (float) $item->pcs,
+                    'tipe_jual' => '-',
+                    'pcs' => $pcsUmum,
                     'kg' => 0,
-                    'total' => (float) $item->total,
+                    'qty_setara' => null,
+                    'rata2' => $pcsUmum > 0 ? $totalUmum / $pcsUmum : 0,
+                    'satuan' => 'pcs',
+                    'total' => $totalUmum,
                 ]);
             }
         }
 
         return $summary->sortBy([['tipe', 'asc'], ['produk', 'asc']])->values();
+    }
+
+    /**
+     * Komponen (baris invoice) satu nota telur untuk drill-down.
+     */
+    public function detailNota(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $filters = $request->validate([
+            'no_nota' => ['required', 'string', 'max:200'],
+            'lokasi' => ['required', 'string', 'in:alpa,mtd'],
+        ]);
+
+        $head = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->where('i.no_nota', $filters['no_nota'])
+            ->where('i.lokasi', $filters['lokasi'])
+            ->select('i.no_nota', 'i.tgl', 'i.lokasi')
+            ->selectRaw('MAX(c.nm_customer) as customer')
+            ->selectRaw('SUM(i.total_rp) as total')
+            ->groupBy('i.no_nota', 'i.tgl', 'i.lokasi')
+            ->first();
+
+        if (! $head) {
+            return response()->json(['message' => 'Nota tidak ditemukan.'], 404);
+        }
+
+        $lines = DB::table('invoice_telur as i')
+            ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 'i.id_produk')
+            ->where('i.no_nota', $filters['no_nota'])
+            ->where('i.lokasi', $filters['lokasi'])
+            ->orderBy('i.id_invoice_telur')
+            ->get(['i.tipe', 'i.pcs', 'i.kg', 'i.kg_jual', 'i.ikat', 'i.rp_satuan', 'i.total_rp', 'p.nm_telur']);
+
+        return response()->json([
+            'no_nota' => (string) $head->no_nota,
+            'tgl' => (string) $head->tgl,
+            'lokasi' => $this->lokasiLabel((string) ($head->lokasi ?? '')),
+            'customer' => trim((string) ($head->customer ?? '')) !== '' ? (string) $head->customer : '-',
+            'total' => (float) $head->total,
+            'lines' => $lines->map(function ($l) {
+                $tipe = strtoupper((string) ($l->tipe ?? ''));
+                $pcs = (float) $l->pcs;
+                $kgJual = (float) $l->kg_jual;
+                $total = (float) $l->total_rp;
+                // Baris PCS dikonversi 1 butir = 63 gram dulu baru dihitung rata-ratanya.
+                $qtySetara = $tipe === 'PCS' ? $pcs * 63 / 1000 : $kgJual;
+
+                return [
+                    'produk' => trim((string) ($l->nm_telur ?? '')) !== '' ? (string) $l->nm_telur : '-',
+                    'tipe' => $tipe,
+                    'pcs' => $pcs,
+                    'kg' => (float) $l->kg,
+                    'kg_jual' => $kgJual,
+                    'ikat' => (float) $l->ikat,
+                    'rp_satuan' => (float) $l->rp_satuan,
+                    'qty_setara' => $qtySetara,
+                    'rata2' => $qtySetara > 0 ? $total / $qtySetara : 0,
+                    'total' => $total,
+                ];
+            })->values(),
+        ]);
+    }
+
+    /**
+     * Rincian per nota untuk tabel telur (1 butir = 63 gram).
+     * @return \Illuminate\Support\Collection<int, array{no_nota:string,tgl:string,lokasi:string,lokasi_raw:string,customer:string,tipe_jual:string,pcs:float,kg:float,qty_setara:float,total:float,rata2:float}>
+     */
+    private function telurDetail(string $tanggalAwal, string $tanggalAkhir, $telurRows)
+    {
+        if ($telurRows->isEmpty()) {
+            return collect();
+        }
+
+        $items = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->whereIn('i.no_nota', $telurRows->pluck('no_nota')->unique()->all())
+            ->whereIn('i.lokasi', $telurRows->pluck('lokasi_raw')->unique()->all())
+            ->whereBetween('i.tgl', [$tanggalAwal, $tanggalAkhir])
+            ->groupBy('i.no_nota', 'i.lokasi', 'i.tgl')
+            ->select('i.no_nota', 'i.lokasi', 'i.tgl')
+            ->selectRaw('MAX(c.nm_customer) as customer')
+            ->selectRaw("SUM(CASE WHEN UPPER(i.tipe) = 'PCS' THEN i.pcs ELSE 0 END) as pcs")
+            ->selectRaw("SUM(CASE WHEN UPPER(i.tipe) = 'KG' THEN i.kg_jual ELSE 0 END) as kg")
+            ->selectRaw('SUM(i.total_rp) as total')
+            ->orderByDesc('i.tgl')
+            ->orderByDesc('i.no_nota')
+            ->get();
+
+        return $items->map(function ($item) {
+            $pcs = (float) $item->pcs;
+            $kg = (float) $item->kg;
+            $total = (float) $item->total;
+            $qtySetara = $kg + $pcs * 63 / 1000;
+
+            return [
+                'no_nota' => (string) $item->no_nota,
+                'tgl' => (string) $item->tgl,
+                'lokasi' => $this->lokasiLabel((string) ($item->lokasi ?? '')),
+                'lokasi_raw' => (string) ($item->lokasi ?? ''),
+                'customer' => trim((string) ($item->customer ?? '')) !== '' ? (string) $item->customer : '-',
+                'tipe_jual' => $pcs > 0 && $kg > 0 ? 'Campuran' : ($pcs > 0 ? 'PCS' : 'KG'),
+                'pcs' => $pcs,
+                'kg' => $kg,
+                'qty_setara' => $qtySetara,
+                'total' => $total,
+                'rata2' => $qtySetara > 0 ? $total / $qtySetara : 0,
+            ];
+        })->values();
     }
 }

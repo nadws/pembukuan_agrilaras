@@ -459,6 +459,13 @@ class AkunPerkiraanController extends Controller
             ->groupBy('a.id_kandang')
             ->get()
             ->keyBy('id_kandang');
+        $populasiKumulatif = DB::table('populasi')
+            ->whereDate('tgl', '<=', $tgl2)
+            ->whereIn('id_kandang', $kandang->pluck('id_kandang'))
+            ->groupBy('id_kandang')
+            ->select('id_kandang')
+            ->selectRaw('SUM(COALESCE(mati, 0) + COALESCE(jual, 0) + COALESCE(afkir, 0)) as keluar')
+            ->pluck('keluar', 'id_kandang');
         $rata_rata_telur = LaporanLayerModel::rataRataTelurtgl($tgl1, $tgl2);
         $total_jual_telur_bulan = LaporanLayerModel::rataRataTelurtgl2($tgl1, $tgl2, '111');
         $total_jual_ayam_bulan = LaporanLayerModel::rataRataTelurtgl2($tgl1, $tgl2, '112');
@@ -649,7 +656,13 @@ class AkunPerkiraanController extends Controller
             'rak' => (float) ($nilaiKode['5101-01'] ?? 0),
         ];
         $totalPerKategori['pendapatan_lain'] = $totalPendapatanJurnal - $totalPerKategori['jual_telur'] - $totalPerKategori['jual_ayam'];
-        $totalPerKategori['operasional'] = $totalBiayaJurnal - $totalPerKategori['pakan'] - $totalPerKategori['vitamin'] - $totalPerKategori['vaksin'] - $totalPerKategori['rak'];
+        $totalPerKategori['operasional'] = $totalBiayaJurnal
+            - $totalPerKategori['pakan']
+            - $totalPerKategori['vitamin']
+            - $totalPerKategori['vaksin']
+            - $totalPerKategori['rak']
+            - $totalPerKategori['pendapatan_lain'];
+        $biayaOperasionalTotal = $totalPerKategori['operasional'];
 
         $nilaiKandang = [
             'jual_telur' => $bagi($totalPerKategori['jual_telur'], $bobotTelur),
@@ -662,6 +675,25 @@ class AkunPerkiraanController extends Controller
             'operasional' => $bagi($totalPerKategori['operasional'], $bobotUmum),
         ];
 
+        // Gunakan total dari jurnal_perkiraan agar biaya pakan, vitamin, dan vaksin
+        // sama dengan laporan laba rugi. Nilainya dibagi ke kandang menurut
+        // proporsi pemakaian produk pada periode yang dipilih.
+        foreach ($kandang as $item) {
+            $id = (int) $item->id_kandang;
+            $biaya_pakan->put($item->nm_kandang, (object) [
+                'nm_departemen' => $item->nm_kandang,
+                'ttl_rp' => (float) ($nilaiKandang['pakan'][$id] ?? 0),
+            ]);
+            $biaya_vitamin->put($item->nm_kandang, (object) [
+                'nm_departemen' => $item->nm_kandang,
+                'ttl_rp' => (float) ($nilaiKandang['vitamin'][$id] ?? 0),
+            ]);
+            $vaksin->put($id, (object) [
+                'id_kandang' => $id,
+                'ttl_rp' => (float) ($nilaiKandang['vaksin'][$id] ?? 0),
+            ]);
+        }
+
         return view('akun-perkiraan.laba-rugi-kandang2', compact(
             'kandang',
             'totalTelur',
@@ -672,6 +704,7 @@ class AkunPerkiraanController extends Controller
             'total_jual_ayam_bulan',
             'total_beban_rak',
             'populasi',
+            'populasiKumulatif',
             'biaya_pakan',
             'biaya_vitamin',
             'vaksin',

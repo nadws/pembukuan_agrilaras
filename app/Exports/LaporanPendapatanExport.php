@@ -62,7 +62,7 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
         ];
 
         if ($this->hasSummary) {
-            $headings = array_merge($headings, ['', 'No', 'Produk', 'Tipe', 'Pcs', 'Kg', 'Total Rangkuman (IDR)']);
+            $headings = array_merge($headings, ['', 'No', 'Produk', 'Tipe', 'Pcs', 'Kg', 'Qty Setara (Kg)', 'Total Rangkuman (IDR)', 'Rata-rata (IDR)']);
         }
 
         return $headings;
@@ -75,6 +75,8 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
             'M' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'N' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'O' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+            'P' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+            'Q' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
         ];
     }
 
@@ -85,7 +87,7 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
         $sheet->getStyle("A1:{$lastColumn}1")->getFont()->setBold(true);
 
         foreach ($this->sectionRows as $row) {
-            $sheet->getStyle("J{$row}:O{$row}")->getFont()->setBold(true);
+            $sheet->getStyle("J{$row}:Q{$row}")->getFont()->setBold(true);
         }
         foreach ($this->totalRows as $row) {
             $style = $sheet->getStyle("A{$row}:{$lastColumn}{$row}");
@@ -94,7 +96,7 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
             $style->getBorders()->getBottom()->setBorderStyle(Border::BORDER_THIN);
         }
         foreach ($this->highlightRows as $row) {
-            $style = $sheet->getStyle("J{$row}:O{$row}");
+            $style = $sheet->getStyle("J{$row}:Q{$row}");
             $style->getFont()->setBold(true);
             $style->getBorders()->getTop()->setBorderStyle(Border::BORDER_MEDIUM);
             $style->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE);
@@ -131,19 +133,21 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
                     ucfirst((string) $item['tipe']),
                     (float) $item['pcs'],
                     (float) $item['kg'],
+                    $item['qty_setara'] === null ? '' : (float) $item['qty_setara'],
                     (float) $item['total'],
+                    (float) $item['rata2'],
                 ];
             }
-            $sum[] = ['', '', 'TOTAL RANGKUMAN', '', '', (float) $summary->sum('total')];
+            $sum[] = ['', '', 'TOTAL RANGKUMAN', '', '', '', (float) $summary->sum('total'), ''];
             // Blok kanan digabung mulai baris 0 → baris Excel = index + 2.
             $this->highlightRows[] = count($sum) + 1;
         }
 
         if ($paySummary->isNotEmpty()) {
             if ($summary->isNotEmpty()) {
-                $sum[] = ['', '', '', '', '', ''];
+                $sum[] = ['', '', '', '', '', '', '', ''];
             }
-            $sum[] = ['', 'TOTAL PER PEMBAYARAN', '', '', '', ''];
+            $sum[] = ['', 'TOTAL PER PEMBAYARAN', '', '', '', '', '', ''];
             $this->sectionRows[] = count($sum) + 1;
             foreach ($paySummary as $index => $pay) {
                 $sum[] = [
@@ -152,10 +156,12 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
                     (int) $pay['jumlah'].' nota',
                     '',
                     '',
+                    '',
                     (float) $pay['total'],
+                    '',
                 ];
             }
-            $sum[] = ['', '', 'TOTAL PEMBAYARAN', '', '', (float) $paySummary->sum('total')];
+            $sum[] = ['', '', 'TOTAL PEMBAYARAN', '', '', '', (float) $paySummary->sum('total'), ''];
             $this->highlightRows[] = count($sum) + 1;
         }
 
@@ -166,7 +172,7 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
                 $this->rows[] = $left;
                 continue;
             }
-            $right = $sum[$i] ?? array_fill(0, 6, '');
+            $right = $sum[$i] ?? array_fill(0, 8, '');
             $this->rows[] = array_merge($left, [''], $right);
         }
 

@@ -720,6 +720,7 @@ Route::controller(LaporanAkhirBulanController::class)->group(function () {
 Route::controller(LaporanPendapatanController::class)->group(function () {
     Route::get('/laporan/pendapatan', 'index')->name('laporan.pendapatan');
     Route::get('/laporan/pendapatan/export', 'export')->name('laporan.pendapatan.export');
+    Route::get('/laporan/pendapatan/detail-nota', 'detailNota')->name('laporan.pendapatan.detail-nota');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');
