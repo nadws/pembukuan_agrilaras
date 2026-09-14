@@ -107,30 +107,6 @@
                 place-items: center;
             }
 
-            .status-badge {
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-size: 11px;
-                font-weight: 700;
-                white-space: nowrap;
-                text-transform: capitalize;
-            }
-
-            .status-lunas {
-                color: #1e7e34;
-                background: #d9f2df;
-            }
-
-            .status-belum_lunas {
-                color: #b02a37;
-                background: #fbdadd;
-            }
-
-            .status-sebagian {
-                color: #9a6700;
-                background: #fdf0d5;
-            }
-
             @media (max-width: 576px) {
                 .purchase-filter {
                     padding: 11px;
@@ -198,33 +174,18 @@
                                 <td>{{ $faktur->firstItem() + $nomor }}</td>
                                 <td>{{ tanggal($item->tanggal_faktur) }}</td>
                                 <td>{{ $item->no_faktur }}</td>
-                                <td>
-                                    <span
-                                        class="status-badge status-{{ $item->jenis_faktur === 'pakan' ? 'lunas' : 'sebagian' }}">
-                                        {{ in_array($item->jenis_faktur, ['vitamin', 'vaksin']) ? 'Vitamin & Vaksin' : ucfirst(str_replace('_', ' ', $item->jenis_faktur)) }}
-                                    </span>
-                                </td>
+                                <td>{{ in_array($item->jenis_faktur, ['vitamin', 'vaksin']) ? 'Vitamin & Vaksin' : ucfirst(str_replace('_', ' ', $item->jenis_faktur)) }}</td>
                                 <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
                                 {{-- <td>{{ tanggal($item->jatuh_tempo) }}</td> --}}
                                 <td class="text-end">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
-                                <td>
-                                    <span class="status-badge status-{{ $item->status_bayar }}">
-                                        {{ str_replace('_', ' ', $item->status_bayar) }}
-                                    </span>
-                                </td>
+                                <td>{{ ucfirst(str_replace('_', ' ', $item->status_bayar)) }}</td>
                                 <td>
                                     @if ($stokSelesai)
-                                        <span class="status-badge status-lunas">
-                                            Selesai
-                                        </span>
+                                        Selesai
                                     @elseif ($qtyDiterima > 0)
-                                        <span class="status-badge status-sebagian">
-                                            Sebagian
-                                        </span>
+                                        Sebagian
                                     @else
-                                        <span class="status-badge status-belum_lunas">
-                                            Belum
-                                        </span>
+                                        Belum
                                     @endif
                                 </td>
                                 <td class="text-center">
