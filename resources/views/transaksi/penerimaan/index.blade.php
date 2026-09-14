@@ -145,7 +145,7 @@
                                 <th class="text-end">Sudah Diterima</th>
                                 <th class="text-end">Sisa</th>
                                 <th class="text-end">Total</th>
-                                <th width="120" class="text-center">
+                                <th width="190" class="text-center">
                                     @if ($statusPenerimaan === 'belum')
                                         <input type="checkbox" class="form-check-input" id="check-semua-faktur">
                                     @else
@@ -175,10 +175,15 @@
                                             <input type="checkbox" name="faktur[]" value="{{ $item->id }}"
                                                 class="form-check-input check-faktur">
                                         @else
-                                            <form method="POST" action="{{ route('transaksi.penerimaan.batalkan', $item->id) }}" onsubmit="return confirm('Batalkan penerimaan stok {{ $item->no_faktur }}? Stok yang diterima akan dikembalikan.')">
-                                                @csrf
-                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-undo me-1"></i> Batalkan</button>
-                                            </form>
+                                            <div class="d-inline-flex align-items-center gap-1 flex-nowrap">
+                                                <a href="{{ route('transaksi.faktur-pembelian.detail', $item) }}" class="btn btn-outline-primary btn-sm" title="Lihat detail faktur">
+                                                    <i class="fas fa-eye me-1"></i> Detail
+                                                </a>
+                                                <form method="POST" action="{{ route('transaksi.penerimaan.batalkan', $item->id) }}" class="m-0" onsubmit="return confirm('Batalkan penerimaan stok {{ $item->no_faktur }}? Stok yang diterima akan dikembalikan.')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-undo me-1"></i> Batalkan</button>
+                                                </form>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>
