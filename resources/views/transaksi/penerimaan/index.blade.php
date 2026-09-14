@@ -53,30 +53,6 @@
                 white-space: nowrap;
             }
 
-            .status-badge {
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-size: 11px;
-                font-weight: 700;
-                white-space: nowrap;
-                text-transform: capitalize;
-            }
-
-            .status-lunas {
-                color: #1e7e34;
-                background: #d9f2df;
-            }
-
-            .status-belum_lunas {
-                color: #b02a37;
-                background: #fbdadd;
-            }
-
-            .status-sebagian {
-                color: #9a6700;
-                background: #fdf0d5;
-            }
-
             .empty-receive {
                 padding: 48px 20px !important;
                 color: #66738a;
@@ -101,11 +77,6 @@
                 color: #fff;
             }
 
-            .receive-nav .badge {
-                margin-left: 6px;
-                background: rgba(255, 255, 255, .18);
-                color: inherit;
-            }
         </style>
 
         <div class="receive-index">
@@ -139,20 +110,20 @@
                 <li class="nav-item">
                     <a class="nav-link {{ $statusPenerimaan === 'belum' ? 'active' : '' }}"
                         href="{{ route('transaksi.penerimaan.index', request()->except('page', 'status') + ['status' => 'belum']) }}">
-                        Nota belum habis
-                        <span class="badge">{{ $jumlahBelumHabis }}</span>
+                        Nota belum habis ({{ $jumlahBelumHabis }})
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $statusPenerimaan === 'selesai' ? 'active' : '' }}"
                         href="{{ route('transaksi.penerimaan.index', request()->except('page', 'status') + ['status' => 'selesai']) }}">
-                        Nota sudah habis diambil
-                        <span class="badge">{{ $jumlahSudahHabis }}</span>
+                        Nota sudah habis diambil ({{ $jumlahSudahHabis }})
                     </a>
                 </li>
             </ul>
 
-            <form method="GET" action="{{ route('transaksi.penerimaan.terima') }}" id="form-terima-batch">
+            @if ($statusPenerimaan === 'belum')
+                <form method="GET" action="{{ route('transaksi.penerimaan.terima') }}" id="form-terima-batch">
+            @endif
                 @if ($statusPenerimaan === 'belum')
                     <div class="d-flex justify-content-end mb-2">
                         <button type="submit" class="btn btn-primary btn-sm" id="btn-terima-batch" disabled>
@@ -174,11 +145,11 @@
                                 <th class="text-end">Sudah Diterima</th>
                                 <th class="text-end">Sisa</th>
                                 <th class="text-end">Total</th>
-                                <th width="70" class="text-center">
+                                <th width="120" class="text-center">
                                     @if ($statusPenerimaan === 'belum')
                                         <input type="checkbox" class="form-check-input" id="check-semua-faktur">
                                     @else
-                                        Status
+                                        Aksi
                                     @endif
                                 </th>
                             </tr>
@@ -193,11 +164,7 @@
                                     <td>{{ $faktur->firstItem() + $nomor }}</td>
                                     <td>{{ tanggal($item->tanggal_faktur) }}</td>
                                     <td>{{ $item->no_faktur }}</td>
-                                    <td>
-                                        <span class="status-badge status-{{ $item->jenis_faktur === 'vitamin' ? 'sebagian' : 'lunas' }}">
-                                            {{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}
-                                        </span>
-                                    </td>
+                                    <td>{{ $item->jenis_faktur === 'barang_umum' ? 'Barang Umum' : ($item->jenis_faktur === 'vaksin' ? 'Vaksin' : ($item->jenis_faktur === 'vitamin' ? 'Vitamin' : 'Pakan')) }}</td>
                                     <td>{{ $item->supplier->nm_suplier ?? '-' }}</td>
                                     <td class="text-end">{{ number_format($item->total_qty, 2, ',', '.') }}</td>
                                     <td class="text-end">{{ number_format($qtyDiterima, 2, ',', '.') }}</td>
@@ -208,7 +175,10 @@
                                             <input type="checkbox" name="faktur[]" value="{{ $item->id }}"
                                                 class="form-check-input check-faktur">
                                         @else
-                                            <span class="status-badge status-lunas">Selesai</span>
+                                            <form method="POST" action="{{ route('transaksi.penerimaan.batalkan', $item->id) }}" onsubmit="return confirm('Batalkan penerimaan stok {{ $item->no_faktur }}? Stok yang diterima akan dikembalikan.')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-undo me-1"></i> Batalkan</button>
+                                            </form>
                                         @endif
                                     </td>
                                 </tr>
@@ -228,7 +198,9 @@
                         </tbody>
                     </table>
                 </div>
-            </form>
+            @if ($statusPenerimaan === 'belum')
+                </form>
+            @endif
 
             @if ($faktur instanceof \Illuminate\Pagination\LengthAwarePaginator && $faktur->hasPages())
                 <div class="mt-3">

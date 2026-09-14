@@ -1153,6 +1153,30 @@ $items = $this->normalisasiItemFaktur($validated['item']);
             ->with('sukses', 'Stok beberapa faktur berhasil diterima.');
     }
 
+    public function batalkanPenerimaan(FakturModel $faktur_pembelian): RedirectResponse
+    {
+        $faktur = $faktur_pembelian;
+
+        try {
+            DB::transaction(function () use ($faktur) {
+            if ($faktur->jenis_faktur === 'barang_umum') {
+                $dihapus = DB::table('pembukuan_baru_stok')->where('nomor_transaksi', $faktur->no_faktur)->delete();
+                throw_if($dihapus === 0, \RuntimeException::class, 'Penerimaan stok faktur ini sudah tidak ditemukan.');
+                return;
+            }
+
+            $dihapus = DB::table('stok_produk_perencanaan')->where('no_nota', $faktur->no_faktur)->delete();
+            throw_if($dihapus === 0, \RuntimeException::class, 'Penerimaan stok faktur ini sudah tidak ditemukan.');
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->route('transaksi.penerimaan.index', ['status' => 'selesai'])
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('transaksi.penerimaan.index', ['status' => 'selesai'])
+            ->with('sukses', 'Penerimaan stok ' . $faktur->no_faktur . ' berhasil dibatalkan.');
+    }
+
     private function qtyDiterimaFaktur($fakturs)
     {
         $fakturs = collect($fakturs);

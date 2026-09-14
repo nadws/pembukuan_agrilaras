@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'penerimaanIndex')->name('index');
             Route::get('/terima', 'terimaBatch')->name('terima');
             Route::post('/terima', 'storeTerimaBatch')->name('terima.store');
+            Route::post('/{faktur_pembelian}/batalkan', 'batalkanPenerimaan')->name('batalkan');
         });
 
     Route::controller(FakturPembelianController::class)
