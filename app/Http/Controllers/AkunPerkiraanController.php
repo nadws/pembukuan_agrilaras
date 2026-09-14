@@ -602,6 +602,9 @@ class AkunPerkiraanController extends Controller
         $totalPendapatanJurnal = (float) $nilaiJurnal
             ->whereIn('tipe_akun', ['REVE', 'OINC'])
             ->sum(fn ($row) => (float) $row->kredit - (float) $row->debit);
+        $totalPendapatanLainJurnal = (float) $nilaiJurnal
+            ->where('tipe_akun', 'OINC')
+            ->sum(fn ($row) => (float) $row->kredit - (float) $row->debit);
         $totalBiayaJurnal = (float) $nilaiJurnal
             ->whereIn('tipe_akun', ['COGS', 'EXPS', 'OEXP'])
             ->sum(fn ($row) => (float) $row->debit - (float) $row->kredit);
@@ -650,12 +653,15 @@ class AkunPerkiraanController extends Controller
         $totalPerKategori = [
             'jual_telur' => (float) ($nilaiKode['400001'] ?? 0),
             'jual_ayam' => (float) ($nilaiKode['400002'] ?? 0),
+            'jual_umum' => (float) ($nilaiKode['400003'] ?? 0),
             'pakan' => (float) ($nilaiKode['5101-04'] ?? 0),
             'vitamin' => (float) ($nilaiKode['5101-03'] ?? 0),
             'vaksin' => (float) ($nilaiKode['5102-02'] ?? 0),
             'rak' => (float) ($nilaiKode['5101-01'] ?? 0),
         ];
-        $totalPerKategori['pendapatan_lain'] = $totalPendapatanJurnal - $totalPerKategori['jual_telur'] - $totalPerKategori['jual_ayam'];
+        // Penjualan umum (REVE) bukan pendapatan kandang. Hanya pendapatan
+        // di luar usaha (OINC) yang menjadi pengurang biaya operasional.
+        $totalPerKategori['pendapatan_lain'] = $totalPendapatanLainJurnal;
         $totalPerKategori['operasional'] = $totalBiayaJurnal
             - $totalPerKategori['pakan']
             - $totalPerKategori['vitamin']
