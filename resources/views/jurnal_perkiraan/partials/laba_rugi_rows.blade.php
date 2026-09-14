@@ -5,7 +5,7 @@
                 class="text-dark">{{ $row['nama'] }}</a>
         </td>
         @foreach ($periods as $period)
-            <td class="text-end">
+            <td class="text-end period-column">
                 <a class="report-amount-link" title="Lihat detail jurnal {{ $period->translatedFormat('F Y') }}"
                     href="{{ route('jurnal-perkiraan.detail-akun', [
                         'akun_perkiraan' => $row['id'],

@@ -43,7 +43,7 @@
             </div>
             <div class="table-responsive laporan-scroll">
                 <table class="table table-sm laporan-accurate align-middle">
-                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end period-total-column" style="min-width:155px">Total Aktual</th></tr></thead>
+                    <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end period-column" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end period-total-column" style="min-width:155px">Total Aktual</th></tr></thead>
                     <tbody>
                         <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN</td></tr>
                         @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['revenueRows']])
@@ -155,13 +155,17 @@
             @media (max-width: 767.98px) {
                 .report-actions { width:100%; display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); }
                 .report-actions .btn { display:flex; align-items:center; justify-content:center; min-height:40px; white-space:nowrap; }
-                .laporan-scroll { height:auto; min-height:0; max-height:calc(100vh - 250px); border:1px solid #dfe5f1; border-radius:10px; }
-                .laporan-accurate { font-size:12px; margin-bottom:0; }
+                .laporan-scroll { width:100%; height:auto; min-height:0; max-height:none; overflow-x:hidden; border:1px solid #dfe5f1; border-radius:10px; }
+                .laporan-accurate { width:100% !important; table-layout:fixed; font-size:11px; margin-bottom:0; }
                 .laporan-accurate thead th:first-child,
-                .laporan-accurate tbody tr > td:first-child { min-width:190px !important; max-width:210px; }
-                .laporan-accurate th, .laporan-accurate td { padding:.55rem .45rem; }
+                .laporan-accurate tbody tr > td:first-child { width:58% !important; min-width:0 !important; max-width:none; white-space:normal; overflow-wrap:anywhere; }
+                .laporan-accurate .period-column { width:42% !important; min-width:0 !important; white-space:nowrap; font-variant-numeric:tabular-nums; }
+                .laporan-accurate .period-column:nth-of-type(n+3) { display:none; }
+                .laporan-accurate th, .laporan-accurate td { padding:.55rem .4rem; }
                 .laporan-accurate .period-total-column { display:none; }
                 .laporan-accurate .account-row > td:first-child { padding-left:12px !important; }
+                .laporan-accurate .section-row td,
+                .laporan-accurate .subsection-row td { width:100% !important; }
                 .end-period-fields { display:none; }
                 .mobile-period-note { display:block; }
                 #parameterLaporan .modal-dialog { margin:.5rem; }
