@@ -101,20 +101,19 @@
                                 <td class="text-end receivable-paid">Rp {{ number_format($row->jumlah_bayar,0,'.',',') }}</td>
                                 <td class="text-end">Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}</td>
                                 <td>{{ $row->selisih_pembayaran > 0 ? 'Rp '.number_format($row->selisih_pembayaran,0,'.',',') : '-' }}</td>
-                                <td><button type="button" class="btn btn-outline-info btn-sm btn-detail-riwayat" data-target="{{ $detailId }}" title="Lihat nota dan jurnal" aria-expanded="false"><i class="fas fa-eye"></i></button></td>
+                                <td><div class="d-flex gap-1 flex-nowrap"><button type="button" class="btn btn-outline-info btn-sm btn-detail-riwayat" data-target="{{ $detailId }}" title="Lihat nota dan jurnal" aria-expanded="false"><i class="fas fa-eye"></i></button><a href="{{ route('transaksi.piutang.pelunasan.voucher.edit', $row->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pelunasan"><i class="fas fa-edit"></i></a></div></td>
                             </tr>
                             <tr id="{{ $detailId }}" class="d-none bg-light riwayat-detail-row">
                                 <td colspan="9">
                                     <div class="p-2">
                                         <div class="small fw-bold text-primary mb-2">Nota dalam pelunasan ini</div>
                                         <div class="table-responsive mb-3"><table class="table table-sm table-bordered mb-0">
-                                            <thead><tr><th>No Nota</th><th class="text-end">Bayar</th><th class="text-end">Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead>
+                                            <thead><tr><th>No Nota</th><th class="text-end">Bayar</th><th class="text-end">Dilunasi</th><th>Selisih</th></tr></thead>
                                             <tbody>@foreach($row->nota_rows as $notaRow)<tr>
                                                 <td>{{ $notaRow->no_nota }}</td>
                                                 <td class="text-end">Rp {{ number_format($notaRow->jumlah_bayar,0,'.',',') }}</td>
                                                 <td class="text-end">Rp {{ number_format($notaRow->nilai_piutang_dilunasi,0,'.',',') }}</td>
                                                 <td>{{ $notaRow->jenis_selisih === 'tidak' ? '-' : ucfirst($notaRow->jenis_selisih).' Rp '.number_format($notaRow->selisih_pembayaran,0,'.',',') }}</td>
-                                                <td><a href="{{ route('transaksi.piutang.pelunasan.edit', $notaRow->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pembayaran nota"><i class="fas fa-edit me-1"></i>Edit</a></td>
                                             </tr>@endforeach</tbody>
                                         </table></div>
                                         <div class="small fw-bold text-primary mb-1">Jurnal {{ $row->jurnal_detail->first()->nomor_transaksi ?? '-' }}</div>

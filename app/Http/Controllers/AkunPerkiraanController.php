@@ -637,7 +637,7 @@ class AkunPerkiraanController extends Controller
             return $hasil;
         };
 
-        $bobotTelur = $bobotAyam = $bobotPakan = $bobotVitamin = $bobotVaksin = $bobotRak = $bobotUmum = [];
+        $bobotTelur = $bobotAyam = $bobotPakan = $bobotVitamin = $bobotRak = $bobotUmum = [];
         foreach ($kandang as $item) {
             $id = (int) $item->id_kandang;
             $telur = (float) ($totalTelur[$id]->kuml_kg ?? 0) - ((float) ($totalTelur[$id]->kuml_pcs ?? 0) / 180);
@@ -645,7 +645,6 @@ class AkunPerkiraanController extends Controller
             $bobotAyam[$id] = (float) ($populasi[$id]->jual ?? 0) + (float) ($populasi[$id]->afkir ?? 0);
             $bobotPakan[$id] = (float) optional($pemakaianProduk->first(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) === 'pakan'))->total_rp;
             $bobotVitamin[$id] = (float) $pemakaianProduk->filter(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) !== 'pakan')->sum('total_rp');
-            $bobotVaksin[$id] = (float) ($vaksin[$id]->ttl_rp ?? 0);
             $bobotRak[$id] = (float) ($totalTelur[$id]->kuml_pcs ?? 0);
             $bobotUmum[$id] = (float) $item->stok_awal;
         }
@@ -676,14 +675,15 @@ class AkunPerkiraanController extends Controller
             'pendapatan_lain' => $bagi($totalPerKategori['pendapatan_lain'], $bobotUmum),
             'pakan' => $bagi($totalPerKategori['pakan'], $bobotPakan),
             'vitamin' => $bagi($totalPerKategori['vitamin'], $bobotVitamin),
-            'vaksin' => $bagi($totalPerKategori['vaksin'], $bobotVaksin),
+            'vaksin' => [],
             'rak' => $bagi($totalPerKategori['rak'], $bobotRak),
             'operasional' => $bagi($totalPerKategori['operasional'], $bobotUmum),
         ];
 
-        // Gunakan total dari jurnal_perkiraan agar biaya pakan, vitamin, dan vaksin
+        // Gunakan total dari jurnal_perkiraan agar biaya pakan, vitamin
         // sama dengan laporan laba rugi. Nilainya dibagi ke kandang menurut
         // proporsi pemakaian produk pada periode yang dipilih.
+        // VAKSIN: langsung pakai cost per kandang dari tb_vaksin_perencanaan (sudah per kandang)
         foreach ($kandang as $item) {
             $id = (int) $item->id_kandang;
             $biaya_pakan->put($item->nm_kandang, (object) [
@@ -694,10 +694,8 @@ class AkunPerkiraanController extends Controller
                 'nm_departemen' => $item->nm_kandang,
                 'ttl_rp' => (float) ($nilaiKandang['vitamin'][$id] ?? 0),
             ]);
-            $vaksin->put($id, (object) [
-                'id_kandang' => $id,
-                'ttl_rp' => (float) ($nilaiKandang['vaksin'][$id] ?? 0),
-            ]);
+            // Vaksin sudah per kandang di tb_vaksin_perencanaan, jangan dibagi rata
+            $nilaiKandang['vaksin'][$id] = (float) ($vaksin[$id]->ttl_rp ?? 0);
         }
 
         return view('akun-perkiraan.laba-rugi-kandang2', compact(

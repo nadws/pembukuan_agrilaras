@@ -519,6 +519,52 @@ class PiutangTransaksiController extends Controller
         return redirect()->route('transaksi.piutang.index', ['jenis' => $validated['jenis']])->with('sukses', 'Pembayaran piutang berhasil disimpan. Nota yang masih memiliki sisa tetap dapat dicicil.');
     }
 
+    public function editVoucher(Request $request, int $id)
+    {
+        $payment = DB::table('pelunasan_piutang_penjualan')->where('id', $id)->first();
+        abort_unless($payment, 404);
+        $payments = DB::table('pelunasan_piutang_penjualan')->when($payment->id_impor_jurnal_perkiraan,
+            fn ($q) => $q->where('id_impor_jurnal_perkiraan', $payment->id_impor_jurnal_perkiraan),
+            fn ($q) => $q->where('id', $id))->orderBy('id')->get();
+        $jenis = $payment->jenis;
+        $noteSummaries = $payments->mapWithKeys(function ($p) use ($jenis) {
+            $table = $jenis === 'ayam' ? 'invoice_ayam' : ($jenis === 'umum' ? 'penjualan_agl' : 'invoice_telur');
+            $items = DB::table($table.' as i')->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+                ->when($jenis === 'umum', fn ($q) => $q->where('i.urutan', (int) str_replace('PU-', '', $p->no_nota)), fn ($q) => $q->where('i.no_nota', $p->no_nota))
+                ->select('i.*', 'c.nm_customer')->get();
+            abort_if($items->isEmpty(), 404, 'Nota asal tidak ditemukan.');
+            $paid = (float) DB::table('pelunasan_piutang_penjualan')->where('jenis', $jenis)->where('no_nota', $p->no_nota)->where('id', '<>', $p->id)->sum(DB::raw('COALESCE(nilai_piutang_dilunasi, jumlah_bayar)'));
+            $total = $this->invoiceTotal($jenis, $p->no_nota);
+            return [$p->no_nota => (object) ['item' => $items->first(), 'items' => $items, 'invoice_total' => $total, 'paid' => $paid, 'outstanding' => max(0, $total - $paid), 'payment' => $p]];
+        });
+        $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get();
+        return view('transaksi.piutang.pelunasan', compact('jenis', 'noteSummaries', 'akunPembayaran', 'payment'));
+    }
+
+    public function updateVoucher(Request $request, int $id)
+    {
+        $request->validate(['tanggal_bayar' => 'required|date', 'id_akun_pembayaran' => 'required|integer', 'jumlah_bayar' => 'required|array', 'jumlah_bayar.*' => 'required|numeric|gt:0', 'jenis_selisih' => 'required|array', 'jenis_selisih.*' => 'required|in:tidak,lebih,kurang']);
+        return DB::transaction(function () use ($request, $id) {
+            $payment = DB::table('pelunasan_piutang_penjualan')->where('id', $id)->lockForUpdate()->first();
+            abort_unless($payment, 404);
+            $payments = DB::table('pelunasan_piutang_penjualan')->when($payment->id_impor_jurnal_perkiraan,
+                fn ($q) => $q->where('id_impor_jurnal_perkiraan', $payment->id_impor_jurnal_perkiraan), fn ($q) => $q->where('id', $id))->orderBy('id')->lockForUpdate()->get();
+            if (count($request->jumlah_bayar) !== $payments->count() || count($request->jenis_selisih) !== $payments->count()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['jumlah_bayar' => 'Data nota tidak lengkap. Muat ulang halaman edit.']);
+            }
+            foreach ($payments as $index => $p) {
+                $input = new Request(['tanggal_bayar' => $request->tanggal_bayar, 'id_akun_pembayaran' => $request->id_akun_pembayaran, 'jumlah_bayar' => $request->jumlah_bayar[$index], 'jenis_selisih' => $request->jenis_selisih[$index]]);
+                $response = $this->updatePelunasan($input, $p->id);
+                if (session()->has('errors')) {
+                    $errors = session()->get('errors')->getBag('default')->messages();
+                    session()->forget('errors');
+                    throw \Illuminate\Validation\ValidationException::withMessages($errors);
+                }
+            }
+            return $response;
+        });
+    }
+
     public function editPelunasan(Request $request, int $id)
     {
         $row = DB::table('pelunasan_piutang_penjualan as p')
@@ -643,6 +689,11 @@ class PiutangTransaksiController extends Controller
                 if (! empty($selisihIds)) {
                     DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->whereIn('id_akun_perkiraan', $selisihIds)->delete();
                 }
+                $voucherPayments = DB::table('pelunasan_piutang_penjualan')->where('id_impor_jurnal_perkiraan', $batchId)->get();
+                $more = (float) $voucherPayments->where('jenis_selisih', 'lebih')->sum('selisih_pembayaran');
+                $less = (float) $voucherPayments->where('jenis_selisih', 'kurang')->sum('selisih_pembayaran');
+                DB::table('pelunasan_piutang_penjualan')->where('id_impor_jurnal_perkiraan', $batchId)->update(['tanggal_bayar' => $validated['tanggal_bayar'], 'id_akun_pembayaran' => $akunPembayaran->id_akun_perkiraan, 'updated_at' => now()]);
+                DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->update(['tanggal' => $validated['tanggal_bayar'], 'updated_at' => now()]);
                 $sekarang = now();
                 $voucher = DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->first(['nomor_transaksi', 'tipe_transaksi']);
                 $maxUrut = (int) DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->max('urutan_detail');
@@ -671,8 +722,8 @@ class PiutangTransaksiController extends Controller
                     'periode_awal' => $validated['tanggal_bayar'],
                     'periode_akhir' => $validated['tanggal_bayar'],
                     'jumlah_detail' => $detailCount,
-                    'total_debit' => DB::raw("total_debit + ({$debitAdj})"),
-                    'total_kredit' => DB::raw("total_kredit + ({$kreditAdj})"),
+                    'total_debit' => DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->sum('debit'),
+                    'total_kredit' => DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->sum('kredit'),
                     'updated_at' => now(),
                 ]);
             }

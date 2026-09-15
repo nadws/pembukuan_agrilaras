@@ -245,6 +245,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/import-accurate-ayam', 'importAccurateAyam')->name('import-accurate-ayam');
             Route::get('/pelunasan', 'pelunasan')->name('pelunasan');
             Route::post('/pelunasan', 'storePelunasan')->name('pelunasan.store');
+            Route::get('/pelunasan/{id}/voucher/edit', 'editVoucher')->name('pelunasan.voucher.edit');
+            Route::put('/pelunasan/{id}/voucher', 'updateVoucher')->name('pelunasan.voucher.update');
             Route::get('/pelunasan/{id}/edit', 'editPelunasan')->name('pelunasan.edit');
             Route::put('/pelunasan/{id}', 'updatePelunasan')->name('pelunasan.update');
         });
