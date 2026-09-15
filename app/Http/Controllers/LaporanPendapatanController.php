@@ -105,7 +105,18 @@ class LaporanPendapatanController extends Controller
         $baseIds = $base->pluck('pembayaran_ids')->flatten()->map(fn ($id) => (int) $id)->filter()->unique()->values();
         $pembayaranIds = array_values(array_intersect($pembayaranIds, $baseIds->all()));
         $rows = ! empty($pembayaranIds)
-            ? $base->filter(fn ($row) => ! empty(array_intersect($pembayaranIds, $row['pembayaran_ids'] ?? [])))->values()
+            ? $base->filter(fn ($row) => ! empty(array_intersect($pembayaranIds, $row['pembayaran_ids'] ?? [])))
+                ->map(function ($row) use ($pembayaranIds) {
+                    $selected = collect($row['pembayaran_breakdown'] ?? [])
+                        ->filter(fn ($item) => in_array((int) ($item['id'] ?? 0), $pembayaranIds, true))
+                        ->values();
+                    if ($selected->isEmpty()) return null;
+                    $row['pembayaran_breakdown'] = $selected->all();
+                    $row['pembayaran'] = $selected->pluck('pembayaran')->implode(', ');
+                    $row['pembayaran_ids'] = $selected->pluck('id')->map(fn ($id) => (int) $id)->all();
+                    $row['total'] = (float) $selected->sum('total');
+                    return $row;
+                })->filter()->values()
             : $base;
 
         return [$rows, $baseIds, $pembayaranIds];
@@ -200,12 +211,12 @@ class LaporanPendapatanController extends Controller
             }
         }
 
-        $rows = $this->attachPembayaran($rows);
+        $rows = $this->attachPembayaran($rows, $tanggalAkhir);
 
         return $rows->sortBy([['tgl', 'desc'], ['no_nota', 'desc']])->values();
     }
 
-    private function attachPembayaran($rows)
+    private function attachPembayaran($rows, ?string $tanggalAkhir = null)
     {
         if ($rows->isEmpty()) {
             return $rows;
@@ -222,17 +233,47 @@ class LaporanPendapatanController extends Controller
             ->whereIn('j.tipe_transaksi', ['Penjualan Telur', 'Penjualan Ayam', 'Penjualan Umum'])
             ->where('j.debit', '>', 0)
             ->where(fn ($q) => $q->whereNull('imp.id_impor_jurnal_perkiraan')->orWhere('imp.status', 'aktif'))
-            ->select('j.nomor_transaksi', 'j.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
+            ->select('j.nomor_transaksi', 'j.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama', 'j.debit')
             ->get()
             ->groupBy('nomor_transaksi');
 
         $piutang = $this->piutangFallback();
+        $settlementJenis = ['telur' => 'telur', 'ayam' => 'ayam', 'umum' => 'umum'];
+        $settlements = DB::table('pelunasan_piutang_penjualan as p')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'p.id_akun_pembayaran')
+            ->when($tanggalAkhir, fn ($q) => $q->where('p.tanggal_bayar', '<=', $tanggalAkhir))
+            ->get(['p.jenis', 'p.no_nota', 'p.nilai_piutang_dilunasi', 'a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama'])
+            ->groupBy(fn ($item) => $item->jenis.'|'.$item->no_nota);
 
-        return $rows->map(function ($row) use ($pembayaran, $piutang) {
+        return $rows->map(function ($row) use ($pembayaran, $piutang, $settlements, $settlementJenis) {
             $key = (($row['kategori'] ?? '') === 'umum' && isset($row['urutan']))
                 ? 'PUM-'.$row['urutan']
                 : $row['no_nota'];
             $candidates = $pembayaran->get($key, collect());
+            $jenis = $settlementJenis[$row['kategori'] ?? ''] ?? null;
+            $settled = $jenis ? $settlements->get($jenis.'|'.$row['no_nota'], collect()) : collect();
+            if ($settled->isNotEmpty()) {
+                $breakdown = $settled->groupBy('id_akun_perkiraan')->map(function ($items) {
+                    $first = $items->first();
+                    return [
+                        'id' => (int) $first->id_akun_perkiraan,
+                        'pembayaran' => trim(collect([$first->kode_perkiraan ?? '', $first->nama ?? ''])->filter()->implode(' - ')),
+                        'total' => (float) $items->sum('nilai_piutang_dilunasi'),
+                    ];
+                })->values()->all();
+                $sudahDilunasi = (float) $settled->sum('nilai_piutang_dilunasi');
+                $sisa = max(0, (float) $row['total'] - $sudahDilunasi);
+                if ($sisa > 0.005 && $piutang) {
+                    $breakdown[] = ['id' => $piutang['id'], 'pembayaran' => $piutang['label'], 'total' => $sisa];
+                }
+                $row['pembayaran'] = collect($breakdown)->pluck('pembayaran')->filter()->unique()->implode(', ');
+                $row['pembayaran_ids'] = $settled->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->unique()->values()->all();
+                if ($sisa > 0.005 && $piutang) {
+                    $row['pembayaran_ids'][] = $piutang['id'];
+                }
+                $row['pembayaran_breakdown'] = $breakdown;
+                return $row;
+            }
             $label = $candidates
                 ->map(fn ($item) => trim(collect([$item->kode_perkiraan ?? '', $item->nama ?? ''])->filter()->implode(' - ')))
                 ->filter()->unique()->implode(', ');
@@ -240,11 +281,20 @@ class LaporanPendapatanController extends Controller
             if ($label === '' && $piutang) {
                 $row['pembayaran'] = $piutang['label'];
                 $row['pembayaran_ids'] = [$piutang['id']];
+                $row['pembayaran_breakdown'] = [['id' => $piutang['id'], 'pembayaran' => $piutang['label'], 'total' => (float) $row['total']]];
 
                 return $row;
             }
             $row['pembayaran'] = $label !== '' ? $label : '-';
             $row['pembayaran_ids'] = $candidates->pluck('id_akun_perkiraan')->map(fn ($id) => (int) $id)->unique()->values()->all();
+            $row['pembayaran_breakdown'] = $candidates->groupBy('id_akun_perkiraan')->map(function ($items) {
+                $first = $items->first();
+                return [
+                    'id' => (int) $first->id_akun_perkiraan,
+                    'pembayaran' => trim(collect([$first->kode_perkiraan ?? '', $first->nama ?? ''])->filter()->implode(' - ')),
+                    'total' => (float) $items->sum('debit'),
+                ];
+            })->values()->all();
 
             return $row;
         });
@@ -309,10 +359,10 @@ class LaporanPendapatanController extends Controller
      */
     private function paymentSummary($rows)
     {
-        return $rows->groupBy(fn ($row) => trim((string) ($row['pembayaran'] ?? '')) !== '' ? (string) $row['pembayaran'] : '-')
+        return $rows->flatMap(fn ($row) => $row['pembayaran_breakdown'] ?? [['pembayaran' => $row['pembayaran'] ?? '-', 'total' => $row['total']]])
+            ->groupBy('pembayaran')
             ->map(fn ($group, $label) => [
                 'pembayaran' => $label,
-                'jumlah' => $group->count(),
                 'total' => (float) $group->sum('total'),
             ])
             ->sortByDesc('total')

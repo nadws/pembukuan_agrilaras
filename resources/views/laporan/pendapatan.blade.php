@@ -13,7 +13,7 @@
     </x-slot>
     <x-slot name="cardBody">
         <style>
-            .income-filter{padding:14px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd}.income-kpi{height:100%;padding:14px 16px;border:1px solid #e1e7f2;border-radius:12px;background:#fff;box-shadow:0 5px 15px rgba(35,60,115,.06)}.income-kpi small{display:block;color:#7583a0;font-size:10px;font-weight:700;text-transform:uppercase}.income-kpi strong{display:block;margin-top:5px;color:#18366f;font-size:19px}.income-table{overflow:auto;border:1px solid #dce4f2;border-radius:13px;max-height:560px}.income-table table{margin:0;width:100%;min-width:0;table-layout:auto;font-size:12px}.income-table thead th{padding:8px 6px;background:#304f9e;color:#fff;font-size:11px;white-space:normal;vertical-align:middle;position:sticky;top:0;z-index:2}.income-table td{padding:7px 6px;vertical-align:middle;word-break:break-word}.income-table tbody tr:nth-child(even){background:#f8fafd}.income-table tfoot td{position:sticky;bottom:0;z-index:2;background:#eef3ff}.income-table .badge{font-size:10px;white-space:nowrap}.income-table small{font-size:11px;line-height:1.4;display:block}.summary-table thead th{background:#198754}.summary-table tfoot td{background:#e9f9f0}.section-title{margin:0;font-size:14px;font-weight:700;color:#18366f}.section-sub{font-size:11px}.amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.income-pagination nav{display:flex;justify-content:flex-end}.income-pagination .pagination{margin:0;gap:4px;flex-wrap:wrap}.income-pagination .page-link{display:flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border:1px solid #dce4f1;border-radius:7px!important;color:#304f9e;font-size:13px;font-weight:500;text-decoration:none}.income-pagination .page-item.active .page-link{background-color:#304f9e;border-color:#304f9e;color:#fff;font-weight:700}.income-pagination .page-item.disabled .page-link{color:#9aa8bd;background-color:#f8fafc;border-color:#e2e8f0}@media(max-width:575px){.income-filter .btn{width:100%}}
+            html,body{overflow-x:hidden!important}.container-fluid{max-width:100vw;overflow-x:hidden}.income-filter{max-width:100%;padding:14px;border:1px solid #dce4f2;border-radius:12px;background:#f7f9fd}.income-kpi{height:100%;padding:14px 16px;border:1px solid #e1e7f2;border-radius:12px;background:#fff;box-shadow:0 5px 15px rgba(35,60,115,.06)}.income-kpi small{display:block;color:#7583a0;font-size:10px;font-weight:700;text-transform:uppercase}.income-kpi strong{display:block;margin-top:5px;color:#18366f;font-size:19px}.income-table{max-width:100%;overflow:auto;border:1px solid #dce4f2;border-radius:13px;max-height:560px}.income-table table{margin:0;width:100%;min-width:0;table-layout:auto;font-size:12px}.income-table thead th{padding:8px 6px;background:#304f9e;color:#fff;font-size:11px;white-space:normal;vertical-align:middle;position:sticky;top:0;z-index:2}.income-table td{padding:7px 6px;vertical-align:middle;word-break:break-word}.income-table:not(.summary-table) tbody td:nth-child(-n+6),.income-table:not(.summary-table) thead th:nth-child(-n+6){white-space:nowrap}.income-table:not(.summary-table) tbody td:nth-child(4),.income-table:not(.summary-table) thead th:nth-child(4){min-width:92px}.income-table .fw-semibold{white-space:nowrap}.income-table tbody tr:nth-child(even){background:#f8fafd}.income-table tfoot td{position:sticky;bottom:0;z-index:2;background:#eef3ff}.income-table .badge{font-size:10px;white-space:nowrap}.income-table small{font-size:11px;line-height:1.4;display:block}.summary-table thead th{background:#198754}.summary-table tfoot td{background:#e9f9f0}.section-title{margin:0;font-size:14px;font-weight:700;color:#18366f}.section-sub{font-size:11px}.amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.income-pagination nav{display:flex;justify-content:flex-end}.income-pagination .pagination{margin:0;gap:4px;flex-wrap:wrap}.income-pagination .page-link{display:flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border:1px solid #dce4f1;border-radius:7px!important;color:#304f9e;font-size:13px;font-weight:500;text-decoration:none}.income-pagination .page-item.active .page-link{background-color:#304f9e;border-color:#304f9e;color:#fff;font-weight:700}.income-pagination .page-item.disabled .page-link{color:#9aa8bd;background-color:#f8fafc;border-color:#e2e8f0}.row{max-width:100%;}@media(max-width:575px){.income-filter .btn{width:100%}}
         </style>
         @php $fmt=fn($value)=>'Rp '.number_format((float)$value,0,'.',','); @endphp
         <form method="get" class="income-filter mb-3">
@@ -258,23 +258,22 @@
             <div class="income-table summary-table table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
-                        <tr><th>No</th><th>Pembayaran</th><th class="amount">Nota</th><th class="amount">Total Rupiah</th></tr>
+                        <tr><th>No</th><th>Pembayaran</th><th class="amount">Total Rupiah</th></tr>
                     </thead>
                     <tbody>
                         @forelse($paySummary as $pay)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="fw-semibold">{{ $pay['pembayaran'] }}</td>
-                                <td class="amount">{{ number_format($pay['jumlah'], 0, '.', ',') }}</td>
                                 <td class="amount">{{ $fmt($pay['total']) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-muted py-4">Tidak ada data pembayaran pada periode ini.</td></tr>
+                            <tr><td colspan="3" class="text-center text-muted py-4">Tidak ada data pembayaran pada periode ini.</td></tr>
                         @endforelse
                     </tbody>
                     @if($paySummary->isNotEmpty())
                     <tfoot>
-                        <tr class="fw-bold table-light"><td colspan="3" class="text-end">Total Pembayaran</td><td class="amount">{{ $fmt($paySummary->sum('total')) }}</td></tr>
+                        <tr class="fw-bold table-light"><td colspan="2" class="text-end">Total Pembayaran</td><td class="amount">{{ $fmt($paySummary->sum('total')) }}</td></tr>
                     </tfoot>
                     @endif
                 </table>

@@ -153,7 +153,7 @@ class LaporanPendapatanExport implements FromArray, ShouldAutoSize, WithColumnFo
                 $sum[] = [
                     $index + 1,
                     (string) $pay['pembayaran'],
-                    (int) $pay['jumlah'].' nota',
+                    '',
                     '',
                     '',
                     '',
