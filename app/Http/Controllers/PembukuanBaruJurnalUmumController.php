@@ -104,11 +104,18 @@ class PembukuanBaruJurnalUmumController extends Controller
             })
                 ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
                 ->when($cari, function ($query) use ($cari) {
-                    $query->where(function ($q) use ($cari) {
-                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
-                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
-                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
-                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    // Cari pada level transaksi agar pasangan debit/kredit
+                    // tetap tampil lengkap ketika salah satu akun cocok.
+                    $query->whereExists(function ($sub) use ($cari) {
+                        $sub->from('jurnal_perkiraan as js')
+                            ->leftJoin('akun_perkiraan as asrc', 'asrc.id_akun_perkiraan', '=', 'js.id_akun_perkiraan')
+                            ->whereColumn('js.nomor_transaksi', 'j.nomor_transaksi')
+                            ->where(function ($q) use ($cari) {
+                                $q->where('js.nomor_transaksi', 'like', "%{$cari}%")
+                                    ->orWhere('js.deskripsi', 'like', "%{$cari}%")
+                                    ->orWhere('asrc.kode_perkiraan', 'like', "%{$cari}%")
+                                    ->orWhere('asrc.nama', 'like', "%{$cari}%");
+                            });
                     });
                 });
         };

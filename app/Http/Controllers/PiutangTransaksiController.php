@@ -23,14 +23,14 @@ class PiutangTransaksiController extends Controller
         if ($jenis === 'ayam') {
             $piutang = DB::table('invoice_ayam as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereBetween('i.tgl', [$awal, $akhir])
+                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.qty', 'i.h_satuan', 'c.nm_customer', DB::raw('i.qty * i.h_satuan as total_rp'))
                 ->orderByDesc('i.tgl')->orderByDesc('i.urutan')->get();
         } elseif ($jenis === 'umum') {
             $piutang = DB::table('penjualan_agl as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')->whereBetween('i.tgl', [$awal, $akhir])
+                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select(DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'i.tgl', 'i.id_customer', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'), DB::raw('SUM(i.qty) as qty'))
                 ->groupBy('i.urutan', 'i.tgl', 'i.id_customer', 'c.nm_customer')
@@ -38,7 +38,7 @@ class PiutangTransaksiController extends Controller
         } else {
             $piutang = DB::table('invoice_telur as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')->whereBetween('i.tgl', [$awal, $akhir])
+                ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
                 ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer')
@@ -47,6 +47,7 @@ class PiutangTransaksiController extends Controller
 
         $paidByNota = DB::table('pelunasan_piutang_penjualan')
             ->where('jenis', $jenis)
+            ->where('tanggal_bayar', '<=', $akhir)
             ->whereIn('no_nota', $piutang->pluck('no_nota')->all())
             ->groupBy('no_nota')
             ->pluck(DB::raw('SUM(COALESCE(nilai_piutang_dilunasi, jumlah_bayar))'), 'no_nota');
@@ -84,9 +85,16 @@ class PiutangTransaksiController extends Controller
                         ->orWhere('c.nm_customer', 'like', "%{$cari}%");
                 });
             })
-            ->select('p.id', 'p.tanggal_bayar', 'p.no_nota', 'c.nm_customer', 'a.kode_perkiraan', 'a.nama as nama_akun', 'p.jumlah_bayar', 'p.nilai_piutang_dilunasi', 'p.jenis_selisih', 'p.selisih_pembayaran')
+            ->select('p.id', 'p.id_impor_jurnal_perkiraan', 'p.tanggal_bayar', 'p.no_nota', 'c.nm_customer', 'a.kode_perkiraan', 'a.nama as nama_akun', 'p.jumlah_bayar', 'p.nilai_piutang_dilunasi', 'p.jenis_selisih', 'p.selisih_pembayaran')
             ->orderByDesc('p.tanggal_bayar')->orderByDesc('p.id')
             ->get();
+        $riwayat->each(function ($row) {
+            $row->jurnal_detail = DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->where('j.id_impor_jurnal_perkiraan', $row->id_impor_jurnal_perkiraan)
+                ->orderBy('j.urutan_detail')
+                ->get(['j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.kredit', 'a.kode_perkiraan', 'a.nama as nama_akun']);
+        });
         $totalRiwayat = (float) $riwayat->sum('jumlah_bayar');
 
         return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat'));
