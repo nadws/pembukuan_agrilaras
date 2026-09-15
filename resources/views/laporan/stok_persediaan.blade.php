@@ -17,7 +17,6 @@
             .product-name { color:#24488f; font-weight:700; text-decoration:none; }
             .product-name:hover { color:#17356f; text-decoration:underline; }
             .product-code { display:block; margin-top:3px; color:#8a96a9; font-size:11px; }
-            .category-pill { display:inline-flex; padding:5px 10px; border-radius:999px; background:#eaf0ff; color:#3155a3; font-size:11px; font-weight:700; text-transform:capitalize; }
             .stock-balance { color:#17356f!important; font-weight:750; }
             .history-btn { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
             .inventory-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 24px 22px; }
@@ -79,7 +78,7 @@
                             @forelse($summary as $row)
                                 <tr>
                                     <td><a class="product-name" href="{{ route('laporan.stok-persediaan.detail', $row->id_produk) }}">{{ $row->nm_produk }}</a><span class="product-code">{{ $row->kode_accurate ?: 'Tanpa kode Accurate' }}</span></td>
-                                    <td><span class="category-pill">{{ str_replace('_', ' ', $row->kategori) }}</span></td>
+                                    <td class="text-capitalize">{{ str_replace('_', ' ', $row->kategori) }}</td>
                                     <td>{{ $row->nm_satuan ?: '-' }}</td>
                                     <td class="text-end">{{ number_format((float)$row->total_masuk, 2, ',', '.') }}</td>
                                     <td class="text-end">{{ number_format((float)$row->total_pakai, 2, ',', '.') }}</td>

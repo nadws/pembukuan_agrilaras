@@ -73,7 +73,23 @@ class PiutangTransaksiController extends Controller
             ]];
         })->all();
 
-        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters'));
+        $riwayat = DB::table('pelunasan_piutang_penjualan as p')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'p.id_akun_pembayaran')
+            ->where('p.jenis', $jenis)
+            ->whereBetween('p.tanggal_bayar', [$awal, $akhir])
+            ->when($cari !== '', function ($query) use ($cari) {
+                $query->where(function ($search) use ($cari) {
+                    $search->where('p.no_nota', 'like', "%{$cari}%")
+                        ->orWhere('c.nm_customer', 'like', "%{$cari}%");
+                });
+            })
+            ->select('p.id', 'p.tanggal_bayar', 'p.no_nota', 'c.nm_customer', 'a.kode_perkiraan', 'a.nama as nama_akun', 'p.jumlah_bayar', 'p.nilai_piutang_dilunasi', 'p.jenis_selisih', 'p.selisih_pembayaran')
+            ->orderByDesc('p.tanggal_bayar')->orderByDesc('p.id')
+            ->get();
+        $totalRiwayat = (float) $riwayat->sum('jumlah_bayar');
+
+        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat'));
     }
 
     public function importAccurate(Request $request)
@@ -390,12 +406,20 @@ class PiutangTransaksiController extends Controller
         $totalMore = (float) $differences->where('type', 'lebih')->sum('amount');
         $totalLess = (float) $differences->where('type', 'kurang')->sum('amount');
         $cashTotal = (float) $cashPayments->sum();
-        $akunSelisih = null;
-        if ($totalMore > 0 || $totalLess > 0) {
-            $akunSelisih = DB::table('akun_perkiraan')->where('aktif', 1)
+        $akunSelisihLebih = null;
+        $akunSelisihKurang = null;
+        if ($totalMore > 0) {
+            $akunSelisihLebih = DB::table('akun_perkiraan')->where('aktif', 1)
                 ->where('nama', 'Pendapatan Selisih Lebih Bayar')->first();
-            if (! $akunSelisih) {
+            if (! $akunSelisihLebih) {
                 return back()->withErrors(['selisih' => 'Akun Pendapatan Selisih Lebih Bayar belum tersedia atau tidak aktif.'])->withInput();
+            }
+        }
+        if ($totalLess > 0) {
+            $akunSelisihKurang = DB::table('akun_perkiraan')->where('aktif', 1)
+                ->where('nama', 'Biaya Selisih Kurang Bayar')->first();
+            if (! $akunSelisihKurang) {
+                return back()->withErrors(['selisih' => 'Akun Biaya Selisih Kurang Bayar belum tersedia atau tidak aktif.'])->withInput();
             }
         }
         $akunPiutang = DB::table('jurnal_perkiraan as j')
@@ -414,7 +438,7 @@ class PiutangTransaksiController extends Controller
             return back()->withErrors(['nota' => 'Akun piutang aktif belum tersedia.'])->withInput();
         }
 
-        DB::transaction(function () use ($validated, $rows, $table, $akunPembayaran, $akunPiutang, $akunSelisih, $total, $totalMore, $totalLess, $cashTotal, $tipeJurnal, $nota, $cashPayments, $settledPayments, $differences, $outstandingByNota) {
+        DB::transaction(function () use ($validated, $rows, $table, $akunPembayaran, $akunPiutang, $akunSelisihLebih, $akunSelisihKurang, $total, $totalMore, $totalLess, $cashTotal, $tipeJurnal, $nota, $cashPayments, $settledPayments, $differences, $outstandingByNota) {
             $now = now();
             $nomorTransaksi = 'PL-' . strtoupper($validated['jenis']) . '-' . $now->format('YmdHis');
             $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
@@ -437,10 +461,10 @@ class PiutangTransaksiController extends Controller
                 ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunPiutang->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => 2, 'deskripsi' => 'Pelunasan piutang ' . implode(', ', $nota), 'debit' => 0, 'kredit' => $total, 'created_at' => $now, 'updated_at' => $now],
             ];
             if ($totalMore > 0) {
-                $journalRows[] = ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunSelisih->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => count($journalRows) + 1, 'deskripsi' => 'Pendapatan selisih lebih bayar ' . implode(', ', $nota), 'debit' => 0, 'kredit' => $totalMore, 'created_at' => $now, 'updated_at' => $now];
+                $journalRows[] = ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunSelisihLebih->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => count($journalRows) + 1, 'deskripsi' => 'Pendapatan selisih lebih bayar ' . implode(', ', $nota), 'debit' => 0, 'kredit' => $totalMore, 'created_at' => $now, 'updated_at' => $now];
             }
             if ($totalLess > 0) {
-                $journalRows[] = ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunSelisih->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => count($journalRows) + 1, 'deskripsi' => 'Selisih kurang bayar ' . implode(', ', $nota), 'debit' => $totalLess, 'kredit' => 0, 'created_at' => $now, 'updated_at' => $now];
+                $journalRows[] = ['id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $akunSelisihKurang->id_akun_perkiraan, 'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $nomorTransaksi, 'tipe_transaksi' => $tipeJurnal, 'urutan_detail' => count($journalRows) + 1, 'deskripsi' => 'Biaya selisih kurang bayar ' . implode(', ', $nota), 'debit' => $totalLess, 'kredit' => 0, 'created_at' => $now, 'updated_at' => $now];
             }
             DB::table('jurnal_perkiraan')->insert($journalRows);
 
@@ -479,4 +503,196 @@ class PiutangTransaksiController extends Controller
 
         return redirect()->route('transaksi.piutang.index', ['jenis' => $validated['jenis']])->with('sukses', 'Pembayaran piutang berhasil disimpan. Nota yang masih memiliki sisa tetap dapat dicicil.');
     }
+
+    public function editPelunasan(Request $request, int $id)
+    {
+        $row = DB::table('pelunasan_piutang_penjualan as p')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
+            ->where('p.id', $id)
+            ->select('p.*', 'c.nm_customer')
+            ->first();
+        abort_unless($row, 404);
+
+        $jenis = $row->jenis;
+        $invoiceTotal = $this->invoiceTotal($jenis, $row->no_nota);
+        abort_unless($invoiceTotal !== null, 404, 'Nota asal tidak ditemukan.');
+        $othersSettled = (float) DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', $jenis)->where('no_nota', $row->no_nota)->where('id', '<>', $id)
+            ->sum(DB::raw('COALESCE(nilai_piutang_dilunasi, jumlah_bayar)'));
+        $outstanding = max(0, $invoiceTotal - $othersSettled);
+
+        $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+
+        return view('transaksi.piutang.edit_pelunasan', [
+            'row' => $row, 'jenis' => $jenis,
+            'invoiceTotal' => $invoiceTotal, 'outstanding' => $outstanding,
+            'akunPembayaran' => $akunPembayaran,
+            'kembali' => $request->input('kembali', route('transaksi.piutang.index', ['jenis' => $jenis])),
+        ]);
+    }
+
+    public function updatePelunasan(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'tanggal_bayar' => ['required', 'date'],
+            'id_akun_pembayaran' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'jumlah_bayar' => ['required', 'numeric', 'gt:0'],
+            'jenis_selisih' => ['required', 'in:tidak,lebih,kurang'],
+        ]);
+
+        $row = DB::table('pelunasan_piutang_penjualan')->where('id', $id)->first();
+        abort_unless($row, 404);
+        $jenis = $row->jenis;
+
+        $akunPembayaran = DB::table('akun_perkiraan')
+            ->where('id_akun_perkiraan', $validated['id_akun_pembayaran'])
+            ->where('aktif', 1)->where('tipe_akun', 'BANK')->first();
+        abort_unless($akunPembayaran, 422, 'Pilih akun kas atau bank yang aktif.');
+
+        $invoiceTotal = $this->invoiceTotal($jenis, $row->no_nota);
+        abort_unless($invoiceTotal !== null, 404, 'Nota asal tidak ditemukan.');
+        $othersSettled = (float) DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', $jenis)->where('no_nota', $row->no_nota)->where('id', '<>', $id)
+            ->sum(DB::raw('COALESCE(nilai_piutang_dilunasi, jumlah_bayar)'));
+        $outstanding = max(0, $invoiceTotal - $othersSettled);
+        if ($outstanding <= 0.005) {
+            return back()->withErrors(['jumlah_bayar' => 'Nota sudah lunas oleh pembayaran lain.'])->withInput();
+        }
+
+        $cash = (float) $validated['jumlah_bayar'];
+        $type = $validated['jenis_selisih'];
+        if ($type === 'tidak' && $cash - $outstanding > 0.005) {
+            return back()->withErrors(['jumlah_bayar' => 'Bayar melebihi sisa. Pilih Lebih Bayar jika memang ada selisih.'])->withInput();
+        }
+        if ($type === 'lebih' && $cash - $outstanding <= 0.005) {
+            return back()->withErrors(['jumlah_bayar' => 'Nominal harus lebih besar dari sisa untuk pilihan Lebih Bayar.'])->withInput();
+        }
+        if ($type === 'kurang' && $outstanding - $cash <= 0.005) {
+            return back()->withErrors(['jumlah_bayar' => 'Nominal harus lebih kecil dari sisa untuk pilihan Kurang Bayar.'])->withInput();
+        }
+        $settled = $type === 'tidak' ? $cash : $outstanding;
+        $more = $type === 'lebih' ? $cash - $outstanding : 0;
+        $less = $type === 'kurang' ? $outstanding - $cash : 0;
+
+        $akunSelisihLebih = DB::table('akun_perkiraan')->where('aktif', 1)->where('nama', 'Pendapatan Selisih Lebih Bayar')->first();
+        $akunSelisihKurang = DB::table('akun_perkiraan')->where('aktif', 1)->where('nama', 'Biaya Selisih Kurang Bayar')->first();
+        if ($more > 0 && ! $akunSelisihLebih) {
+            return back()->withErrors(['selisih' => 'Akun Pendapatan Selisih Lebih Bayar belum tersedia atau tidak aktif.'])->withInput();
+        }
+        if ($less > 0 && ! $akunSelisihKurang) {
+            return back()->withErrors(['selisih' => 'Akun Biaya Selisih Kurang Bayar belum tersedia atau tidak aktif.'])->withInput();
+        }
+        $lebihId = $akunSelisihLebih?->id_akun_perkiraan;
+        $kurangId = $akunSelisihKurang?->id_akun_perkiraan;
+
+        DB::transaction(function () use ($row, $jenis, $validated, $akunPembayaran, $lebihId, $kurangId, $cash, $settled, $more, $less, $invoiceTotal, $othersSettled) {
+            $oldCash = (float) $row->jumlah_bayar;
+            $oldSettled = (float) ($row->nilai_piutang_dilunasi ?? $row->jumlah_bayar);
+            $oldMore = $row->jenis_selisih === 'lebih' ? (float) $row->selisih_pembayaran : 0;
+            $oldLess = $row->jenis_selisih === 'kurang' ? (float) $row->selisih_pembayaran : 0;
+
+            DB::table('pelunasan_piutang_penjualan')->where('id', $row->id)->update([
+                'tanggal_bayar' => $validated['tanggal_bayar'],
+                'jumlah_bayar' => $cash,
+                'nilai_piutang_dilunasi' => $settled,
+                'jenis_selisih' => $validated['jenis_selisih'],
+                'selisih_pembayaran' => $validated['jenis_selisih'] === 'lebih' ? $more : ($validated['jenis_selisih'] === 'kurang' ? $less : 0),
+                'id_akun_pembayaran' => $akunPembayaran->id_akun_perkiraan,
+                'updated_at' => now(),
+            ]);
+
+            // Sesuaikan jurnal satu voucher (tanggal & akun kas berlaku untuk seluruh voucher).
+            $batchId = $row->id_impor_jurnal_perkiraan;
+            if ($batchId) {
+                $selisihIds = collect([$lebihId, $kurangId])->filter()->values()->all();
+                $cashLine = DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->where('debit', '>', 0)
+                    ->when(! empty($selisihIds), fn ($q) => $q->whereNotIn('id_akun_perkiraan', $selisihIds))->orderBy('urutan_detail')->first();
+                $piutangLine = DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->where('kredit', '>', 0)
+                    ->when(! empty($selisihIds), fn ($q) => $q->whereNotIn('id_akun_perkiraan', $selisihIds))->orderBy('urutan_detail')->first();
+                if ($cashLine) {
+                    DB::table('jurnal_perkiraan')->where('id_jurnal_perkiraan', $cashLine->id_jurnal_perkiraan)->update([
+                        'tanggal' => $validated['tanggal_bayar'],
+                        'id_akun_perkiraan' => $akunPembayaran->id_akun_perkiraan,
+                        'debit' => round((float) $cashLine->debit + ($cash - $oldCash), 2),
+                        'updated_at' => now(),
+                    ]);
+                }
+                if ($piutangLine) {
+                    DB::table('jurnal_perkiraan')->where('id_jurnal_perkiraan', $piutangLine->id_jurnal_perkiraan)->update([
+                        'tanggal' => $validated['tanggal_bayar'],
+                        'kredit' => round((float) $piutangLine->kredit + ($settled - $oldSettled), 2),
+                        'updated_at' => now(),
+                    ]);
+                }
+                // Tulis ulang baris selisih (lebih → pendapatan, kurang → biaya).
+                if (! empty($selisihIds)) {
+                    DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->whereIn('id_akun_perkiraan', $selisihIds)->delete();
+                }
+                $sekarang = now();
+                $voucher = DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->first(['nomor_transaksi', 'tipe_transaksi']);
+                $maxUrut = (int) DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->max('urutan_detail');
+                if ($more > 0.005 && $lebihId && $voucher) {
+                    DB::table('jurnal_perkiraan')->insert([
+                        'id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $lebihId,
+                        'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $voucher->nomor_transaksi, 'tipe_transaksi' => $voucher->tipe_transaksi,
+                        'urutan_detail' => $maxUrut + 1, 'deskripsi' => 'Pendapatan selisih lebih bayar (koreksi)',
+                        'debit' => 0, 'kredit' => round($more, 2), 'created_at' => $sekarang, 'updated_at' => $sekarang,
+                    ]);
+                    $maxUrut++;
+                }
+                if ($less > 0.005 && $kurangId && $voucher) {
+                    DB::table('jurnal_perkiraan')->insert([
+                        'id_impor_jurnal_perkiraan' => $batchId, 'id_akun_perkiraan' => $kurangId,
+                        'tanggal' => $validated['tanggal_bayar'], 'nomor_transaksi' => $voucher->nomor_transaksi, 'tipe_transaksi' => $voucher->tipe_transaksi,
+                        'urutan_detail' => $maxUrut + 1, 'deskripsi' => 'Biaya selisih kurang bayar (koreksi)',
+                        'debit' => round($less, 2), 'kredit' => 0, 'created_at' => $sekarang, 'updated_at' => $sekarang,
+                    ]);
+                }
+
+                $detailCount = DB::table('jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->count();
+                $debitAdj = sprintf('%.2F', $cash - $oldCash + $less - $oldLess);
+                $kreditAdj = sprintf('%.2F', $settled - $oldSettled + $more - $oldMore);
+                DB::table('impor_jurnal_perkiraan')->where('id_impor_jurnal_perkiraan', $batchId)->update([
+                    'periode_awal' => $validated['tanggal_bayar'],
+                    'periode_akhir' => $validated['tanggal_bayar'],
+                    'jumlah_detail' => $detailCount,
+                    'total_debit' => DB::raw("total_debit + ({$debitAdj})"),
+                    'total_kredit' => DB::raw("total_kredit + ({$kreditAdj})"),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Status nota mengikuti sisa terbaru.
+            $newOutstanding = max(0, $invoiceTotal - ($othersSettled + $settled));
+            $this->updateInvoiceStatus($jenis, $row->no_nota, $newOutstanding);
+        });
+
+        return redirect()->route('transaksi.piutang.index', ['jenis' => $jenis])->with('sukses', 'Pelunasan berhasil diperbarui, jurnal ikut disesuaikan.');
+    }
+
+    private function invoiceTotal(string $jenis, string $noNota): ?float
+    {
+        if ($jenis === 'ayam') {
+            $total = DB::table('invoice_ayam')->where('no_nota', $noNota)->selectRaw('SUM(qty * h_satuan) as total')->value('total');
+        } elseif ($jenis === 'umum') {
+            $total = DB::table('penjualan_agl')->where('urutan', (int) str_replace('PU-', '', $noNota))->selectRaw('SUM(total_rp) as total')->value('total');
+        } else {
+            $total = DB::table('invoice_telur')->where('no_nota', $noNota)->selectRaw('SUM(total_rp) as total')->value('total');
+        }
+
+        return $total === null ? null : (float) $total;
+    }
+
+    private function updateInvoiceStatus(string $jenis, string $noNota, float $outstanding): void
+    {
+        $lunas = $outstanding <= 0.005;
+        if ($jenis === 'umum') {
+            DB::table('penjualan_agl')->where('urutan', (int) str_replace('PU-', '', $noNota))->update(['status' => $lunas ? 'paid' : 'unpaid']);
+        } else {
+            $query = DB::table($jenis === 'ayam' ? 'invoice_ayam' : 'invoice_telur')->where('no_nota', $noNota);
+            $jenis === 'telur' ? $query->whereIn('lokasi', ['alpa', 'mtd']) : $query->where('lokasi', 'alpa');
+            $query->update(['status' => $lunas ? 'paid' : 'unpaid']);
+        }
+    }
+
 }

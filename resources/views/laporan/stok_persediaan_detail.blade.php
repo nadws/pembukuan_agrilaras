@@ -37,14 +37,14 @@
                         <thead><tr><th>Tanggal</th><th>No. Transaksi</th><th>Jenis</th><th class="text-end">Pembelian</th><th class="text-end">Pemakaian</th><th class="text-end">Saldo</th><th>Kandang</th><th class="text-end">Ekor Ayam</th><th>Admin</th></tr></thead>
                         <tbody>
                             @if($detail->currentPage() === 1)
-                                <tr class="opening-row"><td>{{ \Carbon\Carbon::parse($tgl1)->format('d/m/Y') }}</td><td>-</td><td><span class="movement-badge movement-adjust">Saldo Awal</span></td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end">{{ number_format($saldoAwal,2,',','.') }}</td><td>-</td><td class="text-end">-</td><td>-</td></tr>
+                                <tr class="opening-row"><td>{{ \Carbon\Carbon::parse($tgl1)->format('d/m/Y') }}</td><td>-</td><td>{{ $labelSaldoAwal ?? 'Saldo Awal' }}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end">{{ number_format($saldoAwal,2,',','.') }}</td><td>-</td><td class="text-end">-</td><td>-</td></tr>
                             @endif
                             @forelse($detail as $row)
                                 @php $masuk=(float)$row->pcs; $keluar=(float)$row->pcs_kredit; @endphp
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($row->tgl)->format('d/m/Y') }}</td>
                                     <td><span class="transaction-number">{{ number_format($row->jumlah_transaksi,0,',','.') }} transaksi</span><span class="product-code" title="{{ $row->nomor_transaksi }}">{{ \Illuminate\Support\Str::limit($row->nomor_transaksi ?: '-', 35) }}</span></td>
-                                    <td>@if($row->jenis==='penyesuaian')<span class="movement-badge movement-adjust"><i class="fas fa-balance-scale"></i> Penyesuaian</span>@elseif($row->jenis==='pemakaian')<span class="movement-badge movement-out"><i class="fas fa-arrow-up"></i> Pemakaian</span>@else<span class="movement-badge movement-in"><i class="fas fa-arrow-down"></i> Pembelian</span>@endif</td>
+                                    <td>@if($row->jenis === 'penyesuaian') Penyesuaian @elseif($row->jenis === 'pemakaian') Pemakaian @else Pembelian @endif</td>
                                     <td class="text-end qty-value">{{ $masuk>0 ? number_format($masuk,2,',','.') : '-' }}</td>
                                     <td class="text-end qty-value">{{ $keluar>0 ? number_format($keluar,2,',','.') : '-' }}</td>
                                     <td class="text-end balance-value">{{ number_format((float)$row->saldo,2,',','.') }}</td>

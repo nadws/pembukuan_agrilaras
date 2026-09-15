@@ -52,23 +52,18 @@ class LaporanStokPersediaanController extends Controller
             ->first(['p.id_produk', 'p.nm_produk', 'p.kategori', 'u.nm_satuan']);
         abort_unless($item, 404);
 
-        $tanggalPertama = DB::table('stok_produk_perencanaan')
-            ->where('id_pakan', $item->id_produk)
-            ->min('tgl');
-        $tanggalTerakhir = DB::table('stok_produk_perencanaan')
-            ->where('id_pakan', $item->id_produk)
-            ->max('tgl');
-
         try {
-            $tgl1 = Carbon::parse($request->input('tgl1', $tanggalPertama ?: date('Y-m-01')))->format('Y-m-d');
-            $tgl2 = Carbon::parse($request->input('tgl2', $tanggalTerakhir ?: date('Y-m-d')))->format('Y-m-d');
+            $tgl1 = Carbon::parse($request->input('tgl1', date('Y-m-01')))->format('Y-m-d');
+            $tgl2 = Carbon::parse($request->input('tgl2', date('Y-m-d')))->format('Y-m-d');
         } catch (\Throwable) {
-            $tgl1 = $tanggalPertama ?: date('Y-m-01');
-            $tgl2 = $tanggalTerakhir ?: date('Y-m-d');
+            $tgl1 = date('Y-m-01');
+            $tgl2 = date('Y-m-d');
         }
         if ($tgl1 > $tgl2) {
             [$tgl1, $tgl2] = [$tgl2, $tgl1];
         }
+        // Baris paling atas = saldo akhir hari sebelum periode (mis. tgl1 1 Sep → "Saldo Akhir Agustus").
+        $labelSaldoAwal = 'Saldo Akhir '.Carbon::parse($tgl1)->subDay()->translatedFormat('F Y');
 
         $saldoAwal = (float) DB::table('stok_produk_perencanaan')
             ->where('id_pakan', $item->id_produk)
@@ -141,7 +136,7 @@ class LaporanStokPersediaanController extends Controller
         });
 
         return view('laporan.stok_persediaan_detail', compact(
-            'item', 'detail', 'tgl1', 'tgl2', 'saldoAwal', 'totalPembelian', 'totalPemakaian', 'saldoAkhir'
+            'item', 'detail', 'tgl1', 'tgl2', 'saldoAwal', 'totalPembelian', 'totalPemakaian', 'saldoAkhir', 'labelSaldoAwal'
         ))->with('produk', $item);
     }
 }
