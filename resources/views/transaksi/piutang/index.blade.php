@@ -55,14 +55,25 @@
                 }
                 checks.forEach(item => item.addEventListener('change', syncSelection));
                 syncSelection();
+                const cariRiwayat = document.getElementById('cariRiwayat');
+                if (cariRiwayat) {
+                    const barisRiwayat = [...document.querySelectorAll('#tabelRiwayat tbody tr')];
+                    cariRiwayat.addEventListener('input', function () {
+                        const q = this.value.toLowerCase().trim();
+                        barisRiwayat.forEach(r => {
+                            r.classList.toggle('d-none', q !== '' && !r.textContent.toLowerCase().includes(q));
+                        });
+                    });
+                }
             });
         </script>
         <x-theme.modal title="Riwayat Pelunasan" idModal="modalRiwayat" size="modal-xl" btnSave="N">
-            <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                 <small class="text-muted">Nota {{ $jenis }} yang sudah dilunasi/dicicil pada periode filter ({{ $awal }} s/d {{ $akhir }}) — klik edit untuk koreksi.</small>
                 <span class="badge bg-success">Rp {{ number_format($totalRiwayat,0,'.',',') }}</span>
             </div>
-            <div class="receivable-table-wrap"><table class="table table-hover align-middle receivable-table"><thead><tr><th>No</th><th>Tgl Bayar</th><th>No Nota</th><th>Customer</th><th>Akun Pembayaran</th><th class="text-end">Jumlah Bayar</th><th class="text-end">Nilai Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead><tbody>@forelse($riwayat as $i => $row)<tr><td>{{ $i + 1 }}</td><td>{{ tanggal($row->tanggal_bayar) }}</td><td class="fw-semibold">{{ $row->no_nota }}</td><td>{{ $row->nm_customer ?? '-' }}</td><td>{{ trim(($row->kode_perkiraan ?? '').' - '.($row->nama_akun ?? ''), ' -') ?: '-' }}</td><td class="text-end receivable-paid">Rp {{ number_format($row->jumlah_bayar,0,'.',',') }}</td><td class="text-end">Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}</td><td>@if($row->jenis_selisih === 'lebih') Lebih Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @elseif($row->jenis_selisih === 'kurang') Kurang Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @else <span class="text-muted">-</span> @endif</td><td><a href="{{ route('transaksi.piutang.pelunasan.edit', $row->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pelunasan"><i class="fas fa-edit"></i></a></td></tr>@empty<tr><td colspan="9" class="receivable-empty">Belum ada pelunasan {{ $jenis }} pada periode ini.</td></tr>@endforelse</tbody></table></div>
+            <div class="input-group mb-2"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="search" id="cariRiwayat" class="form-control" placeholder="Cari nota, customer, atau akun..."></div>
+            <div class="receivable-table-wrap"><table class="table table-hover align-middle receivable-table" id="tabelRiwayat"><thead><tr><th>No</th><th>Tgl Bayar</th><th>No Nota</th><th>Customer</th><th>Akun Pembayaran</th><th class="text-end">Jumlah Bayar</th><th class="text-end">Nilai Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead><tbody>@forelse($riwayat as $i => $row)<tr><td>{{ $i + 1 }}</td><td>{{ tanggal($row->tanggal_bayar) }}</td><td class="fw-semibold">{{ $row->no_nota }}</td><td>{{ $row->nm_customer ?? '-' }}</td><td>{{ trim(($row->kode_perkiraan ?? '').' - '.($row->nama_akun ?? ''), ' -') ?: '-' }}</td><td class="text-end receivable-paid">Rp {{ number_format($row->jumlah_bayar,0,'.',',') }}</td><td class="text-end">Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}</td><td>@if($row->jenis_selisih === 'lebih') Lebih Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @elseif($row->jenis_selisih === 'kurang') Kurang Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @else <span class="text-muted">-</span> @endif</td><td><a href="{{ route('transaksi.piutang.pelunasan.edit', $row->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pelunasan"><i class="fas fa-edit"></i></a></td></tr>@empty<tr><td colspan="9" class="receivable-empty">Belum ada pelunasan {{ $jenis }} pada periode ini.</td></tr>@endforelse</tbody></table></div>
         </x-theme.modal>
     </x-slot>
 </x-theme.app>
