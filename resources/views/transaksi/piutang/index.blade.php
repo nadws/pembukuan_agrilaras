@@ -57,11 +57,15 @@
                 syncSelection();
                 const cariRiwayat = document.getElementById('cariRiwayat');
                 if (cariRiwayat) {
-                    const barisRiwayat = [...document.querySelectorAll('#tabelRiwayat tbody tr')];
+                    const barisRiwayat = [...document.querySelectorAll('#tabelRiwayat tbody .riwayat-master-row')];
                     cariRiwayat.addEventListener('input', function () {
                         const q = this.value.toLowerCase().trim();
                         barisRiwayat.forEach(r => {
-                            r.classList.toggle('d-none', q !== '' && !r.textContent.toLowerCase().includes(q));
+                            const detail = r.nextElementSibling;
+                            const match = q === '' || (r.textContent + ' ' + (detail?.textContent ?? '')).toLowerCase().includes(q);
+                            r.classList.toggle('d-none', !match);
+                            detail?.classList.add('d-none');
+                            r.querySelector('.btn-detail-riwayat')?.setAttribute('aria-expanded', 'false');
                         });
                     });
                 }
@@ -71,6 +75,7 @@
                         if (!detail) return;
                         detail.classList.toggle('d-none');
                         this.classList.toggle('active');
+                        this.setAttribute('aria-expanded', detail.classList.contains('d-none') ? 'false' : 'true');
                     });
                 });
             });
@@ -81,7 +86,52 @@
                 <span class="badge bg-success">Rp {{ number_format($totalRiwayat,0,'.',',') }}</span>
             </div>
             <div class="input-group mb-2"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="search" id="cariRiwayat" class="form-control" placeholder="Cari nota, customer, atau akun..."></div>
-            <div class="receivable-table-wrap"><table class="table table-hover align-middle receivable-table" id="tabelRiwayat"><thead><tr><th>No</th><th>Tgl Bayar</th><th>No Nota</th><th>Customer</th><th>Akun Pembayaran</th><th class="text-end">Jumlah Bayar</th><th class="text-end">Nilai Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead><tbody>@forelse($riwayat as $i => $row)@php($detailId = 'riwayat-jurnal-'.($row->id))<tr><td>{{ $i + 1 }}</td><td>{{ tanggal($row->tanggal_bayar) }}</td><td class="fw-semibold">{{ $row->no_nota }}</td><td>{{ $row->nm_customer ?? '-' }}</td><td>{{ trim(($row->kode_perkiraan ?? '').' - '.($row->nama_akun ?? ''), ' -') ?: '-' }}</td><td class="text-end receivable-paid">Rp {{ number_format($row->jumlah_bayar,0,'.',',') }}</td><td class="text-end">Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}</td><td>@if($row->jenis_selisih === 'lebih') Lebih Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @elseif($row->jenis_selisih === 'kurang') Kurang Rp {{ number_format($row->selisih_pembayaran,0,'.',',') }} @else <span class="text-muted">-</span> @endif</td><td><button type="button" class="btn btn-outline-info btn-sm btn-detail-riwayat" data-target="{{ $detailId }}" title="Detail jurnal"><i class="fas fa-eye"></i></button> <a href="{{ route('transaksi.piutang.pelunasan.edit', $row->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pelunasan"><i class="fas fa-edit"></i></a></td></tr><tr id="{{ $detailId }}" class="d-none bg-light"><td colspan="9"><div class="p-2"><div class="small fw-bold text-primary mb-1">Detail jurnal {{ $row->jurnal_detail->first()->nomor_transaksi ?? '-' }}</div><table class="table table-sm table-bordered mb-0"><thead><tr><th>Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead><tbody>@foreach($row->jurnal_detail as $jurnal)<tr><td>{{ $jurnal->kode_perkiraan }} - {{ $jurnal->nama_akun }}</td><td>{{ $jurnal->deskripsi }}</td><td class="text-end">Rp {{ number_format($jurnal->debit,0,'.',',') }}</td><td class="text-end">Rp {{ number_format($jurnal->kredit,0,'.',',') }}</td></tr>@endforeach</tbody></table></div></td></tr>@empty<tr><td colspan="9" class="receivable-empty">Belum ada pelunasan {{ $jenis }} pada periode ini.</td></tr>@endforelse</tbody></table></div>
+            <div class="receivable-table-wrap">
+                <table class="table table-hover align-middle receivable-table" id="tabelRiwayat">
+                    <thead><tr><th>No</th><th>Tgl Bayar</th><th>Voucher Pelunasan</th><th>Customer</th><th>Akun Pembayaran</th><th class="text-end">Jumlah Bayar</th><th class="text-end">Nilai Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                        @forelse($riwayat as $i => $row)
+                            @php($detailId = 'riwayat-jurnal-'.$row->id)
+                            <tr class="riwayat-master-row">
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ tanggal($row->tanggal_bayar) }}</td>
+                                <td class="fw-semibold">{{ $row->jurnal_detail->first()->nomor_transaksi ?? $row->daftar_nota }}</td>
+                                <td>{{ $row->nm_customer ?? '-' }}</td>
+                                <td>{{ trim(($row->kode_perkiraan ?? '').' - '.($row->nama_akun ?? ''), ' -') ?: '-' }}</td>
+                                <td class="text-end receivable-paid">Rp {{ number_format($row->jumlah_bayar,0,'.',',') }}</td>
+                                <td class="text-end">Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}</td>
+                                <td>{{ $row->selisih_pembayaran > 0 ? 'Rp '.number_format($row->selisih_pembayaran,0,'.',',') : '-' }}</td>
+                                <td><button type="button" class="btn btn-outline-info btn-sm btn-detail-riwayat" data-target="{{ $detailId }}" title="Lihat nota dan jurnal" aria-expanded="false"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                            <tr id="{{ $detailId }}" class="d-none bg-light riwayat-detail-row">
+                                <td colspan="9">
+                                    <div class="p-2">
+                                        <div class="small fw-bold text-primary mb-2">Nota dalam pelunasan ini</div>
+                                        <div class="table-responsive mb-3"><table class="table table-sm table-bordered mb-0">
+                                            <thead><tr><th>No Nota</th><th class="text-end">Bayar</th><th class="text-end">Dilunasi</th><th>Selisih</th><th>Aksi</th></tr></thead>
+                                            <tbody>@foreach($row->nota_rows as $notaRow)<tr>
+                                                <td>{{ $notaRow->no_nota }}</td>
+                                                <td class="text-end">Rp {{ number_format($notaRow->jumlah_bayar,0,'.',',') }}</td>
+                                                <td class="text-end">Rp {{ number_format($notaRow->nilai_piutang_dilunasi,0,'.',',') }}</td>
+                                                <td>{{ $notaRow->jenis_selisih === 'tidak' ? '-' : ucfirst($notaRow->jenis_selisih).' Rp '.number_format($notaRow->selisih_pembayaran,0,'.',',') }}</td>
+                                                <td><a href="{{ route('transaksi.piutang.pelunasan.edit', $notaRow->id) }}" class="btn btn-outline-primary btn-sm" title="Edit pembayaran nota"><i class="fas fa-edit me-1"></i>Edit</a></td>
+                                            </tr>@endforeach</tbody>
+                                        </table></div>
+                                        <div class="small fw-bold text-primary mb-1">Jurnal {{ $row->jurnal_detail->first()->nomor_transaksi ?? '-' }}</div>
+                                        <div class="table-responsive"><table class="table table-sm table-bordered mb-0">
+                                            <thead><tr><th>Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead>
+                                            <tbody>@forelse($row->jurnal_detail as $jurnal)<tr>
+                                                <td>{{ $jurnal->kode_perkiraan }} - {{ $jurnal->nama_akun }}</td><td>{{ $jurnal->deskripsi }}</td>
+                                                <td class="text-end">Rp {{ number_format($jurnal->debit,0,'.',',') }}</td><td class="text-end">Rp {{ number_format($jurnal->kredit,0,'.',',') }}</td>
+                                            </tr>@empty<tr><td colspan="4" class="text-muted text-center">Jurnal tidak tersedia.</td></tr>@endforelse</tbody>
+                                        </table></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty<tr><td colspan="9" class="receivable-empty">Belum ada pelunasan {{ $jenis }} pada periode ini.</td></tr>@endforelse
+                    </tbody>
+                </table>
+            </div>
         </x-theme.modal>
     </x-slot>
 </x-theme.app>

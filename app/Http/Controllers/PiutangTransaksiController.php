@@ -79,21 +79,28 @@ class PiutangTransaksiController extends Controller
             ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'p.id_akun_pembayaran')
             ->where('p.jenis', $jenis)
             ->whereBetween('p.tanggal_bayar', [$awal, $akhir])
-            ->when($cari !== '', function ($query) use ($cari) {
-                $query->where(function ($search) use ($cari) {
-                    $search->where('p.no_nota', 'like', "%{$cari}%")
-                        ->orWhere('c.nm_customer', 'like', "%{$cari}%");
-                });
-            })
             ->select('p.id', 'p.id_impor_jurnal_perkiraan', 'p.tanggal_bayar', 'p.no_nota', 'c.nm_customer', 'a.kode_perkiraan', 'a.nama as nama_akun', 'p.jumlah_bayar', 'p.nilai_piutang_dilunasi', 'p.jenis_selisih', 'p.selisih_pembayaran')
             ->orderByDesc('p.tanggal_bayar')->orderByDesc('p.id')
             ->get();
+        $riwayat = $riwayat->groupBy(fn ($row) => $row->id_impor_jurnal_perkiraan ?: 'baris-'.$row->id)
+            ->map(function ($notaRows) {
+                $first = clone $notaRows->first();
+                $first->nota_rows = $notaRows;
+                $first->daftar_nota = $notaRows->pluck('no_nota')->unique()->implode(', ');
+                $first->jumlah_bayar = (float) $notaRows->sum('jumlah_bayar');
+                $first->nilai_piutang_dilunasi = (float) $notaRows->sum('nilai_piutang_dilunasi');
+                $first->selisih_pembayaran = (float) $notaRows->sum('selisih_pembayaran');
+                $first->jenis_selisih = $notaRows->pluck('jenis_selisih')->unique()->implode(', ');
+                return $first;
+            })->values();
         $riwayat->each(function ($row) {
-            $row->jurnal_detail = DB::table('jurnal_perkiraan as j')
+            $row->jurnal_detail = $row->id_impor_jurnal_perkiraan
+                ? DB::table('jurnal_perkiraan as j')
                 ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
                 ->where('j.id_impor_jurnal_perkiraan', $row->id_impor_jurnal_perkiraan)
                 ->orderBy('j.urutan_detail')
-                ->get(['j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.kredit', 'a.kode_perkiraan', 'a.nama as nama_akun']);
+                ->get(['j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.kredit', 'a.kode_perkiraan', 'a.nama as nama_akun'])
+                : collect();
         });
         $totalRiwayat = (float) $riwayat->sum('jumlah_bayar');
 
