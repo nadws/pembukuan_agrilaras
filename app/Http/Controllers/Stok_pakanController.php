@@ -449,20 +449,25 @@ class Stok_pakanController extends Controller
                     ->from('faktur_pembelian_detail')
                     ->groupBy('pakan_id');
             })
-            ->get(['fpd.pakan_id', 'fpd.satuan', 'fpd.harga_satuan', 'fp.no_faktur', 'fp.tanggal_faktur']);
+            ->get(['fpd.pakan_id', 'fpd.satuan', 'fpd.qty', 'fpd.subtotal', 'fpd.harga_satuan', 'fp.no_faktur', 'fp.tanggal_faktur']);
 
         $map = [];
         foreach ($latestFaktur as $f) {
             $satuan = strtolower(trim($f->satuan ?? ''));
-            $hargaSatuan = (float) $f->harga_satuan;
-
-            if ($satuan === 'zak') {
-                $hppPerGr = $hargaSatuan / 50000;
+            $qty = (float) $f->qty;
+            $subtotal = (float) $f->subtotal;
+            // HPP per gram diturunkan dari subtotal/qty (bukan kolom harga_satuan)
+            // agar tetap benar walau harga_satuan di faktur lama tidak konsisten.
+            if ($qty <= 0) {
+                $hppPerGr = 0;
+            } elseif ($satuan === 'zak') {
+                $hppPerGr = $subtotal / ($qty * 50000);
             } elseif ($satuan === 'kg') {
-                $hppPerGr = $hargaSatuan / 1000;
+                $hppPerGr = $subtotal / ($qty * 1000);
             } else {
-                $hppPerGr = $hargaSatuan;
+                $hppPerGr = $subtotal / $qty;
             }
+            $hargaSatuan = (float) $f->harga_satuan;
 
             $map[$f->pakan_id] = [
                 'hpp_per_gr' => $hppPerGr,
