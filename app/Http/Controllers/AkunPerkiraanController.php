@@ -501,14 +501,20 @@ class AkunPerkiraanController extends Controller
             ->where('a.satuan', 'ekor')
             ->whereBetween('a.tanggal', [$tgl1, $tgl2])
             ->first();
-        $vaksin = DB::table('tb_vaksin_perencanaan')
+        // Pemakaian vaksin terbaru dicatat sebagai produk pada
+        // stok_produk_perencanaan (kategori vaksin), sehingga harus dihitung
+        // dari sana agar periode September dan kandangnya ikut muncul.
+        $vaksin = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
             ->select(
-                'id_kandang',
-                DB::raw('SUM(ttl_rp + biaya_dll) as ttl_rp')
-            )->whereBetween('tgl', [$tgl1, $tgl2])
-            ->groupBy('id_kandang')
-            ->get()
-            ->keyBy('id_kandang');
+                's.id_kandang',
+                DB::raw('SUM(COALESCE(s.total_rp, 0) + COALESCE(s.biaya_dll, 0)) as ttl_rp')
+            )
+            ->whereRaw('LOWER(p.kategori) = ?', ['vaksin'])
+            ->whereBetween('s.tgl', [$tgl1, $tgl2])
+            ->whereIn('s.id_kandang', $kandang->pluck('id_kandang'))
+            ->groupBy('s.id_kandang')
+            ->get()->keyBy('id_kandang');
 
         $biaya_operasional = LaporanLayerModel::biayaOperasional2($tgl1, $tgl2);
         $total_populasi = DB::table('kandang')
@@ -655,7 +661,10 @@ class AkunPerkiraanController extends Controller
             'jual_umum' => (float) ($nilaiKode['400003'] ?? 0),
             'pakan' => (float) ($nilaiKode['5101-04'] ?? 0),
             'vitamin' => (float) ($nilaiKode['5101-03'] ?? 0),
-            'vaksin' => (float) ($nilaiKode['5102-02'] ?? 0),
+            // Biaya vaksin memiliki relasi kandang langsung pada
+            // tb_vaksin_perencanaan, sehingga totalnya wajib mengikuti
+            // rincian per kandang (bukan dibagi dari total jurnal umum).
+            'vaksin' => (float) $vaksin->sum('ttl_rp'),
             'rak' => (float) ($nilaiKode['5101-01'] ?? 0),
         ];
         // Penjualan umum (REVE) bukan pendapatan kandang. Hanya pendapatan

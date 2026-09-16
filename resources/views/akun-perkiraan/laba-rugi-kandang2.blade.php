@@ -705,7 +705,10 @@
                                 @php $total_populasi_sekarang = 0; @endphp
                                 @foreach ($kandang as $k)
                                     @php
-                                        $populasiSekarang = max(0, (float) $k->stok_awal - (float) ($populasiKumulatif[$k->id_kandang] ?? 0));
+                                        $populasiSekarang = max(
+                                            0,
+                                            (float) $k->stok_awal - (float) ($populasiKumulatif[$k->id_kandang] ?? 0),
+                                        );
                                         $total_populasi_sekarang += $populasiSekarang;
                                     @endphp
                                     <td class="td_layer text-end">{{ number_format($populasiSekarang, 0) }}</td>
@@ -822,7 +825,8 @@
                             <tr>
                                 <td class="td_layer">Penjualan Umum</td>
                                 <td class="td_layer text-center text-muted" colspan="{{ $kandang->count() }}">—</td>
-                                <td class="text-end td_layer">{{ number_format($totalPerKategori['jual_umum'] ?? 0, 0) }}</td>
+                                <td class="text-end td_layer">
+                                    {{ number_format($totalPerKategori['jual_umum'] ?? 0, 0) }}</td>
                             </tr>
 
                             <tr class="summary-row">
@@ -839,7 +843,9 @@
                                     @endphp
                                     <th class="td_layer text-end">{{ number_format($telur + $ayam, 0) }}</th>
                                 @endforeach
-                                <th class="text-end td_layer">{{ number_format($total_pendapatan + ($totalPerKategori['jual_umum'] ?? 0), 0) }}</th>
+                                <th class="text-end td_layer">
+                                    {{ number_format($total_pendapatan + ($totalPerKategori['jual_umum'] ?? 0), 0) }}
+                                </th>
                             </tr>
 
                             <tr class="section-row">
@@ -1020,7 +1026,8 @@
                                     @php
                                         $totalPnlKeseluruhan = $ttl_pnl + ($totalPerKategori['jual_umum'] ?? 0);
                                     @endphp
-                                    <span class="profit-value {{ $totalPnlKeseluruhan >= 0 ? 'is-positive' : 'is-negative' }}">
+                                    <span
+                                        class="profit-value {{ $totalPnlKeseluruhan >= 0 ? 'is-positive' : 'is-negative' }}">
                                         {{ number_format($totalPnlKeseluruhan, 0) }}</span>
                                 </th>
                             </tr>
