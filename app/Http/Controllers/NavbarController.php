@@ -10,6 +10,12 @@ class NavbarController extends Controller
     {
         $data = [
             [
+                'judul' => 'Role & Access',
+                'route' => 'akses.index',
+                'img' => 'team.png',
+                'deskripsi' => 'Mengelola hak akses halaman untuk setiap user.',
+            ],
+            [
                 'judul' => 'Data User',
                 'route' => 'user.index',
                 'img' => 'team.png',

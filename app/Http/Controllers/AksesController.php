@@ -9,12 +9,8 @@ class AksesController extends Controller
 {
     public function index()
     {
-     
-        $boleh = [
-            '1'
-        ];
 
-        if (in_array(auth()->user()->id, $boleh)) {
+        if ((string) auth()->user()->posisi_id === '1') {
 
             $data = [
                 'title' => 'Permission Halaman',
@@ -29,11 +25,7 @@ class AksesController extends Controller
 
     public function detail_edit()
     {
-        $boleh = [
-            '1'
-        ];
-
-        if (in_array(auth()->user()->id, $boleh)) {
+        if ((string) auth()->user()->posisi_id === '1') {
 
             $data = [
                 'title' => 'Permission Halaman',

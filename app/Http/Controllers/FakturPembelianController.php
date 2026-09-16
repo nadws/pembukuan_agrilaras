@@ -673,6 +673,7 @@ class FakturPembelianController extends Controller
     public function detail(FakturModel $faktur_pembelian): View
     {
         $faktur_pembelian->load(['supplier', 'detail.produk', 'detail.produkUmum', 'detail.akunPembayaran']);
+        $hargaHppByDetail = $this->hargaHppByDetail(collect([$faktur_pembelian]));
         $biayaLain = collect($faktur_pembelian->biaya_lain ?? []);
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $biayaLain->pluck('id_akun')->filter()->unique())
@@ -699,6 +700,7 @@ class FakturPembelianController extends Controller
             'qtyDiterimaByProduk' => $qtyDiterimaByProduk,
             'jurnal' => $jurnal,
             'akunBiaya' => $akunBiaya,
+            'hargaHppByDetail' => $hargaHppByDetail,
             'sudahAdaPenerimaan' => $this->fakturSudahAdaPenerimaan($faktur_pembelian),
         ]);
     }

@@ -21,7 +21,6 @@
 <script src="{{ asset('theme') }}/assets/js/pages/form-element-select.js"></script>
 <script src="{{ asset('theme') }}/assets/extensions/toastify-js/src/toastify.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 {{-- <script src="{{ asset('theme') }}/assets/js/select2.min.js"></script> --}}
 <script src="https://cdn.datatables.net/v/bs5/dt-1.12.1/datatables.min.js"></script>
 <script src="{{ asset('theme') }}/assets/js/pages/datatables.js"></script>

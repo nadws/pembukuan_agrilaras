@@ -137,7 +137,7 @@
                                 {{ number_format((float) ($qtyDiterimaByProduk[$detail->pakan_id] ?? 0), 2, ',', '.') }}
                             </td>
                             <td>{{ $detail->satuan ?? '-' }}</td>
-                            <td class="text-end">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((float) ($hargaHppByDetail[$detail->id] ?? $detail->harga_satuan), 2, ',', '.') }}</td>
                             <td class="text-end">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                             <td>
                                 @if ($detail->akunPembayaran)
