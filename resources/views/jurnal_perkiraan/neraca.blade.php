@@ -27,6 +27,22 @@
             };
             $balanced = abs((float) $result['difference']) <= 1;
             $firstJournalDate = $result['firstJournalDate'];
+            // Blok dengan nilai Rp 0 disembunyikan; nilai minus tetap ditampilkan.
+            $hasRows = fn ($rows) => collect($rows)->isNotEmpty();
+            $nonZero = fn ($value) => abs((float) $value) > 0;
+            $showCash = $hasRows($result['cashRows']) || $nonZero($result['cash']);
+            $showReceivable = $hasRows($result['receivableRows']) || $nonZero($result['receivable']);
+            $showInventory = $hasRows($result['inventoryRows']) || $nonZero($result['inventory']);
+            $showOtherCurrent = $hasRows($result['otherCurrentRows']) || $nonZero($result['otherCurrent']);
+            $showCurrentAssets = $showCash || $showReceivable || $showInventory || $showOtherCurrent;
+            $showFixed = $hasRows($result['fixedAssetRows']) || $nonZero($result['fixedAssets']);
+            $showDepr = $hasRows($result['depreciationRows']) || $nonZero($result['accumulatedDepreciation']);
+            $showNetFixed = $showFixed || $showDepr;
+            $showPayable = $hasRows($result['payableRows']) || $nonZero($result['payable']);
+            $showOtherCL = $hasRows($result['otherCurrentLiabilityRows']) || $nonZero($result['otherCurrentLiability']);
+            $showCurrentLiab = $showPayable || $showOtherCL;
+            $showLongTerm = $hasRows($result['longTermLiabilityRows']) || $nonZero($result['longTermLiabilities']);
+            $showEquity = $hasRows($result['equityRows']) || $nonZero($result['currentProfit']);
         @endphp
 
         @if (isset($errors) && $errors->any())
@@ -67,31 +83,47 @@
                     <table class="table balance-table mb-0">
                         <thead><tr><th>Deskripsi</th><th class="text-end">Nilai (IDR)</th></tr></thead>
                         <tbody>
+                            @if($showCurrentAssets)
                             <tr class="section-row"><td colspan="2">ASET LANCAR</td></tr>
+                            @if($showCash)
                             <tr class="subsection-row"><td colspan="2">Kas dan Bank</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['cashRows']])
                             <tr class="subtotal-row"><td>Jumlah Kas dan Bank</td><td class="text-end">{{ $formatNumber($result['cash']) }}</td></tr>
+                            @endif
 
+                            @if($showReceivable)
                             <tr class="subsection-row"><td colspan="2">Piutang dan Uang Muka</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['receivableRows']])
                             <tr class="subtotal-row"><td>Jumlah Piutang dan Uang Muka</td><td class="text-end">{{ $formatNumber($result['receivable']) }}</td></tr>
+                            @endif
 
+                            @if($showInventory)
                             <tr class="subsection-row"><td colspan="2">Persediaan</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['inventoryRows']])
                             <tr class="subtotal-row"><td>Jumlah Persediaan</td><td class="text-end">{{ $formatNumber($result['inventory']) }}</td></tr>
+                            @endif
 
+                            @if($showOtherCurrent)
                             <tr class="subsection-row"><td colspan="2">Aset Lancar Lainnya</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['otherCurrentRows']])
                             <tr class="subtotal-row"><td>Jumlah Aset Lancar Lainnya</td><td class="text-end">{{ $formatNumber($result['otherCurrent']) }}</td></tr>
+                            @endif
                             <tr class="total-row"><td>JUMLAH ASET LANCAR</td><td class="text-end">{{ $formatNumber($result['currentAssets']) }}</td></tr>
+                            @endif
 
+                            @if($showNetFixed)
                             <tr class="section-row"><td colspan="2">ASET TETAP</td></tr>
+                            @if($showFixed)
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['fixedAssetRows']])
                             <tr class="subtotal-row"><td>Jumlah Harga Perolehan</td><td class="text-end">{{ $formatNumber($result['fixedAssets']) }}</td></tr>
+                            @endif
+                            @if($showDepr)
                             <tr class="subsection-row"><td colspan="2">Akumulasi Penyusutan</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['depreciationRows'], 'multiplier' => -1])
                             <tr class="subtotal-row"><td>Jumlah Akumulasi Penyusutan</td><td class="text-end">{{ $formatNumber(bcmul($result['accumulatedDepreciation'], '-1', 12)) }}</td></tr>
+                            @endif
                             <tr class="total-row"><td>JUMLAH ASET TETAP NETO</td><td class="text-end">{{ $formatNumber($result['netFixedAssets']) }}</td></tr>
+                            @endif
                             <tr class="grand-total"><td>TOTAL ASET</td><td class="text-end">{{ $formatNumber($result['totalAssets']) }}</td></tr>
                         </tbody>
                     </table>
@@ -104,24 +136,36 @@
                     <table class="table balance-table mb-0">
                         <thead><tr><th>Deskripsi</th><th class="text-end">Nilai (IDR)</th></tr></thead>
                         <tbody>
+                            @if($showCurrentLiab)
                             <tr class="section-row"><td colspan="2">KEWAJIBAN JANGKA PENDEK</td></tr>
+                            @if($showPayable)
                             <tr class="subsection-row"><td colspan="2">Hutang Usaha</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['payableRows']])
                             <tr class="subtotal-row"><td>Jumlah Hutang Usaha</td><td class="text-end">{{ $formatNumber($result['payable']) }}</td></tr>
+                            @endif
+                            @if($showOtherCL)
                             <tr class="subsection-row"><td colspan="2">Kewajiban Lancar Lainnya</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['otherCurrentLiabilityRows']])
                             <tr class="subtotal-row"><td>Jumlah Kewajiban Lancar Lainnya</td><td class="text-end">{{ $formatNumber($result['otherCurrentLiability']) }}</td></tr>
+                            @endif
                             <tr class="total-row"><td>JUMLAH KEWAJIBAN JANGKA PENDEK</td><td class="text-end">{{ $formatNumber($result['currentLiabilities']) }}</td></tr>
+                            @endif
 
+                            @if($showLongTerm)
                             <tr class="section-row"><td colspan="2">KEWAJIBAN JANGKA PANJANG</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['longTermLiabilityRows']])
                             <tr class="total-row"><td>JUMLAH KEWAJIBAN JANGKA PANJANG</td><td class="text-end">{{ $formatNumber($result['longTermLiabilities']) }}</td></tr>
+                            @endif
                             <tr class="grand-subtotal"><td>TOTAL KEWAJIBAN</td><td class="text-end">{{ $formatNumber($result['totalLiabilities']) }}</td></tr>
 
+                            @if($showEquity)
                             <tr class="section-row"><td colspan="2">EKUITAS</td></tr>
                             @include('jurnal_perkiraan.partials.neraca_rows', ['rows' => $result['equityRows']])
+                            @if($nonZero($result['currentProfit']))
                             <tr class="account-row profit-row"><td><span class="account-link"><span>Laba/Rugi Tahun Ini</span></span></td><td class="text-end">{{ $formatNumber($result['currentProfit']) }}</td></tr>
+                            @endif
                             <tr class="total-row"><td>JUMLAH EKUITAS</td><td class="text-end">{{ $formatNumber($result['totalEquity']) }}</td></tr>
+                            @endif
                             <tr class="grand-total"><td>TOTAL KEWAJIBAN DAN EKUITAS</td><td class="text-end">{{ $formatNumber($result['liabilitiesAndEquity']) }}</td></tr>
                         </tbody>
                     </table>

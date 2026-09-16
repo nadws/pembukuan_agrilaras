@@ -65,47 +65,92 @@
         }
     };
 
+    // Baris bernilai Rp 0 disembunyikan; nilai minus tetap ditampilkan.
+    $hasRows = fn ($rows) => collect($rows)->isNotEmpty();
+    $nonZero = fn ($value) => abs((float) $value) > 0;
+    $showCash = $hasRows($result['cashRows']) || $nonZero($result['cash']);
+    $showReceivable = $hasRows($result['receivableRows']) || $nonZero($result['receivable']);
+    $showInventory = $hasRows($result['inventoryRows']) || $nonZero($result['inventory']);
+    $showOtherCurrent = $hasRows($result['otherCurrentRows']) || $nonZero($result['otherCurrent']);
+    $showCurrentAssets = $showCash || $showReceivable || $showInventory || $showOtherCurrent;
+    $showFixed = $hasRows($result['fixedAssetRows']) || $nonZero($result['fixedAssets']);
+    $showDepr = $hasRows($result['depreciationRows']) || $nonZero($result['accumulatedDepreciation']);
+    $showNetFixed = $showFixed || $showDepr;
+    $showPayable = $hasRows($result['payableRows']) || $nonZero($result['payable']);
+    $showOtherCL = $hasRows($result['otherCurrentLiabilityRows']) || $nonZero($result['otherCurrentLiability']);
+    $showCurrentLiab = $showPayable || $showOtherCL;
+    $showLongTerm = $hasRows($result['longTermLiabilityRows']) || $nonZero($result['longTermLiabilities']);
+    $showEquity = $hasRows($result['equityRows']) || $nonZero($result['currentProfit']);
+
     $left = [];
-    $left[] = $line('ASET LANCAR', null, 'section');
-    $left[] = $line('Kas dan Bank', null, 'subsection');
-    $appendAccounts($left, $result['cashRows']);
-    $left[] = $line('Jumlah Kas dan Bank', $result['cash'], 'subtotal');
-    $left[] = $line('Piutang dan Uang Muka', null, 'subsection');
-    $appendAccounts($left, $result['receivableRows']);
-    $left[] = $line('Jumlah Piutang dan Uang Muka', $result['receivable'], 'subtotal');
-    $left[] = $line('Persediaan', null, 'subsection');
-    $appendAccounts($left, $result['inventoryRows']);
-    $left[] = $line('Jumlah Persediaan', $result['inventory'], 'subtotal');
-    $left[] = $line('Aset Lancar Lainnya', null, 'subsection');
-    $appendAccounts($left, $result['otherCurrentRows']);
-    $left[] = $line('Jumlah Aset Lancar Lainnya', $result['otherCurrent'], 'subtotal');
-    $left[] = $line('JUMLAH ASET LANCAR', $result['currentAssets'], 'total');
-    $left[] = $line('ASET TETAP', null, 'section');
-    $appendAccounts($left, $result['fixedAssetRows']);
-    $left[] = $line('Jumlah Harga Perolehan', $result['fixedAssets'], 'subtotal');
-    $left[] = $line('Akumulasi Penyusutan', null, 'subsection');
-    $appendAccounts($left, $result['depreciationRows'], -1);
-    $left[] = $line('Jumlah Akumulasi Penyusutan', bcmul($result['accumulatedDepreciation'], '-1', 12), 'subtotal');
-    $left[] = $line('JUMLAH ASET TETAP NETO', $result['netFixedAssets'], 'total');
+    if ($showCurrentAssets) {
+        $left[] = $line('ASET LANCAR', null, 'section');
+        if ($showCash) {
+            $left[] = $line('Kas dan Bank', null, 'subsection');
+            $appendAccounts($left, $result['cashRows']);
+            $left[] = $line('Jumlah Kas dan Bank', $result['cash'], 'subtotal');
+        }
+        if ($showReceivable) {
+            $left[] = $line('Piutang dan Uang Muka', null, 'subsection');
+            $appendAccounts($left, $result['receivableRows']);
+            $left[] = $line('Jumlah Piutang dan Uang Muka', $result['receivable'], 'subtotal');
+        }
+        if ($showInventory) {
+            $left[] = $line('Persediaan', null, 'subsection');
+            $appendAccounts($left, $result['inventoryRows']);
+            $left[] = $line('Jumlah Persediaan', $result['inventory'], 'subtotal');
+        }
+        if ($showOtherCurrent) {
+            $left[] = $line('Aset Lancar Lainnya', null, 'subsection');
+            $appendAccounts($left, $result['otherCurrentRows']);
+            $left[] = $line('Jumlah Aset Lancar Lainnya', $result['otherCurrent'], 'subtotal');
+        }
+        $left[] = $line('JUMLAH ASET LANCAR', $result['currentAssets'], 'total');
+    }
+    if ($showNetFixed) {
+        $left[] = $line('ASET TETAP', null, 'section');
+        if ($showFixed) {
+            $appendAccounts($left, $result['fixedAssetRows']);
+            $left[] = $line('Jumlah Harga Perolehan', $result['fixedAssets'], 'subtotal');
+        }
+        if ($showDepr) {
+            $left[] = $line('Akumulasi Penyusutan', null, 'subsection');
+            $appendAccounts($left, $result['depreciationRows'], -1);
+            $left[] = $line('Jumlah Akumulasi Penyusutan', bcmul($result['accumulatedDepreciation'], '-1', 12), 'subtotal');
+        }
+        $left[] = $line('JUMLAH ASET TETAP NETO', $result['netFixedAssets'], 'total');
+    }
     $left[] = $line('TOTAL ASET', $result['totalAssets'], 'grand');
 
     $right = [];
-    $right[] = $line('KEWAJIBAN JANGKA PENDEK', null, 'section');
-    $right[] = $line('Hutang Usaha', null, 'subsection');
-    $appendAccounts($right, $result['payableRows']);
-    $right[] = $line('Jumlah Hutang Usaha', $result['payable'], 'subtotal');
-    $right[] = $line('Kewajiban Lancar Lainnya', null, 'subsection');
-    $appendAccounts($right, $result['otherCurrentLiabilityRows']);
-    $right[] = $line('Jumlah Kewajiban Lancar Lainnya', $result['otherCurrentLiability'], 'subtotal');
-    $right[] = $line('JUMLAH KEWAJIBAN JANGKA PENDEK', $result['currentLiabilities'], 'total');
-    $right[] = $line('KEWAJIBAN JANGKA PANJANG', null, 'section');
-    $appendAccounts($right, $result['longTermLiabilityRows']);
-    $right[] = $line('JUMLAH KEWAJIBAN JANGKA PANJANG', $result['longTermLiabilities'], 'total');
+    if ($showCurrentLiab) {
+        $right[] = $line('KEWAJIBAN JANGKA PENDEK', null, 'section');
+        if ($showPayable) {
+            $right[] = $line('Hutang Usaha', null, 'subsection');
+            $appendAccounts($right, $result['payableRows']);
+            $right[] = $line('Jumlah Hutang Usaha', $result['payable'], 'subtotal');
+        }
+        if ($showOtherCL) {
+            $right[] = $line('Kewajiban Lancar Lainnya', null, 'subsection');
+            $appendAccounts($right, $result['otherCurrentLiabilityRows']);
+            $right[] = $line('Jumlah Kewajiban Lancar Lainnya', $result['otherCurrentLiability'], 'subtotal');
+        }
+        $right[] = $line('JUMLAH KEWAJIBAN JANGKA PENDEK', $result['currentLiabilities'], 'total');
+    }
+    if ($showLongTerm) {
+        $right[] = $line('KEWAJIBAN JANGKA PANJANG', null, 'section');
+        $appendAccounts($right, $result['longTermLiabilityRows']);
+        $right[] = $line('JUMLAH KEWAJIBAN JANGKA PANJANG', $result['longTermLiabilities'], 'total');
+    }
     $right[] = $line('TOTAL KEWAJIBAN', $result['totalLiabilities'], 'total');
-    $right[] = $line('EKUITAS', null, 'section');
-    $appendAccounts($right, $result['equityRows']);
-    $right[] = $line('Laba/Rugi Tahun Ini', $result['currentProfit']);
-    $right[] = $line('JUMLAH EKUITAS', $result['totalEquity'], 'total');
+    if ($showEquity) {
+        $right[] = $line('EKUITAS', null, 'section');
+        $appendAccounts($right, $result['equityRows']);
+        if ($nonZero($result['currentProfit'])) {
+            $right[] = $line('Laba/Rugi Tahun Ini', $result['currentProfit']);
+        }
+        $right[] = $line('JUMLAH EKUITAS', $result['totalEquity'], 'total');
+    }
     $right[] = $line('TOTAL KEWAJIBAN DAN EKUITAS', $result['liabilitiesAndEquity'], 'grand');
     $rowCount = max(count($left), count($right));
 @endphp

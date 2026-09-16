@@ -435,7 +435,7 @@ class NavbarController extends Controller
     {
         $data = [
             [
-                'judul' => 'Akun Perkiraan',
+                'judul' => 'COA',
                 'route' => 'master.akun-perkiraan.index',
                 'img' => 'accounting.png',
                 'deskripsi' => 'Mengelola master akun perkiraan baru.',
