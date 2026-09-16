@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\TemplateJurnalPerkiraanExport;
 use App\Exports\LaporanArusKasPerkiraanExport;
 use App\Exports\LaporanLabaRugiPerkiraanExport;
+use App\Exports\LaporanNeracaPerkiraanExport;
 use App\Http\Requests\PratinjauJurnalPerkiraanRequest;
 use App\Models\AkunPerkiraan;
 use App\Models\ImporJurnalPerkiraan;
@@ -396,6 +397,21 @@ class JurnalPerkiraanController extends Controller
             'reportDate' => $reportDate,
             'result' => $service->buat($reportDate),
         ]);
+    }
+
+    public function exportNeraca(Request $request, LaporanNeracaPerkiraanService $service): BinaryFileResponse
+    {
+        $latestJournalDate = DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->max('j.tanggal');
+
+        $data = $request->validate(['tanggal' => ['nullable', 'date']]);
+        $reportDate = Carbon::parse($data['tanggal'] ?? $latestJournalDate ?? now()->toDateString())->startOfDay();
+
+        $filename = 'neraca-'.$reportDate->format('Y-m-d').'.xlsx';
+
+        return Excel::download(new LaporanNeracaPerkiraanExport($service->buat($reportDate), $reportDate), $filename);
     }
 
     public function detailAkun(Request $request, AkunPerkiraan $akun_perkiraan): View

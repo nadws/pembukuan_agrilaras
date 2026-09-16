@@ -268,6 +268,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/arus-kas/detail', 'detailArusKas')->name('arus-kas-detail');
         Route::get('/laporan/neraca', 'neraca')->name('neraca');
         Route::get('/laporan/neraca/cetak', 'cetakNeraca')->name('neraca.cetak');
+        Route::get('/laporan/neraca/export', 'exportNeraca')->name('neraca.export');
     });
 
 

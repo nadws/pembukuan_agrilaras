@@ -6,6 +6,9 @@
                 <small>Laporan Neraca</small>
             </div>
             <div class="d-flex gap-2 no-print">
+                <a href="{{ route('jurnal-perkiraan.neraca.export', ['tanggal' => $reportDate->toDateString()]) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Excel
+                </a>
                 <a href="{{ route('jurnal-perkiraan.neraca.cetak', ['tanggal' => $reportDate->toDateString()]) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-print me-1"></i> Cetak
                 </a>
