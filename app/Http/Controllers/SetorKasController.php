@@ -515,9 +515,26 @@ class SetorKasController extends Controller
             ->selectRaw("MAX(COALESCE(NULLIF(TRIM(customer_utama.nm_customer), ''), NULLIF(NULLIF(TRIM(CAST(transaksi.id_customer AS CHAR)), ''), '0'))) as nama_customer")
             ->groupBy('nomor_transaksi');
 
+        // Pelunasan piutang (nota PL-TELUR/PL-AYAM/PL-UMUM-...): nomor_transaksi ini
+        // hanya ada di jurnal + pelunasan_piutang_penjualan, tidak ada di tabel
+        // invoice, sehingga tanpa mapping ini pembayarannya tidak muncul di daftar setoran.
+        $pelunasan = DB::table('pelunasan_piutang_penjualan as p')
+            ->join('jurnal_perkiraan as j', 'j.id_impor_jurnal_perkiraan', '=', 'p.id_impor_jurnal_perkiraan')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
+            ->leftJoin('invoice_telur as it', function ($join) {
+                $join->on('it.no_nota', '=', 'p.no_nota')->where('p.jenis', '=', 'telur');
+            })
+            ->leftJoin('invoice_ayam as ia', function ($join) {
+                $join->on('ia.no_nota', '=', 'p.no_nota')->where('p.jenis', '=', 'ayam');
+            })
+            ->where('j.tipe_transaksi', 'like', 'Pelunasan Piutang%')
+            ->selectRaw("j.nomor_transaksi as nomor_transaksi, MAX(COALESCE(NULLIF(TRIM(c.nm_customer), ''), NULLIF(TRIM(it.customer), ''), NULLIF(TRIM(ia.customer), ''))) as nama_customer")
+            ->groupBy('j.nomor_transaksi');
+
         $semuaCustomer = $penjualanTelur
             ->unionAll($penjualanAyam)
-            ->unionAll($penjualanUmum);
+            ->unionAll($penjualanUmum)
+            ->unionAll($pelunasan);
 
         return DB::query()
             ->fromSub($semuaCustomer, 'sumber_customer')
