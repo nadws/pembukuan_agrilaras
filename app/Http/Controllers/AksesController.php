@@ -12,15 +12,94 @@ class AksesController extends Controller
 
         if ((string) auth()->user()->posisi_id === '1') {
 
+            $roles = DB::table('tb_posisi')->orderBy('id_posisi')->get()->map(function ($role) {
+                $role->jumlah_user = DB::table('users')->where('posisi_id', (string) $role->id_posisi)->count();
+                $role->jumlah_akses = DB::table('permission_role')->where('posisi_id', $role->id_posisi)->count();
+                return $role;
+            });
+            $permissions = DB::table('permission')->orderBy('id_permission')->get();
+            $buttons = DB::table('permission_button')->orderBy('permission_id')->orderBy('id_permission_button')->get();
+            $grants = DB::table('permission_role')->get()->groupBy('posisi_id')
+                ->map(fn ($rows) => $rows->pluck('id_permission_button')->map(fn ($id) => (int) $id)->flip());
+
             $data = [
-                'title' => 'Permission Halaman',
-                'permissionHalaman' => DB::table('permission')->get(),
-                'permissionButton' => DB::table('permission_button as a')->join('permission as b', 'b.id_permission', 'a.permission_id')->get(),
+                'title' => 'Role & Access',
+                'roles' => $roles,
+                'permissionHalaman' => $permissions,
+                'permissionButton' => $buttons,
+                'grants' => $grants,
             ];
             return view('permission_halaman.index', $data);
         } else {
             abort(403, 'akses tidak ada');
         }
+    }
+
+    public function storeRole(Request $r)
+    {
+        abort_unless((string) auth()->user()->posisi_id === '1', 403, 'akses tidak ada');
+        $validated = $r->validate(['nm_posisi' => ['required', 'string', 'max:100']]);
+        DB::table('tb_posisi')->insert([
+            'nm_posisi' => trim($validated['nm_posisi']),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        return redirect()->route('akses.index')->with('sukses', 'Role berhasil ditambahkan.');
+    }
+
+    public function updateRole(Request $r, int $id)
+    {
+        abort_unless((string) auth()->user()->posisi_id === '1', 403, 'akses tidak ada');
+        $validated = $r->validate(['nm_posisi' => ['required', 'string', 'max:100']]);
+        DB::table('tb_posisi')->where('id_posisi', $id)->update([
+            'nm_posisi' => trim($validated['nm_posisi']),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('akses.index')->with('sukses', 'Role berhasil diubah.');
+    }
+
+    public function destroyRole(int $id)
+    {
+        abort_unless((string) auth()->user()->posisi_id === '1', 403, 'akses tidak ada');
+        $dipakai = DB::table('users')->where('posisi_id', (string) $id)->count();
+        abort_if($dipakai > 0, 422, 'Role masih dipakai ' . $dipakai . ' user, pindahkan dulu usernya.');
+
+        DB::transaction(function () use ($id) {
+            DB::table('permission_role')->where('posisi_id', $id)->delete();
+            DB::table('tb_posisi')->where('id_posisi', $id)->delete();
+        });
+
+        return redirect()->route('akses.index')->with('sukses', 'Role berhasil dihapus.');
+    }
+
+    public function saveMatrix(Request $r)
+    {
+        abort_unless((string) auth()->user()->posisi_id === '1', 403, 'akses tidak ada');
+        $validated = $r->validate([
+            'akses' => ['nullable', 'array'],
+            'akses.*' => ['array'],
+            'akses.*.*' => ['integer', 'exists:permission_button,id_permission_button'],
+        ]);
+
+        $validPosisi = DB::table('tb_posisi')->pluck('id_posisi')->map(fn ($id) => (int) $id);
+
+        DB::transaction(function () use ($validated, $validPosisi) {
+            foreach ($validPosisi as $posisiId) {
+                $buttonIds = collect($validated['akses'][$posisiId] ?? [])
+                    ->map(fn ($id) => (int) $id)->unique()->values();
+                DB::table('permission_role')->where('posisi_id', $posisiId)->delete();
+                foreach ($buttonIds->chunk(200) as $chunk) {
+                    DB::table('permission_role')->insert($chunk->map(fn ($buttonId) => [
+                        'posisi_id' => $posisiId,
+                        'id_permission_button' => $buttonId,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ])->all());
+                }
+            }
+        });
+
+        return redirect()->route('akses.index')->with('sukses', 'Matriks akses per role berhasil disimpan.');
     }
 
     public function detail_edit()
@@ -124,6 +203,45 @@ class AksesController extends Controller
 
     public function editMenu(Request $r)
     {
+    }
+
+    public function saveRolePage(Request $r)
+    {
+        abort_unless((string) auth()->user()->posisi_id === '1', 403, 'akses tidak ada');
+        $validated = $r->validate([
+            'route' => ['required', 'string', 'max:150'],
+            'id' => ['nullable'],
+            'permission_id' => ['required', 'integer', 'exists:permission,id_permission'],
+            'akses' => ['nullable', 'array'],
+            'akses.*' => ['array'],
+            'akses.*.*' => ['integer', 'exists:permission_button,id_permission_button'],
+        ]);
+
+        $buttonIds = DB::table('permission_button')
+            ->where('permission_id', $validated['permission_id'])
+            ->pluck('id_permission_button')->map(fn ($id) => (int) $id);
+        $roles = DB::table('tb_posisi')->pluck('id_posisi')->map(fn ($id) => (int) $id);
+
+        DB::transaction(function () use ($validated, $buttonIds, $roles) {
+            DB::table('permission_role')
+                ->whereIn('posisi_id', $roles)
+                ->whereIn('id_permission_button', $buttonIds)
+                ->delete();
+            foreach ($roles as $posisiId) {
+                $chosen = collect($validated['akses'][$posisiId] ?? [])
+                    ->map(fn ($id) => (int) $id)
+                    ->intersect($buttonIds)->unique()->values();
+                foreach ($chosen as $buttonId) {
+                    DB::table('permission_role')->insert([
+                        'posisi_id' => $posisiId,
+                        'id_permission_button' => $buttonId,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route($validated['route'], $validated['id'] ?? [])->with('sukses', 'Akses role berhasil disimpan.');
     }
 
     public function save(Request $r)

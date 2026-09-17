@@ -11,7 +11,9 @@
                 <div><h4>Stok Barang Umum</h4><small class="text-muted">Saldo stok awal, pembelian umum, dan hasil penyesuaian stok opname.</small></div>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('barang-umum.index') }}" class="btn btn-outline-primary"><i class="fas fa-boxes me-1"></i> Isi Stok Awal</a>
+                    @if(!empty($btnOpname))
                     <a href="{{ route('gudang-persediaan.barang-umum.opname') }}" class="btn btn-primary"><i class="fas fa-clipboard-check me-1"></i> Mulai Stok Opname</a>
+                    @endif
                 </div>
             </div>
             <div class="stock-summary">

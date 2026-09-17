@@ -40,7 +40,11 @@
                             <td class="text-center">@if ($d->cek === 'Y')<span class="mtd-general-status checked"><i class="fas fa-check"></i> Diperiksa</span>@else<span class="mtd-general-status pending"><i class="fas fa-clock"></i> Belum</span>@endif</td>
                             <td class="text-center text-nowrap">
                                 <button type="button" class="btn btn-outline-primary btn-sm detail-nota" data-url="{{ route('penjualan_umum_mtd.detail', ['urutan' => $d->urutan]) }}" data-bs-toggle="modal" data-bs-target="#detailNota" title="Detail"><i class="fas fa-eye"></i></button>
-                                @if ($d->cek !== 'Y')<a class="btn btn-primary btn-sm" href="{{ route('terima_invoice_umum_cek', ['no_nota' => [$d->urutan]]) }}"><i class="fas fa-plus me-1"></i> Periksa</a>@endif
+                                @if ($d->cek !== 'Y')
+@if(!empty($btnPeriksa))
+<a class="btn btn-primary btn-sm" href="{{ route('terima_invoice_umum_cek', ['no_nota' => [$d->urutan]]) }}"><i class="fas fa-plus me-1"></i> Periksa</a>
+@endif
+@endif
                             </td>
                         </tr>
                     @empty

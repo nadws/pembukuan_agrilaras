@@ -104,7 +104,11 @@ class PiutangTransaksiController extends Controller
         });
         $totalRiwayat = (float) $riwayat->sum('jumlah_bayar');
 
-        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat'));
+        $btnImport = \SettingHal::btnHal(179, auth()->id());
+        $btnRiwayat = \SettingHal::btnHal(180, auth()->id());
+        $btnPelunasan = \SettingHal::btnHal(181, auth()->id());
+
+        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat', 'btnImport', 'btnRiwayat', 'btnPelunasan'));
     }
 
     public function importAccurate(Request $request)

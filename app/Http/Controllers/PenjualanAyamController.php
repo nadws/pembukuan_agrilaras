@@ -85,6 +85,7 @@ class PenjualanAyamController extends Controller
 
         $data = [
             'title' => 'Penjualan Ayam',
+            'btnSetor' => \SettingHal::btnHal(201, auth()->id()),
             'penjualan' => $penjualan,
             'ttlRp' => (float) $total->total,
             'ttlRpBelumDiCek' => (float) $total->belum_dicek,

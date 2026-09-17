@@ -50,6 +50,10 @@ class FakturPembelianController extends Controller
             'tanggalAkhir' => $tanggalAkhir,
             'faktur' => $faktur,
             'penerimaanFaktur' => $penerimaanFaktur,
+            'btnBuat' => \SettingHal::btnHal(169, auth()->id()),
+            'btnDetail' => \SettingHal::btnHal(170, auth()->id()),
+            'btnEdit' => \SettingHal::btnHal(171, auth()->id()),
+            'btnHapus' => \SettingHal::btnHal(172, auth()->id()),
         ]);
     }
 
@@ -132,6 +136,8 @@ class FakturPembelianController extends Controller
             'statusPenerimaan' => $statusPenerimaan,
             'jumlahBelumHabis' => $belumHabis->count(),
             'jumlahSudahHabis' => $sudahHabis->count(),
+            'btnTerima' => \SettingHal::btnHal(176, auth()->id()),
+            'btnBatalkan' => \SettingHal::btnHal(177, auth()->id()),
         ]);
     }
 
@@ -188,6 +194,7 @@ class FakturPembelianController extends Controller
             'tanggalAwal' => $tanggalAwal,
             'tanggalAkhir' => $tanggalAkhir,
             'status' => $status,
+            'btnBayar' => \SettingHal::btnHal(178, auth()->id()),
             'faktur' => $faktur,
             'totalHutang' => $totalHutang,
             'totalHutangBarang' => $totalHutangBarang,

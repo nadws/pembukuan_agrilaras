@@ -26,6 +26,11 @@ class MasterAkunPerkiraanController extends Controller
 
         return view('data_master.akun_perkiraan.index', [
             'title' => 'Akun Perkiraan',
+            'btnExport' => \SettingHal::btnHal(208, auth()->id()),
+            'btnImport' => \SettingHal::btnHal(209, auth()->id()),
+            'btnTambah' => \SettingHal::btnHal(210, auth()->id()),
+            'btnEdit' => \SettingHal::btnHal(211, auth()->id()),
+            'btnStatus' => \SettingHal::btnHal(212, auth()->id()),
             'akun' => $query->get(),
             'akunInduk' => AkunPerkiraan::where('aktif', true)->orderBy('kode_perkiraan')->get(),
             'tipeAkun' => AkunPerkiraan::query()->distinct()->orderBy('tipe_akun')->pluck('tipe_akun'),

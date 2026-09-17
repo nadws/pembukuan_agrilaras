@@ -6,6 +6,21 @@ use Illuminate\Http\Request;
 
 class NavbarController extends Controller
 {
+    /**
+     * Saring ubin menu sesuai hak akses role user yang login.
+     */
+    private function saringAkses(array $data): array
+    {
+        $posisiId = (int) auth()->user()->posisi_id;
+        $routeBoleh = \Illuminate\Support\Facades\DB::table('permission_role as pr')
+            ->join('permission_button as b', 'b.id_permission_button', '=', 'pr.id_permission_button')
+            ->join('permission as p', 'p.id_permission', '=', 'b.permission_id')
+            ->where('pr.posisi_id', $posisiId)
+            ->pluck('p.url');
+
+        return collect($data)->filter(fn ($d) => $routeBoleh->contains($d['route']))->values()->all();
+    }
+
     public function data_master()
     {
         $data = [
@@ -21,18 +36,7 @@ class NavbarController extends Controller
                 'img' => 'team.png',
                 'deskripsi' => 'ini adalah data user',
             ],
-            // [
-            //     'judul' => 'Gudang',
-            //     'route' => 'gudang.index',
-            //     'img' => 'gudang.png',
-            //     'deskripsi' => 'membuat dan mengelola data gudang',
-            // ],
-            // [
-            //     'judul' => 'Data Proyek',
-            //     'route' => 'proyek',
-            //     'img' => 'clipboard.png',
-            //     'deskripsi' => 'Membuat dan mengelola data proyek beserta anggaran pendapatan dan biaya.',
-            // ],
+            
             [
                 'judul' => 'Data Suplier',
                 'route' => 'suplier.index',
@@ -63,13 +67,11 @@ class NavbarController extends Controller
                 'img' => 'eggs.png',
                 'deskripsi' => 'Mengelola kode dan nama produk telur untuk stok serta penjualan.',
             ],
-            // [
-            //     'judul' => 'Data Satuan',
-            //     'route' => 'user.index',
-            //     'img' => 'measure-cup.png',
-            //     'deskripsi' => 'Mengelola harta tetap, akun berkaitan, dan penyusutannya menurut metode yang tersedia.',
-            // ],
+         
         ];
+
+        $data = $this->saringAkses($data);
+
         $title = 'Data Master';
         return view('navbar.data_master', compact(['data', 'title']));
     }
@@ -249,6 +251,7 @@ class NavbarController extends Controller
 
         ];
         $title = 'Transaksi';
+        $data = $this->saringAkses($data);
 
         return view('navbar.data_master', compact(['data', 'title']));
     }
@@ -278,6 +281,8 @@ class NavbarController extends Controller
 
 
         ];
+        $data = $this->saringAkses($data);
+
         $title = 'Gudang';
 
         return view('navbar.data_master', compact(['data', 'title']));
@@ -302,6 +307,7 @@ class NavbarController extends Controller
             ],
         ];
         $title = 'History Perencanaan';
+        $data = $this->saringAkses($data);
 
         return view('navbar.data_master', compact(['data', 'title']));
     }
@@ -329,6 +335,7 @@ class NavbarController extends Controller
             ],
         ];
         $title = 'Penjualan Martadah';
+        $data = $this->saringAkses($data);
 
         return view('navbar.data_master', compact(['data', 'title']));
     }
@@ -385,6 +392,7 @@ class NavbarController extends Controller
             ],
         ];
         $title = 'Laporan';
+        $data = $this->saringAkses($data);
 
         return view('navbar.data_master', compact(['data', 'title']));
     }
@@ -472,6 +480,7 @@ class NavbarController extends Controller
             ],
         ];
         $title = 'Pembukuan Baru';
+        $data = $this->saringAkses($data);
 
         return view('navbar.data_master', compact(['data', 'title']));
     }

@@ -106,13 +106,17 @@
                                 @if ($i->cek == 'Y')
                                     <div class="d-inline-flex align-items-center gap-1">
                                         <span class="badge bg-success"><i class="fas fa-check me-1"></i> Dicek</span>
+                                        @if(!empty($btnEditSetor))
                                         <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
                                             class="btn btn-sm btn-outline-primary" title="Edit setoran"><i class="fas fa-edit"></i> Edit</a>
+                                        @endif
                                     </div>
                                 @else
+                                    @if(!empty($btnSetor))
                                     <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
                                         class="btn btn-sm btn-primary"><i class="fas fa-plus"></i>
                                         Setor</a>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

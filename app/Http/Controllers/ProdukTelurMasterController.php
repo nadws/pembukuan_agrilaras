@@ -12,8 +12,12 @@ class ProdukTelurMasterController extends Controller
 {
     public function index()
     {
+        $id_user = auth()->id();
         return view('data_master.produk_telur.index', [
             'title' => 'Master Produk Telur',
+            'tambah' => \SettingHal::btnHal(128, $id_user),
+            'edit' => \SettingHal::btnHal(129, $id_user),
+            'hapus' => \SettingHal::btnHal(130, $id_user),
             'produk' => DB::table('telur_produk')->orderBy('nm_telur')->get(),
         ]);
     }

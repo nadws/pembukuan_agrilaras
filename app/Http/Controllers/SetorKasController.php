@@ -45,6 +45,10 @@ class SetorKasController extends Controller
 
         return view('transaksi.setoran_kas.index', [
             'title' => 'Setoran Kas/Bank',
+            'btnBuat' => \SettingHal::btnHal(194, auth()->id()),
+            'btnDetail' => \SettingHal::btnHal(195, auth()->id()),
+            'btnCetak' => \SettingHal::btnHal(196, auth()->id()),
+            'btnHapus' => \SettingHal::btnHal(197, auth()->id()),
             'setoranKas' => $setoranKas,
             'tanggalAwal' => $tanggalAwal,
             'tanggalAkhir' => $tanggalAkhir,

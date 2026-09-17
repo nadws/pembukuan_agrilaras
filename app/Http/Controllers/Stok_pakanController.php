@@ -535,7 +535,8 @@ class Stok_pakanController extends Controller
             'title' => 'History Perencanaan',
             'stok' => $stok,
             'kategori' => $kategori,
-            'max_tgl' => $max_tgl->tgl ?? null
+            'max_tgl' => $max_tgl->tgl ?? null,
+            'btnBukukan' => \SettingHal::btnHal(198, auth()->id()),
         ];
         return view('stok_pakan.history_pakan', $data);
     }

@@ -29,7 +29,15 @@
                 <td class="text-center text-muted">{{ ($penjualan->firstItem() ?? 1) + $no }}</td><td class="text-nowrap">{{ tanggal($d->tgl) }}</td>
                 <td><span class="ayam-nota">{{ $d->no_nota }}</span><span class="ayam-customer">{{ $d->nm_customer ?: ($d->customer ?: '-') }}</span></td>
                 <td class="text-end fw-semibold">{{ number_format($d->qty, 0, ',', '.') }} ekor</td><td class="text-end text-nowrap">Rp {{ number_format($d->h_satuan, 0, ',', '.') }}</td><td class="text-end fw-bold text-nowrap">Rp {{ number_format($d->total, 0, ',', '.') }}</td>
-                <td class="text-center">@if($d->cek === 'Y')<span class="badge bg-success"><i class="fas fa-check me-1"></i> Dibukukan</span>@else<a href="{{ route('penjualan_ayam.cek', ['no_nota' => $d->urutan]) }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Setor</a>@endif</td><td>{{ $d->admin_cek ?: '-' }}</td>
+                <td class="text-center">
+@if($d->cek === 'Y')
+<span class="badge bg-success"><i class="fas fa-check me-1"></i> Dibukukan</span>
+@else
+@if(!empty($btnSetor))
+<a href="{{ route('penjualan_ayam.cek', ['no_nota' => $d->urutan]) }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Setor</a>
+@endif
+@endif
+</td><td>{{ $d->admin_cek ?: '-' }}</td>
             </tr>@empty<tr><td colspan="8" class="text-center text-muted py-4">Data penjualan ayam tidak ditemukan.</td></tr>@endforelse</tbody>
         </table></div>
         <div class="ayam-pagination d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3"><small class="text-muted">Menampilkan {{ $penjualan->firstItem() ?? 0 }}–{{ $penjualan->lastItem() ?? 0 }} dari {{ number_format($penjualan->total(), 0, ',', '.') }} nota</small>{{ $penjualan->onEachSide(1)->links('pagination::bootstrap-5') }}</div>

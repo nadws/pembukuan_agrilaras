@@ -9,9 +9,11 @@
                 <a href="{{ route('transaksi') }}" class="btn btn-outline-primary btn-sm ">
                     <i class="fas fa-arrow-left me-1"></i> Transaksi
                 </a>
+                @if(!empty($btnBuat))
                 <a href="{{ route('transaksi.faktur-pembelian.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus me-1"></i> Transaksi
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -190,19 +192,25 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="aksi-buttons">
+                                    @if(!empty($btnDetail))
                                     <a href="{{ route('transaksi.faktur-pembelian.detail', $item) }}"
                                         class="btn btn-outline-primary btn-sm" title="Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @endif
+                                    @if(!empty($btnEdit))
                                     <a href="{{ route('transaksi.faktur-pembelian.edit', $item) }}"
                                         class="btn btn-outline-warning btn-sm" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endif
+                                    @if(!empty($btnHapus))
                                     @if (!$stokSelesai && $qtyDiterima <= 0)
                                         <form method="POST" action="{{ route('transaksi.faktur-pembelian.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Hapus faktur ini? Jurnal terkait juga akan dihapus.')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
                                         </form>
+                                    @endif
                                     @endif
                                     </div>
                                 </td>

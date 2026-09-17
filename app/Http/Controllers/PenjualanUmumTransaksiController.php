@@ -22,7 +22,12 @@ class PenjualanUmumTransaksiController extends Controller
             ->groupBy('p.urutan', 'p.tgl', 'p.id_customer', 'p.status', 'c.nm_customer')
             ->orderByDesc('p.urutan')->get();
 
-        return view('transaksi.penjualan_umum.index', compact('penjualan', 'awal', 'akhir', 'cari'));
+        $btnBuat = \SettingHal::btnHal(190, auth()->id());
+        $btnDetail = \SettingHal::btnHal(191, auth()->id());
+        $btnEdit = \SettingHal::btnHal(192, auth()->id());
+        $btnHapus = \SettingHal::btnHal(193, auth()->id());
+
+        return view('transaksi.penjualan_umum.index', compact('penjualan', 'awal', 'akhir', 'cari', 'btnBuat', 'btnDetail', 'btnEdit', 'btnHapus'));
     }
 
     public function create()

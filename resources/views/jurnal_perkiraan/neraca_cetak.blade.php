@@ -157,7 +157,9 @@
 
 <div class="print-actions">
     <a href="{{ route('jurnal-perkiraan.neraca', ['tanggal' => $reportDate->toDateString()]) }}">Kembali</a>
+    @if(!empty($btnExport))
     <a href="{{ route('jurnal-perkiraan.neraca.export', ['tanggal' => $reportDate->toDateString()]) }}">Unduh Excel</a>
+    @endif
     <button type="button" onclick="window.print()">Cetak / Simpan PDF</button>
 </div>
 

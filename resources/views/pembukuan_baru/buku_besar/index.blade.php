@@ -2,9 +2,11 @@
     <x-slot name="cardHeader">
         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <h5 class="mb-0">Buku Besar</h5>
+            @if(!empty($btnExport))
             <a href="{{ route('pembukuan-baru.buku-besar.export', ['tgl1' => $tgl1, 'tgl2' => $tgl2, 'cari' => request('cari')]) }}" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> Export Excel
             </a>
+            @endif
         </div>
     </x-slot>
     <x-slot name="cardBody">

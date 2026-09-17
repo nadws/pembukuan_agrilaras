@@ -42,8 +42,12 @@ class ProdukPerencanaanController extends Controller
             ->whereNotNull('kategori')->groupBy('kategori')->orderBy('kategori')
             ->pluck('jumlah', 'kategori');
 
+        $id_user = auth()->id();
         return view('data_master.produk_perencanaan.index', [
             'title' => 'Master Produk Perencanaan',
+            'tambah' => \SettingHal::btnHal(121, $id_user),
+            'edit' => \SettingHal::btnHal(122, $id_user),
+            'hapus' => \SettingHal::btnHal(123, $id_user),
             'produk' => $produk,
             'satuan' => DB::table('tb_satuan')->orderBy('nm_satuan')->get(),
             'kategori' => $kategoriOptions,

@@ -53,9 +53,24 @@
                         ->whereNotIn(DB::raw('LOWER(nama)'), $hiddenNavbar)
                         ->orderBy('urutan', 'ASC')
                         ->get();
+
+                    // Menu yang sudah didaftarkan di permission wajib punya grant sesuai role.
+                    // Menu yang belum didaftarkan tetap tampil seperti biasa.
+                    $ruteTerdaftar = DB::table('permission')->pluck('url');
+                    $ruteBoleh = collect();
+                    if (auth()->check()) {
+                        $ruteBoleh = DB::table('permission_role as pr')
+                            ->join('permission_button as b', 'b.id_permission_button', '=', 'pr.id_permission_button')
+                            ->join('permission as p', 'p.id_permission', '=', 'b.permission_id')
+                            ->where('pr.posisi_id', (int) auth()->user()->posisi_id)
+                            ->pluck('p.url');
+                    }
                 @endphp
                 @foreach ($navbar as $d)
                     @php
+                        if ($ruteTerdaftar->contains($d->route) && ! $ruteBoleh->contains($d->route)) {
+                            continue;
+                        }
                         $string = str_replace(['[', ']', "'"], '', $d->isi);
                         $array = array_map('trim', explode(',', $string));
                         $isActive = in_array($routeName, $array, true);

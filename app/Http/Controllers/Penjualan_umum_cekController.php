@@ -86,6 +86,7 @@ class Penjualan_umum_cekController extends Controller
 
         $data = [
             'title' => 'Penjualan Umum Martadah',
+            'btnPeriksa' => \SettingHal::btnHal(202, auth()->id()),
             'penjualan' => $penjualan,
             'ttlRp' => (float) $total->total,
             'ttlRpBelumDiCek' => (float) $total->belum_dicek,

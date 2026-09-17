@@ -125,9 +125,16 @@ class SettingHal
 
     public static function btnHal($whereId, $id_user)
     {
-        return DB::table('permission_perpage as a')
-            ->join('permission_button as b', 'b.id_permission_button', 'a.id_permission_button')
-            ->where([['a.id_permission_button', $whereId], ['a.id_user', $id_user]])
+        // Akses berbasis role: user ikut hak akses dari posisinya.
+        $posisiId = DB::table('users')->where('id', $id_user)->value('posisi_id');
+        if ($posisiId === null) {
+            return null;
+        }
+
+        return DB::table('permission_role as a')
+            ->join('permission_button as b', 'b.id_permission_button', '=', 'a.id_permission_button')
+            ->where('a.posisi_id', (int) $posisiId)
+            ->where('a.id_permission_button', $whereId)
             ->first();
     }
 

@@ -9,9 +9,11 @@
                 <a href="{{ route('transaksi') }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left me-1"></i> Transaksi
                 </a>
+                @if(!empty($btnBuat))
                 <a href="{{ route('transaksi.setoran-kas.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus me-1"></i> Buat Setoran Baru
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -217,13 +219,18 @@
                             </td>
                             <td class="text-center text-nowrap">
                                 <div class="aksi-buttons">
+                                    @if(!empty($btnDetail))
                                     <a href="{{ route('transaksi.setoran-kas.show', $item) }}" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @endif
+                                    @if(!empty($btnCetak))
                                     <a href="{{ route('transaksi.setoran-kas.cetak', $item) }}" target="_blank"
                                         class="btn btn-sm btn-outline-secondary" title="Cetak Bukti Setoran">
                                         <i class="fas fa-print"></i>
                                     </a>
+                                    @endif
+                                    @if(!empty($btnHapus))
                                     <form action="{{ route('transaksi.setoran-kas.destroy', $item) }}" method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus setoran ini?')">
                                         @csrf
@@ -232,6 +239,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

@@ -249,6 +249,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'save')->name('save');
             Route::post('/add_menu', 'addMenu')->name('add_menu');
             Route::post('/edit_menu', 'editMenu')->name('edit_menu');
+            Route::post('/halaman', 'saveRolePage')->name('halaman.save');
+            Route::post('/role', 'storeRole')->name('role.store');
+            Route::put('/role/{id}', 'updateRole')->name('role.update');
+            Route::delete('/role/{id}', 'destroyRole')->name('role.destroy');
+            Route::post('/matrix', 'saveMatrix')->name('matrix.save');
         });
 
     Route::controller(JualController::class)

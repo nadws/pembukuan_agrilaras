@@ -40,8 +40,11 @@ class GudangPersediaanController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+        $id_user = auth()->id();
+
         return view('gudang_persediaan.index', [
             'title' => 'Gudang',
+            'btnOpname' => \SettingHal::btnHal(133, $id_user),
             'stok' => $stok,
             'cari' => $cari,
             'jumlahProduk' => $stokSemua->count(),
@@ -96,8 +99,11 @@ class GudangPersediaanController extends Controller
             ->selectRaw('SUM(COALESCE(st.nilai_stok, 0)) as nilai_persediaan')
             ->first();
 
+        $id_user = auth()->id();
+
         return view('gudang_persediaan.barang_umum', [
             'title' => 'Stok Barang Umum',
+            'btnOpname' => \SettingHal::btnHal(138, $id_user),
             'barang' => $barang,
             'ringkasan' => $ringkasan,
             'gudang' => DB::table('tb_gudang')->whereIn('id_gudang', function ($q) {
@@ -141,8 +147,12 @@ class GudangPersediaanController extends Controller
     {
         $stokTelurPerGudang = $this->eggStockRows()->groupBy('id_gudang_telur');
 
+        $id_user = auth()->id();
+
         return view('gudang_persediaan.telur', [
             'title' => 'Stok Telur per Gudang',
+            'btnOpname' => \SettingHal::btnHal(135, $id_user),
+            'btnRiwayat' => \SettingHal::btnHal(136, $id_user),
             'stokTelurPerGudang' => $stokTelurPerGudang,
             'jumlahGudangTelur' => $stokTelurPerGudang->count(),
             'totalStokTelurPcs' => $stokTelurPerGudang->flatten(1)->sum(fn ($row) => (float) $row->stok_pcs),

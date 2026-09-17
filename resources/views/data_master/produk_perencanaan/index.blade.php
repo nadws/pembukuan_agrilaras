@@ -5,9 +5,11 @@
                 <h5 class="mb-0">Master Produk Perencanaan</h5>
                 <small class="text-muted">Produk pakan, obat air, obat pakan, dan obat ayam.</small>
             </div>
+            @if(!empty($tambah))
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#tambahProdukPerencanaan">
                 <i class="fas fa-plus me-1"></i> Tambah Produk
             </button>
+            @endif
         </div>
     </x-slot>
 
@@ -80,6 +82,7 @@
                             <td class="product-purpose">{{ $item->kegunaan ?: '-' }}</td>
                             <td>{{ tanggal($item->tgl) }}</td>
                             <td class="text-center text-nowrap">
+                                @if(!empty($edit))
                                 <button type="button" class="btn btn-sm btn-outline-warning edit-product"
                                     data-bs-toggle="modal" data-bs-target="#editProdukPerencanaan"
                                     data-id="{{ $item->id_produk }}"
@@ -92,12 +95,15 @@
                                     data-purpose="{{ $item->kegunaan }}" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                @endif
+                                @if(!empty($hapus))
                                 <form method="POST" action="{{ route('produk-perencanaan.destroy', $item->id_produk) }}" class="d-inline"
                                     onsubmit="return confirm('Hapus produk {{ addslashes($item->nm_produk) }}? Produk yang sudah dipakai transaksi tidak dapat dihapus.')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                     @empty<tr><td colspan="9" class="master-product-empty"><i class="fas fa-box-open fa-2x d-block mb-2"></i>Tidak ada produk yang sesuai dengan filter.</td></tr>@endforelse

@@ -52,6 +52,7 @@ class LaporanPendapatanController extends Controller
 
         return view('laporan.pendapatan', [
             'title' => 'Laporan Pendapatan',
+            'btnExport' => \SettingHal::btnHal(207, auth()->id()),
             'rows' => $paginated,
             'totals' => $totals,
             'tanggalAwal' => $tanggalAwal,

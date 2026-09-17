@@ -3,15 +3,21 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h5 class="mb-0">{{ $title }}</h5>
             <div class="d-flex gap-2">
+                @if(!empty($btnExport))
                 <a href="{{ route('master.akun-perkiraan.export') }}" class="btn btn-success btn-sm">
                     <i class="fas fa-file-excel me-1"></i> Export
                 </a>
+                @endif
+                @if(!empty($btnImport))
                 <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalImport">
                     <i class="fas fa-upload me-1"></i> Import
                 </button>
+                @endif
+                @if(!empty($btnTambah))
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambah">
                     <i class="fas fa-plus me-1"></i> Tambah Akun
                 </button>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -87,6 +93,7 @@
                                 </span>
                             </td>
                             <td>
+                                @if(!empty($btnEdit))
                                 <button type="button" class="btn btn-sm btn-info text-white edit-akun"
                                     data-id="{{ $item->id_akun_perkiraan }}"
                                     data-tipe="{{ $item->tipe_akun }}"
@@ -98,6 +105,8 @@
                                     data-bs-toggle="modal" data-bs-target="#modalEdit">
                                     <i class="fas fa-pen me-1"></i> Edit
                                 </button>
+                                @endif
+                                @if(!empty($btnStatus))
                                 <form method="post" action="{{ route('master.akun-perkiraan.toggle', $item) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button class="btn btn-sm btn-{{ $item->aktif ? 'warning' : 'success' }}"
@@ -107,6 +116,7 @@
                                         {{ $item->aktif ? 'Nonaktifkan' : 'Aktifkan' }}
                                     </button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

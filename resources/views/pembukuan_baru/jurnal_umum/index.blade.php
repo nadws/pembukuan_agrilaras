@@ -9,23 +9,23 @@
                 <a href="{{ route('akuntansi_baru') }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left me-1"></i> Pembukuan Baru
                 </a>
-                @if ($kelompok === 'manual')
+                @if ($kelompok === 'manual' && !empty($btnBuatJurnal))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Jurnal
                     </a>
-                @elseif ($kelompok === 'biaya')
+                @elseif ($kelompok === 'biaya' && !empty($btnBuatBiaya))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.biaya.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Biaya
                     </a>
-                @elseif ($kelompok === 'pembelian-umum')
+                @elseif ($kelompok === 'pembelian-umum' && !empty($btnBuatPembelian))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.pembelian-umum.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Pembelian Umum
                     </a>
-                @elseif ($kelompok === 'aktiva-gantung')
+                @elseif ($kelompok === 'aktiva-gantung' && !empty($btnAktivaGantung))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Tambah Aktiva Gantung
                     </a>
-                @elseif ($kelompok === 'pembalik-aktiva-gantung')
+                @elseif ($kelompok === 'pembalik-aktiva-gantung' && !empty($btnPembalik))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.pembalik-aktiva-gantung.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-exchange-alt me-1"></i> Buat Pembalik Aktiva
                     </a>

@@ -102,6 +102,8 @@ class Penjualan_martadah_alpaController extends Controller
 
         $data =  [
             'title' => 'Penjualan Telur Martadah',
+            'btnSetor' => \SettingHal::btnHal(199, auth()->id()),
+            'btnEditSetor' => \SettingHal::btnHal(200, auth()->id()),
             'invoice' => $invoice,
             'ttlRp' => (float) $total->ttl_rp,
             'ttlRpBelumDiCek' => (float) $total->ttl_belum_dicek,

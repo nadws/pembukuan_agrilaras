@@ -71,7 +71,11 @@ class PembelianPulletController extends Controller
                 ->orWhere('s.nm_suplier', 'like', "%{$q}%")))
             ->orderByDesc('p.tanggal')->paginate(10)->withQueryString();
 
-        return view('pembelian_pullet.index', compact('items', 'q', 'tanggalAwal', 'tanggalAkhir'));
+        $btnBaru = \SettingHal::btnHal(173, auth()->id());
+        $btnUangMuka = \SettingHal::btnHal(174, auth()->id());
+        $btnMasukKandang = \SettingHal::btnHal(175, auth()->id());
+
+        return view('pembelian_pullet.index', compact('items', 'q', 'tanggalAwal', 'tanggalAkhir', 'btnBaru', 'btnUangMuka', 'btnMasukKandang'));
     }
 
     public function create(Request $request)

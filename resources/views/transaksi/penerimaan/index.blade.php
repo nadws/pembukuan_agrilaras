@@ -126,9 +126,11 @@
             @endif
                 @if ($statusPenerimaan === 'belum')
                     <div class="d-flex justify-content-end mb-2">
+                        @if(!empty($btnTerima))
                         <button type="submit" class="btn btn-primary btn-sm" id="btn-terima-batch" disabled>
                             <i class="fas fa-boxes me-1"></i> Terima Stok Terpilih
                         </button>
+                        @endif
                     </div>
                 @endif
 
@@ -179,10 +181,12 @@
                                                 <a href="{{ route('transaksi.faktur-pembelian.detail', $item) }}" class="btn btn-outline-primary btn-sm" title="Lihat detail faktur">
                                                     <i class="fas fa-eye me-1"></i> Detail
                                                 </a>
+                                                @if(!empty($btnBatalkan))
                                                 <form method="POST" action="{{ route('transaksi.penerimaan.batalkan', $item->id) }}" class="m-0" onsubmit="return confirm('Batalkan penerimaan stok {{ $item->no_faktur }}? Stok yang diterima akan dikembalikan.')">
                                                     @csrf
                                                     <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-undo me-1"></i> Batalkan</button>
                                                 </form>
+                                                @endif
                                             </div>
                                         @endif
                                     </td>

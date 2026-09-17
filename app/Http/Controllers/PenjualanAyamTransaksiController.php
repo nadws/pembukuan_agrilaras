@@ -20,7 +20,12 @@ class PenjualanAyamTransaksiController extends Controller
             ->groupBy('i.no_nota', 'i.tgl', 'i.qty', 'i.h_satuan', 'i.status', 'c.nm_customer')
             ->orderByDesc('i.urutan')->get();
 
-        return view('transaksi.penjualan_ayam.index', compact('penjualan', 'awal', 'akhir', 'cari'));
+        $btnBuat = \SettingHal::btnHal(186, auth()->id());
+        $btnDetail = \SettingHal::btnHal(187, auth()->id());
+        $btnEdit = \SettingHal::btnHal(188, auth()->id());
+        $btnHapus = \SettingHal::btnHal(189, auth()->id());
+
+        return view('transaksi.penjualan_ayam.index', compact('penjualan', 'awal', 'akhir', 'cari', 'btnBuat', 'btnDetail', 'btnEdit', 'btnHapus'));
     }
 
     public function create()

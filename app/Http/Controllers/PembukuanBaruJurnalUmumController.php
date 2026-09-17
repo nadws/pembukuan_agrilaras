@@ -261,6 +261,11 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         return view('pembukuan_baru.jurnal_umum.index', [
             'title' => 'Jurnal Umum',
+            'btnBuatJurnal' => \SettingHal::btnHal(213, auth()->id()),
+            'btnBuatBiaya' => \SettingHal::btnHal(214, auth()->id()),
+            'btnBuatPembelian' => \SettingHal::btnHal(215, auth()->id()),
+            'btnAktivaGantung' => \SettingHal::btnHal(216, auth()->id()),
+            'btnPembalik' => \SettingHal::btnHal(217, auth()->id()),
             'batch' => $batch,
             'detailManual' => $detailManual,
             'ringkasanManual' => $ringkasanManual,

@@ -146,8 +146,10 @@
                     <h4>Gudang Produk Perencanaan</h4><small class="text-muted">Saldo berjalan pakan dan obat berdasarkan
                         seluruh mutasi gudang.</small>
                 </div>
+                @if(!empty($btnOpname))
                 <a href="{{ route('gudang-persediaan.opname') }}" class="btn btn-primary"><i
                         class="fas fa-clipboard-check me-1"></i> Mulai Stok Opname</a>
+                @endif
             </div>
             @include('gudang_persediaan.partials.nav')
             <form method="GET" action="{{ route('gudang-persediaan.index') }}" class="warehouse-filter">

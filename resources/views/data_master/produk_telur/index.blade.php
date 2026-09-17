@@ -5,9 +5,11 @@
                 <h5 class="mb-0">Master Produk Telur</h5>
                 <small class="text-muted">Kelola kode dan nama produk telur yang digunakan pada stok serta penjualan.</small>
             </div>
+            @if(!empty($tambah))
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#tambahProdukTelur">
                 <i class="fas fa-plus me-1"></i> Tambah Produk
             </button>
+            @endif
         </div>
     </x-slot>
 
@@ -44,6 +46,7 @@
                             <td><span class="egg-code">{{ $item->kode_produk }}</span></td>
                             <td class="fw-semibold">{{ $item->nm_telur }}</td>
                             <td class="text-center text-nowrap">
+                                @if(!empty($edit))
                                 <button type="button" class="btn btn-sm btn-outline-warning edit-egg-product"
                                     data-bs-toggle="modal" data-bs-target="#editProdukTelur"
                                     data-id="{{ $item->id_produk_telur }}"
@@ -51,12 +54,15 @@
                                     data-name="{{ $item->nm_telur }}" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                @endif
+                                @if(!empty($hapus))
                                 <form method="POST" action="{{ route('produk-telur-master.destroy', $item->id_produk_telur) }}" class="d-inline"
                                     onsubmit="return confirm('Hapus produk telur {{ addslashes($item->nm_telur) }}? Produk yang sudah digunakan tidak dapat dihapus.')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

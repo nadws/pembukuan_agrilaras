@@ -1,15 +1,21 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="12">
     <x-slot name="cardHeader">
         <div class="d-flex flex-wrap justify-content-end gap-2">
+            @if(!empty($format))
             <a href="{{ route('customer.template-import') }}" class="btn btn-sm btn-outline-primary">
                 <i class="fas fa-file-excel me-1"></i> Format Import
             </a>
+            @endif
+            @if(!empty($import))
             <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#importCustomer">
                 <i class="fas fa-file-import me-1"></i> Import Data
             </button>
+            @endif
+            @if(!empty($tambah))
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#tambah">
                 <i class="fas fa-plus me-1"></i> Tambah Customer
             </button>
+            @endif
         </div>
     </x-slot>
 
@@ -51,13 +57,17 @@
                                         <i class="fas fa-ellipsis-v text-primary"></i>
                                     </span>
                                     <div class="dropdown-menu">
+                                        @if(!empty($edit))
                                         <a id_customer="{{ $d->id_customer }}" data-bs-toggle="modal"
                                             data-bs-target="#edit" class="dropdown-item text-primary edit"
                                             href="#"><i class="me-2 fas fa-pen"></i>
                                             Edit</a>
+                                        @endif
+                                        @if(!empty($hapus))
                                         <a class="dropdown-item text-danger" onclick="return confirm('Yakin dihapus ?')"
                                             href="{{ route('customer.delete', $d->id_customer) }}"><i
                                                 class="me-2 fas fa-trash"></i> Delete</a>
+                                        @endif
                                         <a class="dropdown-item text-info" href="#"><i
                                                 class="me-2 fas fa-search"></i>
                                             Detail</a>

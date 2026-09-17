@@ -18,6 +18,8 @@ class AktivaGantungController extends Controller
 
         return view('pembukuan_baru.aktiva_gantung.index', [
             'title' => 'Aktiva Gantung',
+            'btnInputSaldo' => \SettingHal::btnHal(223, auth()->id()),
+            'btnEditSaldo' => \SettingHal::btnHal(224, auth()->id()),
             'aktivaGantung' => DB::table('aktiva_gantung as ag')
                 ->leftJoinSub($saldo, 's', 's.aktiva_gantung_id', '=', 'ag.id')
                 ->select('ag.*')

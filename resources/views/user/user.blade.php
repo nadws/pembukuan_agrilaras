@@ -1,7 +1,9 @@
 <x-theme.app title="{{ $title }}" table="Y" sizeCard="8">
     <x-slot name="cardHeader">
         <h3 class="float-start mt-1">{{ $title }}</h3>
+        @if(!empty($tambah))
         <x-theme.button modal="Y" idModal="tambahModal" icon="fa-plus" addClass="float-end" teks="Tambah" />
+        @endif
     </x-slot>
 
     <x-slot name="cardBody">
@@ -22,11 +24,15 @@
                         <td>{{ ucwords($d->name) }}</td>
                         <td>{{ ucwords($d->posisi->nm_posisi) }}</td>
                         <td>
+                            @if(!empty($hapus))
                             <x-theme.button hapus="Y" href="{{ route('user.delete', ['id_user' => $d->id]) }}"
                                 icon="fa-trash" addClass="float-end" teks="" variant="danger" />
+                            @endif
+                            @if(!empty($edit))
                             <x-theme.button modal="Y" idModal="edit-modal" icon="fa-pen"
                                 addClass="me-1 float-end edit-btn" teks=""
-                                data="url={{ route('user.edit', $d->id) }}" />
+                                data="url={{ route('user.edit', ['id' => $d->id]) }}" />
+                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -86,11 +92,15 @@
         $(document).ready(function() {
                 $(document).on('click', '.edit-btn', function() {
                     var url = $(this).attr('url')
+                    $('#editBody').html('<p class="text-muted">Memuat...</p>');
                     $.ajax({
                         type: "GET",
                         url: url,
                         success: function(response) {
                             $('#editBody').html(response);
+                        },
+                        error: function() {
+                            $('#editBody').html('<div class="alert alert-danger">Gagal memuat form edit. Silakan coba lagi.</div>');
                         }
                     });
 

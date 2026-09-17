@@ -9,9 +9,11 @@
             <a href="{{ route('transaksi') }}" class="btn btn-outline-primary btn-sm me-1">
                 <i class="fas fa-arrow-left me-1"></i> Transaksi
             </a>
+            @if(!empty($btnBuat))
             <a href="{{ route('transaksi.penjualan-telur.create') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus me-1"></i> Buat Penjualan
             </a>
+            @endif
             </div>
         </div>
     </x-slot>
@@ -103,13 +105,19 @@
                             <td class="text-end">Rp {{ number_format($item->total_rp, 0, ',', '.') }}</td>
                             <td class="text-center">
                                 <div class="btn-group">
+                                    @if(!empty($btnDetail))
                                     <a href="{{ route('transaksi.penjualan-telur.detail', $item->no_nota) }}" class="btn btn-outline-primary btn-sm" title="Detail"><i class="fas fa-eye"></i></a>
+                                    @endif
+                                    @if(!empty($btnEdit))
                                     <a href="{{ route('transaksi.penjualan-telur.edit', $item->no_nota) }}" class="btn btn-outline-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
+                                    @endif
+                                    @if(!empty($btnHapus))
                                     <form method="POST" action="{{ route('transaksi.penjualan-telur.destroy', $item->no_nota) }}" onsubmit="return confirm('Hapus penjualan {{ $item->no_nota }}?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

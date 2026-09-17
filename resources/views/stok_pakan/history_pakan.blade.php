@@ -8,7 +8,9 @@
             </div>
             <div class="col-lg-6 d-flex justify-content-lg-end gap-2 history-actions">
 
+                @if(!empty($btnBukukan))
                 <x-theme.button modal="T" icon="fa-plus" addClass="btn_bayar" teks="Bukukan" />
+                @endif
                 <x-theme.button modal="T" href="{{ route('history_perencanaan') }}" icon="fa-arrow-left" teks="Kembali" />
             </div>
         </div>
@@ -159,9 +161,11 @@
                 <label for="pencarian">Pencarian</label>
                 <input type="search" id="pencarian" class="form-control" placeholder="Cari transaksi...">
             </div>
+            @if(!empty($btnBukukan))
             <label class="history-mobile-check">
                 <input type="checkbox" class="check-all"> Pilih semua transaksi yang tersedia
             </label>
+            @endif
             <div>
                 <div class="history-table-wrap">
                     <table class="table table-hover table-striped" id="tablealdi" width="100%">
@@ -176,9 +180,11 @@
                         <th class="text-end">HPP / Gr</th>
                         <th class="text-end">Total Rp</th>
                         <th>Admin</th>
+                        @if(!empty($btnBukukan))
                         <th style="text-align: center">Cek <br>
                             <input type="checkbox" class="check-all">
                         </th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -193,6 +199,7 @@
                         <td data-label="HPP / Gr" class="text-end">Rp {{number_format($s->hpp_per_gr ?? ($s->pcs_kredit > 0 ? $s->total_rp / $s->pcs_kredit : 0), 2)}}</td>
                         <td data-label="Total" class="text-end">Rp {{number_format($s->total_rp,0)}}</td>
                         <td data-label="Admin">{{$s->admin}}</td>
+                        @if(!empty($btnBukukan))
                         <td data-label="Pilih" class="text-center">
                             <input type="checkbox" name="" no_nota="{{ $s->id_stok_telur }}"
                                 piutang="{{ $s->total_rp }}" id=""
@@ -200,6 +207,7 @@
                             ? '' : 'disabled' }}>
 
                         </td>
+                        @endif
                     </tr>
                     @endforeach
                 </tbody>

@@ -6,7 +6,9 @@
                 <small class="text-muted">Gabungan penjualan telur, umum, dan ayam · {{ \Carbon\Carbon::parse($tanggalAwal)->translatedFormat('d F Y') }} s/d {{ \Carbon\Carbon::parse($tanggalAkhir)->translatedFormat('d F Y') }}</small>
             </div>
             <div class="d-flex gap-2 flex-wrap">
+                @if(!empty($btnExport))
                 <a href="{{ route('laporan.pendapatan.export', request()->only(['tanggal_awal', 'tanggal_akhir', 'kategori', 'lokasi', 'pembayaran'])) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
+                @endif
                 <a href="{{ route('laporan') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i> Daftar Laporan</a>
             </div>
         </div>

@@ -4,7 +4,7 @@
             <div><h5 class="mb-0">CV AGRI LARAS</h5><small>{{ $title }}</small></div>
             <div class="d-flex gap-2 report-actions">
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#parameterLaporan"><i class="fas fa-calendar-alt me-1"></i> Parameter Laporan</button>
-                @if ($result)
+                @if ($result && !empty($btnExport))
                     <a href="{{ route('jurnal-perkiraan.laba-rugi.export', ['bulan_dari'=>$start->month, 'tahun_dari'=>$start->year, 'bulan_sampai'=>$end->month, 'tahun_sampai'=>$end->year]) }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a>
                 @endif
                 <a href="{{ route('jurnal-perkiraan.index') }}" class="btn btn-light btn-sm">Riwayat Import</a>

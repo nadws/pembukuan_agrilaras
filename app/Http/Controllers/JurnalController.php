@@ -119,7 +119,7 @@ class JurnalController extends Controller
         ];
 
         if ($id_buku == 14) {
-            if (auth()->user()->posisi_id == '2') {
+            if ((string) auth()->user()->posisi_id === '3') {
                 return view('jurnal.index', $data);
             } else {
                 return view('jurnal.hutang', $data);

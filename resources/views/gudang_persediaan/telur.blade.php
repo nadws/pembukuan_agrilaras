@@ -28,7 +28,9 @@
                     <small class="text-muted">Saldo aktif telur masuk dikurangi telur keluar pada masing-masing gudang.</small>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
+                    @if(!empty($btnRiwayat))
                     <a href="{{ route('gudang-persediaan.telur.riwayat') }}" class="btn btn-primary"><i class="fas fa-history me-1"></i> Riwayat Opname</a>
+                    @endif
                     <a href="{{ route('gudang_persediaan') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-1"></i> Menu Gudang</a>
                 </div>
             </div>
@@ -54,9 +56,11 @@
                                     {{ number_format($totalPcsGudang, 0) }} pcs<br>
                                     {{ number_format($totalKgGudang, 0) }} kg
                                 </div>
+                                @if(!empty($btnOpname))
                                 <a href="{{ route('gudang-persediaan.telur.opname', $gudang->id_gudang_telur) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-clipboard-check me-1"></i> Opname
                                 </a>
+                                @endif
                             </div>
                         </div>
                         <div class="table-responsive">

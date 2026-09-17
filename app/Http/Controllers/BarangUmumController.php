@@ -33,8 +33,13 @@ class BarangUmumController extends Controller
             ->orderBy('p.nm_produk')
             ->get(['p.*', 's.nm_satuan', 'g.nm_gudang', 'st.stok_sistem', 'st.nilai_stok', 'sa.qty_stok_awal', 'sa.harga_stok_awal', 'sa.tanggal_stok_awal']);
 
+        $id_user = auth()->id();
         return view('data_master.barang_umum.index', [
             'title' => 'Master Barang Umum',
+            'tambah' => \SettingHal::btnHal(124, $id_user),
+            'stokAwal' => \SettingHal::btnHal(125, $id_user),
+            'edit' => \SettingHal::btnHal(126, $id_user),
+            'hapus' => \SettingHal::btnHal(127, $id_user),
             'barang' => $barang,
             'satuan' => DB::table('tb_satuan')->orderBy('nm_satuan')->get(),
             'gudang' => DB::table('tb_gudang')->orderBy('nm_gudang')->get(),

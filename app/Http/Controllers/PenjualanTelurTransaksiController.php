@@ -83,6 +83,11 @@ class PenjualanTelurTransaksiController extends Controller
             })
             ->sum('i.kg_jual');
 
+        $btnBuat = \SettingHal::btnHal(182, auth()->id());
+        $btnDetail = \SettingHal::btnHal(183, auth()->id());
+        $btnEdit = \SettingHal::btnHal(184, auth()->id());
+        $btnHapus = \SettingHal::btnHal(185, auth()->id());
+
         return view('transaksi.penjualan_telur.index', compact(
             'penjualan',
             'tanggalAwal',
@@ -90,7 +95,11 @@ class PenjualanTelurTransaksiController extends Controller
             'cari',
             'totalRp',
             'totalPcs',
-            'totalKg'
+            'totalKg',
+            'btnBuat',
+            'btnDetail',
+            'btnEdit',
+            'btnHapus'
         ));
     }
 

@@ -149,6 +149,7 @@ class JurnalPerkiraanController extends Controller
 
         return view('jurnal_perkiraan.laba_rugi', [
             'title' => 'Laba/Rugi (Multi Periode)',
+            'btnExport' => \SettingHal::btnHal(203, auth()->id()),
             'months' => $months,
             'years' => $years,
             'result' => $result,
@@ -241,6 +242,7 @@ class JurnalPerkiraanController extends Controller
 
         return view('jurnal_perkiraan.arus_kas', [
             'title' => 'Laporan Arus Kas',
+            'btnExport' => \SettingHal::btnHal(206, auth()->id()),
             'months' => $months,
             'years' => range(now()->year - 5, now()->year + 1),
             'cashAccounts' => $cashAccounts,
@@ -377,6 +379,8 @@ class JurnalPerkiraanController extends Controller
 
         return view('jurnal_perkiraan.neraca', [
             'title' => 'Laporan Neraca',
+            'btnCetak' => \SettingHal::btnHal(204, auth()->id()),
+            'btnExport' => \SettingHal::btnHal(205, auth()->id()),
             'reportDate' => $reportDate,
             'result' => $service->buat($reportDate),
         ]);
@@ -394,6 +398,7 @@ class JurnalPerkiraanController extends Controller
 
         return view('jurnal_perkiraan.neraca_cetak', [
             'title' => 'Cetak Laporan Neraca',
+            'btnExport' => \SettingHal::btnHal(205, auth()->id()),
             'reportDate' => $reportDate,
             'result' => $service->buat($reportDate),
         ]);

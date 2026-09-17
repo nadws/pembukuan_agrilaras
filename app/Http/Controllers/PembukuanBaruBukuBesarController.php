@@ -48,7 +48,9 @@ class PembukuanBaruBukuBesarController extends Controller
             ->paginate(500)
             ->withQueryString();
 
-        return view('pembukuan_baru.buku_besar.index', compact('buku', 'tgl1', 'tgl2') + ['title' => 'Buku Besar']);
+        $btnExport = \SettingHal::btnHal(225, auth()->id());
+
+        return view('pembukuan_baru.buku_besar.index', compact('buku', 'tgl1', 'tgl2', 'btnExport') + ['title' => 'Buku Besar']);
     }
 
     public function export(Request $r): BinaryFileResponse

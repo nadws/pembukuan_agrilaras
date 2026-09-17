@@ -15,10 +15,16 @@ class SuplierController extends Controller
 {
     public function index()
     {
+        $id_user = auth()->id();
         $data = [
             'title' => 'Data Suplier',
             'suplier' => Suplier::where('nonaktif', 'T')->orderBy('nm_suplier')->get(),
             'kategoriSupplier' => $this->supplierCategories(),
+            'format' => \SettingHal::btnHal(111, $id_user),
+            'import' => \SettingHal::btnHal(112, $id_user),
+            'tambah' => \SettingHal::btnHal(113, $id_user),
+            'edit' => \SettingHal::btnHal(114, $id_user),
+            'hapus' => \SettingHal::btnHal(115, $id_user),
         ];
         return view('suplier.suplier', $data);
     }

@@ -262,10 +262,12 @@
                                 </td>
                                 <td class="text-center">
                                     @if ($sisaHutang > 0)
+                                        @if(!empty($btnBayar))
                                         <a href="{{ route('transaksi.buku-hutang.pelunasan', ['faktur_pembelian'=>$item->id,'komponen'=>$item->komponen_hutang]) }}"
                                             class="btn btn-primary btn-sm">
                                             Bayar
                                         </a>
+                                        @endif
                                     @else
                                         <span class="text-muted small">Selesai</span>
                                     @endif

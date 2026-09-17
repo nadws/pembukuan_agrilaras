@@ -12,9 +12,15 @@ class CustomerController extends Controller
 {
     public function index()
     {
+        $id_user = auth()->id();
         $data = [
             'title' => 'Data Customer',
-            'customer' => DB::table('customer')->where('active', 'Y')->orderBy('nm_customer')->get()
+            'customer' => DB::table('customer')->where('active', 'Y')->orderBy('nm_customer')->get(),
+            'format' => \SettingHal::btnHal(116, $id_user),
+            'import' => \SettingHal::btnHal(117, $id_user),
+            'tambah' => \SettingHal::btnHal(118, $id_user),
+            'edit' => \SettingHal::btnHal(119, $id_user),
+            'hapus' => \SettingHal::btnHal(120, $id_user),
         ];
         return view('customer.customer', $data);
     }

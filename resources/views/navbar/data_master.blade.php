@@ -137,7 +137,7 @@
             </header>
 
             <div class="menu-catalog__grid">
-                @foreach ($data as $d)
+                @forelse ($data as $d)
                     <a href="{{ route($d['route'], $d['params'] ?? []) }}" class="menu-tile">
                         <div class="menu-tile__body">
                             <div class="menu-tile__icon">
@@ -152,7 +152,9 @@
                             </div>
                         </div>
                     </a>
-                @endforeach
+                @empty
+                    <div class="alert alert-warning mb-0">Role Anda belum diberi akses ke menu apa pun. Hubungi super admin.</div>
+                @endforelse
             </div>
         </section>
     </x-slot>

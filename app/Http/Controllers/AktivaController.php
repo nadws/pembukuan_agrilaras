@@ -50,11 +50,11 @@ class AktivaController extends Controller
             'cari'   => $cari,
             'user'   => User::where('posisi_id', 1)->get(),
             'halaman' => 10,
-            'create'  => SettingHal::btnHal(41, $id_user),
-            'print'   => SettingHal::btnHal(42, $id_user),
-            'edit'    => SettingHal::btnHal(43, $id_user),
-            'delete'  => SettingHal::btnHal(44, $id_user),
-            'detail'  => SettingHal::btnHal(45, $id_user),
+            'create'  => SettingHal::btnHal(218, $id_user),
+            'print'   => SettingHal::btnHal(219, $id_user),
+            'edit'    => SettingHal::btnHal(220, $id_user),
+            'delete'  => SettingHal::btnHal(221, $id_user),
+            'detail'  => SettingHal::btnHal(222, $id_user),
         ];
         return view('aktiva.index', $data);
     }
