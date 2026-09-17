@@ -106,13 +106,7 @@
                         </button>
 
                     </div>
-                    <div class="container-login100-form-btn mt-2">
-                        <a class="login100-form-btn" href="{{ route('register') }}"
-                            style="background-color: #FFFFFF;color: #62646A; border: 1px solid #62646A;">
-                            Buat Akun Baru
-                        </a>
-
-                    </div>
+                    {{-- Tombol Buat Akun Baru dinonaktifkan: user dibuat via Data User oleh super admin. --}}
                 </form>
 
                 <div class="login100-more" style="background-image: url(assets/login/img/log2.svg);">
