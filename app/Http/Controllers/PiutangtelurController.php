@@ -42,8 +42,8 @@ class PiutangtelurController extends Controller
 
     public function index(Request $r)
     {
-        $tgl1 =  $this->tgl1;
-        $tgl2 =  $this->tgl2;
+        $tgl1 = $this->tgl1;
+        $tgl2 = $this->tgl2;
 
         if (empty($r->kategori)) {
             $kategori = 'All';
@@ -51,56 +51,47 @@ class PiutangtelurController extends Controller
             $kategori = $r->kategori;
         }
 
-        if ($kategori == 'All') {
-            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
-            FROM invoice_telur as a 
-            left join customer as b on b.id_customer = a.id_customer
-            left join (
-                SELECT c.no_nota, sum(c.kredit -  c.debit) as paid, sum(c.debit) as bayar
-                FROM bayar_telur as c
-                group by c.no_nota
-            ) as c on c.no_nota = a.no_nota
-            where  a.status = 'unpaid'
-            group by a.no_nota
-            order by a.urutan DESC
-            ");
-        } elseif ($kategori == 'Unpaid') {
-            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
-            FROM invoice_telur as a 
-            left join customer as b on b.id_customer = a.id_customer
-            left join (
-                SELECT c.no_nota, sum(c.kredit -  c.debit) as paid, sum(c.debit) as bayar
-                FROM bayar_telur as c
-                group by c.no_nota
-            ) as c on c.no_nota = a.no_nota
-            where  a.status = 'unpaid' and c.paid != '0'
-            group by a.no_nota
-            order by a.urutan DESC
-            ");
+        $dateFilter = "and a.tgl between ? and ?";
+        $params = [$tgl1, $tgl2];
+
+        $whereStatus = "a.status = 'unpaid'";
+        if ($kategori == 'Unpaid') {
+            $whereStatus = "a.status = 'unpaid' and c.paid != '0'";
         } elseif ($kategori == 'Paid') {
-            $invoice = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, c.bayar, a.customer, a.id_customer
-            FROM invoice_telur as a 
-            left join customer as b on b.id_customer = a.id_customer
-            left join (
-                SELECT c.no_nota, sum(c.kredit -  c.debit) as paid, sum(c.debit) as bayar
-                FROM bayar_telur as c
-                group by c.no_nota
-            ) as c on c.no_nota = a.no_nota
-            where  a.status = 'unpaid' and c.paid = '0'
-            group by a.no_nota
-            order by a.urutan DESC
-            ");
+            $whereStatus = "a.status = 'unpaid' and c.paid = '0'";
         }
 
+        $sql = "SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer, sum(a.total_rp) as ttl_rp, a.status, c.paid, a.urutan_customer, c.bayar, a.customer, a.id_customer
+            FROM invoice_telur as a
+            left join customer as b on b.id_customer = a.id_customer
+            left join (
+                SELECT c.no_nota, sum(c.kredit - c.debit) as paid, sum(c.debit) as bayar
+                FROM bayar_telur as c
+                group by c.no_nota
+            ) as c on c.no_nota = a.no_nota
+            where {$whereStatus} {$dateFilter}
+            group by a.no_nota
+            order by a.urutan DESC";
 
+        $invoice = DB::select($sql, $params);
 
-        $data =  [
+        $summarySql = "SELECT COALESCE(SUM(c.paid), 0) as total_piutang
+            FROM invoice_telur as a
+            left join (
+                SELECT no_nota, sum(kredit - debit) as paid
+                FROM bayar_telur
+                group by no_nota
+            ) as c on c.no_nota = a.no_nota
+            where a.status = 'unpaid' and a.tgl between ? and ?";
+        $summary = DB::selectOne($summarySql, [$tgl1, $tgl2]);
+
+        $data = [
             'title' => 'Piutang Telur',
             'tgl1' => $tgl1,
             'tgl2' => $tgl2,
             'invoice' => $invoice,
-            'kategori' => $kategori
-
+            'kategori' => $kategori,
+            'totalPiutang' => $summary->total_piutang,
         ];
         return view('piutang_agl.index', $data);
     }
@@ -114,9 +105,28 @@ class PiutangtelurController extends Controller
         } else {
             $nota_t = $max->urutan_piutang + 1;
         }
+
+        $notaList = (array) $r->no_nota;
+        $hutangList = DB::select("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer,
+            a.urutan_customer,
+            sum(a.total_rp) as ttl_rp, a.status, c.paid, a.id_customer, a.customer
+            FROM invoice_telur as a
+            left join customer as b on b.id_customer = a.id_customer
+            left join (
+                SELECT no_nota, sum(kredit - debit) as paid
+                FROM bayar_telur
+                group by no_nota
+            ) as c on c.no_nota = a.no_nota
+            where a.no_nota in (" . implode(',', array_fill(0, count($notaList), '?')) . ")
+            group by a.no_nota
+            order by a.urutan DESC", $notaList);
+
+        $hutangMap = collect($hutangList)->keyBy('no_nota');
+
         $data = [
             'title' => 'Bayar Piutang Telur',
-            'no_nota' => $r->no_nota,
+            'no_nota' => $notaList,
+            'hutangMap' => $hutangMap,
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2'])->get(),
             'nota' => $nota_t
         ];
@@ -198,7 +208,7 @@ class PiutangtelurController extends Controller
     {
         $piutang = DB::select("SELECT a.tgl, a.no_nota_piutang, a.no_nota, a.debit, a.admin
         FROM bayar_telur as a
-        where a.no_nota = '$r->no_nota' and a.debit != '0';");
+        where a.no_nota = ? and a.debit != '0'", [$r->no_nota]);
 
         $data = [
             'piutang' => $piutang
@@ -212,19 +222,19 @@ class PiutangtelurController extends Controller
             'nota' => $r->no_nota,
             'title' => 'Edit Pembayaran Piutang',
             'head' => DB::table('bayar_telur')->where('no_nota_piutang', $r->no_nota)->first(),
-            'invoice' => DB::select("SELECT a.no_nota_piutang, c.nm_customer, b.tgl, d.debit_total,  a.debit, b.total_rp,b.no_nota
-            FROM bayar_telur as a 
+            'invoice' => DB::select("SELECT a.no_nota_piutang, c.nm_customer, b.tgl, d.debit_total, a.debit, b.total_rp, b.no_nota
+            FROM bayar_telur as a
             left join invoice_telur as b on b.no_nota = a.no_nota
             left join customer as c on c.id_customer = b.id_customer
             left join (
                SELECT d.no_nota, sum(d.debit) as debit_total
-               FROM bayar_telur as d 
+               FROM bayar_telur as d
                 group by d.no_nota
             ) as d on d.no_nota = a.no_nota
-            where a.no_nota_piutang = '$r->no_nota';"),
+            where a.no_nota_piutang = ?", [$r->no_nota]),
             'akun' => DB::table('akun')->whereIn('id_klasifikasi', ['1', '2', '4'])->get(),
-            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun != '23'"),
-            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = '$r->no_nota' and a.id_akun = '23'"),
+            'jurnal' => DB::select("SELECT * FROM jurnal as a where a.no_nota = ? and a.id_akun != '23'", [$r->no_nota]),
+            'jurnal2' => DB::selectOne("SELECT * FROM jurnal as a where a.no_nota = ? and a.id_akun = '23'", [$r->no_nota]),
         ];
         return view('piutang_agl.edit_get_bayar', $data);
     }

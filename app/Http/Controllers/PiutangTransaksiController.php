@@ -21,29 +21,32 @@ class PiutangTransaksiController extends Controller
         session()->put($filterKey, ['tanggal_awal' => $awal, 'tanggal_akhir' => $akhir, 'cari' => $cari]);
 
         if ($jenis === 'ayam') {
-            $piutang = DB::table('invoice_ayam as i')
+            $piutangQuery = DB::table('invoice_ayam as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.qty', 'i.h_satuan', 'c.nm_customer', DB::raw('i.qty * i.h_satuan as total_rp'))
-                ->orderByDesc('i.tgl')->orderByDesc('i.urutan')->get();
+                ->orderByDesc('i.tgl')->orderByDesc('i.urutan');
         } elseif ($jenis === 'umum') {
-            $piutang = DB::table('penjualan_agl as i')
+            $piutangQuery = DB::table('penjualan_agl as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select(DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'i.tgl', 'i.id_customer', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'), DB::raw('SUM(i.qty) as qty'))
                 ->groupBy('i.urutan', 'i.tgl', 'i.id_customer', 'c.nm_customer')
-                ->orderByDesc('i.tgl')->orderByDesc('i.urutan')->get();
+                ->orderByDesc('i.tgl')->orderByDesc('i.urutan');
         } else {
-            $piutang = DB::table('invoice_telur as i')
+            $piutangQuery = DB::table('invoice_telur as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
                 ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer')
-                ->orderByDesc('i.tgl')->orderByDesc('i.no_nota')->get();
+                ->orderByDesc('i.tgl')->orderByDesc('i.no_nota');
         }
+
+        $piutangPaginator = $piutangQuery->paginate(50);
+        $piutang = $piutangPaginator->getCollection();
 
         $paidByNota = DB::table('pelunasan_piutang_penjualan')
             ->where('jenis', $jenis)
@@ -93,13 +96,20 @@ class PiutangTransaksiController extends Controller
                 $first->jenis_selisih = $notaRows->pluck('jenis_selisih')->unique()->implode(', ');
                 return $first;
             })->values();
-        $riwayat->each(function ($row) {
-            $row->jurnal_detail = $row->id_impor_jurnal_perkiraan
-                ? DB::table('jurnal_perkiraan as j')
+
+        $batchIds = $riwayat->pluck('id_impor_jurnal_perkiraan')->filter()->values()->all();
+        $allJurnal = collect();
+        if ($batchIds !== []) {
+            $allJurnal = DB::table('jurnal_perkiraan as j')
                 ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-                ->where('j.id_impor_jurnal_perkiraan', $row->id_impor_jurnal_perkiraan)
+                ->whereIn('j.id_impor_jurnal_perkiraan', $batchIds)
                 ->orderBy('j.urutan_detail')
-                ->get(['j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.kredit', 'a.kode_perkiraan', 'a.nama as nama_akun'])
+                ->get(['j.id_impor_jurnal_perkiraan', 'j.nomor_transaksi', 'j.deskripsi', 'j.debit', 'j.kredit', 'a.kode_perkiraan', 'a.nama as nama_akun'])
+                ->groupBy('id_impor_jurnal_perkiraan');
+        }
+        $riwayat->each(function ($row) use ($allJurnal) {
+            $row->jurnal_detail = $row->id_impor_jurnal_perkiraan
+                ? ($allJurnal[$row->id_impor_jurnal_perkiraan] ?? collect())
                 : collect();
         });
         $totalRiwayat = (float) $riwayat->sum('jumlah_bayar');
@@ -108,7 +118,7 @@ class PiutangTransaksiController extends Controller
         $btnRiwayat = \SettingHal::btnHal(180, auth()->id());
         $btnPelunasan = \SettingHal::btnHal(181, auth()->id());
 
-        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat', 'btnImport', 'btnRiwayat', 'btnPelunasan'));
+        return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'piutangPaginator', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat', 'btnImport', 'btnRiwayat', 'btnPelunasan'));
     }
 
     public function importAccurate(Request $request)

@@ -204,6 +204,8 @@ class PenjualanTelurTransaksiController extends Controller
                 ]);
             }
 
+            $this->syncStok($noNota, $validated['tgl'], $validated['id_produk'], $validated['pcs'], $validated['kg']);
+
             $this->syncJurnal($noNota, $validated['tgl'], $validated['id_customer'], (int) $validated['id_akun_pembayaran']);
         });
 
@@ -240,6 +242,7 @@ class PenjualanTelurTransaksiController extends Controller
         $status = $this->statusPembayaran((int) $validated['id_akun_pembayaran']);
         DB::transaction(function () use ($validated, $noNota, $nota, $status) {
             DB::table('invoice_telur')->where('no_nota', $noNota)->where('lokasi', 'alpa')->delete();
+            DB::table('stok_telur')->where('nota_transfer', $noNota)->delete();
 
             foreach ($validated['id_produk'] as $i => $idProduk) {
                 $kgBersih = (float) $validated['kg_jual'][$i];
@@ -268,6 +271,8 @@ class PenjualanTelurTransaksiController extends Controller
                 ]);
             }
 
+            $this->syncStok($noNota, $validated['tgl'], $validated['id_produk'], $validated['pcs'], $validated['kg']);
+
             $this->syncJurnal($noNota, $validated['tgl'], $validated['id_customer'], (int) $validated['id_akun_pembayaran']);
         });
 
@@ -283,6 +288,7 @@ class PenjualanTelurTransaksiController extends Controller
                 ->where('lokasi', 'alpa')
                 ->delete();
             abort_unless($deleted, 404);
+            DB::table('stok_telur')->where('nota_transfer', $noNota)->delete();
             $this->hapusJurnal($noNota);
         });
 
@@ -308,6 +314,23 @@ class PenjualanTelurTransaksiController extends Controller
             'nota' => $items->first(),
             'items' => $items,
         ];
+    }
+
+    private function syncStok(string $noNota, string $tanggal, array $produk, array $pcs, array $kg): void
+    {
+        foreach ($produk as $i => $idProduk) {
+            DB::table('stok_telur')->insert([
+                'tgl' => $tanggal,
+                'id_telur' => $idProduk,
+                'pcs_kredit' => (float) ($pcs[$i] ?? 0),
+                'kg_kredit' => (float) ($kg[$i] ?? 0),
+                'admin' => auth()->user()->name,
+                'id_gudang' => 2,
+                'check' => 'Y',
+                'opname' => 'T',
+                'nota_transfer' => $noNota,
+            ]);
+        }
     }
 
     private function syncJurnal(string $noNota, string $tanggal, int $idCustomer, int $idAkunPembayaran): void
@@ -411,5 +434,4 @@ class PenjualanTelurTransaksiController extends Controller
             : 'paid';
     }
 }
-
 

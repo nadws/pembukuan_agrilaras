@@ -14,58 +14,48 @@
         <div class="card">
             <div class="card-body px-4 py-4-5">
                 <div class="row float-end text-center">
-
                     <div class="col-lg-12">
-                        @php
-                        $ttlAllPiutang = 0;
-
-                        foreach ($invoice as $d) {
-                        $ttlAllPiutang += $d->paid;
-                        }
-                        @endphp
                         <button type="button" class="btn btn-outline-primary btn-md font-extrabold mb-0"> Semua Piutang
-                            : Rp. {{ number_format($ttlAllPiutang, 2) }}
+                            : Rp. {{ number_format($totalPiutang, 2) }}
                             <br>
                             Piutang Diceklis : Rp. <span class="piutangBayar">0</span>
                         </button>
-
                     </div>
                 </div>
-
             </div>
         </div>
-        <section class="row">
-            <div class="col-lg-8">
-                <ul class="nav nav-pills float-start">
-                    <li class="nav-item">
-                        <a class="nav-link {{ $kategori == 'All'? 'active': '' }}" aria-current="page"
-                            href="{{ route('piutang_telur',['kategori'=> 'All']) }}">All</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $kategori == 'Unpaid'? 'active': '' }}"
-                            href="{{ route('piutang_telur',['kategori'=> 'Unpaid']) }}">Unpaid</a>
-
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $kategori == 'Paid'? 'active': '' }}"
-                            href="{{ route('piutang_telur',['kategori'=> 'Paid']) }}">Paid</a>
-                    </li>
-                    {{-- <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'pakan'? 'active': ''): '' }}"
-                            href="{{ route('penyesuaian.umum', ['kategori' => 'pakan']) }}">Pakan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->getName() == 'penyesuaian.umum'? ($kategori == 'vitamin'? 'active': ''): '' }}"
-                            href="{{ route('penyesuaian.umum', ['kategori' => 'vitamin']) }}">Vitamin</a>
-                    </li> --}}
-                </ul>
+        <ul class="nav nav-pills mb-3">
+            <li class="nav-item">
+                <a class="nav-link {{ $kategori == 'All'? 'active': '' }}" aria-current="page"
+                    href="{{ route('piutang_telur',['kategori'=> 'All', 'tgl1'=> $tgl1, 'tgl2'=> $tgl2]) }}">All</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $kategori == 'Unpaid'? 'active': '' }}"
+                    href="{{ route('piutang_telur',['kategori'=> 'Unpaid', 'tgl1'=> $tgl1, 'tgl2'=> $tgl2]) }}">Unpaid</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $kategori == 'Paid'? 'active': '' }}"
+                    href="{{ route('piutang_telur',['kategori'=> 'Paid', 'tgl1'=> $tgl1, 'tgl2'=> $tgl2]) }}">Paid</a>
+            </li>
+        </ul>
+        <form method="GET" action="{{ route('piutang_telur') }}" class="row g-2 mb-3 align-items-end" id="filterForm">
+            <input type="hidden" name="kategori" value="{{ $kategori }}">
+            <div class="col-auto">
+                <label class="form-label small fw-bold">Dari Tanggal</label>
+                <input type="date" name="tgl1" class="form-control" value="{{ $tgl1 }}">
             </div>
-            <div class="col-lg-4 mb-2">
-                <table class="float-end">
-                    <td>Pencarian :</td>
-                    <td><input type="text" id="pencarian" class="form-control float-end"></td>
-                </table>
+            <div class="col-auto">
+                <label class="form-label small fw-bold">Sampai Tanggal</label>
+                <input type="date" name="tgl2" class="form-control" value="{{ $tgl2 }}">
             </div>
+            <div class="col-auto">
+                <label class="form-label small fw-bold">Cari</label>
+                <input type="text" id="pencarian" class="form-control" placeholder="Ketik nomor nota..." autofocus>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i> Filter</button>
+            </div>
+        </form>
             <table class="table table-hover" id="tablealdi">
                 <thead>
                     <tr>
@@ -121,7 +111,6 @@
                     @endforeach
                 </tbody>
             </table>
-        </section>
 
         {{-- sub akun --}}
         <x-theme.modal title="Edit Akun" idModal="sub-akun" size="modal-lg">
@@ -142,7 +131,17 @@
     @section('scripts')
     <script>
         $(document).ready(function() {
-            pencarian('pencarian', 'tablealdi')
+            var debounceTimer;
+            $('#pencarian').on('input', function() {
+                var val = $(this).val().toLowerCase();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    $('#tablealdi tbody tr').each(function() {
+                        var text = $(this).text().toLowerCase();
+                        $(this).toggle(text.indexOf(val) > -1);
+                    });
+                }, 300);
+            });
             $(document).on("click", ".detail_nota", function() {
                 var no_nota = $(this).attr('no_nota');
                 $.ajax({
@@ -183,6 +182,13 @@
                 $('.btn_bayar').toggle(anyChecked);
                 $(".piutang_cek").toggle(anyChecked);
                 $('.piutangBayar').text(totalPiutang.toLocaleString('en-US'));
+            });
+            $('#tablealdi tbody tr').on('click', function(e) {
+                if ($(e.target).is('input, a, button, .cek_bayar')) return;
+                var cb = $(this).find('.cek_bayar');
+                if (cb.length && !cb.prop('disabled')) {
+                    cb.prop('checked', !cb.prop('checked')).trigger('change');
+                }
             });
 
                 $('.hide_bayar').hide();

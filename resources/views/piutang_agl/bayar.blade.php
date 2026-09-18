@@ -62,22 +62,9 @@
 
                             @foreach ($no_nota as $no => $n)
                                 @php
-
-                                    $hutang = DB::selectOne("SELECT a.no_nota, a.tgl, a.tipe, a.admin, b.nm_customer,
-                            a.urutan_customer,
-                            sum(a.total_rp) as ttl_rp, a.status, c.paid , a.urutan_customer, a.id_customer, a.customer
-                            FROM invoice_telur as a
-                            left join customer as b on b.id_customer = a.id_customer
-                            left join (
-                            SELECT c.no_nota, sum(c.kredit - c.debit) as paid
-                            FROM bayar_telur as c
-                            group by c.no_nota
-                            ) as c on c.no_nota = a.no_nota
-                            where a.no_nota = '$n'
-                            group by a.no_nota
-                            order by a.urutan DESC");
+                                    $hutang = $hutangMap[$n] ?? null;
+                                    if (!$hutang) continue;
                                     $total += $hutang->paid;
-
                                 @endphp
                                 <tr>
                                     <td>{{ $n }}</td>
