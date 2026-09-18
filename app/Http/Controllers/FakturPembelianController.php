@@ -1362,13 +1362,18 @@ $items = $this->normalisasiItemFaktur($validated['item']);
 
     private function produkFakturOptions()
     {
-        return ProdukPerencanaan::query()
+        $produkUmum = DB::table('tb_produk as p')
+            ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')
+            ->where('p.kategori_id', 1)
+            ->orderBy('p.nm_produk')
+            ->get(['p.id_produk', 'p.kd_produk', 'p.nm_produk', 's.nm_satuan as satuan_dosis'])
+            ->each(function ($item) { $item->kategori = 'barang_umum'; $item->sumber_produk = 'barang_umum'; });
+        $produkPerencanaan = ProdukPerencanaan::query()
             ->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'tb_produk_perencanaan.dosis_satuan')
             ->orderBy('tb_produk_perencanaan.nm_produk')
-            ->get([
-                'tb_produk_perencanaan.*',
-                's.nm_satuan as satuan_dosis',
-            ]);
+            ->get(['tb_produk_perencanaan.*', 's.nm_satuan as satuan_dosis'])
+            ->each(fn ($item) => $item->sumber_produk = 'perencanaan');
+        return $produkPerencanaan->concat($produkUmum);
     }
 
     private function produkSesuaiJenisFaktur(?string $kategori, string $jenisFaktur): bool
