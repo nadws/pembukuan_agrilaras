@@ -332,7 +332,7 @@ class PiutangTransaksiController extends Controller
                 ->withErrors(['nota' => 'Salah satu nota sudah lunas. Silakan pilih ulang nota.']);
         }
         $total = $noteSummaries->sum('outstanding');
-        $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+        $akunPembayaran = akunPelunasanPiutang();
 
         return view('transaksi.piutang.pelunasan', compact('jenis', 'nota', 'rows', 'noteSummaries', 'total', 'akunPembayaran'));
     }
@@ -347,12 +347,10 @@ class PiutangTransaksiController extends Controller
             'nota.*' => ['required', 'string', 'max:100', 'distinct'],
             'jumlah_bayar' => ['required', 'array', 'min:1'],
             'jumlah_bayar.*' => ['required', 'numeric', 'gt:0'],
-            'jenis_selisih' => ['required', 'array', 'min:1'],
-            'jenis_selisih.*' => ['required', 'in:tidak,lebih,kurang'],
         ]);
 
         $rowCount = count($validated['nota']);
-        if ($rowCount !== count($validated['jumlah_bayar']) || $rowCount !== count($validated['jenis_selisih'])) {
+        if ($rowCount !== count($validated['jumlah_bayar'])) {
             return back()->withErrors(['jumlah_bayar' => 'Data pembayaran setiap nota belum lengkap.'])->withInput();
         }
 
@@ -397,9 +395,6 @@ class PiutangTransaksiController extends Controller
         $cashPayments = collect($validated['nota'])->mapWithKeys(
             fn ($noNota, $index) => [$noNota => (float) $validated['jumlah_bayar'][$index]]
         );
-        $differenceTypes = collect($validated['nota'])->mapWithKeys(
-            fn ($noNota, $index) => [$noNota => $validated['jenis_selisih'][$index]]
-        );
         $outstandingByNota = $rows->groupBy('no_nota')->map(function ($items, $noNota) use ($validated, $paidByNota) {
             $invoiceTotal = $validated['jenis'] === 'ayam'
                 ? $items->sum(fn ($row) => (float) $row->qty * (float) $row->h_satuan)
@@ -410,25 +405,28 @@ class PiutangTransaksiController extends Controller
         $differences = collect();
         foreach ($cashPayments as $noNota => $cashAmount) {
             $outstanding = (float) ($outstandingByNota[$noNota] ?? 0);
-            $type = $differenceTypes[$noNota];
             if ($outstanding <= 0.005) {
                 return back()->withErrors(['nota' => "Nota {$noNota} sudah lunas."])->withInput();
             }
-            if ($type === 'tidak' && $cashAmount - $outstanding > 0.005) {
-                return back()->withErrors(['jumlah_bayar' => "Bayar nota {$noNota} melebihi sisa. Pilih Lebih Bayar jika memang ada selisih."])->withInput();
-            }
-            if ($type === 'lebih' && $cashAmount - $outstanding <= 0.005) {
-                return back()->withErrors(['jumlah_bayar' => "Nominal nota {$noNota} harus lebih besar dari sisa untuk pilihan Lebih Bayar."])->withInput();
-            }
-            if ($type === 'kurang' && $outstanding - $cashAmount <= 0.005) {
-                return back()->withErrors(['jumlah_bayar' => "Nominal nota {$noNota} harus lebih kecil dari sisa untuk pilihan Kurang Bayar."])->withInput();
+
+            if ($cashAmount > $outstanding + 0.005) {
+                $type = 'lebih';
+                $settled = $outstanding;
+                $diffAmount = $cashAmount - $outstanding;
+            } elseif ($cashAmount < $outstanding - 0.005) {
+                $type = 'kurang';
+                $settled = $outstanding;
+                $diffAmount = $outstanding - $cashAmount;
+            } else {
+                $type = 'tidak';
+                $settled = $outstanding;
+                $diffAmount = 0;
             }
 
-            $settled = $type === 'tidak' ? $cashAmount : $outstanding;
             $settledPayments->put($noNota, $settled);
             $differences->put($noNota, [
                 'type' => $type,
-                'amount' => $type === 'lebih' ? $cashAmount - $outstanding : ($type === 'kurang' ? $outstanding - $cashAmount : 0),
+                'amount' => $diffAmount,
             ]);
         }
         $total = (float) $settledPayments->sum();
@@ -551,23 +549,23 @@ class PiutangTransaksiController extends Controller
             $total = $this->invoiceTotal($jenis, $p->no_nota);
             return [$p->no_nota => (object) ['item' => $items->first(), 'items' => $items, 'invoice_total' => $total, 'paid' => $paid, 'outstanding' => max(0, $total - $paid), 'payment' => $p]];
         });
-        $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get();
+        $akunPembayaran = akunPelunasanPiutang();
         return view('transaksi.piutang.pelunasan', compact('jenis', 'noteSummaries', 'akunPembayaran', 'payment'));
     }
 
     public function updateVoucher(Request $request, int $id)
     {
-        $request->validate(['tanggal_bayar' => 'required|date', 'id_akun_pembayaran' => 'required|integer', 'jumlah_bayar' => 'required|array', 'jumlah_bayar.*' => 'required|numeric|gt:0', 'jenis_selisih' => 'required|array', 'jenis_selisih.*' => 'required|in:tidak,lebih,kurang']);
+        $request->validate(['tanggal_bayar' => 'required|date', 'id_akun_pembayaran' => 'required|integer', 'jumlah_bayar' => 'required|array', 'jumlah_bayar.*' => 'required|numeric|gt:0']);
         return DB::transaction(function () use ($request, $id) {
             $payment = DB::table('pelunasan_piutang_penjualan')->where('id', $id)->lockForUpdate()->first();
             abort_unless($payment, 404);
             $payments = DB::table('pelunasan_piutang_penjualan')->when($payment->id_impor_jurnal_perkiraan,
                 fn ($q) => $q->where('id_impor_jurnal_perkiraan', $payment->id_impor_jurnal_perkiraan), fn ($q) => $q->where('id', $id))->orderBy('id')->lockForUpdate()->get();
-            if (count($request->jumlah_bayar) !== $payments->count() || count($request->jenis_selisih) !== $payments->count()) {
+            if (count($request->jumlah_bayar) !== $payments->count()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['jumlah_bayar' => 'Data nota tidak lengkap. Muat ulang halaman edit.']);
             }
             foreach ($payments as $index => $p) {
-                $input = new Request(['tanggal_bayar' => $request->tanggal_bayar, 'id_akun_pembayaran' => $request->id_akun_pembayaran, 'jumlah_bayar' => $request->jumlah_bayar[$index], 'jenis_selisih' => $request->jenis_selisih[$index]]);
+                $input = new Request(['tanggal_bayar' => $request->tanggal_bayar, 'id_akun_pembayaran' => $request->id_akun_pembayaran, 'jumlah_bayar' => $request->jumlah_bayar[$index]]);
                 $response = $this->updatePelunasan($input, $p->id);
                 if (session()->has('errors')) {
                     $errors = session()->get('errors')->getBag('default')->messages();
@@ -596,7 +594,7 @@ class PiutangTransaksiController extends Controller
             ->sum(DB::raw('COALESCE(nilai_piutang_dilunasi, jumlah_bayar)'));
         $outstanding = max(0, $invoiceTotal - $othersSettled);
 
-        $akunPembayaran = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'BANK')->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+        $akunPembayaran = akunPelunasanPiutang();
 
         return view('transaksi.piutang.edit_pelunasan', [
             'row' => $row, 'jenis' => $jenis,
@@ -612,7 +610,6 @@ class PiutangTransaksiController extends Controller
             'tanggal_bayar' => ['required', 'date'],
             'id_akun_pembayaran' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'jumlah_bayar' => ['required', 'numeric', 'gt:0'],
-            'jenis_selisih' => ['required', 'in:tidak,lebih,kurang'],
         ]);
 
         $row = DB::table('pelunasan_piutang_penjualan')->where('id', $id)->first();
@@ -635,19 +632,20 @@ class PiutangTransaksiController extends Controller
         }
 
         $cash = (float) $validated['jumlah_bayar'];
-        $type = $validated['jenis_selisih'];
-        if ($type === 'tidak' && $cash - $outstanding > 0.005) {
-            return back()->withErrors(['jumlah_bayar' => 'Bayar melebihi sisa. Pilih Lebih Bayar jika memang ada selisih.'])->withInput();
+        if ($cash > $outstanding + 0.005) {
+            $type = 'lebih';
+            $more = $cash - $outstanding;
+            $less = 0;
+        } elseif ($cash < $outstanding - 0.005) {
+            $type = 'kurang';
+            $more = 0;
+            $less = $outstanding - $cash;
+        } else {
+            $type = 'tidak';
+            $more = 0;
+            $less = 0;
         }
-        if ($type === 'lebih' && $cash - $outstanding <= 0.005) {
-            return back()->withErrors(['jumlah_bayar' => 'Nominal harus lebih besar dari sisa untuk pilihan Lebih Bayar.'])->withInput();
-        }
-        if ($type === 'kurang' && $outstanding - $cash <= 0.005) {
-            return back()->withErrors(['jumlah_bayar' => 'Nominal harus lebih kecil dari sisa untuk pilihan Kurang Bayar.'])->withInput();
-        }
-        $settled = $type === 'tidak' ? $cash : $outstanding;
-        $more = $type === 'lebih' ? $cash - $outstanding : 0;
-        $less = $type === 'kurang' ? $outstanding - $cash : 0;
+        $settled = $outstanding;
 
         $akunSelisihLebih = DB::table('akun_perkiraan')->where('aktif', 1)->where('nama', 'Pendapatan Selisih Lebih Bayar')->first();
         $akunSelisihKurang = DB::table('akun_perkiraan')->where('aktif', 1)->where('nama', 'Biaya Selisih Kurang Bayar')->first();
@@ -660,7 +658,7 @@ class PiutangTransaksiController extends Controller
         $lebihId = $akunSelisihLebih?->id_akun_perkiraan;
         $kurangId = $akunSelisihKurang?->id_akun_perkiraan;
 
-        DB::transaction(function () use ($row, $jenis, $validated, $akunPembayaran, $lebihId, $kurangId, $cash, $settled, $more, $less, $invoiceTotal, $othersSettled) {
+        DB::transaction(function () use ($row, $jenis, $validated, $akunPembayaran, $lebihId, $kurangId, $cash, $settled, $type, $more, $less, $invoiceTotal, $othersSettled) {
             $oldCash = (float) $row->jumlah_bayar;
             $oldSettled = (float) ($row->nilai_piutang_dilunasi ?? $row->jumlah_bayar);
             $oldMore = $row->jenis_selisih === 'lebih' ? (float) $row->selisih_pembayaran : 0;
@@ -670,8 +668,8 @@ class PiutangTransaksiController extends Controller
                 'tanggal_bayar' => $validated['tanggal_bayar'],
                 'jumlah_bayar' => $cash,
                 'nilai_piutang_dilunasi' => $settled,
-                'jenis_selisih' => $validated['jenis_selisih'],
-                'selisih_pembayaran' => $validated['jenis_selisih'] === 'lebih' ? $more : ($validated['jenis_selisih'] === 'kurang' ? $less : 0),
+                'jenis_selisih' => $type,
+                'selisih_pembayaran' => $type === 'lebih' ? $more : ($type === 'kurang' ? $less : 0),
                 'id_akun_pembayaran' => $akunPembayaran->id_akun_perkiraan,
                 'updated_at' => now(),
             ]);

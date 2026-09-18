@@ -34,12 +34,7 @@
                                 <td class="text-end"><span class="d-block">Rp {{ number_format($summary->paid, 0, ',', '.') }}</span><small class="text-muted">Sisa Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small></td>
                                 <td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" data-outstanding="{{ $summary->outstanding }}" value="{{ old('jumlah_bayar.'.$loop->index, $summary->outstanding) }}" min="1" step="1" placeholder="Nominal diterima" required></td>
                                 <td>
-                                    <select name="jenis_selisih[]" class="form-select difference-type mb-1">
-                                        <option value="tidak" @selected(old('jenis_selisih.'.$loop->index, $summary->payment->jenis_selisih ?? 'tidak') === 'tidak')>Tanpa selisih / cicilan</option>
-                                        <option value="lebih" @selected(old('jenis_selisih.'.$loop->index, $summary->payment->jenis_selisih ?? 'tidak') === 'lebih')>Lebih bayar — lunaskan</option>
-                                        <option value="kurang" @selected(old('jenis_selisih.'.$loop->index, $summary->payment->jenis_selisih ?? 'tidak') === 'kurang')>Kurang bayar — lunaskan</option>
-                                    </select>
-                                    <small class="difference-info text-muted">Selisih: Rp 0 · Nota tetap terbuka jika masih bersisa</small>
+                                    <small class="difference-info text-muted">Sisa: Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small>
                                 </td>
                             </tr>
                         @endforeach
@@ -56,28 +51,29 @@
                     account.select2({ width: '100%', dropdownParent: $('.settle-box') });
                 }
                 const amounts = document.querySelectorAll('.payment-amount');
-                const differenceTypes = document.querySelectorAll('.difference-type');
                 const differenceInfos = document.querySelectorAll('.difference-info');
                 const total = document.getElementById('payment-total');
+                const fmt = n => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(n);
                 const refreshTotal = () => {
                     let value = 0;
                     amounts.forEach((input, index) => {
-                        value += Number(input.value) || 0;
                         const paid = Number(input.value) || 0;
                         const outstanding = Number(input.dataset.outstanding) || 0;
-                        const type = differenceTypes[index].value;
-                        const difference = type === 'lebih' ? Math.max(0, paid - outstanding) : (type === 'kurang' ? Math.max(0, outstanding - paid) : 0);
-                        let status = 'Nota tetap terbuka';
-                        if (type === 'tidak' && paid === outstanding) status = 'Nota akan lunas';
-                        if (type === 'tidak' && paid > outstanding) status = 'Pilih Lebih bayar';
-                        if (type === 'lebih') status = paid > outstanding ? 'Nota akan lunas' : 'Nominal harus melebihi sisa';
-                        if (type === 'kurang') status = paid > 0 && paid < outstanding ? 'Nota akan lunas' : 'Nominal harus di bawah sisa';
-                        differenceInfos[index].textContent = 'Selisih: Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(difference) + ' · ' + status;
+                        value += paid;
+                        let status, diff = 0;
+                        if (paid >= outstanding && outstanding > 0) {
+                            diff = paid - outstanding;
+                            status = diff > 0 ? 'Lebih bayar Rp ' + fmt(diff) + ' · Nota lunas' : 'Nota akan lunas';
+                        } else if (paid > 0 && paid < outstanding) {
+                            status = 'Cicilan · Sisa Rp ' + fmt(outstanding - paid);
+                        } else {
+                            status = 'Masukkan nominal';
+                        }
+                        differenceInfos[index].textContent = status;
                     });
-                    total.textContent = 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+                    total.textContent = 'Rp ' + fmt(value);
                 };
                 amounts.forEach(input => input.addEventListener('input', refreshTotal));
-                differenceTypes.forEach(input => input.addEventListener('change', refreshTotal));
                 refreshTotal();
             });
         </script>
