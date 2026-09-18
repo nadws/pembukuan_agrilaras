@@ -32,7 +32,7 @@
                                 @if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($items->sum('qty'), 0, ',', '.') }}</td>@endif
                                 <td class="text-end">Rp {{ number_format($summary->invoice_total, 0, ',', '.') }}</td>
                                 <td class="text-end"><span class="d-block">Rp {{ number_format($summary->paid, 0, ',', '.') }}</span><small class="text-muted">Sisa Rp {{ number_format($summary->outstanding, 0, ',', '.') }}</small></td>
-                                <td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" data-outstanding="{{ $summary->outstanding }}" value="{{ old('jumlah_bayar.'.$loop->index, $summary->payment->jumlah_bayar ?? '') }}" min="1" step="1" placeholder="Nominal diterima" required></td>
+                                <td><input type="number" name="jumlah_bayar[]" class="form-control payment-amount text-end" data-outstanding="{{ $summary->outstanding }}" value="{{ old('jumlah_bayar.'.$loop->index, $summary->outstanding) }}" min="1" step="1" placeholder="Nominal diterima" required></td>
                                 <td>
                                     <select name="jenis_selisih[]" class="form-select difference-type mb-1">
                                         <option value="tidak" @selected(old('jenis_selisih.'.$loop->index, $summary->payment->jenis_selisih ?? 'tidak') === 'tidak')>Tanpa selisih / cicilan</option>
