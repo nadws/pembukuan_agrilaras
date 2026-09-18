@@ -49,7 +49,7 @@
         <form method="GET" action="{{ route('transaksi.piutang.pelunasan') }}" id="formPilihPiutang">
             <input type="hidden" name="jenis" value="{{ $jenis }}">
             <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-muted small">Pilih satu atau beberapa nota dari customer yang sama.</span>@if(!empty($btnPelunasan))<button type="submit" class="btn btn-success floating-pelunasan" id="btnPelunasan" disabled><i class="fas fa-arrow-right me-1"></i> Lanjutkan Pelunasan</button>@endif</div>
-            <div class="receivable-table-wrap"><table class="table table-hover align-middle receivable-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@elseif($jenis === 'ayam')<th class="text-end">Qty Ekor</th>@else<th class="text-end">Qty Item</th>@endif<th class="text-end">Total Piutang</th><th class="text-end">Sudah Dibayar</th><th class="text-end">Sisa Piutang</th><th>Status</th><th class="text-center">Pilih</th></tr></thead><tbody>@forelse($piutang as $i => $item)<tr><td>{{ ($piutangPaginator->currentPage() - 1) * $piutangPaginator->perPage() + $i + 1 }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $item->no_nota }}</td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($item->qty,0,'.',',') }}</td>@endif<td class="text-end receivable-total">Rp {{ number_format($item->nilai_piutang,0,'.',',') }}</td><td class="text-end receivable-paid">Rp {{ number_format($item->jumlah_dibayar,0,'.',',') }}</td><td class="text-end receivable-remaining">Rp {{ number_format($item->sisa_piutang,0,'.',',') }}</td><td>@if($item->jumlah_dibayar > 0) Dicicil @else Belum Dibayar @endif</td><td class="text-center"><input type="checkbox" class="form-check-input nota-piutang" name="nota[]" value="{{ $item->no_nota }}" data-customer="{{ $item->id_customer }}"></td></tr>@empty<tr><td colspan="10" class="receivable-empty">Tidak ada piutang {{ $jenis }} pada periode ini.</td></tr>@endforelse</tbody></table></div>
+            <div class="receivable-table-wrap"><table class="table table-hover align-middle receivable-table"><thead><tr><th>No</th><th>Tanggal</th><th>No Nota</th><th>Customer</th>@if($jenis === 'telur')<th>Tipe</th>@elseif($jenis === 'ayam')<th class="text-end">Qty Ekor</th>@else<th class="text-end">Qty Item</th>@endif<th class="text-end">Total Piutang</th><th class="text-end">Sudah Dibayar</th><th class="text-end">Sisa Piutang</th><th>Status</th><th class="text-center">Pilih</th></tr></thead><tbody>@forelse($piutang as $i => $item)<tr><td>{{ ($piutangPaginator->currentPage() - 1) * $piutangPaginator->perPage() + $i + 1 }}</td><td>{{ tanggal($item->tgl) }}</td><td class="fw-semibold">{{ $item->no_nota }}</td><td>{{ $item->nm_customer ?? '-' }}</td>@if($jenis === 'telur')<td>{{ strtoupper($item->tipe) }}</td>@else<td class="text-end">{{ number_format($item->qty,0,'.',',') }}</td>@endif<td class="text-end receivable-total">Rp {{ number_format($item->nilai_piutang,0,'.',',') }}</td><td class="text-end receivable-paid">Rp {{ number_format($item->jumlah_dibayar,0,'.',',') }}</td><td class="text-end receivable-remaining">Rp {{ number_format($item->sisa_piutang,0,'.',',') }}</td><td>@if($item->jumlah_dibayar > 0) Dicicil @else Belum Dibayar @endif</td><td class="text-center"><input type="checkbox" class="form-check-input nota-piutang" name="nota[]" value="{{ $item->no_nota }}" data-customer="{{ $item->id_customer }}" data-sisa="{{ $item->sisa_piutang }}"></td></tr>@empty<tr><td colspan="10" class="receivable-empty">Tidak ada piutang {{ $jenis }} pada periode ini.</td></tr>@endforelse</tbody></table></div>
             @if($piutangPaginator->hasPages())
             <div class="d-flex justify-content-center mt-3">{{ $piutangPaginator->withQueryString()->links() }}</div>
             @endif
@@ -68,6 +68,7 @@
 
                 const checks = [...document.querySelectorAll('.nota-piutang')];
                 const button = document.getElementById('btnPelunasan');
+                function fmt(n) { return n.toLocaleString('id-ID'); }
                 function syncSelection() {
                     const selected = checks.filter(item => item.checked);
                     const customerId = selected.length ? String(selected[0].dataset.customer) : null;
@@ -75,7 +76,13 @@
                         if (item.checked) return;
                         item.disabled = customerId !== null && String(item.dataset.customer) !== customerId;
                     });
-                    if (button) button.disabled = selected.length === 0;
+                    const total = selected.reduce((s, item) => s + parseInt(item.dataset.sisa || 0, 10), 0);
+                    if (button) {
+                        button.disabled = selected.length === 0;
+                        button.innerHTML = selected.length > 0
+                            ? '<i class="fas fa-arrow-right me-1"></i> Lunasi ' + selected.length + ' Nota — Rp ' + fmt(total)
+                            : '<i class="fas fa-arrow-right me-1"></i> Lanjutkan Pelunasan';
+                    }
                 }
                 checks.forEach(item => item.addEventListener('change', syncSelection));
                 checks.forEach(function (cb) {
@@ -93,7 +100,7 @@
                         if (!checks.some(item => item.checked)) { event.preventDefault(); return; }
                         button.disabled = true;
                         button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Memuat...';
-                        checks.forEach(item => { item.disabled = true; });
+                        checks.forEach(item => { if (!item.checked) item.disabled = true; });
                     });
                 }
                 const cariRiwayat = document.getElementById('cariRiwayat');
