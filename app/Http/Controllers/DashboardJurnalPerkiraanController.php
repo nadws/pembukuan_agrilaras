@@ -2,104 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class DashboardJurnalPerkiraanController extends Controller
 {
     public function index(Request $request): View
     {
-        $tgl1 = $this->dateOrDefault($request->input('tgl1'), now()->startOfMonth());
-        $tgl2 = $this->dateOrDefault($request->input('tgl2'), now());
-        if ($tgl1->gt($tgl2)) {
-            [$tgl1, $tgl2] = [$tgl2, $tgl1];
-        }
+        $akhir = $this->parseDate($request->input('tgl2')) ?? now()->startOfDay();
+        $mulai = $this->parseDate($request->input('tgl1')) ?? $akhir->copy()->subDays(6);
+        if ($mulai->gt($akhir)) [$mulai, $akhir] = [$akhir->copy(), $mulai->copy()];
+        $tanggal = $akhir->toDateString();
 
-        $profitRows = DB::table('jurnal_perkiraan as j')
-            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
-            ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-            ->where('i.status', 'aktif')->whereBetween('j.tanggal', [$tgl1->toDateString(), $tgl2->toDateString()])
-            ->whereIn('a.tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
-            ->select('a.tipe_akun')->selectRaw('SUM(j.debit) as debit, SUM(j.kredit) as kredit')
-            ->groupBy('a.tipe_akun')->get()->keyBy('tipe_akun');
+        $pemakaianPakan = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->whereBetween('s.tgl', [$mulai->toDateString(), $akhir->toDateString()])->where('p.kategori', 'pakan')
+            ->where('s.id_kandang', '>', 0)->where('s.pcs_kredit', '>', 0)
+            ->selectRaw('DATE(s.tgl) as tanggal, SUM(COALESCE(s.pcs_kredit, 0)) / 1000 as jumlah_kg')
+            ->groupBy('tanggal')->orderBy('tanggal')->get();
 
-        $nilai = fn (string $tipe, bool $pendapatan = false): float => (float) ($pendapatan
-            ? ($profitRows[$tipe]->kredit ?? 0) - ($profitRows[$tipe]->debit ?? 0)
-            : ($profitRows[$tipe]->debit ?? 0) - ($profitRows[$tipe]->kredit ?? 0));
-        $labaRugi = [
-            'pendapatan' => $nilai('REVE'),
-            'hpp' => $nilai('COGS'),
-            'beban_operasional' => $nilai('EXPS'),
-            'pendapatan_lain' => $nilai('OINC', true),
-            'beban_lain' => $nilai('OEXP'),
-        ];
-        // Pendapatan normalnya bersaldo kredit.
-        $labaRugi['pendapatan'] = $nilai('REVE', true);
-        $labaRugi['laba_kotor'] = $labaRugi['pendapatan'] - $labaRugi['hpp'];
-        $labaRugi['total_beban'] = $labaRugi['beban_operasional'] + $labaRugi['beban_lain'];
-        $labaRugi['laba_bersih'] = $labaRugi['laba_kotor'] - $labaRugi['beban_operasional'] + $labaRugi['pendapatan_lain'] - $labaRugi['beban_lain'];
+        $produksiTelur = DB::table('stok_telur as s')
+            ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 's.id_telur')
+            ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
+            ->whereBetween('s.tgl', [$mulai->toDateString(), $akhir->toDateString()])
+            ->where('s.id_kandang', '>', 0)->where('s.id_gudang', 1)
+            ->where(function ($query) { $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0); })
+            ->selectRaw("DATE(s.tgl) as tanggal, s.id_kandang, COALESCE(k.nm_kandang, CONCAT('Kandang ', s.id_kandang)) as nm_kandang, SUM(COALESCE(s.pcs, 0)) as jumlah_pcs, SUM(COALESCE(s.kg, 0) - (COALESCE(s.pcs, 0) / 180)) as jumlah_kg")
+            ->groupBy('tanggal', 's.id_kandang', 'k.nm_kandang')->orderBy('tanggal')->get();
 
-        $trend = DB::table('jurnal_perkiraan as j')
-            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
-            ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-            ->where('i.status', 'aktif')->whereBetween('j.tanggal', [$tgl1->toDateString(), $tgl2->toDateString()])
-            ->whereIn('a.tipe_akun', ['REVE', 'COGS', 'EXPS', 'OINC', 'OEXP'])
-            ->selectRaw("DATE_FORMAT(j.tanggal, '%Y-%m') as periode")
-            ->selectRaw("SUM(CASE WHEN a.tipe_akun IN ('REVE','OINC') THEN j.kredit-j.debit ELSE 0 END) as pendapatan")
-            ->selectRaw("SUM(CASE WHEN a.tipe_akun IN ('COGS','EXPS','OEXP') THEN j.debit-j.kredit ELSE 0 END) as beban")
-            ->groupBy('periode')->orderBy('periode')->get()
-            ->map(fn ($row) => (object) ['periode' => $row->periode, 'pendapatan' => (float) $row->pendapatan, 'beban' => (float) $row->beban, 'laba' => (float) $row->pendapatan - (float) $row->beban]);
+        $pakanKandang = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
+            ->whereBetween('s.tgl', [$mulai->toDateString(), $akhir->toDateString()])
+            ->where('p.kategori', 'pakan')->where('s.id_kandang', '>', 0)->where('s.pcs_kredit', '>', 0)
+            ->groupBy('s.id_kandang', 'k.nm_kandang', 'p.id_produk', 'p.nm_produk')
+            ->select('s.id_kandang', 'k.nm_kandang', 'p.nm_produk')
+            ->selectRaw('SUM(COALESCE(s.pcs_kredit, 0)) / 1000 as jumlah_kg')
+            ->orderBy('k.nm_kandang')->orderByDesc('jumlah_kg')->get()
+            ->groupBy('id_kandang');
 
-        $topBeban = DB::table('jurnal_perkiraan as j')
-            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
-            ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
-            ->where('i.status', 'aktif')->whereBetween('j.tanggal', [$tgl1->toDateString(), $tgl2->toDateString()])
-            ->whereIn('a.tipe_akun', ['COGS', 'EXPS', 'OEXP'])
-            ->groupBy('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
-            ->select('a.kode_perkiraan', 'a.nama')->selectRaw('SUM(j.debit-j.kredit) as nilai')
-            ->havingRaw('SUM(j.debit-j.kredit) != 0')->orderByDesc('nilai')->limit(8)->get();
-
-        $eggBalance = DB::table('stok_telur')->where('opname', 'T')->select('id_gudang')
-            ->selectRaw('SUM(COALESCE(pcs,0)-COALESCE(pcs_kredit,0)) as pcs')
-            ->selectRaw('SUM(COALESCE(kg,0)-COALESCE(kg_kredit,0)) as kg')->groupBy('id_gudang');
-        $stokTelur = DB::table('gudang_telur as g')->leftJoinSub($eggBalance, 's', 's.id_gudang', '=', 'g.id_gudang_telur')
-            ->select('g.id_gudang_telur', 'g.nm_gudang')->selectRaw('COALESCE(s.pcs,0) as pcs, COALESCE(s.kg,0) as kg')
-            ->orderBy('g.nm_gudang')->get();
-
-        $planBalance = DB::table('stok_produk_perencanaan')->select('id_pakan')
-            ->selectRaw('SUM(COALESCE(pcs,0)-COALESCE(pcs_kredit,0)) as stok')
-            ->selectRaw('SUM(CASE WHEN pcs > 0 THEN total_rp+biaya_dll ELSE 0 END)-SUM(CASE WHEN pcs_kredit > 0 THEN total_rp ELSE 0 END) as nilai_stok')
-            ->groupBy('id_pakan');
-        $stokPerencanaan = DB::table('tb_produk_perencanaan as p')
-            ->leftJoinSub($planBalance, 's', 's.id_pakan', '=', 'p.id_produk')
-            ->leftJoin('tb_satuan as u', 'u.id_satuan', '=', 'p.dosis_satuan')
-            ->whereIn('p.kategori', ['pakan', 'vitamin', 'obat_pakan', 'obat_air', 'obat_ayam', 'vaksin'])
-            ->select('p.nm_produk', 'p.kategori', 'u.nm_satuan')->selectRaw('COALESCE(s.stok,0) as stok, COALESCE(s.nilai_stok,0) as nilai_stok')
-            ->orderBy('p.kategori')->orderByDesc('stok')->get();
-
-        $generalBalance = DB::table('pembukuan_baru_stok')->select('id_produk')
-            ->selectRaw('SUM(qty) as stok, SUM(qty*harga_satuan) as nilai_stok')->groupBy('id_produk');
-        $stokUmum = DB::table('tb_produk as p')->leftJoinSub($generalBalance, 's', 's.id_produk', '=', 'p.id_produk')
-            ->leftJoin('tb_satuan as u', 'u.id_satuan', '=', 'p.satuan_id')->where('p.kategori_id', 1)
-            ->select('p.nm_produk', 'p.kd_produk', 'u.nm_satuan')->selectRaw('COALESCE(s.stok,0) as stok, COALESCE(s.nilai_stok,0) as nilai_stok')
-            ->orderByDesc('stok')->orderBy('p.nm_produk')->get();
+        $hari = collect(range(0, 6))->map(fn ($offset) => $mulai->copy()->addDays($offset));
+        $pakanHarian = $hari->map(fn ($date) => (float) ($pemakaianPakan->firstWhere('tanggal', $date->toDateString())->jumlah_kg ?? 0));
+        $telurHarian = $hari->map(fn ($date) => (float) $produksiTelur->where('tanggal', $date->toDateString())->sum('jumlah_kg'));
+        $telurSeries = $produksiTelur->groupBy('id_kandang')->map(function ($rows, $id) use ($hari) {
+            return ['name' => (string) ($rows->first()->nm_kandang ?: 'Kandang '.$id), 'data' => $hari->map(fn ($date) => (float) $rows->where('tanggal', $date->toDateString())->sum('jumlah_kg'))->values()];
+        })->values();
 
         return view('dashboard', [
-            'title' => 'Dashboard', 'tgl1' => $tgl1->toDateString(), 'tgl2' => $tgl2->toDateString(),
-            'labaRugi' => $labaRugi, 'trend' => $trend, 'topBeban' => $topBeban,
-            'stokTelur' => $stokTelur, 'stokPerencanaan' => $stokPerencanaan, 'stokUmum' => $stokUmum,
-            'latestJournal' => DB::table('jurnal_perkiraan')->max('tanggal'),
+            'title' => 'Dashboard', 'tanggal' => $tanggal, 'tanggalMulai' => $mulai->toDateString(), 'tanggalAkhir' => $akhir->toDateString(),
+            'pemakaianPakan' => $pemakaianPakan, 'produksiTelur' => $produksiTelur,
+            'labelHari' => $hari->map(fn ($date) => $date->format('d/m'))->values(),
+            'pakanHarian' => $pakanHarian->values(), 'telurHarian' => $telurHarian->values(),
+            'telurSeries' => $telurSeries,
+            'pakanKandang' => $pakanKandang,
+            'totalPakanKg' => (float) $pakanHarian->sum(), 'totalTelurKg' => (float) $telurHarian->sum(),
+            'fcrWeek' => $telurHarian->sum() > 0 ? (float) $pakanHarian->sum() / (float) $telurHarian->sum() : 0,
         ]);
     }
 
-    private function dateOrDefault(mixed $value, Carbon $default): Carbon
+    private function parseDate(?string $value): ?Carbon
     {
-        try {
-            return $value ? Carbon::parse((string) $value)->startOfDay() : $default->copy()->startOfDay();
-        } catch (\Throwable) {
-            return $default->copy()->startOfDay();
-        }
+        if (! $value) return null;
+        try { return Carbon::parse($value)->startOfDay(); } catch (\Throwable) { return null; }
     }
 }

@@ -20,35 +20,12 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-md-3"><label class="form-label">Tanggal pembayaran</label><input type="date" name="tanggal_bayar" class="form-control" value="{{ old('tanggal_bayar', $row->tanggal_bayar) }}" required></div>
                     <div class="col-md-5"><label class="form-label">Dibayar melalui akun</label><select name="id_akun_pembayaran" class="form-select select2" required><option value="">Pilih kas atau bank</option>@foreach($akunPembayaran as $akun)<option value="{{ $akun->id_akun_perkiraan }}" @selected((int) old('id_akun_pembayaran', $row->id_akun_pembayaran) === (int) $akun->id_akun_perkiraan)>{{ $akun->kode_perkiraan }} - {{ $akun->nama }}</option>@endforeach</select></div>
-                    <div class="col-md-4"><label class="form-label">Jumlah bayar (Rp)</label><input type="number" name="jumlah_bayar" class="form-control text-end" value="{{ old('jumlah_bayar', $row->jumlah_bayar) }}" min="1" step="1" required></div>
-                    <div class="col-md-8"><label class="form-label">Penyelesaian</label><small class="difference-info text-muted" id="editSelisihInfo">Memuat...</small></div>
+                    <div class="col-md-4"><label class="form-label">Jumlah bayar (Rp)</label><input type="number" name="jumlah_bayar" class="form-control text-end" value="{{ old('jumlah_bayar', (int) $row->jumlah_bayar) }}" min="1" step="1" required></div>
+                    <div class="col-md-8"><label class="form-label">Penyelesaian</label><select name="jenis_selisih" class="form-select"><option value="tidak" @selected(old('jenis_selisih', $row->jenis_selisih) === 'tidak')>Tanpa selisih / cicilan</option><option value="lebih" @selected(old('jenis_selisih', $row->jenis_selisih) === 'lebih')>Lebih bayar — lunaskan</option><option value="kurang" @selected(old('jenis_selisih', $row->jenis_selisih) === 'kurang')>Kurang bayar — lunaskan</option></select></div>
                     <div class="col-md-4 text-md-end"><button type="submit" class="btn btn-success w-100"><i class="fas fa-save me-1"></i> Simpan Perubahan</button></div>
                 </div>
             </div>
         </form>
         <p class="text-muted small mt-3 mb-0">Nominal lama: Rp {{ number_format($row->jumlah_bayar,0,'.',',') }} (dilunasi Rp {{ number_format($row->nilai_piutang_dilunasi,0,'.',',') }}) · Status nota ikut dihitung ulang.</p>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const input = document.querySelector('input[name="jumlah_bayar"]');
-                const info = document.getElementById('editSelisihInfo');
-                const outstanding = {{ $outstanding }};
-                const fmt = n => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(n);
-                function check() {
-                    const paid = Number(input.value) || 0;
-                    let status;
-                    if (paid >= outstanding && outstanding > 0) {
-                        const diff = paid - outstanding;
-                        status = diff > 0 ? 'Lebih bayar Rp ' + fmt(diff) + ' · Nota lunas' : 'Nota akan lunas';
-                    } else if (paid > 0) {
-                        status = 'Cicilan · Sisa Rp ' + fmt(outstanding - paid);
-                    } else {
-                        status = 'Masukkan nominal';
-                    }
-                    info.textContent = status;
-                }
-                input.addEventListener('input', check);
-                check();
-            });
-        </script>
     </x-slot>
 </x-theme.app>

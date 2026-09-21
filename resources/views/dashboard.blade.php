@@ -1,88 +1,40 @@
 <x-theme.app title="{{ $title }}" table="T" cont="container-fluid">
     <x-slot name="slot">
-        @php
-            $rupiah = fn ($nilai) => 'Rp ' . number_format((float) $nilai, 0);
-            $angka = fn ($nilai) => number_format((float) $nilai, 0);
-            $pakan = $stokPerencanaan->where('kategori', 'pakan');
-            $vitamin = $stokPerencanaan->where('kategori', '!=', 'pakan');
-            $telurPcs = $stokTelur->sum('pcs');
-            $telurKg = $stokTelur->sum('kg');
-        @endphp
         <style>
-            .main-dashboard{max-width:1550px;margin:auto;color:#203354}.dash-head,.dash-card,.dash-panel{background:#fff;border:1px solid #e0e7f2;border-radius:14px;box-shadow:0 8px 24px rgba(36,65,130,.05)}
-            .dash-head{padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:18px}.dash-title{font-size:24px;font-weight:800;margin:0}.dash-note{color:#71809a;font-size:13px;margin-top:4px}
-            .dash-filter{display:grid;grid-template-columns:155px 155px 110px;gap:8px;align-items:end}.dash-filter label{display:block;font-size:11px;font-weight:700;color:#66758e;margin-bottom:4px}
-            .dash-card{height:100%;padding:17px;position:relative;overflow:hidden}.dash-card:after{content:"";position:absolute;width:74px;height:74px;border-radius:50%;right:-25px;top:-25px;background:var(--soft)}
-            .dash-card-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#71809a}.dash-card-value{font-size:23px;font-weight:900;margin-top:7px;color:#203354}.dash-card-foot{font-size:12px;color:#71809a;margin-top:7px}.dash-card-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--soft);color:var(--color);margin-bottom:12px}
-            .dash-panel{height:100%;overflow:hidden}.dash-panel-head{padding:15px 17px;border-bottom:1px solid #edf1f7;display:flex;justify-content:space-between;gap:12px;align-items:center}.dash-panel-title{font-size:15px;font-weight:800;margin:0}.dash-panel-body{padding:16px}.dash-link{font-size:12px;font-weight:700;text-decoration:none}
-            .dashboard-table{margin:0}.dashboard-table thead th{background:#f6f8fc;color:#687791;font-size:11px;text-transform:uppercase;white-space:nowrap;padding:10px 12px}.dashboard-table td{padding:11px 12px;border-color:#edf1f7;vertical-align:middle}.item-name{font-weight:700;color:#253858}.item-meta{font-size:11px;color:#7a879d}.stock-number{font-weight:800;white-space:nowrap}.stock-zero{color:#d14b5a}.stock-ok{color:#287a5b}
-            .profit-positive{color:#23785a!important}.profit-negative{color:#c84f5f!important}.section-caption{font-size:12px;color:#71809a}.stock-tabs{display:flex;gap:7px;flex-wrap:wrap}.stock-chip{padding:5px 9px;border-radius:999px;background:#eef3ff;color:#3957a4;font-size:11px;font-weight:700}
-            .profit-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px dashed #e4eaf3}.profit-row:last-child{border:0}.profit-row.total{font-weight:900;color:#203354;border-top:2px solid #dfe6f2;border-bottom:0;margin-top:4px}.expense-bar{height:7px;border-radius:10px;background:#edf1f7;overflow:hidden;margin-top:6px}.expense-bar span{height:100%;display:block;background:#536fc3;border-radius:10px}
-            @media(max-width:992px){.dash-head{align-items:stretch;flex-direction:column}.dash-filter{grid-template-columns:1fr 1fr 100px}}@media(max-width:576px){.dash-filter{grid-template-columns:1fr}.dash-card-value{font-size:20px}}
+            .compare-dashboard{max-width:1500px;margin:0 auto;color:#17366d}.compare-head{width:100%;background:#fff;border:1px solid #dce5f3;border-radius:18px;padding:23px 24px;box-shadow:0 8px 24px rgba(36,65,130,.06);display:flex;align-items:center;justify-content:space-between;gap:24px}.compare-title{font-size:27px;font-weight:800;margin:0 0 5px}.compare-date{font-size:14px;color:#63779c}.compare-filter{display:grid;grid-template-columns:175px 175px 124px;gap:8px;align-items:end}.compare-filter label{display:block;font-size:11px;font-weight:700;color:#63708a;margin-bottom:5px}.compare-layout{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start}.compare-panel{width:100%;background:#fff;border:1px solid #dde5f2;border-radius:18px;box-shadow:0 9px 28px rgba(35,63,122,.07);margin-top:20px;overflow:hidden}.compare-panel-head{padding:20px 24px;border-bottom:1px solid #edf1f7}.compare-panel-title{font-size:19px;font-weight:800;margin:0}.compare-note{font-size:13px;color:#75839a;margin-top:4px}.compare-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px 24px 0}.compare-total{border-radius:13px;padding:15px 18px;background:#f5f8fd}.compare-total.feed{border-left:5px solid #4a9560}.compare-total.egg{border-left:5px solid #e0a13d}.compare-total.fcr{border-left:5px solid #526fc4}.compare-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:#75839a}.compare-value{font-size:25px;font-weight:900;margin-top:5px}.split-charts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 16px 20px}.split-chart{min-height:340px}.compare-empty{height:340px;display:flex;align-items:center;justify-content:center;color:#8290a6;text-align:center}.feed-breakdown{margin-top:20px}.feed-breakdown-body{padding:16px 18px;max-height:450px;overflow:auto}.feed-house{font-size:14px;font-weight:800;color:#193b78;margin:0 0 8px}.feed-item{margin:0 0 10px}.feed-item-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#536582}.feed-bar{height:6px;border-radius:8px;background:#edf1f7;margin-top:4px;overflow:hidden}.feed-bar span{display:block;height:100%;background:#4a9560;border-radius:8px}@media(max-width:900px){.compare-head{align-items:stretch;flex-direction:column}.compare-filter{grid-template-columns:1fr 1fr 110px}.compare-layout{grid-template-columns:1fr}}@media(max-width:600px){.compare-head{padding:20px}.compare-title{font-size:23px}.compare-filter{grid-template-columns:1fr}.compare-totals{grid-template-columns:1fr;padding:16px 18px 0}.split-charts{grid-template-columns:1fr;padding:8px 4px 15px}}
         </style>
-
-        <div class="main-dashboard">
-            <div class="dash-head mb-3">
-                <div><h1 class="dash-title">Dashboard Agrilaras</h1><div class="dash-note">Ringkasan laba-rugi dan posisi stok operasional • Jurnal terakhir {{ $latestJournal ? tanggal($latestJournal) : '-' }}</div></div>
-                <form class="dash-filter" method="GET" action="{{ route('dashboard') }}">
-                    <div><label>Dari tanggal</label><input type="date" class="form-control" name="tgl1" value="{{ $tgl1 }}"></div>
-                    <div><label>Sampai tanggal</label><input type="date" class="form-control" name="tgl2" value="{{ $tgl2 }}"></div>
-                    <button class="btn btn-primary" type="submit"><i class="fas fa-filter me-1"></i> Filter</button>
-                </form>
+        <main class="compare-dashboard">
+            <header class="compare-head"><div><h1 class="compare-title">Dashboard Agrilaras</h1><div class="compare-date">Ringkasan global pakan dan telur • {{ tanggal($tanggalMulai) }} – {{ tanggal($tanggalAkhir) }}</div></div><form class="compare-filter" method="GET" action="{{ route('dashboard') }}"><div><label>Dari tanggal</label><input type="date" name="tgl1" class="form-control" value="{{ $tanggalMulai }}"></div><div><label>Sampai tanggal</label><input type="date" name="tgl2" class="form-control" value="{{ $tanggalAkhir }}"></div><button class="btn btn-primary" type="submit"><i class="fas fa-filter me-1"></i> Filter</button></form></header>
+            <div class="compare-layout"><section class="compare-panel">
+                <div class="compare-panel-head"><h2 class="compare-panel-title">Histogram Harian</h2><div class="compare-note">Pemakaian pakan dan produksi telur dipisahkan per diagram</div></div>
+                <div class="compare-totals"><div class="compare-total feed"><div class="compare-label">Total pakan 7 hari</div><div class="compare-value">{{ number_format($totalPakanKg, 0, ',', '.') }} kg</div></div><div class="compare-total egg"><div class="compare-label">Total telur 7 hari</div><div class="compare-value">{{ number_format($totalTelurKg, 0, ',', '.') }} kg</div></div><div class="compare-total fcr"><div class="compare-label">FCR Week</div><div class="compare-value">{{ number_format($fcrWeek, 2, ',', '.') }}</div></div></div>
+                @if($totalPakanKg > 0 || $totalTelurKg > 0)
+                    <div class="split-charts"><div><div class="compare-note px-2">Pemakaian pakan (kg)</div><div id="feedChart" class="split-chart"></div></div><div><div class="compare-note px-2">Produksi telur bersih (kg)</div><div id="eggChart" class="split-chart"></div></div></div>
+                @else
+                    <div class="compare-empty">Belum ada pemakaian pakan atau produksi telur yang tercatat hari ini.</div>
+                @endif
+            </section>
+            <aside class="compare-panel feed-breakdown">
+                <div class="compare-panel-head"><h2 class="compare-panel-title">Pakan per Kandang</h2><div class="compare-note">Komposisi pemakaian pada periode terpilih</div></div>
+                <div class="feed-breakdown-body">
+                    @forelse($pakanKandang as $rows)
+                        @php($first = $rows->first())
+                        <h3 class="feed-house">{{ $first->nm_kandang ?: 'Kandang '.$first->id_kandang }}</h3>
+                        @php($totalKandang = $rows->sum('jumlah_kg'))
+                        @foreach($rows as $item)
+                            @php($persen = $totalKandang > 0 ? $item->jumlah_kg / $totalKandang * 100 : 0)
+                            <div class="feed-item"><div class="feed-item-head"><span>{{ $item->nm_produk }}</span><strong>{{ number_format($persen, 0, ',', '.') }}%</strong></div><div class="feed-bar"><span style="width:{{ min(100, max(0, $persen)) }}%"></span></div></div>
+                        @endforeach
+                    @empty
+                        <div class="compare-empty" style="height:200px">Belum ada pemakaian pakan pada periode ini.</div>
+                    @endforelse
+                </div>
+            </aside>
             </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#e9f7f0;--color:#23785a"><div class="dash-card-icon"><i class="fas fa-coins"></i></div><div class="dash-card-label">Pendapatan</div><div class="dash-card-value">{{ $rupiah($labaRugi['pendapatan']) }}</div><div class="dash-card-foot">Periode {{ tanggal($tgl1) }} – {{ tanggal($tgl2) }}</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#fff3e5;--color:#b66a18"><div class="dash-card-icon"><i class="fas fa-boxes"></i></div><div class="dash-card-label">Harga Pokok Penjualan</div><div class="dash-card-value">{{ $rupiah($labaRugi['hpp']) }}</div><div class="dash-card-foot">{{ $labaRugi['pendapatan'] != 0 ? number_format($labaRugi['hpp'] / $labaRugi['pendapatan'] * 100, 1) : 0 }}% dari pendapatan</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#fff0f1;--color:#c84f5f"><div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div><div class="dash-card-label">Total Beban</div><div class="dash-card-value">{{ $rupiah($labaRugi['total_beban']) }}</div><div class="dash-card-foot">Operasional dan beban lainnya</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#edf1ff;--color:#4561b1"><div class="dash-card-icon"><i class="fas fa-chart-line"></i></div><div class="dash-card-label">Laba Bersih</div><div class="dash-card-value {{ $labaRugi['laba_bersih'] >= 0 ? 'profit-positive' : 'profit-negative' }}">{{ $rupiah($labaRugi['laba_bersih']) }}</div><div class="dash-card-foot">Margin {{ $labaRugi['pendapatan'] != 0 ? number_format($labaRugi['laba_bersih'] / $labaRugi['pendapatan'] * 100, 1) : 0 }}%</div></div></div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#fff7e5;--color:#b97b17"><div class="dash-card-icon"><i class="fas fa-egg"></i></div><div class="dash-card-label">Stok Telur</div><div class="dash-card-value">{{ $angka($telurPcs) }} pcs</div><div class="dash-card-foot">{{ $angka($telurKg) }} kg • {{ $stokTelur->count() }} gudang</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#eaf7ef;--color:#287a5b"><div class="dash-card-icon"><i class="fas fa-seedling"></i></div><div class="dash-card-label">Stok Pakan</div><div class="dash-card-value">{{ $pakan->where('stok', '>', 0)->count() }} produk tersedia</div><div class="dash-card-foot">{{ $pakan->count() }} jenis • nilai {{ $rupiah($pakan->sum('nilai_stok')) }}</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#f1edff;--color:#6d55b8"><div class="dash-card-icon"><i class="fas fa-capsules"></i></div><div class="dash-card-label">Vitamin, Obat & Vaksin</div><div class="dash-card-value">{{ $vitamin->where('stok', '>', 0)->count() }} produk tersedia</div><div class="dash-card-foot">{{ $vitamin->count() }} jenis • nilai {{ $rupiah($vitamin->sum('nilai_stok')) }}</div></div></div>
-                <div class="col-sm-6 col-xl-3"><div class="dash-card" style="--soft:#eaf3ff;--color:#3671ad"><div class="dash-card-icon"><i class="fas fa-box-open"></i></div><div class="dash-card-label">Stok Barang Umum</div><div class="dash-card-value">{{ $stokUmum->where('stok', '>', 0)->count() }} barang tersedia</div><div class="dash-card-foot">{{ $stokUmum->count() }} barang • nilai {{ $rupiah($stokUmum->sum('nilai_stok')) }}</div></div></div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-xl-8"><div class="dash-panel"><div class="dash-panel-head"><div><h2 class="dash-panel-title">Tren Pendapatan, Beban, dan Laba</h2><div class="section-caption">Berdasarkan jurnal perkiraan aktif pada periode filter</div></div><a class="dash-link" href="{{ route('jurnal-perkiraan.laba-rugi') }}">Laporan lengkap <i class="fas fa-arrow-right ms-1"></i></a></div><div class="dash-panel-body"><div id="profitChart" style="min-height:310px"></div></div></div></div>
-                <div class="col-xl-4"><div class="dash-panel"><div class="dash-panel-head"><h2 class="dash-panel-title">Ringkasan Laba-Rugi</h2></div><div class="dash-panel-body">
-                    <div class="profit-row"><span>Pendapatan</span><strong>{{ $rupiah($labaRugi['pendapatan']) }}</strong></div><div class="profit-row"><span>HPP</span><strong>({{ $rupiah($labaRugi['hpp']) }})</strong></div><div class="profit-row"><span>Laba Kotor</span><strong>{{ $rupiah($labaRugi['laba_kotor']) }}</strong></div><div class="profit-row"><span>Beban Operasional</span><strong>({{ $rupiah($labaRugi['beban_operasional']) }})</strong></div><div class="profit-row"><span>Pendapatan Lain</span><strong>{{ $rupiah($labaRugi['pendapatan_lain']) }}</strong></div><div class="profit-row"><span>Beban Lain</span><strong>({{ $rupiah($labaRugi['beban_lain']) }})</strong></div><div class="profit-row total"><span>Laba Bersih</span><strong class="{{ $labaRugi['laba_bersih'] >= 0 ? 'profit-positive' : 'profit-negative' }}">{{ $rupiah($labaRugi['laba_bersih']) }}</strong></div>
-                </div></div></div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-xl-4"><div class="dash-panel"><div class="dash-panel-head"><div><h2 class="dash-panel-title">Stok Telur per Gudang</h2><div class="section-caption">Posisi stok terkini</div></div><a class="dash-link" href="{{ route('gudang-persediaan.telur') }}">Buka stok</a></div><div class="table-responsive"><table class="table dashboard-table"><thead><tr><th>Gudang</th><th class="text-end">Pcs</th><th class="text-end">Kg</th></tr></thead><tbody>@forelse($stokTelur as $row)<tr><td class="item-name">{{ $row->nm_gudang }}</td><td class="text-end stock-number {{ $row->pcs <= 0 ? 'stock-zero' : 'stock-ok' }}">{{ $angka($row->pcs) }}</td><td class="text-end">{{ $angka($row->kg) }}</td></tr>@empty<tr><td colspan="3" class="text-center text-muted py-4">Belum ada gudang telur.</td></tr>@endforelse</tbody></table></div></div></div>
-                <div class="col-xl-8"><div class="dash-panel"><div class="dash-panel-head"><div><h2 class="dash-panel-title">Stok Pakan, Vitamin, Obat dan Vaksin</h2><div class="stock-tabs"><span class="stock-chip">Pakan {{ $pakan->count() }} produk</span><span class="stock-chip">Vitamin/Obat/Vaksin {{ $vitamin->count() }} produk</span></div></div><a class="dash-link" href="{{ route('gudang-persediaan.index') }}">Buka gudang</a></div><div class="table-responsive"><table class="table dashboard-table"><thead><tr><th>Produk</th><th>Kategori</th><th class="text-end">Stok</th><th class="text-end">Nilai</th></tr></thead><tbody>@forelse($stokPerencanaan->take(10) as $row)<tr><td><div class="item-name">{{ $row->nm_produk }}</div><div class="item-meta">{{ $row->nm_satuan ?: 'Tanpa satuan' }}</div></td><td><span class="stock-chip">{{ ucwords(str_replace('_', ' ', $row->kategori)) }}</span></td><td class="text-end stock-number {{ $row->stok <= 0 ? 'stock-zero' : 'stock-ok' }}">{{ $angka($row->stok) }} {{ $row->nm_satuan }}</td><td class="text-end">{{ $rupiah($row->nilai_stok) }}</td></tr>@empty<tr><td colspan="4" class="text-center text-muted py-4">Belum ada produk pakan, vitamin, obat, atau vaksin.</td></tr>@endforelse</tbody></table></div></div></div>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-xl-7"><div class="dash-panel"><div class="dash-panel-head"><div><h2 class="dash-panel-title">Stok Barang Umum</h2><div class="section-caption">Saldo dari pembelian umum dan penyesuaian stok</div></div><a class="dash-link" href="{{ route('gudang-persediaan.barang-umum') }}">Lihat semua</a></div><div class="table-responsive"><table class="table dashboard-table"><thead><tr><th>Barang</th><th class="text-end">Stok</th><th class="text-end">Nilai Persediaan</th></tr></thead><tbody>@forelse($stokUmum->take(10) as $row)<tr><td><div class="item-name">{{ $row->nm_produk }}</div><div class="item-meta">{{ $row->kd_produk ?: '-' }}</div></td><td class="text-end stock-number {{ $row->stok <= 0 ? 'stock-zero' : 'stock-ok' }}">{{ $angka($row->stok) }} {{ $row->nm_satuan }}</td><td class="text-end">{{ $rupiah($row->nilai_stok) }}</td></tr>@empty<tr><td colspan="3" class="text-center text-muted py-4">Belum ada barang umum.</td></tr>@endforelse</tbody></table></div></div></div>
-                <div class="col-xl-5"><div class="dash-panel"><div class="dash-panel-head"><div><h2 class="dash-panel-title">Beban Terbesar</h2><div class="section-caption">Akun beban pada periode filter</div></div></div><div class="dash-panel-body">@php $maxBeban = max(1, (float)($topBeban->max('nilai') ?? 1)); @endphp @forelse($topBeban as $row)<div class="mb-3"><div class="d-flex justify-content-between gap-2"><div><div class="item-name">{{ $row->nama }}</div><div class="item-meta">{{ $row->kode_perkiraan }}</div></div><strong>{{ $rupiah($row->nilai) }}</strong></div><div class="expense-bar"><span style="width:{{ min(100, max(0, (float)$row->nilai / $maxBeban * 100)) }}%"></span></div></div>@empty<div class="text-center text-muted py-4">Belum ada beban pada periode ini.</div>@endforelse</div></div></div>
-            </div>
-        </div>
-
+        </main>
         <script src="{{ asset('theme/assets/extensions/apexcharts/apexcharts.min.js') }}"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const el = document.getElementById('profitChart');
-                if (!el || typeof ApexCharts === 'undefined') return;
-                new ApexCharts(el, {
-                    chart:{type:'bar',height:310,toolbar:{show:false}},
-                    series:[
-                        {name:'Pendapatan',data:@json($trend->pluck('pendapatan')->values())},
-                        {name:'Beban',data:@json($trend->pluck('beban')->values())},
-                        {name:'Laba',type:'line',data:@json($trend->pluck('laba')->values())}
-                    ],
-                    colors:['#2d8b68','#dc6572','#4561b1'],stroke:{width:[0,0,3],curve:'smooth'},
-                    plotOptions:{bar:{borderRadius:4,columnWidth:'48%'}},
-                    dataLabels:{enabled:false},xaxis:{categories:@json($trend->pluck('periode')->values())},
-                    yaxis:{labels:{formatter:v=>'Rp '+Intl.NumberFormat('id-ID',{notation:'compact',maximumFractionDigits:1}).format(v)}},
-                    tooltip:{y:{formatter:v=>'Rp '+new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(v)}},
-                    legend:{position:'top',horizontalAlign:'right'},grid:{borderColor:'#edf1f7'}
-                }).render();
-            });
+            document.addEventListener('DOMContentLoaded',function(){if(typeof ApexCharts==='undefined')return;const fmt=v=>new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(v);const categories=@json($labelHari);const make=(id,series,color,stacked=false)=>{const el=document.getElementById(id);if(!el)return;new ApexCharts(el,{chart:{type:'bar',height:300,toolbar:{show:false},stacked:stacked},series:series,xaxis:{categories:categories},colors:color,plotOptions:{bar:{borderRadius:5,columnWidth:'52%'}},dataLabels:{enabled:false},yaxis:{labels:{formatter:v=>fmt(v)}},tooltip:{y:{formatter:v=>fmt(v)+' kg'}},grid:{borderColor:'#edf1f7'},legend:{show:stacked,position:'top',horizontalAlign:'right'}}).render();};make('feedChart',[{name:'Pakan (kg)',data:@json($pakanHarian)}],['#4a9560']);make('eggChart',@json($telurSeries),['#e0a13d','#526fc4','#8b63b5','#d56565','#3b8ca4','#8a9b42','#d17a38'],true);});
         </script>
     </x-slot>
 </x-theme.app>

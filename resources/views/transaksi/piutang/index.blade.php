@@ -56,16 +56,7 @@
         </form>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const inputCari = document.getElementById('inputCari');
-                const filterForm = document.getElementById('filterForm');
-                let debounceTimer;
-                if (inputCari && filterForm) {
-                    inputCari.addEventListener('input', function () {
-                        clearTimeout(debounceTimer);
-                        debounceTimer = setTimeout(function () { filterForm.submit(); }, 400);
-                    });
-                }
-
+                // Pencarian hanya jalan saat tombol filter diklik (tanpa auto-search saat mengetik).
                 const checks = [...document.querySelectorAll('.nota-piutang')];
                 const button = document.getElementById('btnPelunasan');
                 function fmt(n) { return n.toLocaleString('id-ID'); }
