@@ -45,18 +45,45 @@ class DashboardJurnalPerkiraanController extends Controller
 
         $hari = collect(range(0, 6))->map(fn ($offset) => $mulai->copy()->addDays($offset));
         $pakanHarian = $hari->map(fn ($date) => (float) ($pemakaianPakan->firstWhere('tanggal', $date->toDateString())->jumlah_kg ?? 0));
+        $pakanKandangHarian = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
+            ->whereBetween('s.tgl', [$mulai->toDateString(), $akhir->toDateString()])->where('p.kategori', 'pakan')
+            ->where('s.id_kandang', '>', 0)->where('s.pcs_kredit', '>', 0)
+            ->selectRaw("DATE(s.tgl) as tanggal, s.id_kandang, COALESCE(k.nm_kandang, CONCAT('Kandang ', s.id_kandang)) as nm_kandang")
+            ->selectRaw('SUM(COALESCE(s.pcs_kredit, 0)) / 1000 as jumlah_kg')
+            ->groupBy('tanggal', 's.id_kandang', 'k.nm_kandang')->orderBy('tanggal')->get();
+        $pakanSeries = $pakanKandangHarian->groupBy('id_kandang')->map(function ($rows, $id) use ($hari) {
+            return ['name' => (string) ($rows->first()->nm_kandang ?: 'Kandang '.$id), 'data' => $hari->map(fn ($date) => (float) $rows->where('tanggal', $date->toDateString())->sum('jumlah_kg'))->values()];
+        })->values();
         $telurHarian = $hari->map(fn ($date) => (float) $produksiTelur->where('tanggal', $date->toDateString())->sum('jumlah_kg'));
         $telurSeries = $produksiTelur->groupBy('id_kandang')->map(function ($rows, $id) use ($hari) {
             return ['name' => (string) ($rows->first()->nm_kandang ?: 'Kandang '.$id), 'data' => $hari->map(fn ($date) => (float) $rows->where('tanggal', $date->toDateString())->sum('jumlah_kg'))->values()];
         })->values();
 
+
+
+        // Perolehan kemarin (H-1) per kandang untuk histogram bawah.
+        $tglKemarin = now()->subDay()->toDateString();
+        $produksiKemarin = DB::table('stok_telur as s')
+            ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
+            ->whereDate('s.tgl', $tglKemarin)
+            ->where('s.id_kandang', '>', 0)->where('s.id_gudang', 1)
+            ->where(function ($query) { $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0); })
+            ->selectRaw("COALESCE(k.nm_kandang, CONCAT('Kandang ', s.id_kandang)) as nama")
+            ->selectRaw('SUM(COALESCE(s.kg, 0) - (COALESCE(s.pcs, 0) / 180)) as kg')
+            ->selectRaw('SUM(COALESCE(s.pcs, 0)) as pcs')
+            ->groupBy('s.id_kandang', 'k.nm_kandang')->orderByDesc('kg')->get();
+        $kemarinTotalKg = (float) $produksiKemarin->sum('kg');
+
         return view('dashboard', [
             'title' => 'Dashboard', 'tanggal' => $tanggal, 'tanggalMulai' => $mulai->toDateString(), 'tanggalAkhir' => $akhir->toDateString(),
             'pemakaianPakan' => $pemakaianPakan, 'produksiTelur' => $produksiTelur,
             'labelHari' => $hari->map(fn ($date) => $date->format('d/m'))->values(),
-            'pakanHarian' => $pakanHarian->values(), 'telurHarian' => $telurHarian->values(),
+            'pakanHarian' => $pakanHarian->values(), 'pakanSeries' => $pakanSeries, 'telurHarian' => $telurHarian->values(),
             'telurSeries' => $telurSeries,
             'pakanKandang' => $pakanKandang,
+            'tglKemarin' => $tglKemarin, 'produksiKemarin' => $produksiKemarin, 'kemarinTotalKg' => $kemarinTotalKg,
             'totalPakanKg' => (float) $pakanHarian->sum(), 'totalTelurKg' => (float) $telurHarian->sum(),
             'fcrWeek' => $telurHarian->sum() > 0 ? (float) $pakanHarian->sum() / (float) $telurHarian->sum() : 0,
         ]);
