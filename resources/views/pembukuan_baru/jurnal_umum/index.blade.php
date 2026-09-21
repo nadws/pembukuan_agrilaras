@@ -561,16 +561,20 @@
                                             data-detail-target="{{ $detailId }}" title="Detail">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @if(!empty($btnEditJurnal))
                                         <a href="{{ route('pembukuan-baru.jurnal-umum.biaya.edit', $item->nomor_transaksi) }}"
                                             class="btn btn-outline-warning" title="Edit Biaya">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
+                                        @if(!empty($btnHapusJurnal))
                                         <button type="button" class="btn btn-outline-danger btn-delete-biaya"
                                             data-nomor="{{ $item->nomor_transaksi }}"
                                             data-url="{{ route('pembukuan-baru.jurnal-umum.biaya.destroy', $item->nomor_transaksi) }}"
                                             title="Hapus Biaya">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -685,16 +689,20 @@
                                             data-detail-target="{{ $detailId }}" title="Detail Transaksi">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @if(!empty($btnEditJurnal))
                                         <a href="{{ route('pembukuan-baru.jurnal-umum.pembelian-umum.edit', $jurnal->nomor_transaksi) }}"
                                             class="btn btn-outline-warning" title="Edit Transaksi">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
+                                        @if(!empty($btnHapusJurnal))
                                         <button type="button" class="btn btn-outline-danger btn-delete-pu"
                                             data-nomor="{{ $jurnal->nomor_transaksi }}"
                                             data-url="{{ route('pembukuan-baru.jurnal-umum.pembelian-umum.destroy', $jurnal->nomor_transaksi) }}"
                                             title="Hapus Transaksi">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -812,6 +820,7 @@
                                             data-detail-target="{{ $detailId }}" title="Detail Transaksi">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @if(!empty($btnEditJurnal))
                                         <button type="button" class="btn btn-outline-warning btn-edit-aset"
                                             data-id="{{ $item->id }}"
                                             data-nama="{{ $item->nama_aset }}"
@@ -821,6 +830,8 @@
                                             title="Edit Master Aset">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                        @endif
+                                        @if(!empty($btnHapusJurnal))
                                         <button type="button" class="btn btn-outline-danger btn-delete-aset"
                                             data-nama="{{ $item->nama_aset }}"
                                             data-transaksi="{{ $item->jumlah_transaksi }}"
@@ -828,6 +839,7 @@
                                             title="Hapus Master Aset">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -866,18 +878,20 @@
                                                             <td class="text-end">Rp {{ number_format($detail->jumlah, 0, ',', '.') }}</td>
                                                             <td class="text-center">
                                                                 <div class="btn-group btn-group-sm" role="group">
-                                                                    @if (($detail->sumber ?? 'transaksi') !== 'saldo_awal')
+                                                                    @if (($detail->sumber ?? 'transaksi') !== 'saldo_awal' && !empty($btnEditJurnal))
                                                                         <a href="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.transaksi.edit', $detail->nomor_transaksi) }}"
                                                                             class="btn btn-outline-warning" title="Edit Transaksi">
                                                                             <i class="fas fa-edit"></i>
                                                                         </a>
                                                                     @endif
+                                                                    @if(!empty($btnHapusJurnal))
                                                                     <button type="button" class="btn btn-outline-danger btn-delete-ag-transaksi"
                                                                         data-nomor="{{ $detail->nomor_transaksi }}"
                                                                         data-url="{{ route('pembukuan-baru.jurnal-umum.aktiva-gantung.transaksi.destroy', $detail->nomor_transaksi) }}"
                                                                         title="Hapus Transaksi">
                                                                         <i class="fas fa-trash"></i>
                                                                     </button>
+                                                                    @endif
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -961,16 +975,20 @@
                                             data-detail-target="{{ $detailId }}" title="Detail Jurnal">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @if(!empty($btnEditJurnal))
                                         <a href="{{ route('pembukuan-baru.jurnal-umum.pembalik-aktiva-gantung.edit', $item->nomor_transaksi) }}"
                                             class="btn btn-outline-warning" title="Edit Pembalik Aktiva">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
+                                        @if(!empty($btnHapusJurnal))
                                         <button type="button" class="btn btn-outline-danger btn-delete-pembalik"
                                             data-nomor="{{ $item->nomor_transaksi }}"
                                             data-url="{{ route('pembukuan-baru.jurnal-umum.pembalik-aktiva-gantung.destroy', $item->nomor_transaksi) }}"
                                             title="Hapus Pembalik Aktiva">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -1077,11 +1095,14 @@
                                             data-detail-target="{{ $detailId }}" title="Detail">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @if(!empty($btnEditJurnal))
                                         <a href="{{ route('pembukuan-baru.jurnal-umum.manual.edit', $item->id_impor_jurnal_perkiraan) }}"
                                             class="btn btn-outline-warning" title="Edit Jurnal"
                                             onclick="event.stopPropagation()">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
+                                        @if(!empty($btnHapusJurnal))
                                         <form method="POST" action="{{ route('pembukuan-baru.jurnal-umum.manual.destroy', $item->id_impor_jurnal_perkiraan) }}"
                                             class="d-inline-flex" onclick="event.stopPropagation()"
                                             onsubmit="return confirm('Hapus jurnal umum manual ini? Seluruh detail debit dan kreditnya juga akan dihapus.')">
@@ -1091,6 +1112,7 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

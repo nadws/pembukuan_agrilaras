@@ -266,6 +266,8 @@ class PembukuanBaruJurnalUmumController extends Controller
             'btnBuatPembelian' => \SettingHal::btnHal(215, auth()->id()),
             'btnAktivaGantung' => \SettingHal::btnHal(216, auth()->id()),
             'btnPembalik' => \SettingHal::btnHal(217, auth()->id()),
+            'btnEditJurnal' => \SettingHal::btnHal(226, auth()->id()),
+            'btnHapusJurnal' => \SettingHal::btnHal(227, auth()->id()),
             'batch' => $batch,
             'detailManual' => $detailManual,
             'ringkasanManual' => $ringkasanManual,
