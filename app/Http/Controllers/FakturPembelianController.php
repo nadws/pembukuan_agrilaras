@@ -765,7 +765,7 @@ class FakturPembelianController extends Controller
         }
 
          $validated = $request->validate([
-             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin'],
+             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin,barang_umum'],
              'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur,' . $faktur_pembelian->id],
              'tanggal_faktur' => ['required', 'date'],
              'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
@@ -779,7 +779,7 @@ class FakturPembelianController extends Controller
              'biaya_lain.admin.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
              'pph23_manual' => ['nullable', 'numeric', 'min:0'],
              'item' => ['required', 'array', 'min:1'],
-             'item.*.pakan_id' => ['required', 'exists:tb_produk_perencanaan,id_produk'],
+             'item.*.pakan_id' => ['required', 'integer', 'min:1'],
              'item.*.qty' => ['required', 'numeric', 'min:0.01'],
              'item.*.satuan' => ['nullable', 'string', 'max:20'],
              'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
@@ -826,10 +826,23 @@ $items = $this->normalisasiItemFaktur($validated['item']);
             ->whereIn('id_produk', $items->pluck('pakan_id'))
             ->keyBy('id_produk');
 
-        $produkTidakSesuai = $items->contains(function ($item) use ($produk, $validated) {
-            $kategori = $produk->get((int) $item['pakan_id'])?->kategori;
+        // ID produk bisa sama di kedua master (tb_produk & tb_produk_perencanaan).
+        // Koleksi gabungan di atas menimpa yang perencanaan dengan yang umum
+        // untuk id kembar, jadi kategori dibaca per sumber seperti saat tambah.
+        $idsItem = $items->pluck('pakan_id')->map(fn ($id) => (int) $id)->unique()->values();
+        $katPerencanaan = DB::table('tb_produk_perencanaan')->whereIn('id_produk', $idsItem)->pluck('kategori', 'id_produk');
+        $adaProdukUmum = DB::table('tb_produk')->where('kategori_id', 1)->whereIn('id_produk', $idsItem)->pluck('id_produk')->flip()->all();
+        $kategoriItemFaktur = function ($item) use ($katPerencanaan, $adaProdukUmum) {
+            $id = (int) $item['pakan_id'];
+            if (($item['sumber_produk'] ?? 'perencanaan') === 'barang_umum') {
+                return isset($adaProdukUmum[$id]) ? 'barang_umum' : null;
+            }
 
-            return ! $this->produkSesuaiJenisFaktur($kategori, $validated['jenis_faktur']);
+            return $katPerencanaan->get($id);
+        };
+
+        $produkTidakSesuai = $items->contains(function ($item) use ($kategoriItemFaktur, $validated) {
+            return ! $this->produkSesuaiJenisFaktur($kategoriItemFaktur($item), $validated['jenis_faktur']);
         });
 
         if ($produkTidakSesuai) {
@@ -845,10 +858,10 @@ $items = $this->normalisasiItemFaktur($validated['item']);
             ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
         $akunBiaya = collect([$akunHutangEkspedisi, $akunHutangLainnya])
             ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
-        $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $produk) {
+        $kodeAkunPersediaan = $items->map(function ($item) use ($validated, $kategoriItemFaktur) {
             return $this->kodeAkunPersediaanItem(
                 $validated['jenis_faktur'],
-                $produk->get((int) $item['pakan_id'])?->kategori
+                $kategoriItemFaktur($item)
             );
         })->unique()->values();
         $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)

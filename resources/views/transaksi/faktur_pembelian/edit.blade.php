@@ -443,25 +443,34 @@
                 const SELEKTOR_ANGKA = '.input-qty,.input-harga,.input-subtotal,.input-biaya-lain,.input-pph23-manual,#diskon_total';
                 const POLA_RIBUAN = /^-?\d{1,3}(\.\d{3})+$/;
 
-                // Ubah tulisan menjadi titik-desimal. Koma selalu berarti desimal
-                // (format Indonesia). Titik berarti ribuan hanya bila polanya pas
-                // seperti 23.500 dan field-nya bukan qty.
-                function keTitikDesimal(teks, pakaiRibuan) {
+                // Ubah tulisan menjadi titik-desimal. Nilai yang sedang tampil
+                // format ribuan (ditandai) selalu dibaca ala Indonesia.
+                // Selain itu: koma berarti desimal; titik berarti ribuan hanya
+                // bila polanya pas seperti 23.500 dan field-nya bukan qty.
+                function keTitikDesimal(teks, pakaiRibuan, sudahTampil) {
                     const s = String(teks ?? '').trim();
-                    if (s.includes(',')) return s.replace(/\./g, '').replace(',', '.');
+                    if (sudahTampil || s.includes(',')) return s.replace(/\./g, '').replace(',', '.');
                     if (pakaiRibuan && POLA_RIBUAN.test(s)) return s.replace(/\./g, '');
                     return s;
                 }
 
-                function parseId(value, pakaiRibuan = true) {
+                function parseId(value, pakaiRibuan = true, sudahTampil = false) {
                     const s = String(value ?? '').trim();
                     if (s === '') return 0;
-                    const n = parseFloat(keTitikDesimal(s, pakaiRibuan));
+                    const n = parseFloat(keTitikDesimal(s, pakaiRibuan, sudahTampil));
                     return Number.isFinite(n) ? n : 0;
                 }
 
                 function pakaiRibuan(input) {
                     return !(input?.classList?.contains('input-qty'));
+                }
+
+                function sudahTampil(input) {
+                    return !!input?.dataset?.tampilId;
+                }
+
+                function tandaiTampil(input) {
+                    if (input) input.dataset.tampilId = '1';
                 }
 
                 function formatId(angka) {
@@ -470,12 +479,13 @@
                 }
 
                 function angkaInput(input) {
-                    return parseId(input?.value, pakaiRibuan(input));
+                    return parseId(input?.value, pakaiRibuan(input), sudahTampil(input));
                 }
 
                 function isiAngka(input, angka) {
                     if (!input) return;
                     input.value = formatId(angka);
+                    tandaiTampil(input);
                 }
 
                 // Tampilkan polos saat diketik, format ribuan saat selesai.
@@ -483,13 +493,16 @@
                     if (!input) return;
                     const s = String(input.value ?? '').trim();
                     if (s === '') return;
-                    input.value = String(parseId(s, pakaiRibuan(input))).replace('.', ',');
+                    input.value = String(parseId(s, pakaiRibuan(input), sudahTampil(input))).replace('.', ',');
+                    delete input.dataset.tampilId;
                 }
 
                 function rapikanTampilan(input) {
                     if (!input) return;
                     const s = String(input.value ?? '').trim();
-                    input.value = s === '' ? '' : formatId(parseId(s, pakaiRibuan(input)));
+                    if (s === '') return;
+                    input.value = formatId(parseId(s, pakaiRibuan(input), sudahTampil(input)));
+                    tandaiTampil(input);
                 }
 
                 // Kembalikan ke titik-desimal sebelum dikirim agar lolos validasi numeric.
@@ -497,7 +510,7 @@
                 function normalisasiKirim(input) {
                     const s = String(input?.value ?? '').trim();
                     if (s === '') return '';
-                    const bersih = keTitikDesimal(s, pakaiRibuan(input));
+                    const bersih = keTitikDesimal(s, pakaiRibuan(input), sudahTampil(input));
                     return /^-?\d+(\.\d+)?$/.test(bersih) ? bersih : s;
                 }
 
