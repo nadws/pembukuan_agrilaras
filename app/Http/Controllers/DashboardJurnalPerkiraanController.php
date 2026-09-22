@@ -12,9 +12,9 @@ use Illuminate\View\View;
 
 class DashboardJurnalPerkiraanController extends Controller
 {
-    private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang'];
+    private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang', 'stok'];
 
-    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 4];
+    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 4, 'stok' => 4];
 
     public function index(Request $request): View
     {
@@ -155,6 +155,22 @@ class DashboardJurnalPerkiraanController extends Controller
             'pakanKandang' => $pakanKandang,
             'labaRugiPerKandang' => $labaRugiPerKandang, 'labaRugiTotal' => $labaRugiTotal,
             'piutangBelumLunas' => $piutangBelumLunas, 'piutangTotal' => (float) $piutangBelumLunas->sum('sisa'),
+
+            // Stok telur sistem per gudang: mutasi aktif (opname=T),
+            // debit dikurangi kredit, sama seperti angka opname gudang.
+            'stokTelur' => DB::table('stok_telur as s')
+                ->leftJoin('telur_produk as p', 'p.id_produk_telur', '=', 's.id_telur')
+                ->leftJoin('gudang_telur as g', 'g.id_gudang_telur', '=', 's.id_gudang')
+                ->where('s.opname', 'T')
+                ->groupBy('s.id_gudang', 's.id_telur')
+                ->select('s.id_gudang')
+                ->selectRaw('MAX(g.nm_gudang) as gudang, MAX(p.nm_telur) as produk')
+                ->selectRaw('SUM(COALESCE(s.pcs, 0) - COALESCE(s.pcs_kredit, 0)) as pcs')
+                ->selectRaw('SUM(COALESCE(s.kg, 0) - COALESCE(s.kg_kredit, 0)) as kg')
+                ->orderBy('s.id_gudang')
+                ->orderBy('produk')
+                ->get()
+                ->groupBy('id_gudang'),
             'tglKemarin' => $tglKemarin, 'produksiKemarin' => $produksiKemarin, 'kemarinTotalKg' => $kemarinTotalKg,
             'jumlahHari' => $jumlahHari,
             'totalPakanKg' => (float) $pakanHarian->sum(), 'totalTelurKg' => (float) $telurHarian->sum(),
