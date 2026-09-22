@@ -18,7 +18,7 @@ class NavbarController extends Controller
             ->where('pr.posisi_id', $posisiId)
             ->pluck('p.url');
 
-        return collect($data)->filter(fn ($d) => $routeBoleh->contains($d['route']))->values()->all();
+        return collect($data)->filter(fn($d) => $routeBoleh->contains($d['route']))->values()->all();
     }
 
     public function data_master()
@@ -36,7 +36,7 @@ class NavbarController extends Controller
                 'img' => 'team.png',
                 'deskripsi' => 'ini adalah data user',
             ],
-            
+
             [
                 'judul' => 'Data Suplier',
                 'route' => 'suplier.index',
@@ -67,7 +67,7 @@ class NavbarController extends Controller
                 'img' => 'eggs.png',
                 'deskripsi' => 'Mengelola kode dan nama produk telur untuk stok serta penjualan.',
             ],
-         
+
         ];
 
         $data = $this->saringAkses($data);
@@ -201,8 +201,8 @@ class NavbarController extends Controller
             ],
             [
                 'judul' => 'Pembelian Pullet',
-                  'route' => 'pembelian-pullet.index',
-                  'params' => [],
+                'route' => 'pembelian-pullet.index',
+                'params' => [],
                 'img' => 'buy.png',
                 'deskripsi' => 'Mencatat pembelian dan biaya pullet melalui jurnal pembelian pullet.',
             ],
@@ -461,7 +461,7 @@ class NavbarController extends Controller
                 'deskripsi' => 'Mengelola master akun perkiraan baru.',
             ],
             [
-                'judul' => 'Jurnal Umum',
+                'judul' => 'Jurnal',
                 'route' => 'pembukuan-baru.jurnal-umum.index',
                 'img' => 'newspaper.png',
                 'deskripsi' => 'Mencatat transaksi jurnal umum baru dengan alur per step.',
