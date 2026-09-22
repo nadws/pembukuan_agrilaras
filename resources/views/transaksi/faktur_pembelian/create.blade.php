@@ -352,14 +352,14 @@
                                         <tr>
                                             <td class="fw-semibold align-middle">{{ $label }}</td>
                                             <td>
-                                                <input type="number" min="0" step="0.01" name="biaya_lain[{{ $kode }}][nominal]" class="form-control input-biaya-lain" value="{{ old('biaya_lain.'.$kode.'.nominal', 0) }}" placeholder="0">
+                                                <input type="text" inputmode="decimal" name="biaya_lain[{{ $kode }}][nominal]" class="form-control input-biaya-lain" value="{{ old('biaya_lain.'.$kode.'.nominal', 0) }}" placeholder="0">
                                             </td>
                                         </tr>
                                     @endforeach
                                     <tr>
                                         <td class="fw-semibold align-middle">Potongan PPh 23 (Manual)<small class="d-block text-muted fw-normal">Masuk tagihan PPh 23 terpisah di Buku Hutang.</small></td>
                                         <td>
-                                            <input type="number" min="0" step="0.01" name="pph23_manual" class="form-control input-pph23-manual" value="{{ old('pph23_manual', 0) }}" placeholder="0">
+                                            <input type="text" inputmode="decimal" name="pph23_manual" class="form-control input-pph23-manual" value="{{ old('pph23_manual', 0) }}" placeholder="0">
                                         </td>
                                     </tr>
                                 </tbody>
@@ -372,7 +372,7 @@
                             <div class="row g-2 align-items-end text-start mb-2">
                                 <div class="col-md-7">
                                     <label class="form-label" for="diskon_total">Diskon</label>
-                                    <input type="number" step="0.01" min="0" id="diskon_total"
+                                    <input type="text" inputmode="decimal" id="diskon_total"
                                         name="diskon_total" class="form-control text-end"
                                         value="{{ old('diskon_total', 0) }}">
                                 </div>
@@ -435,20 +435,20 @@
                     </select>
                 </td>
                 <td>
-                    <input type="number" step="0.01" min="0.01" name="item[__INDEX__][qty]"
-                        class="form-control input-qty" required>
+                    <input type="text" inputmode="decimal" name="item[__INDEX__][qty]"
+                        class="form-control input-qty" placeholder="0" required>
                 </td>
                 <td>
                     <input type="text" name="item[__INDEX__][satuan]" class="form-control input-satuan"
                         placeholder="Otomatis" readonly>
                 </td>
                 <td>
-                    <input type="number" step="0.01" min="0" name="item[__INDEX__][harga_satuan]"
+                    <input type="text" inputmode="decimal" name="item[__INDEX__][harga_satuan]"
                         class="form-control input-harga" placeholder="Dari subtotal" required>
                     <small class="harga-rata text-muted"></small>
                 </td>
                 <td>
-                    <input type="number" step="0.01" min="0" name="item[__INDEX__][subtotal]"
+                    <input type="text" inputmode="decimal" name="item[__INDEX__][subtotal]"
                         class="form-control input-subtotal" placeholder="Dari harga" required>
                 </td>
                 {{-- <td>
@@ -530,13 +530,65 @@
                     });
                 }
 
+                const SELEKTOR_ANGKA = '.input-qty,.input-harga,.input-subtotal,.input-biaya-lain,.input-pph23-manual,#diskon_total';
+                const POLA_RIBUAN = /^-?\d{1,3}(\.\d{3})+$/;
+
+                // Ubah tulisan menjadi titik-desimal. Koma selalu berarti desimal
+                // (format Indonesia). Titik berarti ribuan hanya bila polanya pas
+                // seperti 23.500 dan field-nya bukan qty.
+                function keTitikDesimal(teks, pakaiRibuan) {
+                    const s = String(teks ?? '').trim();
+                    if (s.includes(',')) return s.replace(/\./g, '').replace(',', '.');
+                    if (pakaiRibuan && POLA_RIBUAN.test(s)) return s.replace(/\./g, '');
+                    return s;
+                }
+
+                function parseId(value, pakaiRibuan = true) {
+                    const s = String(value ?? '').trim();
+                    if (s === '') return 0;
+                    const n = parseFloat(keTitikDesimal(s, pakaiRibuan));
+                    return Number.isFinite(n) ? n : 0;
+                }
+
+                function pakaiRibuan(input) {
+                    return !(input?.classList?.contains('input-qty'));
+                }
+
+                function formatId(angka) {
+                    if (!Number.isFinite(angka)) return '';
+                    return Number(angka).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
+                }
+
                 function angkaInput(input) {
-                    return parseFloat(input?.value) || 0;
+                    return parseId(input?.value, pakaiRibuan(input));
                 }
 
                 function isiAngka(input, angka) {
                     if (!input) return;
-                    input.value = Number.isFinite(angka) ? Number(angka).toFixed(2) : '';
+                    input.value = formatId(angka);
+                }
+
+                // Tampilkan polos saat diketik, format ribuan saat selesai.
+                function poloskanUntukEdit(input) {
+                    if (!input) return;
+                    const s = String(input.value ?? '').trim();
+                    if (s === '') return;
+                    input.value = String(parseId(s, pakaiRibuan(input))).replace('.', ',');
+                }
+
+                function rapikanTampilan(input) {
+                    if (!input) return;
+                    const s = String(input.value ?? '').trim();
+                    input.value = s === '' ? '' : formatId(parseId(s, pakaiRibuan(input)));
+                }
+
+                // Kembalikan ke titik-desimal sebelum dikirim agar lolos validasi numeric.
+                // Nilai kosong/sampah dikirim mentah supaya ditolak server dengan pesan jelas.
+                function normalisasiKirim(input) {
+                    const s = String(input?.value ?? '').trim();
+                    if (s === '') return '';
+                    const bersih = keTitikDesimal(s, pakaiRibuan(input));
+                    return /^-?\d+(\.\d+)?$/.test(bersih) ? bersih : s;
                 }
 
                 function hitungBaris(baris, sumber = 'harga') {
@@ -748,12 +800,22 @@
                 jenisRadios.forEach((radio) => radio.addEventListener('change', updateJenisFaktur));
                 initSelectSearch();
                 updateJenisFaktur();
+                document.querySelectorAll(SELEKTOR_ANGKA).forEach(rapikanTampilan);
+
+                document.addEventListener('focusin', function(e) {
+                    if (e.target.matches(SELEKTOR_ANGKA)) poloskanUntukEdit(e.target);
+                });
+                document.addEventListener('focusout', function(e) {
+                    if (e.target.matches(SELEKTOR_ANGKA)) rapikanTampilan(e.target);
+                });
 
                 document.getElementById('form-faktur').addEventListener('submit', function(e) {
                     if (tbody.querySelectorAll('.baris-item').length === 0) {
                         e.preventDefault();
                         alert('Tambahkan minimal 1 item pembelian.');
+                        return;
                     }
+                    this.querySelectorAll(SELEKTOR_ANGKA).forEach((input) => { input.value = normalisasiKirim(input); });
                 });
             })();
         </script>
