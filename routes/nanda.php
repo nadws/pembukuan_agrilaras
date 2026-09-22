@@ -4,34 +4,45 @@ use App\Http\Controllers\AktivaController;
 use App\Http\Controllers\AktivaGantungController;
 use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AkunPerkiraanController;
-use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\BarangUmumController;
+use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
 use App\Http\Controllers\CrudPermissionController;
-use App\Http\Controllers\DokumentasiLaporanLayerController;
 use App\Http\Controllers\DashboardJurnalPerkiraanController;
-use App\Http\Controllers\FakturPenjualanController;
+use App\Http\Controllers\DokumentasiLaporanLayerController;
+use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\FakturPembelianController;
+use App\Http\Controllers\FakturPenjualanController;
+use App\Http\Controllers\ForecastController;
 use App\Http\Controllers\GudangController;
+use App\Http\Controllers\Jurnal_aktivaController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\JurnalPenyesuaianController;
 use App\Http\Controllers\JurnalPerkiraanController;
 use App\Http\Controllers\Laporan_layerController;
 use App\Http\Controllers\LaporanAkhirBulanController;
+use App\Http\Controllers\LaporanFakturPajakController;
+use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\LaporanPendapatanController;
+use App\Http\Controllers\LaporanStokPersediaanController;
+use App\Http\Controllers\MasterAkunPerkiraanController;
+use App\Http\Controllers\MedionController;
 use App\Http\Controllers\NavbarController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\OpnamemtdController;
 use App\Http\Controllers\PembayaranBkController;
 use App\Http\Controllers\PembelianBahanBakuController;
-use App\Http\Controllers\PembukuanBaruJurnalUmumController;
-use App\Http\Controllers\PembukuanBaruJurnalPenyesuaianController;
 use App\Http\Controllers\PembukuanBaruBukuBesarController;
+use App\Http\Controllers\PembukuanBaruJurnalPenyesuaianController;
+use App\Http\Controllers\PembukuanBaruJurnalUmumController;
 use App\Http\Controllers\Penjualan_martadah_alpaController;
-use App\Http\Controllers\PenjualanUmumTransaksiController;
 use App\Http\Controllers\Penjualan_umum_cekController;
+use App\Http\Controllers\PenjualanAyamController;
+use App\Http\Controllers\PenjualanAyamTransaksiController;
 use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PenjualanTelurTransaksiController;
+use App\Http\Controllers\PenjualanUmumTransaksiController;
 use App\Http\Controllers\Penyetoran_telurController;
 use App\Http\Controllers\PiutangtelurController;
 use App\Http\Controllers\PiutangTransaksiController;
@@ -39,27 +50,15 @@ use App\Http\Controllers\Produk_telurController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
-use App\Http\Controllers\SetorKasController;
-use App\Http\Controllers\StokMasukController;
 use App\Http\Controllers\ProyekController;
-use App\Http\Controllers\Saldo;
+use App\Http\Controllers\Saldo_penutup;
 use App\Http\Controllers\SaldoController;
+use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\Stock_telurController;
+use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\Stok_pakanController;
 use App\Http\Controllers\Stok_telur_alpaController;
-use App\Http\Controllers\ExportRecordingController;
-use App\Http\Controllers\ForecastController;
-use App\Http\Controllers\Jurnal_aktivaController;
-use App\Http\Controllers\LaporanLabarugiKandangController;
-use App\Http\Controllers\LaporanStokPersediaanController;
-use App\Http\Controllers\MedionController;
-use App\Http\Controllers\MasterAkunPerkiraanController;
-use App\Http\Controllers\PenjualanAyamController;
-use App\Http\Controllers\PenjualanAyamTransaksiController;
-use App\Http\Controllers\PenjualanTelurTransaksiController;
-use App\Http\Controllers\Saldo_penutup;
-use App\Http\Controllers\Stok_ayam;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\StokMasukController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -73,15 +72,12 @@ Route::get('/template2', function () {
     return view('template-table');
 })->name('template2');
 
-
-
-
 Route::get('/dashboard', [DashboardJurnalPerkiraanController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // 
+    //
     Route::controller(NavbarController::class)->group(function () {
         Route::get('/data_master', 'data_master')->name('data_master');
         Route::get('/buku_besar', 'buku_besar')->name('buku_besar');
@@ -271,7 +267,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/neraca/export', 'exportNeraca')->name('neraca.export');
     });
 
-
     Route::controller(JurnalController::class)->group(function () {
         Route::get('/jurnal', 'index')->name('jurnal');
         Route::post('/jurnal-update', 'update')->name('jurnal.update');
@@ -320,8 +315,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/saveSaldo', 'saveSaldo')->name('saveSaldo');
     });
 
-
-
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');
         Route::patch('/profile', 'update')->name('profile.update');
@@ -357,8 +350,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{no_nota}', 'edit')->name('edit_load');
             Route::post('/edit', 'update')->name('edit');
         });
-
-
 
     Route::controller(GudangController::class)
         ->prefix('gudang')
@@ -439,7 +430,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
         // URL lama tetap dipertahankan sebagai pintu masuk, tetapi proses opname
         // barang umum sekarang dilakukan dari modul Gudang.
-        Route::get('/stok-opname', fn() => redirect()->route('gudang-persediaan.barang-umum'))->name('stok-opname');
+        Route::get('/stok-opname', fn () => redirect()->route('gudang-persediaan.barang-umum'))->name('stok-opname');
         Route::post('/stok-opname', 'simpanStokOpname')->name('stok-opname.store');
         Route::get('/penyusutan-aktiva', 'penyusutanAktiva')->name('penyusutan-aktiva');
         Route::post('/penyusutan-aktiva', 'simpanPenyusutanGrouped')->name('penyusutan-aktiva.store');
@@ -701,7 +692,6 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-
 Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/laporan-layer/export', 'export')->name('laporan_layer.export');
@@ -726,6 +716,10 @@ Route::controller(LaporanPendapatanController::class)->group(function () {
     Route::get('/laporan/pendapatan', 'index')->name('laporan.pendapatan');
     Route::get('/laporan/pendapatan/export', 'export')->name('laporan.pendapatan.export');
     Route::get('/laporan/pendapatan/detail-nota', 'detailNota')->name('laporan.pendapatan.detail-nota');
+});
+Route::controller(LaporanFakturPajakController::class)->group(function () {
+    Route::get('/laporan/faktur-pajak', 'index')->name('laporan.faktur-pajak');
+    Route::get('/laporan/faktur-pajak/export', 'export')->name('laporan.faktur-pajak.export');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');

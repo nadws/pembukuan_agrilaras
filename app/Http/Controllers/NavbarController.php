@@ -385,6 +385,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Gabungan pendapatan penjualan telur, umum, dan ayam per nota.',
             ],
             [
+                'judul' => 'Laporan Faktur Pajak',
+                'route' => 'laporan.faktur-pajak',
+                'img' => 'invoice.png',
+                'deskripsi' => 'Melihat daftar faktur pajak penjualan telur per nota beserta DPP dan PPN.',
+            ],
+            [
                 'judul' => 'Laporan Stok Persediaan',
                 'route' => 'laporan.stok-persediaan',
                 'img' => 'warehouse.png',
