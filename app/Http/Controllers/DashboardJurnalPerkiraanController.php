@@ -14,7 +14,7 @@ class DashboardJurnalPerkiraanController extends Controller
 {
     private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang', 'stok'];
 
-    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 4, 'stok' => 4];
+    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 12, 'stok' => 12];
 
     public function index(Request $request): View
     {
@@ -106,7 +106,7 @@ class DashboardJurnalPerkiraanController extends Controller
         $labaRugiTotal = (float) $labaRugiPerKandang->sum('laba')
             + (float) ($labaRugi['totalPerKategori']['jual_umum'] ?? 0);
 
-        $tataLetak = $this->tataLetak((int) auth()->id());
+        $tataLetak = $this->tataLetak();
 
         // Piutang telur belum lunas berumur maks 10 hari (snapshot hari ini,
         // tidak mengikuti filter periode).
@@ -177,17 +177,19 @@ class DashboardJurnalPerkiraanController extends Controller
             'fcrWeek' => $telurHarian->sum() > 0 ? (float) $pakanHarian->sum() / (float) $telurHarian->sum() : 0,
             'widgetOrder' => $tataLetak['orderMap'], 'widgetHidden' => $tataLetak['hidden'],
             'widgetSpan' => $tataLetak['span'],
+            'bolehUbah' => (int) auth()->user()->posisi_id === 1,
         ]);
     }
 
     /**
-     * Tata letak panel per user. Baris yang belum tersimpan memakai bawaan.
+     * Tata letak global: satu baris (user_id NULL) dipakai semua akun.
+     * Baris per-user yang lama diabaikan.
      *
      * @return array{orderMap: array<string, int>, hidden: string[], span: array<string, int>}
      */
-    private function tataLetak(int $userId): array
+    private function tataLetak(): array
     {
-        $simpan = DB::table('dashboard_layout')->where('user_id', $userId)->value('tata_letak');
+        $simpan = DB::table('dashboard_layout')->whereNull('user_id')->value('tata_letak');
         $data = is_string($simpan) ? (array) json_decode($simpan, true) : [];
         $order = array_values(array_intersect((array) ($data['order'] ?? []), self::WIDGET_DASHBOARD));
         foreach (self::WIDGET_DASHBOARD as $widget) {
@@ -210,6 +212,11 @@ class DashboardJurnalPerkiraanController extends Controller
 
     public function updateLayout(Request $request): JsonResponse
     {
+        // Hanya super admin (posisi_id 1) yang boleh mengubah tata letak global.
+        if ((int) auth()->user()->posisi_id !== 1) {
+            abort(403, 'Hanya super admin yang boleh mengubah tata letak dashboard.');
+        }
+
         $valid = $request->validate([
             'order' => ['required', 'array', 'min:1'],
             'order.*' => ['string', Rule::in(self::WIDGET_DASHBOARD)],
@@ -231,10 +238,10 @@ class DashboardJurnalPerkiraanController extends Controller
             ]),
             'updated_at' => now(),
         ];
-        if (DB::table('dashboard_layout')->where('user_id', auth()->id())->exists()) {
-            DB::table('dashboard_layout')->where('user_id', auth()->id())->update($baris);
+        if (DB::table('dashboard_layout')->whereNull('user_id')->exists()) {
+            DB::table('dashboard_layout')->whereNull('user_id')->update($baris);
         } else {
-            $baris['user_id'] = auth()->id();
+            $baris['user_id'] = null;
             $baris['created_at'] = now();
             DB::table('dashboard_layout')->insert($baris);
         }
