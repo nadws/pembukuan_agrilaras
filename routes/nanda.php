@@ -75,6 +75,9 @@ Route::get('/template2', function () {
 Route::get('/dashboard', [DashboardJurnalPerkiraanController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+Route::put('/dashboard/layout', [DashboardJurnalPerkiraanController::class, 'updateLayout'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.layout');
 
 Route::middleware('auth')->group(function () {
     //

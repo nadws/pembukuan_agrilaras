@@ -3,18 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Services\LabaRugiKandangService;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Carbon\Carbon;
 
 class DashboardJurnalPerkiraanController extends Controller
 {
+    private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang'];
+
+    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 4];
+
     public function index(Request $request): View
     {
         $akhir = $this->parseDate($request->input('tgl2')) ?? now()->startOfDay();
-        $mulai = $this->parseDate($request->input('tgl1')) ?? $akhir->copy()->subDays(6);
-        if ($mulai->gt($akhir)) [$mulai, $akhir] = [$akhir->copy(), $mulai->copy()];
+        $mulai = $this->parseDate($request->input('tgl1')) ?? $akhir->copy()->startOfMonth();
+        if ($mulai->gt($akhir)) {
+        [$mulai, $akhir] = [$akhir->copy(), $mulai->copy()];
+        }
         $tanggal = $akhir->toDateString();
 
         $pemakaianPakan = DB::table('stok_produk_perencanaan as s')
@@ -29,7 +37,9 @@ class DashboardJurnalPerkiraanController extends Controller
             ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
             ->whereBetween('s.tgl', [$mulai->toDateString(), $akhir->toDateString()])
             ->where('s.id_kandang', '>', 0)->where('s.id_gudang', 1)
-            ->where(function ($query) { $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0); })
+            ->where(function ($query) {
+            $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0);
+            })
             ->selectRaw("DATE(s.tgl) as tanggal, s.id_kandang, COALESCE(k.nm_kandang, CONCAT('Kandang ', s.id_kandang)) as nm_kandang, SUM(COALESCE(s.pcs, 0)) as jumlah_pcs, SUM(COALESCE(s.kg, 0) - (COALESCE(s.pcs, 0) / 180)) as jumlah_kg")
             ->groupBy('tanggal', 's.id_kandang', 'k.nm_kandang')->orderBy('tanggal')->get();
 
@@ -63,15 +73,15 @@ class DashboardJurnalPerkiraanController extends Controller
             return ['name' => (string) ($rows->first()->nm_kandang ?: 'Kandang '.$id), 'data' => $hari->map(fn ($date) => (float) $rows->where('tanggal', $date->toDateString())->sum('jumlah_kg'))->values()];
         })->values();
 
-
-
         // Perolehan kemarin (H-1) per kandang untuk histogram bawah.
         $tglKemarin = now()->subDay()->toDateString();
         $produksiKemarin = DB::table('stok_telur as s')
             ->leftJoin('kandang as k', 'k.id_kandang', '=', 's.id_kandang')
             ->whereDate('s.tgl', $tglKemarin)
             ->where('s.id_kandang', '>', 0)->where('s.id_gudang', 1)
-            ->where(function ($query) { $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0); })
+            ->where(function ($query) {
+            $query->where('s.pcs', '>', 0)->orWhere('s.kg', '>', 0);
+            })
             ->selectRaw("COALESCE(k.nm_kandang, CONCAT('Kandang ', s.id_kandang)) as nama")
             ->selectRaw('SUM(COALESCE(s.kg, 0) - (COALESCE(s.pcs, 0) / 180)) as kg')
             ->selectRaw('SUM(COALESCE(s.pcs, 0)) as pcs')
@@ -96,6 +106,46 @@ class DashboardJurnalPerkiraanController extends Controller
         $labaRugiTotal = (float) $labaRugiPerKandang->sum('laba')
             + (float) ($labaRugi['totalPerKategori']['jual_umum'] ?? 0);
 
+        $tataLetak = $this->tataLetak((int) auth()->id());
+
+        // Piutang telur belum lunas berumur maks 10 hari (snapshot hari ini,
+        // tidak mengikuti filter periode).
+        $piutangBelumLunas = DB::table('invoice_telur as i')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
+            ->leftJoinSub(
+                DB::table('bayar_telur')
+                    ->groupBy('no_nota')
+                    ->select('no_nota')
+                    ->selectRaw('SUM(COALESCE(debit, 0) - COALESCE(kredit, 0)) as terbayar'),
+                'b', 'b.no_nota', '=', 'i.no_nota'
+            )
+            ->where('i.status', 'unpaid')
+            ->where('i.lokasi', '!=', 'opname')
+            ->groupBy('i.no_nota')
+            ->select('i.no_nota')
+            ->selectRaw('MAX(i.tgl) as tgl')
+            ->selectRaw("MAX(COALESCE(NULLIF(c.nm_customer, ''), i.customer)) as customer")
+            ->selectRaw('SUM(i.total_rp) as total')
+            ->selectRaw('COALESCE(MAX(b.terbayar), 0) as terbayar')
+            ->orderByDesc('tgl')
+            ->limit(100)
+            ->get()
+            ->map(function ($row) {
+                $sisa = (float) $row->total - (float) $row->terbayar;
+                $umur = (int) floor((now()->startOfDay()->timestamp - Carbon::parse($row->tgl)->startOfDay()->timestamp) / 86400);
+
+                return (object) [
+                    'no_nota' => (string) $row->no_nota,
+                    'tgl' => (string) $row->tgl,
+                    'customer' => trim((string) ($row->customer ?? '')) !== '' ? (string) $row->customer : '-',
+                    'sisa' => $sisa,
+                    'umur' => $umur,
+                ];
+            })
+            ->filter(fn ($row) => $row->sisa > 0 && $row->umur >= 10)
+            ->sortByDesc('umur')
+            ->values();
+
         return view('dashboard', [
             'title' => 'Dashboard', 'tanggal' => $tanggal, 'tanggalMulai' => $mulai->toDateString(), 'tanggalAkhir' => $akhir->toDateString(),
             'pemakaianPakan' => $pemakaianPakan, 'produksiTelur' => $produksiTelur,
@@ -104,16 +154,87 @@ class DashboardJurnalPerkiraanController extends Controller
             'telurSeries' => $telurSeries,
             'pakanKandang' => $pakanKandang,
             'labaRugiPerKandang' => $labaRugiPerKandang, 'labaRugiTotal' => $labaRugiTotal,
+            'piutangBelumLunas' => $piutangBelumLunas, 'piutangTotal' => (float) $piutangBelumLunas->sum('sisa'),
             'tglKemarin' => $tglKemarin, 'produksiKemarin' => $produksiKemarin, 'kemarinTotalKg' => $kemarinTotalKg,
             'jumlahHari' => $jumlahHari,
             'totalPakanKg' => (float) $pakanHarian->sum(), 'totalTelurKg' => (float) $telurHarian->sum(),
             'fcrWeek' => $telurHarian->sum() > 0 ? (float) $pakanHarian->sum() / (float) $telurHarian->sum() : 0,
+            'widgetOrder' => $tataLetak['orderMap'], 'widgetHidden' => $tataLetak['hidden'],
+            'widgetSpan' => $tataLetak['span'],
         ]);
+    }
+
+    /**
+     * Tata letak panel per user. Baris yang belum tersimpan memakai bawaan.
+     *
+     * @return array{orderMap: array<string, int>, hidden: string[], span: array<string, int>}
+     */
+    private function tataLetak(int $userId): array
+    {
+        $simpan = DB::table('dashboard_layout')->where('user_id', $userId)->value('tata_letak');
+        $data = is_string($simpan) ? (array) json_decode($simpan, true) : [];
+        $order = array_values(array_intersect((array) ($data['order'] ?? []), self::WIDGET_DASHBOARD));
+        foreach (self::WIDGET_DASHBOARD as $widget) {
+            if (! in_array($widget, $order, true)) {
+                $order[] = $widget;
+            }
+        }
+        $hidden = array_values(array_intersect((array) ($data['hidden'] ?? []), self::WIDGET_DASHBOARD));
+        $spanSimpan = array_intersect_key((array) ($data['span'] ?? []), array_flip(self::WIDGET_DASHBOARD));
+        $span = self::WIDGET_SPAN_DEFAULT;
+        foreach ($spanSimpan as $widget => $lebar) {
+            $lebar = (int) $lebar;
+            if (in_array($lebar, [4, 6, 8, 12], true)) {
+                $span[$widget] = $lebar;
+            }
+        }
+
+        return ['orderMap' => array_flip($order), 'hidden' => $hidden, 'span' => $span];
+    }
+
+    public function updateLayout(Request $request): JsonResponse
+    {
+        $valid = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*' => ['string', Rule::in(self::WIDGET_DASHBOARD)],
+            'hidden' => ['sometimes', 'array'],
+            'hidden.*' => ['string', Rule::in(self::WIDGET_DASHBOARD)],
+            'span' => ['sometimes', 'array'],
+            'span.*' => ['integer', Rule::in([4, 6, 8, 12])],
+        ]);
+
+        $span = self::WIDGET_SPAN_DEFAULT;
+        foreach (array_intersect_key((array) ($valid['span'] ?? []), array_flip(self::WIDGET_DASHBOARD)) as $widget => $lebar) {
+            $span[$widget] = (int) $lebar;
+        }
+        $baris = [
+            'tata_letak' => json_encode([
+                'order' => array_values($valid['order']),
+                'hidden' => array_values($valid['hidden'] ?? []),
+                'span' => $span,
+            ]),
+            'updated_at' => now(),
+        ];
+        if (DB::table('dashboard_layout')->where('user_id', auth()->id())->exists()) {
+            DB::table('dashboard_layout')->where('user_id', auth()->id())->update($baris);
+        } else {
+            $baris['user_id'] = auth()->id();
+            $baris['created_at'] = now();
+            DB::table('dashboard_layout')->insert($baris);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     private function parseDate(?string $value): ?Carbon
     {
-        if (! $value) return null;
-        try { return Carbon::parse($value)->startOfDay(); } catch (\Throwable) { return null; }
+        if (! $value) {
+        return null;
+        }
+        try {
+        return Carbon::parse($value)->startOfDay();
+        } catch (\Throwable) {
+        return null;
+        }
     }
 }
