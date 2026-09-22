@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class FakturPembelianController extends Controller
@@ -256,6 +257,10 @@ class FakturPembelianController extends Controller
         ]);
 
         $akunHutang = $this->akunAktif($validated['komponen_hutang'] === 'pph23' ? '210203' : '210220');
+        if ($validated['komponen_hutang'] === 'barang') {
+            // Bayar ke akun yang sama dengan tempat item dicatat.
+            $akunHutang = $this->akunHutangPelunasanBarang($faktur_pembelian) ?? $akunHutang;
+        }
         if (in_array($validated['komponen_hutang'], ['ongkir', 'admin'], true)) {
             $biaya = collect($faktur_pembelian->biaya_lain ?? [])->firstWhere('kode', $validated['komponen_hutang']);
             $akunHutang = DB::table('akun_perkiraan')->where('aktif', 1)
@@ -418,16 +423,18 @@ class FakturPembelianController extends Controller
              'item.*.tanggal_expired' => ['nullable', 'date'],
          ]);
 
-         $akunHutangPakan = $this->akunAktif('210221');
          $akunHutangEkspedisi = $this->akunAktif('210222');
          $akunHutangLainnya = $this->akunAktif('210220');
-         
-         if (! $akunHutangPakan) {
-             return back()->withErrors(['akun' => 'Akun Hutang Pakan (210221) belum tersedia atau tidak aktif.'])->withInput();
+
+         // Nilai item masuk ke Hutang Pakan hanya untuk faktur pakan;
+         // jenis lain masuk ke Hutang Lainnya.
+         $akunHutangItem = $this->akunHutangItemFaktur($validated['jenis_faktur']);
+         if (! $akunHutangItem) {
+             return back()->withErrors(['akun' => 'Akun ' . $this->namaAkunHutangItemFaktur($validated['jenis_faktur']) . ' belum tersedia atau tidak aktif.'])->withInput();
          }
 
-         $items = $this->normalisasiItemFaktur($validated['item'])->map(function ($item) use ($akunHutangPakan) {
-             $item['id_akun_pembayaran'] = (int) $akunHutangPakan->id_akun_perkiraan;
+         $items = $this->normalisasiItemFaktur($validated['item'])->map(function ($item) use ($akunHutangItem) {
+             $item['id_akun_pembayaran'] = (int) $akunHutangItem->id_akun_perkiraan;
              return $item;
          });
          // Satu faktur hanya berisi satu sumber produk. Untuk faktur Barang Umum,
@@ -479,7 +486,7 @@ class FakturPembelianController extends Controller
 
          $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
              ->map(fn ($id) => (int) $id)->unique()->values();
-         $akunPembayaran = collect([$akunHutangPakan])
+         $akunPembayaran = collect([$akunHutangItem])
              ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
          $akunBiaya = collect([$akunHutangEkspedisi, $akunHutangLainnya])
              ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
@@ -493,17 +500,17 @@ class FakturPembelianController extends Controller
          $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
              ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
 
-         if (! $akunHutangPakan || ! $akunHutangEkspedisi
+         if (! $akunHutangItem || ! $akunHutangEkspedisi
              || ($totalPph23 > 0 && ! $akunPph23)
              || $akunPembayaran->count() !== $idAkunPembayaran->count()
              || $akunBiaya->count() !== collect($biayaLain)->pluck('id_akun')->unique()->count()
              || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
              return back()
-                 ->withErrors(['akun' => 'Akun Hutang Pakan/Ekspedisi atau akun persediaan belum tersedia/aktif.'])
+                 ->withErrors(['akun' => 'Akun ' . $this->namaAkunHutangItemFaktur($validated['jenis_faktur']) . '/Ekspedisi atau akun persediaan belum tersedia/aktif.'])
                  ->withInput();
          }
 
-         $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunHutangPakan, $akunHutangEkspedisi, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23, $akunPph23) {
+         $fakturId = DB::transaction(function () use ($validated, $items, $produk, $produkUmum, $akunHutangItem, $akunHutangEkspedisi, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23, $akunPph23) {
              $sekarang = now();
              $tipeJurnal = $validated['jenis_faktur'] === 'barang_umum'
                  ? 'Pembelian Umum'
@@ -516,7 +523,7 @@ class FakturPembelianController extends Controller
              $kreditPerAkun = $items->groupBy(fn ($item) => (int) $item['id_akun_pembayaran'])
                  ->map(fn ($baris) => round($baris->sum(fn ($item) => (float) $item['subtotal']), 2));
              $totalHutang = round(
-                 (float) ($kreditPerAkun[$akunHutangPakan->id_akun_perkiraan] ?? 0)
+                 (float) ($kreditPerAkun[$akunHutangItem->id_akun_perkiraan] ?? 0)
                  + collect($biayaLain)->sum('nominal'),
                  2
              );
@@ -613,7 +620,7 @@ class FakturPembelianController extends Controller
 
              foreach ($kreditPerAkun as $idAkun => $nominal) {
                  $akunKredit = $akunPembayaran->get((int) $idAkun) ?? $akunBiaya->get((int) $idAkun);
-                 $isHutang = (int) $idAkun === (int) $akunHutangPakan->id_akun_perkiraan;
+                 $isHutang = (int) $idAkun === (int) $akunHutangItem->id_akun_perkiraan;
 
                 $detailJurnal[] = [
                     'id_impor_jurnal_perkiraan' => $batchId,
@@ -798,10 +805,16 @@ $items = $this->normalisasiItemFaktur($validated['item']);
          }
 
          $items = $this->terapkanDiskonKeItem($items, $diskonTotal);
-         $akunHutangPakan = $this->akunAktif('210221');
          $akunHutangEkspedisi = $this->akunAktif('210222');
          $akunPph23 = $this->akunAktif('210203');
          $akunHutangLainnya = $this->akunAktif('210220');
+
+         // Nilai item masuk ke Hutang Pakan hanya untuk faktur pakan;
+         // jenis lain masuk ke Hutang Lainnya.
+         $akunHutangItem = $this->akunHutangItemFaktur($validated['jenis_faktur']);
+         if (! $akunHutangItem) {
+             return back()->withErrors(['akun' => 'Akun ' . $this->namaAkunHutangItemFaktur($validated['jenis_faktur']) . ' belum tersedia atau tidak aktif.'])->withInput();
+         }
          
          // Satu faktur hanya berisi satu sumber produk. Untuk faktur Barang Umum,
          // paksa sumbernya agar tidak terpengaruh oleh baris lama/JS browser.
@@ -811,9 +824,9 @@ $items = $this->normalisasiItemFaktur($validated['item']);
                  return $item;
              });
          }
-         // Item otomatis masuk ke Hutang Pakan (sama seperti tambah data).
-         $items = $items->map(function ($item) use ($akunHutangPakan) {
-             $item['id_akun_pembayaran'] = (int) $akunHutangPakan->id_akun_perkiraan;
+         // Item otomatis masuk ke akun hutang sesuai jenis faktur (sama seperti tambah data).
+         $items = $items->map(function ($item) use ($akunHutangItem) {
+             $item['id_akun_pembayaran'] = (int) $akunHutangItem->id_akun_perkiraan;
              return $item;
          });
          
@@ -854,7 +867,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
         $akunHutang = $this->akunAktif('210220');
         $idAkunPembayaran = $items->pluck('id_akun_pembayaran')
             ->map(fn ($id) => (int) $id)->unique()->values();
-        $akunPembayaran = collect([$akunHutangPakan])
+        $akunPembayaran = collect([$akunHutangItem])
             ->whereIn('id_akun_perkiraan', $idAkunPembayaran)->keyBy('id_akun_perkiraan');
         $akunBiaya = collect([$akunHutangEkspedisi, $akunHutangLainnya])
             ->whereIn('id_akun_perkiraan', collect($biayaLain)->pluck('id_akun'))->keyBy('id_akun_perkiraan');
@@ -867,17 +880,17 @@ $items = $this->normalisasiItemFaktur($validated['item']);
         $akunPersediaan = DB::table('akun_perkiraan')->where('aktif', 1)
             ->whereIn('kode_perkiraan', $kodeAkunPersediaan)->get()->keyBy('kode_perkiraan');
 
-         if (! $akunHutangPakan || ! $akunHutangEkspedisi
+         if (! $akunHutangItem || ! $akunHutangEkspedisi
              || ($totalPph23 > 0 && ! $akunPph23)
              || $akunPembayaran->count() !== $idAkunPembayaran->count()
              || $akunBiaya->count() !== collect($biayaLain)->pluck('id_akun')->unique()->count()
              || $akunPersediaan->count() !== $kodeAkunPersediaan->count()) {
              return back()
-                 ->withErrors(['akun' => 'Akun Hutang Pakan/Ekspedisi atau akun persediaan belum tersedia/aktif.'])
+                 ->withErrors(['akun' => 'Akun ' . $this->namaAkunHutangItemFaktur($validated['jenis_faktur']) . '/Ekspedisi atau akun persediaan belum tersedia/aktif.'])
                  ->withInput();
          }
 
-         DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutang, $akunHutangPakan, $akunHutangEkspedisi, $akunHutangLainnya, $akunPph23, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23) {
+         DB::transaction(function () use ($validated, $items, $produk, $faktur_pembelian, $akunHutang, $akunHutangItem, $akunHutangEkspedisi, $akunHutangLainnya, $akunPph23, $akunPembayaran, $akunBiaya, $akunPersediaan, $diskonTotal, $biayaLain, $totalPph23) {
              $noFakturLama = $faktur_pembelian->no_faktur;
              $totalQty = $items->sum(fn($item) => (float) $item['qty']);
              $totalItem = $items->sum(fn($item) => (float) $item['subtotal']);
@@ -887,7 +900,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
              $kreditPerAkun = $items->groupBy(fn ($item) => (int) $item['id_akun_pembayaran'])
                  ->map(fn ($baris) => round($baris->sum(fn ($item) => (float) $item['subtotal']), 2));
              foreach ($biayaLain as $biaya) $kreditPerAkun[$biaya['id_akun']] = round(($kreditPerAkun[$biaya['id_akun']] ?? 0) + $biaya['nominal'], 2);
-             $totalHutang = round((float) ($kreditPerAkun[$akunHutangPakan->id_akun_perkiraan] ?? 0) + collect($biayaLain)->sum('nominal'), 2);
+             $totalHutang = round((float) ($kreditPerAkun[$akunHutangItem->id_akun_perkiraan] ?? 0) + collect($biayaLain)->sum('nominal'), 2);
             $metodePembayaran = $totalHutang <= 0 ? 'tunai' : ($totalHutang >= $totalHarga ? 'hutang' : 'campuran');
 
             $faktur_pembelian->update([
@@ -927,7 +940,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
                 ]);
             }
 
-            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPembayaran->union($akunBiaya), $akunPersediaan, $noFakturLama, $biayaAlokasiBase, $biayaLain, $akunHutangPakan);
+            $this->rebuildJurnalFaktur($faktur_pembelian, $items, $produk, $akunHutang, $akunPembayaran->union($akunBiaya), $akunPersediaan, $noFakturLama, $biayaAlokasiBase, $biayaLain, $akunHutangItem);
         });
 
         return redirect()
@@ -1549,7 +1562,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
 
     private function akunPembayaranDefaultFaktur(FakturModel $faktur): ?int
     {
-        $akunHutang = $this->akunAktif('210220');
+        $akunHutang = $this->akunHutangItemFaktur($faktur->jenis_faktur ?? 'pakan');
 
         if (($faktur->metode_pembayaran ?? 'hutang') === 'hutang') {
             return $akunHutang ? (int) $akunHutang->id_akun_perkiraan : null;
@@ -1577,7 +1590,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
         string $noFakturLama,
         float $totalBiayaLain = 0,
         array $biayaLain = [],
-        ?object $akunHutangPakan = null
+        ?object $akunHutangItem = null
     ): void {
         $sekarang = now();
         $totalItem = $items->sum(fn($item) => (float) $item['subtotal']);
@@ -1659,7 +1672,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
 
          foreach ($kreditPerAkun as $idAkun => $nominal) {
              $akunKredit = $akunPembayaran->get((int) $idAkun);
-             $isHutang = (int) $idAkun === (int) $akunHutangPakan->id_akun_perkiraan;
+             $isHutang = $akunHutangItem && (int) $idAkun === (int) $akunHutangItem->id_akun_perkiraan;
 
             $detailJurnal[] = [
                 'id_impor_jurnal_perkiraan' => $batchId,
@@ -1722,6 +1735,42 @@ $items = $this->normalisasiItemFaktur($validated['item']);
             ->where('kode_perkiraan', $kode)
             ->where('aktif', true)
             ->first();
+    }
+
+    /**
+     * Akun hutang untuk nilai item faktur: pakan -> Hutang Pakan (210221),
+     * selain itu -> Hutang Lainnya (210220).
+     */
+    private function akunHutangItemFaktur(string $jenisFaktur): ?object
+    {
+        return $this->akunAktif($jenisFaktur === 'pakan' ? '210221' : '210220');
+    }
+
+    private function namaAkunHutangItemFaktur(string $jenisFaktur): string
+    {
+        return $jenisFaktur === 'pakan' ? 'Hutang Pakan (210221)' : 'Hutang Lainnya (210220)';
+    }
+
+    /**
+     * Akun hutang komponen barang saat pelunasan: mengikuti akun yang dipakai
+     * item faktur (detail), jatuh kembali ke aturan jenis bila belum ada.
+     */
+    private function akunHutangPelunasanBarang(FakturModel $faktur): ?object
+    {
+        if (Schema::hasColumn('faktur_pembelian_detail', 'id_akun_pembayaran')) {
+            $ids = DB::table('faktur_pembelian_detail')
+                ->where('faktur_pembelian_id', $faktur->id)
+                ->pluck('id_akun_pembayaran')
+                ->map(fn ($id) => (int) $id)->unique()->values();
+            if ($ids->count() === 1 && $ids->first()) {
+                return DB::table('akun_perkiraan')
+                    ->where('aktif', 1)
+                    ->where('id_akun_perkiraan', $ids->first())
+                    ->first();
+            }
+        }
+
+        return $this->akunHutangItemFaktur($faktur->jenis_faktur);
     }
 
     private function generateNoFaktur(): string
