@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\LabaRugiKandangService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -43,7 +44,8 @@ class DashboardJurnalPerkiraanController extends Controller
             ->orderBy('k.nm_kandang')->orderByDesc('jumlah_kg')->get()
             ->groupBy('id_kandang');
 
-        $hari = collect(range(0, 6))->map(fn ($offset) => $mulai->copy()->addDays($offset));
+        $jumlahHari = max(1, min(31, $mulai->diffInDays($akhir) + 1));
+        $hari = collect(range(0, $jumlahHari - 1))->map(fn ($offset) => $mulai->copy()->addDays($offset));
         $pakanHarian = $hari->map(fn ($date) => (float) ($pemakaianPakan->firstWhere('tanggal', $date->toDateString())->jumlah_kg ?? 0));
         $pakanKandangHarian = DB::table('stok_produk_perencanaan as s')
             ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
@@ -76,6 +78,24 @@ class DashboardJurnalPerkiraanController extends Controller
             ->groupBy('s.id_kandang', 'k.nm_kandang')->orderByDesc('kg')->get();
         $kemarinTotalKg = (float) $produksiKemarin->sum('kg');
 
+        // Panel laba rugi per kandang pada dashboard sengaja memakai kalkulator
+        // yang sama dengan laporan Laba rugi kandang agar angkanya selalu cocok.
+        $labaRugi = app(LabaRugiKandangService::class)->hitung($mulai->toDateString(), $akhir->toDateString());
+        $labaRugiPerKandang = collect($labaRugi['kandang'])->map(function ($k) use ($labaRugi) {
+            $id = (int) $k->id_kandang;
+            $nilai = $labaRugi['nilaiKandang'];
+            $pendapatan = (float) ($nilai['jual_telur'][$id] ?? 0) + (float) ($nilai['jual_ayam'][$id] ?? 0);
+            $biaya = (float) ($nilai['pakan'][$id] ?? 0)
+                + (float) ($nilai['vitamin'][$id] ?? 0)
+                + (float) ($nilai['vaksin'][$id] ?? 0)
+                + (float) ($nilai['rak'][$id] ?? 0)
+                + (float) ($nilai['operasional'][$id] ?? 0);
+
+            return (object) ['nama' => (string) ($k->nm_kandang ?: 'Kandang '.$id), 'laba' => $pendapatan - $biaya];
+        })->values();
+        $labaRugiTotal = (float) $labaRugiPerKandang->sum('laba')
+            + (float) ($labaRugi['totalPerKategori']['jual_umum'] ?? 0);
+
         return view('dashboard', [
             'title' => 'Dashboard', 'tanggal' => $tanggal, 'tanggalMulai' => $mulai->toDateString(), 'tanggalAkhir' => $akhir->toDateString(),
             'pemakaianPakan' => $pemakaianPakan, 'produksiTelur' => $produksiTelur,
@@ -83,7 +103,9 @@ class DashboardJurnalPerkiraanController extends Controller
             'pakanHarian' => $pakanHarian->values(), 'pakanSeries' => $pakanSeries, 'telurHarian' => $telurHarian->values(),
             'telurSeries' => $telurSeries,
             'pakanKandang' => $pakanKandang,
+            'labaRugiPerKandang' => $labaRugiPerKandang, 'labaRugiTotal' => $labaRugiTotal,
             'tglKemarin' => $tglKemarin, 'produksiKemarin' => $produksiKemarin, 'kemarinTotalKg' => $kemarinTotalKg,
+            'jumlahHari' => $jumlahHari,
             'totalPakanKg' => (float) $pakanHarian->sum(), 'totalTelurKg' => (float) $telurHarian->sum(),
             'fcrWeek' => $telurHarian->sum() > 0 ? (float) $pakanHarian->sum() / (float) $telurHarian->sum() : 0,
         ]);
