@@ -15,6 +15,19 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PembukuanBaruJurnalUmumController extends Controller
 {
+    /**
+     * Tipe transaksi hasil import Accurate yang masuk tab Import Accurate.
+     * Selain daftar ini (termasuk yang sudah punya tab sendiri), tidak tampil.
+     */
+    private const TIPE_IMPOR_ACCURATE = [
+        'FJ', 'SS', 'KM', 'SI', 'CP', 'CC', 'KC', 'KJ', 'TB', 'FB',
+        'KR', 'IA', 'FA', 'CY', 'MU', 'PI', 'KN', 'MP', 'JU', 'JV',
+        'KP', 'BT', 'KB', 'GK', 'RI',
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+        'Lainnya',
+    ];
+
     public function templateImport(): BinaryFileResponse
     {
         $accounts = DB::table('akun_perkiraan')->where('aktif', 1)
@@ -54,7 +67,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
         $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
         $cari = $request->input('cari');
-        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual'], true)
+        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual', 'import-accurate'], true)
             ? $request->input('kelompok')
             : 'faktur-pembelian';
 
@@ -218,6 +231,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                 'Penyesuaian Aktiva',
                 'Penyesuaian Ayam',
                 'Pemakaian Pakan',
+                'Pemakaian Pakan Harian',
                 'Pemakaian Vitamin',
                 'Pemakaian Vaksin',
             ],
@@ -225,6 +239,13 @@ class PembukuanBaruJurnalUmumController extends Controller
             tanggalAkhir: $tanggalAkhir,
             cari: $cari,
             aktif: $kelompok === 'penyesuaian'
+        );
+
+        [$jurnalImporAccurate, $detailImporAccurate, $ringkasanImporAccurate] = $this->jurnalImporAccurate(
+            tanggalAwal: $tanggalAwal,
+            tanggalAkhir: $tanggalAkhir,
+            cari: $cari,
+            aktif: $kelompok === 'import-accurate'
         );
 
         $batch = $kelompok === 'manual'
@@ -300,6 +321,9 @@ class PembukuanBaruJurnalUmumController extends Controller
             'jurnalPenyesuaian' => $jurnalPenyesuaian,
             'detailPenyesuaian' => $detailPenyesuaian,
             'ringkasanPenyesuaian' => $ringkasanPenyesuaian,
+            'jurnalImporAccurate' => $jurnalImporAccurate,
+            'detailImporAccurate' => $detailImporAccurate,
+            'ringkasanImporAccurate' => $ringkasanImporAccurate,
         ]);
     }
 
@@ -309,7 +333,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
         $cari = trim((string) $request->input('cari'));
         $cari = $cari === '' ? null : $cari;
-        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'pelunasan-hutang', 'penjualan', 'biaya', 'pembelian-umum', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual'], true)
+        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'pelunasan-hutang', 'penjualan', 'biaya', 'pembelian-umum', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual', 'import-accurate'], true)
             ? $request->input('kelompok')
             : 'faktur-pembelian';
 
@@ -323,6 +347,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             'aktiva-gantung' => 'Jurnal Umum - Aktiva Gantung',
             'pembalik-aktiva-gantung' => 'Jurnal Umum - Pembalik Aktiva Gantung',
             'manual' => 'Jurnal Umum - Jurnal Umum Manual',
+            'import-accurate' => 'Jurnal Umum - Import Accurate',
         ];
 
         if ($kelompok === 'aktiva-gantung') {
@@ -418,6 +443,39 @@ class PembukuanBaruJurnalUmumController extends Controller
             );
         }
 
+        if ($kelompok === 'import-accurate') {
+            $rows = DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->tap(fn ($q) => $this->filterImporAccurate($q))
+                ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('j.tanggal')
+                ->orderBy('j.nomor_transaksi')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.tanggal',
+                    'j.nomor_transaksi',
+                    'j.tipe_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ]);
+
+            return Excel::download(
+                new JurnalUmumExport($rows, $judulMap[$kelompok], $tanggalAwal, $tanggalAkhir, $cari),
+                "jurnal-umum-{$kelompok}-{$tanggalAwal}-{$tanggalAkhir}.xlsx"
+            );
+        }
+
         if ($kelompok === 'faktur-pembelian') {
             $rows = DB::table('jurnal_perkiraan as j')
                 ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
@@ -454,7 +512,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                 'penjualan' => ['Penjualan Telur', 'Penjualan Ayam', 'Penjualan Umum', 'Pelunasan Piutang Telur', 'Pelunasan Piutang Ayam', 'Pelunasan Piutang Umum', 'Setoran Kas Penjualan'],
                 'biaya' => 'Jurnal Biaya',
                 'pembelian-umum' => 'Pembelian Umum',
-                'penyesuaian' => ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva', 'Penyesuaian Ayam', 'Pemakaian Pakan', 'Pemakaian Vitamin', 'Pemakaian Vaksin'],
+                'penyesuaian' => ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva', 'Penyesuaian Ayam', 'Pemakaian Pakan', 'Pemakaian Pakan Harian', 'Pemakaian Vitamin', 'Pemakaian Vaksin'],
                 'pembalik-aktiva-gantung' => 'Pembalik Aktiva Gantung',
             ];
 
@@ -1875,6 +1933,83 @@ class PembukuanBaruJurnalUmumController extends Controller
             : collect();
 
         return [$aktivaGantung, $detail, $summary];
+    }
+
+    /**
+     * Filter baris jurnal hasil import Accurate (daftar tipe pasti).
+     */
+    private function filterImporAccurate($query): void
+    {
+        $query->whereIn('j.tipe_transaksi', self::TIPE_IMPOR_ACCURATE);
+    }
+
+    private function jurnalImporAccurate(
+        string $tanggalAwal,
+        string $tanggalAkhir,
+        ?string $cari,
+        bool $aktif
+    ): array {
+        $filter = function ($query) use ($tanggalAwal, $tanggalAkhir, $cari) {
+            $this->filterImporAccurate($query);
+            $query->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                });
+        };
+
+        $summary = DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->selectRaw('COALESCE(SUM(j.debit), 0) as total_debit, COALESCE(SUM(j.kredit), 0) as total_kredit, COUNT(*) as jumlah_detail')
+            ->first();
+
+        if (! $aktif) {
+            return [collect(), collect(), $summary];
+        }
+
+        $jurnal = DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->select('j.nomor_transaksi')
+            ->selectRaw('MIN(j.tanggal) as tanggal')
+            ->selectRaw('MAX(j.tipe_transaksi) as tipe_transaksi')
+            ->selectRaw('COUNT(*) as jumlah_detail')
+            ->selectRaw('COALESCE(SUM(j.debit), 0) as total_debit')
+            ->selectRaw('COALESCE(SUM(j.kredit), 0) as total_kredit')
+            ->groupBy('j.nomor_transaksi')
+            ->orderByDesc('tanggal')
+            ->orderByDesc('j.nomor_transaksi')
+            ->paginate(15)
+            ->withQueryString();
+
+        $detail = $jurnal->count()
+            ? DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->whereIn('j.nomor_transaksi', $jurnal->getCollection()->pluck('nomor_transaksi'))
+            ->orderBy('j.tanggal')
+            ->orderBy('j.nomor_transaksi')
+            ->orderBy('j.urutan_detail')
+            ->get([
+                'j.id_jurnal_perkiraan',
+                'j.tanggal',
+                'j.nomor_transaksi',
+                'j.tipe_transaksi',
+                'j.deskripsi',
+                'j.debit',
+                'j.kredit',
+                'a.kode_perkiraan',
+                'a.nama as nama_akun',
+            ])
+            ->groupBy('nomor_transaksi')
+            : collect();
+
+        return [$jurnal, $detail, $summary];
     }
 
     private function jurnalGroupedByTransaction(

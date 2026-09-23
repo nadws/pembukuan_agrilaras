@@ -234,6 +234,12 @@
                     Jurnal Umum Manual
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $kelompok === 'import-accurate' ? 'active' : '' }}"
+                    href="{{ route('pembukuan-baru.jurnal-umum.index', request()->except('page', 'kelompok') + ['kelompok' => 'import-accurate']) }}">
+                    Import Accurate
+                </a>
+            </li>
         </ul>
 
         @if ($kelompok === 'faktur-pembelian')
@@ -1048,6 +1054,104 @@
                 'detail' => $detailPenyesuaian,
                 'ringkasan' => $ringkasanPenyesuaian,
             ])
+        @elseif ($kelompok === 'import-accurate')
+            <div class="journal-summary">
+                <div class="journal-summary-box">
+                    <div class="label">Jumlah detail</div>
+                    <div class="value">{{ number_format($ringkasanImporAccurate->jumlah_detail ?? 0, 0, ',', '.') }}</div>
+                </div>
+                <div class="journal-summary-box">
+                    <div class="label">Total debit</div>
+                    <div class="value">Rp {{ number_format($ringkasanImporAccurate->total_debit ?? 0, 0, ',', '.') }}</div>
+                </div>
+                <div class="journal-summary-box">
+                    <div class="label">Total kredit</div>
+                    <div class="value">Rp {{ number_format($ringkasanImporAccurate->total_kredit ?? 0, 0, ',', '.') }}</div>
+                </div>
+            </div>
+
+            <div class="journal-table-wrap">
+                <table class="table table-hover align-middle journal-table">
+                    <thead>
+                        <tr>
+                            <th width="55">No</th>
+                            <th>Tanggal</th>
+                            <th>No Transaksi</th>
+                            <th>Tipe</th>
+                            <th class="text-end">Detail</th>
+                            <th class="text-end">Debit</th>
+                            <th class="text-end">Kredit</th>
+                            <th width="90" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($jurnalImporAccurate as $nomor => $item)
+                            @php
+                                $detailRows = $detailImporAccurate[$item->nomor_transaksi] ?? collect();
+                                $detailId = 'detail-impor-accurate-' . md5($item->nomor_transaksi);
+                            @endphp
+                            <tr class="journal-master-row" data-detail-target="{{ $detailId }}">
+                                <td>{{ $jurnalImporAccurate->firstItem() + $nomor }}</td>
+                                <td>{{ tanggal($item->tanggal) }}</td>
+                                <td>{{ $item->nomor_transaksi }}</td>
+                                <td>{{ $item->tipe_transaksi }}</td>
+                                <td class="text-end">{{ number_format($item->jumlah_detail, 0, ',', '.') }} baris</td>
+                                <td class="text-end">Rp {{ number_format($item->total_debit, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($item->total_kredit, 0, ',', '.') }}</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-toggle-detail"
+                                        data-detail-target="{{ $detailId }}">
+                                        Detail
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="journal-detail-row" id="{{ $detailId }}">
+                                <td colspan="8">
+                                    <div class="journal-detail-box">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered align-middle journal-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="45">No</th>
+                                                        <th>Akun</th>
+                                                        <th>Keterangan</th>
+                                                        <th class="text-end">Debit</th>
+                                                        <th class="text-end">Kredit</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($detailRows as $detailNo => $detail)
+                                                        <tr>
+                                                            <td>{{ $detailNo + 1 }}</td>
+                                                            <td>{{ $detail->kode_perkiraan }} - {{ $detail->nama_akun }}</td>
+                                                            <td>{{ $detail->deskripsi }}</td>
+                                                            <td class="text-end">Rp {{ number_format($detail->debit, 0, ',', '.') }}</td>
+                                                            <td class="text-end">Rp {{ number_format($detail->kredit, 0, ',', '.') }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="empty-journal">
+                                    <strong class="d-block mb-1">Belum ada jurnal import Accurate</strong>
+                                    <span>Jurnal hasil import (FJ, SS, KM, dan lainnya) yang tidak masuk kelompok lain akan muncul di sini.</span>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($jurnalImporAccurate->hasPages())
+                <div class="mt-3">
+                    {{ $jurnalImporAccurate->links() }}
+                </div>
+            @endif
         @else
             <div class="journal-summary">
                 <div class="journal-summary-box">
