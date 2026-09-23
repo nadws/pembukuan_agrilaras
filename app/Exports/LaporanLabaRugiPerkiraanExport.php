@@ -180,6 +180,7 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
                     'childRows' => [],
                     'is_income' => (bool) ($account['is_income'] ?? true),
                 ];
+
                 continue;
             }
 
@@ -453,5 +454,4 @@ class LaporanLabaRugiPerkiraanExport extends DefaultValueBinder implements FromA
     {
         return (float) ($isIncome ? bcsub($actual, $budget, 12) : bcsub($budget, $actual, 12));
     }
-
 }

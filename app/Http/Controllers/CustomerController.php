@@ -102,7 +102,7 @@ class CustomerController extends Controller
 
     public function export()
     {
-        $customers = DB::table('customer')->orderBy('nm_customer')->get([
+        $customers = DB::table('customer')->where('active', 'Y')->orderBy('nm_customer')->get([
             'kode_customer', 'nm_customer', 'alamat', 'no_telp', 'npwp', 'ktp', 'active',
         ]);
 

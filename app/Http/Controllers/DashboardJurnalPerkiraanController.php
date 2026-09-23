@@ -12,9 +12,9 @@ use Illuminate\View\View;
 
 class DashboardJurnalPerkiraanController extends Controller
 {
-    private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang', 'stok'];
+    private const WIDGET_DASHBOARD = ['pakan', 'pakan-rincian', 'telur', 'laba-rugi', 'piutang', 'stok', 'stok-pakan'];
 
-    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 12, 'stok' => 12];
+    private const WIDGET_SPAN_DEFAULT = ['pakan' => 8, 'pakan-rincian' => 4, 'telur' => 8, 'laba-rugi' => 4, 'piutang' => 12, 'stok' => 12, 'stok-pakan' => 4];
 
     public function index(Request $request): View
     {
@@ -146,6 +146,45 @@ class DashboardJurnalPerkiraanController extends Controller
             ->sortByDesc('umur')
             ->values();
 
+        // Stok pakan saat ini (gram) + estimasi ketahanan dari rata-rata
+        // pemakaian 7 hari terakhir. 1 sak = 50.000 gram. Hanya yang ada
+        // stoknya (stok > 0) yang ditampilkan, snapshot hari ini.
+        $tujuhHariLalu = now()->subDays(6)->startOfDay()->toDateString();
+        $pakaiPakan7Hari = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->where('p.kategori', 'pakan')
+            ->where('s.id_kandang', '>', 0)->where('s.pcs_kredit', '>', 0)
+            ->whereDate('s.tgl', '>=', $tujuhHariLalu)
+            ->groupBy('s.id_pakan')
+            ->select('s.id_pakan')
+            ->selectRaw('SUM(COALESCE(s.pcs_kredit, 0)) as total_gr')
+            ->get()->keyBy('id_pakan');
+        $stokPakan = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->where('p.kategori', 'pakan')
+            ->groupBy('s.id_pakan')
+            ->select('s.id_pakan')
+            ->selectRaw('MAX(p.nm_produk) as produk')
+            ->selectRaw('SUM(COALESCE(s.pcs, 0)) - SUM(COALESCE(s.pcs_kredit, 0)) as stok_gr')
+            ->orderByDesc('stok_gr')
+            ->get()
+            ->map(function ($row) use ($pakaiPakan7Hari) {
+                $stok = (float) $row->stok_gr;
+                $rata = (float) ($pakaiPakan7Hari->get($row->id_pakan)->total_gr ?? 0) / 7;
+                $hari = $rata > 0 ? $stok / $rata : null;
+
+                return (object) [
+                    'nama' => (string) ($row->produk ?: 'Pakan '.$row->id_pakan),
+                    'stok_gr' => $stok,
+                    'stok_sak' => $stok / 50000,
+                    'rata_gr' => $rata,
+                    'sisa_hari' => $hari,
+                    'status' => $hari === null ? 'nodata' : ($hari <= 3 ? 'bahaya' : ($hari <= 7 ? 'waspada' : 'aman')),
+                ];
+            })
+            ->filter(fn ($row) => round($row->stok_gr, 2) > 0)
+            ->values();
+
         return view('dashboard', [
             'title' => 'Dashboard', 'tanggal' => $tanggal, 'tanggalMulai' => $mulai->toDateString(), 'tanggalAkhir' => $akhir->toDateString(),
             'pemakaianPakan' => $pemakaianPakan, 'produksiTelur' => $produksiTelur,
@@ -155,6 +194,7 @@ class DashboardJurnalPerkiraanController extends Controller
             'pakanKandang' => $pakanKandang,
             'labaRugiPerKandang' => $labaRugiPerKandang, 'labaRugiTotal' => $labaRugiTotal,
             'piutangBelumLunas' => $piutangBelumLunas, 'piutangTotal' => (float) $piutangBelumLunas->sum('sisa'),
+            'stokPakan' => $stokPakan,
 
             // Stok telur sistem per gudang: mutasi aktif (opname=T),
             // debit dikurangi kredit, sama seperti angka opname gudang.
