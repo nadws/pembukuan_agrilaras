@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
-use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -42,7 +42,7 @@ class MasterDataSpreadsheetService
         $guide->setCellValue('E1', 'REFERENSI KATEGORI');
         $guide->setCellValue('E3', 'kategori');
         foreach (array_values($categories) as $index => $category) {
-            $guide->setCellValue('E' . ($index + 4), $category);
+            $guide->setCellValue('E'.($index + 4), $category);
         }
         $this->styleGuideSheet($guide, ['A1:C1', 'E1:E1'], ['A3:C3', 'E3:E3']);
         foreach (['A' => 23, 'B' => 12, 'C' => 60, 'E' => 25] as $column => $width) {
@@ -60,11 +60,12 @@ class MasterDataSpreadsheetService
                 ->setShowDropDown(true)
                 ->setErrorTitle('Kategori tidak valid')
                 ->setError('Pilih kategori yang tersedia pada sheet Panduan.')
-                ->setFormula1("'Panduan'!\$E\$4:\$E\$" . $lastReferenceRow);
+                ->setFormula1("'Panduan'!\$E\$4:\$E\$".$lastReferenceRow);
             $sheet->getCell('A2')->setDataValidation($validation);
         }
 
         $spreadsheet->setActiveSheetIndex(0);
+
         return $spreadsheet;
     }
 
@@ -89,7 +90,7 @@ class MasterDataSpreadsheetService
         $guide->mergeCells('A1:C1');
         $guide->fromArray([
             ['Kolom', 'Wajib', 'Keterangan'],
-            ['kode_customer', 'Tidak', 'Kosongkan agar dibuat otomatis dengan format C.xxxxx.'],
+            ['kode_customer', 'Tidak', 'Kosongkan agar dibuat otomatis dengan format C.xxxxx. Kode yang sudah ada akan memperbarui data tersebut.'],
             ['nama_customer', 'Ya', 'Nama customer, maksimal 225 karakter.'],
             ['alamat', 'Tidak', 'Alamat customer, maksimal 225 karakter.'],
             ['telepon', 'Tidak', 'Gunakan format teks agar angka 0 di depan tidak hilang.'],
@@ -117,6 +118,7 @@ class MasterDataSpreadsheetService
         $sheet->getCell('G2')->setDataValidation($validation);
 
         $spreadsheet->setActiveSheetIndex(0);
+
         return $spreadsheet;
     }
 
@@ -132,6 +134,7 @@ class MasterDataSpreadsheetService
 
         $headers = array_map(function ($value) {
             $value = preg_replace('/^\xEF\xBB\xBF/', '', (string) $value);
+
             return strtolower(trim($value));
         }, $rows[0]);
 

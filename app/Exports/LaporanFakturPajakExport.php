@@ -118,43 +118,88 @@ class LaporanFakturPajakExport
      */
     public static function detail(object $nota): array
     {
-        if ($nota->lokasi === 'mtd') {
+        return self::detailSemua([$nota])[$nota->no_nota] ?? [];
+    }
+
+    /**
+     * Baris detail untuk banyak nota sekaligus (3 query, bukan N+1).
+     *
+     * @param  object[]  $nota
+     * @return array<string, array<int, array{jml:float, harga:float, dpp:float}>>
+     */
+    public static function detailSemua(array $nota): array
+    {
+        $hasil = [];
+        $mtd = [];
+        $biasa = [];
+        foreach ($nota as $n) {
+            $hasil[$n->no_nota] = [];
+            if ($n->lokasi === 'mtd') {
+                $mtd[] = $n->no_nota;
+            } else {
+                $biasa[] = $n->no_nota;
+            }
+        }
+
+        foreach (self::barisBiasa($biasa) as $noNota => $baris) {
+            $hasil[$noNota] = $baris;
+        }
+
+        if ($mtd !== []) {
+            $tanya = implode(',', array_fill(0, count($mtd), '?'));
             $lines = DB::select(
                 "SELECT a.no_nota, 'pcs' as jenis, a.pcs_pcs as jml, a.rp_pcs as harga, (a.pcs_pcs * a.rp_pcs) as ttl
-                FROM invoice_mtd as a where a.no_nota = ?
+                FROM invoice_mtd as a where a.no_nota IN ($tanya)
                 UNION ALL
                 SELECT a.no_nota, 'ikat' as jenis, (a.kg_ikat - a.ikat) as jml, a.rp_ikat as harga, ((a.kg_ikat - a.ikat) * a.rp_ikat) as ttl
-                FROM invoice_mtd as a where a.no_nota = ?
+                FROM invoice_mtd as a where a.no_nota IN ($tanya)
                 UNION ALL
                 SELECT a.no_nota, 'kg' as jenis, a.kg_kg as jml, a.rp_kg as harga, (a.kg_kg * a.rp_kg) as ttl
-                FROM invoice_mtd as a where a.no_nota = ?", [$nota->no_nota, $nota->no_nota, $nota->no_nota]);
-
-            $out = [];
+                FROM invoice_mtd as a where a.no_nota IN ($tanya)", [...$mtd, ...$mtd, ...$mtd]);
             foreach ($lines as $l) {
                 $jml = (float) $l->jml;
                 $harga = (float) $l->harga;
                 if ($jml == 0 && $harga == 0) {
                     continue;
                 }
-                $out[] = ['jml' => $jml, 'harga' => $harga, 'dpp' => (float) $l->ttl];
+                $hasil[$l->no_nota][] = ['jml' => $jml, 'harga' => $harga, 'dpp' => (float) $l->ttl];
             }
 
             // Nota mtd yang tidak punya baris invoice_mtd (terhapus/beda nomor)
             // memakai baris invoice_telur agar faktur tetap punya detail.
-            if ($out !== []) {
-                return $out;
+            $kosong = array_values(array_filter($mtd, fn ($noNota) => ($hasil[$noNota] ?? []) === []));
+            foreach (self::barisBiasa($kosong) as $noNota => $baris) {
+                $hasil[$noNota] = $baris;
             }
         }
 
-        return DB::table('invoice_telur as a')
-            ->where('a.no_nota', $nota->no_nota)
+        return $hasil;
+    }
+
+    /**
+     * @param  string[]  $noNota
+     * @return array<string, array<int, array{jml:float, harga:float, dpp:float}>>
+     */
+    private static function barisBiasa(array $noNota): array
+    {
+        $hasil = [];
+        if ($noNota === []) {
+            return $hasil;
+        }
+
+        $lines = DB::table('invoice_telur as a')
+            ->whereIn('a.no_nota', array_values($noNota))
             ->orderBy('a.id_invoice_telur')
-            ->get(['a.tipe', 'a.pcs', 'a.kg_jual', 'a.rp_satuan', 'a.total_rp'])
-            ->map(fn ($l) => [
+            ->get(['a.no_nota', 'a.tipe', 'a.pcs', 'a.kg_jual', 'a.rp_satuan', 'a.total_rp']);
+        foreach ($lines as $l) {
+            $hasil[$l->no_nota][] = [
                 'jml' => strtoupper((string) ($l->tipe ?? '')) === 'KG' ? (float) $l->kg_jual : (float) $l->pcs,
                 'harga' => (float) $l->rp_satuan,
                 'dpp' => (float) $l->total_rp,
-            ])->all();
+            ];
+        }
+
+        return $hasil;
     }
 
     private function isiFaktur(Spreadsheet $spreadsheet, array $nota): void
@@ -236,9 +281,10 @@ class LaporanFakturPajakExport
 
         $baris = 0;
         $row = 2;
+        $detailMap = self::detailSemua($nota);
         foreach ($nota as $n) {
             $baris++;
-            foreach (self::detail($n) as $d) {
+            foreach ($detailMap[$n->no_nota] ?? [] as $d) {
                 $dppNilaiLain = $d['dpp'] * 11 / 12;
                 $sheet->setCellValue('A'.$row, $baris);
                 $sheet->setCellValue('B'.$row, 'A');

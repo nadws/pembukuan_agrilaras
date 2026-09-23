@@ -5,6 +5,9 @@
             <a href="{{ route('customer.template-import') }}" class="btn btn-sm btn-outline-primary">
                 <i class="fas fa-file-excel me-1"></i> Format Import
             </a>
+            <a href="{{ route('customer.export') }}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-file-export me-1"></i> Export Data
+            </a>
             @endif
             @if(!empty($import))
             <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#importCustomer">

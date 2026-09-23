@@ -24,10 +24,11 @@ class LaporanFakturPajakController extends Controller
 
         $export = new LaporanFakturPajakExport($tgl1, $tgl2, $npwpPenjual);
         $nota = $export->nota();
-        $rows = collect($nota)->map(function ($n) {
+        $detailMap = LaporanFakturPajakExport::detailSemua($nota);
+        $rows = collect($nota)->map(function ($n) use ($detailMap) {
             $dpp = 0.0;
             $ppnExact = 0.0;
-            foreach (LaporanFakturPajakExport::detail($n) as $d) {
+            foreach ($detailMap[$n->no_nota] ?? [] as $d) {
                 $dpp += $d['dpp'];
                 $ppnExact += $d['dpp'] * 11 / 12 * 0.12;
             }
