@@ -9,6 +9,9 @@
                 <a href="{{ route('akuntansi_baru') }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left me-1"></i> Pembukuan Baru
                 </a>
+                <a href="{{ route('pembukuan-baru.jurnal-umum.export', ['kelompok' => $kelompok, 'tanggal_awal' => $tanggalAwal, 'tanggal_akhir' => $tanggalAkhir, 'cari' => request('cari')]) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </a>
                 @if ($kelompok === 'manual' && !empty($btnBuatJurnal))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Jurnal
