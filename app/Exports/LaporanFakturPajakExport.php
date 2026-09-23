@@ -114,7 +114,7 @@ class LaporanFakturPajakExport
     /**
      * Baris detail per nota untuk sheet DetailFaktur.
      *
-     * @return array<int, array{jml:float, harga:float, dpp:float}>
+     * @return array<int, array{jml:float, harga:float, dpp:float, satuan:string}>
      */
     public static function detail(object $nota): array
     {
@@ -125,7 +125,7 @@ class LaporanFakturPajakExport
      * Baris detail untuk banyak nota sekaligus (3 query, bukan N+1).
      *
      * @param  object[]  $nota
-     * @return array<string, array<int, array{jml:float, harga:float, dpp:float}>>
+     * @return array<string, array<int, array{jml:float, harga:float, dpp:float, satuan:string}>>
      */
     public static function detailSemua(array $nota): array
     {
@@ -162,7 +162,7 @@ class LaporanFakturPajakExport
                 if ($jml == 0 && $harga == 0) {
                     continue;
                 }
-                $hasil[$l->no_nota][] = ['jml' => $jml, 'harga' => $harga, 'dpp' => (float) $l->ttl];
+                $hasil[$l->no_nota][] = ['jml' => $jml, 'harga' => $harga, 'dpp' => (float) $l->ttl, 'satuan' => self::satuanMtd($l->jenis)];
             }
 
             // Nota mtd yang tidak punya baris invoice_mtd (terhapus/beda nomor)
@@ -178,7 +178,7 @@ class LaporanFakturPajakExport
 
     /**
      * @param  string[]  $noNota
-     * @return array<string, array<int, array{jml:float, harga:float, dpp:float}>>
+     * @return array<string, array<int, array{jml:float, harga:float, dpp:float, satuan:string}>>
      */
     private static function barisBiasa(array $noNota): array
     {
@@ -192,14 +192,28 @@ class LaporanFakturPajakExport
             ->orderBy('a.id_invoice_telur')
             ->get(['a.no_nota', 'a.tipe', 'a.pcs', 'a.kg_jual', 'a.rp_satuan', 'a.total_rp']);
         foreach ($lines as $l) {
+            $isKg = strtoupper((string) ($l->tipe ?? '')) === 'KG';
             $hasil[$l->no_nota][] = [
-                'jml' => strtoupper((string) ($l->tipe ?? '')) === 'KG' ? (float) $l->kg_jual : (float) $l->pcs,
+                'jml' => $isKg ? (float) $l->kg_jual : (float) $l->pcs,
                 'harga' => (float) $l->rp_satuan,
                 'dpp' => (float) $l->total_rp,
+                'satuan' => $isKg ? 'UM.0003' : 'UM.0021',
             ];
         }
 
         return $hasil;
+    }
+
+    /**
+     * Kode satuan ukur Coretax untuk baris invoice_mtd.
+     */
+    private static function satuanMtd(?string $jenis): string
+    {
+        return match ($jenis) {
+            'kg' => 'UM.0003',
+            'ikat' => 'UM.0018',
+            default => 'UM.0021',
+        };
     }
 
     private function isiFaktur(Spreadsheet $spreadsheet, array $nota): void
@@ -285,12 +299,14 @@ class LaporanFakturPajakExport
         foreach ($nota as $n) {
             $baris++;
             foreach ($detailMap[$n->no_nota] ?? [] as $d) {
-                $dppNilaiLain = $d['dpp'] * 11 / 12;
+                // DPP Nilai Lain dikeluarkan dari DPP (harga sudah termasuk
+                // PPN) sehingga DPP Nilai Lain + PPN (12%) = DPP.
+                $dppNilaiLain = $d['dpp'] / 1.12;
                 $sheet->setCellValue('A'.$row, $baris);
                 $sheet->setCellValue('B'.$row, 'A');
                 $sheet->setCellValueExplicit('C'.$row, '040700', DataType::TYPE_STRING);
                 $sheet->setCellValue('D'.$row, 'Telur Utuh');
-                $sheet->setCellValue('E'.$row, 'UM.0003');
+                $sheet->setCellValue('E'.$row, $d['satuan'] ?? 'UM.0003');
                 $sheet->setCellValue('F'.$row, self::angka($d['harga']));
                 $sheet->setCellValue('G'.$row, self::angka($d['jml']));
                 $sheet->setCellValue('H'.$row, 0);

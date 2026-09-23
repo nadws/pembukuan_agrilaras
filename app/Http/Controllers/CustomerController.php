@@ -127,6 +127,9 @@ class CustomerController extends Controller
         foreach (['A' => 20, 'B' => 30, 'C' => 38, 'D' => 20, 'E' => 24, 'F' => 24, 'G' => 16] as $kol => $lebar) {
             $sheet->getColumnDimension($kol)->setWidth($lebar);
         }
+        // Format teks agar KTP/NPWP/telepon yang diketik sebagai angka tidak
+        // diubah Excel menjadi notasi ilmiah (6.37E+15) saat file diedit.
+        $sheet->getStyle('D:F')->getNumberFormat()->setFormatCode('@');
         $sheet->getStyle('A1:G1')->getFont()->setBold(true);
         $sheet->setAutoFilter('A1:G'.($row - 1));
 
@@ -179,6 +182,11 @@ class CustomerController extends Controller
             $raw = [];
             foreach ($requiredHeaders as $header) {
                 $raw[$header] = trim((string) ($row[$indexes[$header]] ?? ''));
+            }
+            // Telepon/NPWP/KTP wajib digit penuh: jangan sampai tersimpan
+            // sebagai notasi ilmiah Excel (mis. 6.37E+15).
+            foreach (['telepon', 'npwp', 'ktp'] as $kolomAngka) {
+                $raw[$kolomAngka] = MasterDataSpreadsheetService::teksSel($row[$indexes[$kolomAngka]] ?? null);
             }
             $raw['status_aktif'] = strtoupper($raw['status_aktif'] ?: 'Y');
 

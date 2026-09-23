@@ -30,7 +30,7 @@ class LaporanFakturPajakController extends Controller
             $ppnExact = 0.0;
             foreach ($detailMap[$n->no_nota] ?? [] as $d) {
                 $dpp += $d['dpp'];
-                $ppnExact += $d['dpp'] * 11 / 12 * 0.12;
+                $ppnExact += $d['dpp'] / 1.12 * 0.12;
             }
 
             return (object) [

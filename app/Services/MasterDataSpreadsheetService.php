@@ -24,7 +24,7 @@ class MasterDataSpreadsheetService
         $this->styleDataSheet($sheet, 'A1:F1', [
             'A' => 23, 'B' => 30, 'C' => 30, 'D' => 38, 'E' => 20, 'F' => 24,
         ]);
-        $sheet->getStyle('E2:F2')->getNumberFormat()->setFormatCode('@');
+        $sheet->getStyle('E:F')->getNumberFormat()->setFormatCode('@');
 
         $guide = $spreadsheet->createSheet();
         $guide->setTitle('Panduan');
@@ -82,7 +82,9 @@ class MasterDataSpreadsheetService
             'A' => 20, 'B' => 30, 'C' => 38, 'D' => 20, 'E' => 24, 'F' => 24, 'G' => 16,
         ]);
         $sheet->getStyle('A2:A2')->getNumberFormat()->setFormatCode('@');
-        $sheet->getStyle('D2:F2')->getNumberFormat()->setFormatCode('@');
+        // Format teks satu kolom penuh agar KTP/NPWP/telepon yang diketik
+        // sebagai angka tidak diubah Excel menjadi notasi ilmiah (6.37E+15).
+        $sheet->getStyle('D:F')->getNumberFormat()->setFormatCode('@');
 
         $guide = $spreadsheet->createSheet();
         $guide->setTitle('Panduan');
@@ -139,6 +141,31 @@ class MasterDataSpreadsheetService
         }, $rows[0]);
 
         return [$headers, array_slice($rows, 1)];
+    }
+
+    /**
+     * Ubah nilai sel Excel menjadi teks identifier (telepon/NPWP/KTP).
+     * Sel angka (mis. KTP 16 digit yang diketik sebagai angka sehingga
+     * Excel menyimpannya sebagai float/notasi ilmiah seperti 6.37E+15)
+     * dikembalikan sebagai digit penuh tanpa notasi ilmiah.
+     */
+    public static function teksSel($value): string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if (is_float($value)) {
+            return sprintf('%.0f', $value);
+        }
+        $text = trim((string) ($value ?? ''));
+        if ($text === '') {
+            return '';
+        }
+        if (preg_match('/^[+-]?\d(?:\.\d+)?[eE][+-]?\d+$/', str_replace(',', '.', $text))) {
+            return sprintf('%.0f', (float) str_replace(',', '.', $text));
+        }
+
+        return $text;
     }
 
     private function styleDataSheet($sheet, string $headerRange, array $widths): void

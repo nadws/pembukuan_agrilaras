@@ -201,6 +201,11 @@ class SuplierController extends Controller
                 $raw[$header] = $row[$indexes[$header]] ?? null;
             }
             $raw = array_map(fn ($value) => trim((string) ($value ?? '')), $raw);
+            // Telepon/NPWP wajib digit penuh: jangan sampai tersimpan
+            // sebagai notasi ilmiah Excel (mis. 6.37E+15).
+            foreach (['telepon', 'npwp'] as $kolomAngka) {
+                $raw[$kolomAngka] = MasterDataSpreadsheetService::teksSel($row[$indexes[$kolomAngka]] ?? null);
+            }
 
             $validator = Validator::make($raw, [
                 'kategori' => ['required', 'string', 'max:150', 'in:' . implode(',', $categories)],

@@ -38,12 +38,12 @@
         <div class="row g-3 mb-3">
             <div class="col-md-4"><div class="fp-kpi"><small>Jumlah Nota</small><strong>{{ number_format($rows->count(), 0, ',', '.') }}</strong></div></div>
             <div class="col-md-4"><div class="fp-kpi"><small>Total DPP</small><strong>Rp {{ number_format($totalDpp, 0, ',', '.') }}</strong></div></div>
-            <div class="col-md-4"><div class="fp-kpi"><small>Total PPN 11%</small><strong>Rp {{ number_format($totalPpn, 0, ',', '.') }}</strong></div></div>
+            <div class="col-md-4"><div class="fp-kpi"><small>Total PPN</small><strong>Rp {{ number_format($totalPpn, 0, ',', '.') }}</strong></div></div>
         </div>
         <div class="fp-table table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
-                    <tr><th>No</th><th>Tanggal</th><th>No. Nota</th><th>Customer</th><th>NPWP / NIK</th><th class="amount">DPP (Rp)</th><th class="amount">PPN 11% (Rp)</th></tr>
+                    <tr><th>No</th><th>Tanggal</th><th>No. Nota</th><th>Customer</th><th>NPWP / NIK</th><th class="amount">DPP (Rp)</th><th class="amount">PPN (Rp)</th></tr>
                 </thead>
                 <tbody>
                     @forelse($rows as $row)
@@ -67,6 +67,6 @@
                 @endif
             </table>
         </div>
-        <small class="text-muted d-block mt-2">Format file mengikuti template upload Coretax pajak keluaran (sheet Faktur, DetailFaktur, REF, Keterangan). PPN dihitung 12% dari DPP Nilai Lain (11/12 &times; DPP) per baris detail.</small>
+        <small class="text-muted d-block mt-2">Format file mengikuti template upload Coretax pajak keluaran (sheet Faktur, DetailFaktur, REF, Keterangan). DPP Nilai Lain = DPP &divide; 1,12 sehingga DPP Nilai Lain + PPN (12%) = DPP per baris detail.</small>
     </x-slot>
 </x-theme.app>
