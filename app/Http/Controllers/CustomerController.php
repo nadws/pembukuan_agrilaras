@@ -22,6 +22,7 @@ class CustomerController extends Controller
             'edit' => \SettingHal::btnHal(119, $id_user),
             'hapus' => \SettingHal::btnHal(120, $id_user),
         ];
+
         return view('customer.customer', $data);
     }
 
@@ -52,8 +53,9 @@ class CustomerController extends Controller
     {
         $data = [
             'customer' => DB::table('customer')->where('id_customer', $id_customer)->first(),
-            'id_customer' => $id_customer
+            'id_customer' => $id_customer,
         ];
+
         return view('customer.edit', $data);
     }
 
@@ -82,6 +84,7 @@ class CustomerController extends Controller
     public function delete($id_customer)
     {
         DB::table('customer')->where('id_customer', $id_customer)->delete();
+
         return redirect()->route('customer.index')->with('sukses', 'Data Berhasil Dihapus');
     }
 
@@ -93,6 +96,47 @@ class CustomerController extends Controller
             (new Xlsx($spreadsheet))->save('php://output');
             $spreadsheet->disconnectWorksheets();
         }, 'format-import-master-customer.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    public function export()
+    {
+        $customers = DB::table('customer')->where('active', 'Y')->orderBy('nm_customer')->get([
+            'kode_customer', 'nm_customer', 'alamat', 'no_telp', 'npwp', 'ktp', 'active',
+        ]);
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Customer');
+        $sheet->fromArray(
+            ['kode_customer', 'nama_customer', 'alamat', 'telepon', 'npwp', 'ktp', 'status_aktif'],
+            null, 'A1'
+        );
+        $row = 2;
+        foreach ($customers as $c) {
+            $sheet->setCellValueExplicit('A'.$row, (string) ($c->kode_customer ?? ''), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValue('B'.$row, (string) ($c->nm_customer ?? ''));
+            $sheet->setCellValue('C'.$row, (string) ($c->alamat ?? ''));
+            $sheet->setCellValueExplicit('D'.$row, (string) ($c->no_telp ?? ''), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('E'.$row, (string) ($c->npwp ?? ''), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('F'.$row, (string) ($c->ktp ?? ''), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValue('G'.$row, (string) ($c->active ?? ''));
+            $row++;
+        }
+        foreach (['A' => 20, 'B' => 30, 'C' => 38, 'D' => 20, 'E' => 24, 'F' => 24, 'G' => 16] as $kol => $lebar) {
+            $sheet->getColumnDimension($kol)->setWidth($lebar);
+        }
+        // Format teks agar KTP/NPWP/telepon yang diketik sebagai angka tidak
+        // diubah Excel menjadi notasi ilmiah (6.37E+15) saat file diedit.
+        $sheet->getStyle('D:F')->getNumberFormat()->setFormatCode('@');
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+        $sheet->setAutoFilter('A1:G'.($row - 1));
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new Xlsx($spreadsheet))->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+        }, 'export-data-customer-'.date('Ymd').'.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
@@ -112,13 +156,20 @@ class CustomerController extends Controller
         $requiredHeaders = ['kode_customer', 'nama_customer', 'alamat', 'telepon', 'npwp', 'ktp', 'status_aktif'];
         $missing = array_values(array_diff($requiredHeaders, $headers));
         if ($missing !== []) {
-            return back()->withErrors(['file_customer' => 'Kolom tidak ditemukan: ' . implode(', ', $missing) . '. Silakan unduh Format Import terbaru.']);
+            return back()->withErrors(['file_customer' => 'Kolom tidak ditemukan: '.implode(', ', $missing).'. Silakan unduh Format Import terbaru.']);
         }
 
         $indexes = array_flip($headers);
-        $existingCodes = DB::table('customer')->whereNotNull('kode_customer')->pluck('kode_customer')
-            ->mapWithKeys(fn ($code) => [mb_strtolower(trim((string) $code)) => true]);
+        // Kode '0'/kosong dianggap tidak ada (peninggalan lama) agar tidak
+        // menimpa ratusan baris sekaligus.
+        $existingByCode = DB::table('customer')
+            ->whereNotNull('kode_customer')->whereNotIn('kode_customer', ['', '0'])
+            ->get(['id_customer', 'kode_customer'])
+            ->mapWithKeys(fn ($r) => [mb_strtolower(trim((string) $r->kode_customer)) => (int) $r->id_customer]);
+        $existingByName = DB::table('customer')->get(['id_customer', 'nm_customer'])
+            ->mapToGroups(fn ($r) => [mb_strtolower(trim((string) $r->nm_customer)) => (int) $r->id_customer]);
         $fileCodes = [];
+        $claimedIds = [];
         $dataImport = [];
         $errors = [];
 
@@ -131,6 +182,11 @@ class CustomerController extends Controller
             $raw = [];
             foreach ($requiredHeaders as $header) {
                 $raw[$header] = trim((string) ($row[$indexes[$header]] ?? ''));
+            }
+            // Telepon/NPWP/KTP wajib digit penuh: jangan sampai tersimpan
+            // sebagai notasi ilmiah Excel (mis. 6.37E+15).
+            foreach (['telepon', 'npwp', 'ktp'] as $kolomAngka) {
+                $raw[$kolomAngka] = MasterDataSpreadsheetService::teksSel($row[$indexes[$kolomAngka]] ?? null);
             }
             $raw['status_aktif'] = strtoupper($raw['status_aktif'] ?: 'Y');
 
@@ -145,25 +201,52 @@ class CustomerController extends Controller
             ]);
 
             if ($validator->fails()) {
-                $errors[] = "Baris {$rowNumber}: " . implode(' ', $validator->errors()->all());
+                $errors[] = "Baris {$rowNumber}: ".implode(' ', $validator->errors()->all());
+
                 continue;
             }
 
-            if ($raw['kode_customer'] !== '') {
-                $key = mb_strtolower($raw['kode_customer']);
-                if ($existingCodes->has($key)) {
-                    $errors[] = "Baris {$rowNumber}: kode customer {$raw['kode_customer']} sudah digunakan.";
+            $kodeEfektif = ($raw['kode_customer'] !== '' && $raw['kode_customer'] !== '0') ? $raw['kode_customer'] : '';
+            $kodeKey = mb_strtolower($kodeEfektif);
+            $targetId = null;
+            if ($kodeEfektif !== '') {
+                if (isset($fileCodes[$kodeKey])) {
+                    $errors[] = "Baris {$rowNumber}: kode customer duplikat dengan baris {$fileCodes[$kodeKey]}.";
+
                     continue;
                 }
-                if (isset($fileCodes[$key])) {
-                    $errors[] = "Baris {$rowNumber}: kode customer duplikat dengan baris {$fileCodes[$key]}.";
+                $fileCodes[$kodeKey] = $rowNumber;
+                // Kode yang sudah ada di database = EDIT, bukan tambah baru.
+                if ($existingByCode->has($kodeKey)) {
+                    $targetId = $existingByCode->get($kodeKey);
+                }
+            }
+            if ($targetId === null) {
+                // Tanpa kode yang cocok: cocokkan nama (tepat satu) agar baris
+                // lama berkode '0'/kosong tetap bisa diperbarui, bukan diduplikat.
+                $namaKey = mb_strtolower($raw['nama_customer']);
+                $calon = $existingByName->get($namaKey, collect())->unique()->values();
+                if ($calon->count() > 1) {
+                    $errors[] = "Baris {$rowNumber}: nama customer dipakai beberapa data, isi kode_customer untuk memilih yang benar.";
+
                     continue;
                 }
-                $fileCodes[$key] = $rowNumber;
+                if ($calon->count() === 1) {
+                    $targetId = $calon->first();
+                }
+            }
+            if ($targetId !== null) {
+                if (isset($claimedIds[$targetId])) {
+                    $errors[] = "Baris {$rowNumber}: data yang sama sudah diubah pada baris {$claimedIds[$targetId]}.";
+
+                    continue;
+                }
+                $claimedIds[$targetId] = $rowNumber;
             }
 
             $dataImport[] = [
-                'kode_customer' => $raw['kode_customer'] ?: null,
+                'id_customer' => $targetId,
+                'kode_customer' => $kodeEfektif !== '' ? $kodeEfektif : null,
                 'nm_customer' => $raw['nama_customer'],
                 'alamat' => $raw['alamat'] ?: null,
                 'no_telp' => $raw['telepon'] ?: null,
@@ -180,33 +263,44 @@ class CustomerController extends Controller
             return back()->withErrors(['file_customer' => 'Tidak ada baris customer yang dapat diimport.']);
         }
 
-        DB::transaction(function () use (&$dataImport) {
+        $tambah = 0;
+        $ubah = 0;
+        DB::transaction(function () use (&$dataImport, &$tambah, &$ubah) {
             $nextNumber = $this->maxCustomerCodeNumber() + 1;
             $usedCodes = DB::table('customer')->whereNotNull('kode_customer')->pluck('kode_customer')
                 ->mapWithKeys(fn ($code) => [mb_strtolower(trim((string) $code)) => true]);
 
             foreach ($dataImport as &$row) {
-                if ($row['kode_customer'] !== null) {
-                    $usedCodes->put(mb_strtolower($row['kode_customer']), true);
+                if ($row['id_customer'] !== null) {
+                    $id = $row['id_customer'];
+                    unset($row['id_customer']);
+                    DB::table('customer')->where('id_customer', $id)->update($row);
+                    $ubah++;
+
                     continue;
                 }
-                do {
-                    $generatedCode = 'C.' . str_pad((string) $nextNumber++, 5, '0', STR_PAD_LEFT);
-                } while ($usedCodes->has(mb_strtolower($generatedCode)));
-                $row['kode_customer'] = $generatedCode;
-                $usedCodes->put(mb_strtolower($generatedCode), true);
+                unset($row['id_customer']);
+                if ($row['kode_customer'] !== null) {
+                    $usedCodes->put(mb_strtolower($row['kode_customer']), true);
+                } else {
+                    do {
+                        $generatedCode = 'C.'.str_pad((string) $nextNumber++, 5, '0', STR_PAD_LEFT);
+                    } while ($usedCodes->has(mb_strtolower($generatedCode)));
+                    $row['kode_customer'] = $generatedCode;
+                    $usedCodes->put(mb_strtolower($generatedCode), true);
+                }
+                DB::table('customer')->insert($row);
+                $tambah++;
             }
             unset($row);
-
-            DB::table('customer')->insert($dataImport);
         });
 
-        return redirect()->route('customer.index')->with('sukses', count($dataImport) . ' customer berhasil diimport.');
+        return redirect()->route('customer.index')->with('sukses', $tambah.' customer ditambah, '.$ubah.' customer diperbarui.');
     }
 
     private function nextCustomerCode(): string
     {
-        return 'C.' . str_pad((string) ($this->maxCustomerCodeNumber() + 1), 5, '0', STR_PAD_LEFT);
+        return 'C.'.str_pad((string) ($this->maxCustomerCodeNumber() + 1), 5, '0', STR_PAD_LEFT);
     }
 
     private function maxCustomerCodeNumber(): int
@@ -217,6 +311,7 @@ class CustomerController extends Controller
                 $maximum = max($maximum, (int) $matches[1]);
             }
         }
+
         return $maximum;
     }
 }

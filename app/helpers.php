@@ -150,13 +150,3 @@ class SettingHal
     }
 }
 
-if (!function_exists('akunPelunasanPiutang')) {
-    function akunPelunasanPiutang()
-    {
-        return DB::table('akun_perkiraan')
-            ->where('aktif', 1)
-            ->whereIn('id_akun_perkiraan', [5, 7, 8, 9, 10, 11])
-            ->orderBy('kode_perkiraan')
-            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
-    }
-}

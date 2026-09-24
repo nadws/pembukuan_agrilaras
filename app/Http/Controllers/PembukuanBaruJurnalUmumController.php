@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AktivaGantungJurnalExport;
+use App\Exports\JurnalUmumExport;
 use App\Exports\TemplateJurnalUmumImportExport;
 use App\Services\ImporJurnalPerkiraanService;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +15,19 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PembukuanBaruJurnalUmumController extends Controller
 {
+    /**
+     * Tipe transaksi hasil import Accurate yang masuk tab Import Accurate.
+     * Selain daftar ini (termasuk yang sudah punya tab sendiri), tidak tampil.
+     */
+    private const TIPE_IMPOR_ACCURATE = [
+        'FJ', 'SS', 'KM', 'SI', 'CP', 'CC', 'KC', 'KJ', 'TB', 'FB',
+        'KR', 'IA', 'FA', 'CY', 'MU', 'PI', 'KN', 'MP', 'JU', 'JV',
+        'KP', 'BT', 'KB', 'GK', 'RI',
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+        'Lainnya',
+    ];
+
     public function templateImport(): BinaryFileResponse
     {
         $accounts = DB::table('akun_perkiraan')->where('aktif', 1)
@@ -52,7 +67,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
         $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
         $cari = $request->input('cari');
-        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual'], true)
+        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'penjualan', 'pelunasan-hutang', 'biaya', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual', 'import-accurate'], true)
             ? $request->input('kelompok')
             : 'faktur-pembelian';
 
@@ -216,6 +231,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                 'Penyesuaian Aktiva',
                 'Penyesuaian Ayam',
                 'Pemakaian Pakan',
+                'Pemakaian Pakan Harian',
                 'Pemakaian Vitamin',
                 'Pemakaian Vaksin',
             ],
@@ -223,6 +239,13 @@ class PembukuanBaruJurnalUmumController extends Controller
             tanggalAkhir: $tanggalAkhir,
             cari: $cari,
             aktif: $kelompok === 'penyesuaian'
+        );
+
+        [$jurnalImporAccurate, $detailImporAccurate, $ringkasanImporAccurate] = $this->jurnalImporAccurate(
+            tanggalAwal: $tanggalAwal,
+            tanggalAkhir: $tanggalAkhir,
+            cari: $cari,
+            aktif: $kelompok === 'import-accurate'
         );
 
         $batch = $kelompok === 'manual'
@@ -266,6 +289,8 @@ class PembukuanBaruJurnalUmumController extends Controller
             'btnBuatPembelian' => \SettingHal::btnHal(215, auth()->id()),
             'btnAktivaGantung' => \SettingHal::btnHal(216, auth()->id()),
             'btnPembalik' => \SettingHal::btnHal(217, auth()->id()),
+            'btnEditJurnal' => \SettingHal::btnHal(226, auth()->id()),
+            'btnHapusJurnal' => \SettingHal::btnHal(227, auth()->id()),
             'batch' => $batch,
             'detailManual' => $detailManual,
             'ringkasanManual' => $ringkasanManual,
@@ -296,7 +321,232 @@ class PembukuanBaruJurnalUmumController extends Controller
             'jurnalPenyesuaian' => $jurnalPenyesuaian,
             'detailPenyesuaian' => $detailPenyesuaian,
             'ringkasanPenyesuaian' => $ringkasanPenyesuaian,
+            'jurnalImporAccurate' => $jurnalImporAccurate,
+            'detailImporAccurate' => $detailImporAccurate,
+            'ringkasanImporAccurate' => $ringkasanImporAccurate,
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
+        $tanggalAkhir = $request->input('tanggal_akhir', now()->toDateString());
+        $cari = trim((string) $request->input('cari'));
+        $cari = $cari === '' ? null : $cari;
+        $kelompok = in_array($request->input('kelompok'), ['faktur-pembelian', 'pelunasan-hutang', 'penjualan', 'biaya', 'pembelian-umum', 'penyesuaian', 'aktiva-gantung', 'pembalik-aktiva-gantung', 'manual', 'import-accurate'], true)
+            ? $request->input('kelompok')
+            : 'faktur-pembelian';
+
+        $judulMap = [
+            'faktur-pembelian' => 'Jurnal Umum - Faktur Pembelian',
+            'pelunasan-hutang' => 'Jurnal Umum - Pelunasan Hutang',
+            'penjualan' => 'Jurnal Umum - Penjualan',
+            'biaya' => 'Jurnal Umum - Biaya',
+            'pembelian-umum' => 'Jurnal Umum - Pembelian Umum',
+            'penyesuaian' => 'Jurnal Umum - Jurnal Penyesuaian',
+            'aktiva-gantung' => 'Jurnal Umum - Aktiva Gantung',
+            'pembalik-aktiva-gantung' => 'Jurnal Umum - Pembalik Aktiva Gantung',
+            'manual' => 'Jurnal Umum - Jurnal Umum Manual',
+            'import-accurate' => 'Jurnal Umum - Import Accurate',
+        ];
+
+        if ($kelompok === 'aktiva-gantung') {
+            $rows = DB::table('aktiva_gantung_transaksi as t')
+                ->join('aktiva_gantung as ag', 'ag.id', '=', 't.aktiva_gantung_id')
+                ->leftJoin('akun_perkiraan as aa', 'aa.id_akun_perkiraan', '=', 't.id_akun_aktiva_gantung')
+                ->leftJoin('akun_perkiraan as ak', 'ak.id_akun_perkiraan', '=', 't.id_akun_kas')
+                ->whereBetween('t.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('ag.nama_aset', 'like', "%{$cari}%")
+                            ->orWhere('ag.kode', 'like', "%{$cari}%")
+                            ->orWhere('t.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('t.keterangan', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('t.tanggal')
+                ->orderBy('t.nomor_transaksi')
+                ->orderBy('t.id')
+                ->get([
+                    'ag.kode as kode_aset',
+                    'ag.nama_aset',
+                    'ag.status as status_aset',
+                    't.tanggal',
+                    't.nomor_transaksi',
+                    'aa.kode_perkiraan as kode_akun_aktiva',
+                    'aa.nama as nama_akun_aktiva',
+                    'ak.kode_perkiraan as kode_akun_kas',
+                    'ak.nama as nama_akun_kas',
+                    't.keterangan',
+                    't.jumlah',
+                ])
+                ->each(function ($row) {
+                    $row->sumber = 'transaksi';
+                });
+
+            return Excel::download(
+                new AktivaGantungJurnalExport($rows, $tanggalAwal, $tanggalAkhir, $cari),
+                "jurnal-umum-{$kelompok}-{$tanggalAwal}-{$tanggalAkhir}.xlsx"
+            );
+        }
+
+        if ($kelompok === 'manual') {
+            $batchIds = DB::table('impor_jurnal_perkiraan as i')
+                ->where('i.nama_file', 'like', 'Jurnal umum manual%')
+                ->whereBetween('i.periode_awal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('i.nama_file', 'like', "%{$cari}%")
+                            ->orWhereExists(function ($sq) use ($cari) {
+                                $sq->selectRaw(1)
+                                    ->from('jurnal_perkiraan as j')
+                                    ->whereColumn('j.id_impor_jurnal_perkiraan', 'i.id_impor_jurnal_perkiraan')
+                                    ->where(function ($jq) use ($cari) {
+                                        $jq->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                                            ->orWhere('j.deskripsi', 'like', "%{$cari}%");
+                                    });
+                            });
+                    });
+                })
+                ->pluck('i.id_impor_jurnal_perkiraan');
+
+            $rows = $batchIds->isEmpty()
+                ? collect()
+                : DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->whereIn('j.id_impor_jurnal_perkiraan', $batchIds)
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('j.tanggal')
+                ->orderBy('j.nomor_transaksi')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.tanggal',
+                    'j.nomor_transaksi',
+                    'j.tipe_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ]);
+
+            return Excel::download(
+                new JurnalUmumExport($rows, $judulMap[$kelompok], $tanggalAwal, $tanggalAkhir, $cari),
+                "jurnal-umum-{$kelompok}-{$tanggalAwal}-{$tanggalAkhir}.xlsx"
+            );
+        }
+
+        if ($kelompok === 'import-accurate') {
+            $rows = DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->tap(fn ($q) => $this->filterImporAccurate($q))
+                ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('j.tanggal')
+                ->orderBy('j.nomor_transaksi')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.tanggal',
+                    'j.nomor_transaksi',
+                    'j.tipe_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ]);
+
+            return Excel::download(
+                new JurnalUmumExport($rows, $judulMap[$kelompok], $tanggalAwal, $tanggalAkhir, $cari),
+                "jurnal-umum-{$kelompok}-{$tanggalAwal}-{$tanggalAkhir}.xlsx"
+            );
+        }
+
+        if ($kelompok === 'faktur-pembelian') {
+            $rows = DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->where(function ($q) {
+                    $q->where('j.tipe_transaksi', 'like', 'Faktur Pembelian%')
+                        ->orWhere('j.tipe_transaksi', 'Pembelian Umum')
+                        ->orWhere('j.tipe_transaksi', 'Pembelian Pullet');
+                })
+                ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('j.tanggal')
+                ->orderBy('j.nomor_transaksi')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.tanggal',
+                    'j.nomor_transaksi',
+                    'j.tipe_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ]);
+        } else {
+            $tipeMap = [
+                'pelunasan-hutang' => 'Pelunasan Hutang Faktur Pembelian',
+                'penjualan' => ['Penjualan Telur', 'Penjualan Ayam', 'Penjualan Umum', 'Pelunasan Piutang Telur', 'Pelunasan Piutang Ayam', 'Pelunasan Piutang Umum', 'Setoran Kas Penjualan'],
+                'biaya' => 'Jurnal Biaya',
+                'pembelian-umum' => 'Pembelian Umum',
+                'penyesuaian' => ['Stok Opname', 'Penyusutan Aktiva', 'Penyesuaian Aktiva', 'Penyesuaian Ayam', 'Pemakaian Pakan', 'Pemakaian Pakan Harian', 'Pemakaian Vitamin', 'Pemakaian Vaksin'],
+                'pembalik-aktiva-gantung' => 'Pembalik Aktiva Gantung',
+            ];
+
+            $rows = DB::table('jurnal_perkiraan as j')
+                ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+                ->whereIn('j.tipe_transaksi', (array) ($tipeMap[$kelompok] ?? []))
+                ->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                })
+                ->orderBy('j.tanggal')
+                ->orderBy('j.nomor_transaksi')
+                ->orderBy('j.urutan_detail')
+                ->get([
+                    'j.tanggal',
+                    'j.nomor_transaksi',
+                    'j.tipe_transaksi',
+                    'j.deskripsi',
+                    'j.debit',
+                    'j.kredit',
+                    'a.kode_perkiraan',
+                    'a.nama as nama_akun',
+                ]);
+        }
+
+        return Excel::download(
+            new JurnalUmumExport($rows, $judulMap[$kelompok], $tanggalAwal, $tanggalAkhir, $cari),
+            "jurnal-umum-{$kelompok}-{$tanggalAwal}-{$tanggalAkhir}.xlsx"
+        );
     }
 
     public function create(): View
@@ -1683,6 +1933,83 @@ class PembukuanBaruJurnalUmumController extends Controller
             : collect();
 
         return [$aktivaGantung, $detail, $summary];
+    }
+
+    /**
+     * Filter baris jurnal hasil import Accurate (daftar tipe pasti).
+     */
+    private function filterImporAccurate($query): void
+    {
+        $query->whereIn('j.tipe_transaksi', self::TIPE_IMPOR_ACCURATE);
+    }
+
+    private function jurnalImporAccurate(
+        string $tanggalAwal,
+        string $tanggalAkhir,
+        ?string $cari,
+        bool $aktif
+    ): array {
+        $filter = function ($query) use ($tanggalAwal, $tanggalAkhir, $cari) {
+            $this->filterImporAccurate($query);
+            $query->whereBetween('j.tanggal', [$tanggalAwal, $tanggalAkhir])
+                ->when($cari, function ($query) use ($cari) {
+                    $query->where(function ($q) use ($cari) {
+                        $q->where('j.nomor_transaksi', 'like', "%{$cari}%")
+                            ->orWhere('j.deskripsi', 'like', "%{$cari}%")
+                            ->orWhere('a.kode_perkiraan', 'like', "%{$cari}%")
+                            ->orWhere('a.nama', 'like', "%{$cari}%");
+                    });
+                });
+        };
+
+        $summary = DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->selectRaw('COALESCE(SUM(j.debit), 0) as total_debit, COALESCE(SUM(j.kredit), 0) as total_kredit, COUNT(*) as jumlah_detail')
+            ->first();
+
+        if (! $aktif) {
+            return [collect(), collect(), $summary];
+        }
+
+        $jurnal = DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->select('j.nomor_transaksi')
+            ->selectRaw('MIN(j.tanggal) as tanggal')
+            ->selectRaw('MAX(j.tipe_transaksi) as tipe_transaksi')
+            ->selectRaw('COUNT(*) as jumlah_detail')
+            ->selectRaw('COALESCE(SUM(j.debit), 0) as total_debit')
+            ->selectRaw('COALESCE(SUM(j.kredit), 0) as total_kredit')
+            ->groupBy('j.nomor_transaksi')
+            ->orderByDesc('tanggal')
+            ->orderByDesc('j.nomor_transaksi')
+            ->paginate(15)
+            ->withQueryString();
+
+        $detail = $jurnal->count()
+            ? DB::table('jurnal_perkiraan as j')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->tap($filter)
+            ->whereIn('j.nomor_transaksi', $jurnal->getCollection()->pluck('nomor_transaksi'))
+            ->orderBy('j.tanggal')
+            ->orderBy('j.nomor_transaksi')
+            ->orderBy('j.urutan_detail')
+            ->get([
+                'j.id_jurnal_perkiraan',
+                'j.tanggal',
+                'j.nomor_transaksi',
+                'j.tipe_transaksi',
+                'j.deskripsi',
+                'j.debit',
+                'j.kredit',
+                'a.kode_perkiraan',
+                'a.nama as nama_akun',
+            ])
+            ->groupBy('nomor_transaksi')
+            : collect();
+
+        return [$jurnal, $detail, $summary];
     }
 
     private function jurnalGroupedByTransaction(

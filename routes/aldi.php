@@ -179,6 +179,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/template-import', 'templateImport')->name('template-import');
+            Route::get('/export', 'export')->name('export');
             Route::post('/import', 'import')->name('import');
             Route::post('/', 'create')->name('create');
             Route::post('/update', 'update')->name('update');
