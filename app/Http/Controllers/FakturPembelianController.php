@@ -745,6 +745,13 @@ class FakturPembelianController extends Controller
         }
 
         $faktur_pembelian->load('detail');
+        if (empty($faktur_pembelian->biaya_lain)) {
+            $ids = DB::table('jurnal_perkiraan')->where('nomor_transaksi', $faktur_pembelian->no_faktur)->pluck('id_impor_jurnal_perkiraan');
+            $rows = DB::table('jurnal_perkiraan')->whereIn('id_impor_jurnal_perkiraan', $ids)->get(['deskripsi','kredit']);
+            $biaya = []; foreach (['ongkir','admin'] as $kode) { $row = $rows->first(fn ($r) => stripos($r->deskripsi, 'biaya ' . $kode) !== false); if ($row && (float) $row->kredit > 0) $biaya[] = ['kode'=>$kode,'nama'=>ucfirst($kode),'nominal'=>(float) $row->kredit]; }
+            $pph = $rows->first(fn ($r) => stripos($r->deskripsi, 'pph 23') !== false); if ($pph && $biaya) $biaya[0]['pph23_nominal'] = (float) $pph->kredit;
+            if ($biaya) $faktur_pembelian->setAttribute('biaya_lain', $biaya);
+        }
 
         return view('transaksi.faktur_pembelian.edit', [
             'title' => 'Edit Faktur Pembelian',
@@ -765,7 +772,7 @@ class FakturPembelianController extends Controller
         }
 
          $validated = $request->validate([
-             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin'],
+             'jenis_faktur' => ['required', 'in:pakan,vitamin,vaksin,barang_umum'],
              'no_faktur' => ['required', 'max:30', 'unique:faktur_pembelian,no_faktur,' . $faktur_pembelian->id],
              'tanggal_faktur' => ['required', 'date'],
              'supplier_id' => ['required', 'exists:tb_suplier,id_suplier'],
@@ -779,7 +786,8 @@ class FakturPembelianController extends Controller
              'biaya_lain.admin.id_akun' => ['nullable', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
              'pph23_manual' => ['nullable', 'numeric', 'min:0'],
              'item' => ['required', 'array', 'min:1'],
-             'item.*.pakan_id' => ['required', 'exists:tb_produk_perencanaan,id_produk'],
+             'item.*.pakan_id' => ['required', 'integer', 'min:1'],
+             'item.*.sumber_produk' => ['required', 'in:perencanaan,barang_umum'],
              'item.*.qty' => ['required', 'numeric', 'min:0.01'],
              'item.*.satuan' => ['nullable', 'string', 'max:20'],
              'item.*.harga_satuan' => ['required', 'numeric', 'min:0'],
@@ -823,6 +831,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
          $akunPph23 = $totalPph23 > 0 ? $this->akunAktif('210203') : null;
          $biayaLain = $this->simpanPphDalamBiaya($biayaLain, $totalPph23);
         $produk = $this->produkFakturOptions()
+            ->where('sumber_produk', $validated['jenis_faktur'] === 'barang_umum' ? 'barang_umum' : 'perencanaan')
             ->whereIn('id_produk', $items->pluck('pakan_id'))
             ->keyBy('id_produk');
 
@@ -902,6 +911,7 @@ $items = $this->normalisasiItemFaktur($validated['item']);
 
                 $faktur_pembelian->detail()->create([
                     'pakan_id' => $item['pakan_id'],
+                    'sumber_produk' => $validated['jenis_faktur'] === 'barang_umum' ? 'barang_umum' : 'perencanaan',
                     'qty' => $qty,
                     'satuan' => $validated['jenis_faktur'] === 'pakan'
                         ? 'zak'
@@ -1576,7 +1586,6 @@ $items = $this->normalisasiItemFaktur($validated['item']);
 
         $batchId = DB::table('jurnal_perkiraan')
             ->where('nomor_transaksi', $noFakturLama)
-            ->where('tipe_transaksi', 'like', 'Faktur Pembelian%')
             ->value('id_impor_jurnal_perkiraan');
 
         if ($batchId) {
@@ -1723,3 +1732,6 @@ $items = $this->normalisasiItemFaktur($validated['item']);
         return $prefix . str_pad($urut, 3, '0', STR_PAD_LEFT);
     }
 }
+
+
+
