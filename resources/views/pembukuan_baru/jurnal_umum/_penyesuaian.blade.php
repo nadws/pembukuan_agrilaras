@@ -12,7 +12,18 @@
             <tr class="journal-master-row" data-detail-target="{{ $detailId }}">
                 <td>{{ $jurnal->firstItem() + $nomor }}</td><td>{{ tanggal($item->tanggal) }}</td><td>{{ $item->nomor_transaksi }}</td><td>{{ $item->tipe_transaksi }}</td>
                 <td class="text-end">{{ number_format($item->jumlah_detail, 0, ',', '.') }} baris</td><td class="text-end">Rp {{ number_format($item->total_debit, 0, ',', '.') }}</td><td class="text-end">Rp {{ number_format($item->total_kredit, 0, ',', '.') }}</td>
-                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-primary btn-toggle-detail" data-detail-target="{{ $detailId }}" title="Detail"><i class="fas fa-eye"></i></button></td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle-detail" data-detail-target="{{ $detailId }}" title="Detail"><i class="fas fa-eye"></i></button>
+                        @if (!empty($btnHapusJurnal))
+                            <form action="{{ route('pembukuan-baru.jurnal-umum.penyesuaian.destroy', $item->nomor_transaksi) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jurnal penyesuaian {{ $item->nomor_transaksi }}?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                            </form>
+                        @endif
+                    </div>
+                </td>
             </tr>
             <tr class="journal-detail-row" id="{{ $detailId }}"><td colspan="8"><div class="journal-detail-box"><div class="table-responsive"><table class="table table-sm table-bordered align-middle journal-detail-table"><thead><tr><th width="45">No</th><th>No. Transaksi</th><th>Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead><tbody>
                 @foreach ($detailRows as $detailNo => $detailItem)<tr><td>{{ $detailNo + 1 }}</td><td>{{ $detailItem->nomor_transaksi }}</td><td>{{ $detailItem->kode_perkiraan }} - {{ $detailItem->nama_akun }}</td><td>{{ $detailItem->deskripsi ?: '-' }}</td><td class="text-end">Rp {{ number_format($detailItem->debit, 0, ',', '.') }}</td><td class="text-end">Rp {{ number_format($detailItem->kredit, 0, ',', '.') }}</td></tr>@endforeach

@@ -399,6 +399,114 @@ class AktivaController extends Controller
         return redirect()->route('aktiva')->with('sukses', 'Data berhasil ditambahkan');
     }
 
+    public function edit(int $id)
+    {
+        $aktiva = DB::table('aktiva_pembukuan_baru')->where('id', $id)->first();
+        abort_if(! $aktiva, 404, 'Data aktiva tidak ditemukan.');
+
+        $sudahAdaDepresiasi = DB::table('penyusutan_aktiva_pembukuan_baru')
+            ->where('id_aktiva', $id)
+            ->exists();
+
+        $akunAset = DB::table('akun_perkiraan')
+            ->where('aktif', 1)
+            ->where('tipe_akun', 'FASS')
+            ->whereNotNull('id_akun_induk')
+            ->orderBy('kode_perkiraan')
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+
+        $kelompok = DB::table('kelompok_aktiva')->orderBy('id_kelompok')->get();
+
+        return view('aktiva.edit', [
+            'title' => 'Edit Aktiva',
+            'aktiva' => $aktiva,
+            'sudahAdaDepresiasi' => $sudahAdaDepresiasi,
+            'akunAset' => $akunAset,
+            'kelompok' => $kelompok,
+        ]);
+    }
+
+    public function update(Request $r, int $id)
+    {
+        $aktiva = DB::table('aktiva_pembukuan_baru')->where('id', $id)->first();
+        if (! $aktiva) {
+            return redirect()->route('aktiva')->withErrors(['error' => 'Data aktiva tidak ditemukan.']);
+        }
+
+        $sudahAdaDepresiasi = DB::table('penyusutan_aktiva_pembukuan_baru')
+            ->where('id_aktiva', $id)
+            ->exists();
+
+        $r->validate([
+            'id_akun_aset' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
+            'nm_aktiva' => ['required', 'string', 'max:255'],
+            'tgl' => ['required', 'date'],
+            'h_perolehan' => ['required', 'numeric', 'min:0.01'],
+            'nilai_sisa_aset' => ['required', 'numeric', 'min:0'],
+            'umur_tahun' => ['required', 'integer', 'min:0'],
+            'umur_bulan' => ['required', 'integer', 'min:0', 'max:11'],
+        ]);
+
+        $nilaiPerolehan = round((float) $r->h_perolehan, 2);
+        $nilaiBuku = round((float) $r->nilai_sisa_aset, 2);
+
+        if ($nilaiBuku > $nilaiPerolehan) {
+            return back()->withErrors(['nilai_sisa_aset' => 'Nilai Buku Saat Ini tidak boleh melebihi Nilai Perolehan.'])->withInput();
+        }
+
+        $umurAktiva = ((int) $r->umur_tahun * 12) + (int) $r->umur_bulan;
+        if ($umurAktiva < 1) {
+            return back()->withErrors(['umur_tahun' => 'Umur aktiva minimal 1 bulan.'])->withInput();
+        }
+
+        if ($sudahAdaDepresiasi && ($nilaiPerolehan != (float) $aktiva->h_perolehan || $r->tgl != $aktiva->tgl)) {
+            return back()->withErrors(['h_perolehan' => 'Aktiva ini sudah memiliki riwayat penyusutan. Nilai perolehan dan tanggal perolehan tidak dapat diubah agar jurnal penyusutan tetap konsisten.'])->withInput();
+        }
+
+        $biaya_depresiasi = $nilaiPerolehan / $umurAktiva;
+        $sisaPeriode = $biaya_depresiasi > 0 ? (int) ceil($nilaiBuku / $biaya_depresiasi) : 0;
+
+        DB::table('aktiva_pembukuan_baru')
+            ->where('id', $id)
+            ->update([
+                'id_akun_aset' => $r->id_akun_aset,
+                'id_kelompok' => $r->id_kelompok ?? null,
+                'nm_aktiva' => $r->nm_aktiva,
+                'tgl' => $r->tgl,
+                'h_perolehan' => $nilaiPerolehan,
+                'nilai_buku_awal' => $nilaiBuku,
+                'biaya_depresiasi' => round($biaya_depresiasi, 2),
+                'umur_aktiva_bulan' => $umurAktiva,
+                'sisa_umur_bulan' => $sisaPeriode,
+                'akumulasi_penyusutan' => round($nilaiPerolehan - $nilaiBuku, 2),
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('aktiva')->with('sukses', 'Data aktiva berhasil diperbarui.');
+    }
+
+    public function destroy(int $id)
+    {
+        $aktiva = DB::table('aktiva_pembukuan_baru')->where('id', $id)->first();
+        if (! $aktiva) {
+            return redirect()->route('aktiva')->withErrors(['error' => 'Data aktiva tidak ditemukan.']);
+        }
+
+        $sudahAdaDepresiasi = DB::table('penyusutan_aktiva_pembukuan_baru')
+            ->where('id_aktiva', $id)
+            ->exists();
+
+        if ($sudahAdaDepresiasi) {
+            return redirect()->route('aktiva')->withErrors([
+                'file_aktiva' => "Aktiva '{$aktiva->nm_aktiva}' tidak dapat dihapus karena sudah memiliki riwayat penyusutan. Hapus jurnal penyusutan terlebih dahulu jika ingin menghapus aset ini.",
+            ]);
+        }
+
+        DB::table('aktiva_pembukuan_baru')->where('id', $id)->delete();
+
+        return redirect()->route('aktiva')->with('sukses', "Aktiva '{$aktiva->nm_aktiva}' berhasil dihapus.");
+    }
+
     public function print(Request $r)
     {
         $year =  date("Y", strtotime($r->tahun));

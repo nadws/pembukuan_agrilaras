@@ -187,7 +187,7 @@
                                 </div>
                                 <div id="kelompokAktivaWrap" style="display: none;">
                                     <label class="form-label-custom" for="id_kelompok_aktiva">Kelompok Golongan Aktiva</label>
-                                    <select class="form-select" id="id_kelompok_aktiva" name="id_kelompok_aktiva">
+                                    <select class="form-select select2-kelompok" id="id_kelompok_aktiva" name="id_kelompok_aktiva">
                                         <option value="">-- Pilih Kelompok Aktiva --</option>
                                         @foreach ($kelompokAktiva as $kel)
                                             <option value="{{ $kel->id_kelompok }}"
@@ -198,6 +198,9 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                    <div id="depresiasiPreviewBox" class="mt-2 p-2 border rounded bg-white text-success fw-bold small" style="display: none;">
+                                        <i class="fas fa-calculator me-1"></i> <span id="depresiasiPreviewText">Estimasi Penyusutan Bulanan: Rp 0 / bulan</span>
+                                    </div>
                                     <small class="text-muted d-block mt-1">Akan otomatis dihitung beban penyusutan tahunan / bulanan.</small>
                                 </div>
                             </div>
@@ -265,6 +268,9 @@
                 const keteranganInput = document.getElementById('keterangan');
                 const simpanAktivaCheck = document.getElementById('simpan_ke_master_aktiva');
                 const kelompokAktivaWrap = document.getElementById('kelompokAktivaWrap');
+                const kelompokSelect = document.getElementById('id_kelompok_aktiva');
+                const depresiasiPreviewBox = document.getElementById('depresiasiPreviewBox');
+                const depresiasiPreviewText = document.getElementById('depresiasiPreviewText');
 
                 const infoContainer = document.getElementById('infoAsetContainer');
                 const infoSaldo = document.getElementById('infoSaldoAset');
@@ -281,6 +287,23 @@
 
                 function formatRupiah(val) {
                     return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
+                }
+
+                function initSelect2() {
+                    if (!window.jQuery || !jQuery.fn.select2) return;
+
+                    jQuery('.select2-aset, .select2-akun, .select2-kelompok').select2({
+                        width: '100%',
+                        language: {
+                            searching: function() {
+                                return 'Mencari akun...';
+                            }
+                        }
+                    });
+
+                    jQuery('.select2-aset, .select2-akun, .select2-kelompok').on('change', function() {
+                        updatePreview();
+                    });
                 }
 
                 function updatePreview() {
@@ -322,6 +345,24 @@
 
                     previewNominalDebit.textContent = formatRupiah(nominalVal);
                     previewNominalKredit.textContent = formatRupiah(nominalVal);
+
+                    // Depresiasi Preview
+                    if (simpanAktivaCheck.checked && kelompokSelect.value) {
+                        const kelOpt = kelompokSelect.options[kelompokSelect.selectedIndex];
+                        const umurThn = Number(kelOpt.dataset.umur || 0);
+                        const tarif = Number(kelOpt.dataset.tarif || 0);
+                        const totalBulan = umurThn * 12;
+
+                        if (totalBulan > 0 && nominalVal > 0) {
+                            const susutBulan = nominalVal / totalBulan;
+                            depresiasiPreviewText.textContent = `Estimasi Penyusutan Bulanan: ${formatRupiah(susutBulan)} / bulan (Masa Manfaat: ${umurThn} Tahun / ${totalBulan} Bulan, Tarif: ${tarif}%)`;
+                            depresiasiPreviewBox.style.display = 'block';
+                        } else {
+                            depresiasiPreviewBox.style.display = 'none';
+                        }
+                    } else {
+                        depresiasiPreviewBox.style.display = 'none';
+                    }
                 }
 
                 asetSelect.addEventListener('change', function() {
@@ -339,12 +380,14 @@
 
                 akunAsetSelect.addEventListener('change', updatePreview);
                 akunGantungSelect.addEventListener('change', updatePreview);
+                kelompokSelect.addEventListener('change', updatePreview);
                 nominalInput.addEventListener('input', updatePreview);
                 keteranganInput.addEventListener('input', updatePreview);
 
                 simpanAktivaCheck.addEventListener('change', function() {
                     kelompokAktivaWrap.style.display = this.checked ? 'block' : 'none';
                     document.getElementById('id_kelompok_aktiva').required = this.checked;
+                    updatePreview();
                 });
 
                 if (simpanAktivaCheck.checked) {
@@ -352,6 +395,7 @@
                     document.getElementById('id_kelompok_aktiva').required = true;
                 }
 
+                initSelect2();
                 if (asetSelect.value) {
                     updatePreview();
                 }

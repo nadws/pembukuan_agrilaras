@@ -57,6 +57,7 @@ use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\Stok_pakanController;
+use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\StokMasukController;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('login');
 });
+
+Route::get('/dokumentasi', [DokumentasiController::class, 'index'])->name('dokumentasi.index');
 
 Route::get('/template1', function () {
     return view('template-notable');
@@ -188,6 +191,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/pembelian-umum/{nomor_transaksi}/edit', 'editPembelianUmum')->name('pembelian-umum.edit');
             Route::put('/pembelian-umum/{nomor_transaksi}', 'updatePembelianUmum')->name('pembelian-umum.update');
             Route::delete('/pembelian-umum/{nomor_transaksi}', 'destroyPembelianUmum')->name('pembelian-umum.destroy');
+            Route::delete('/penyesuaian/{nomor_transaksi}', 'destroyPenyesuaian')->name('penyesuaian.destroy');
         });
 
     Route::prefix('master/akun-perkiraan')->name('master.akun-perkiraan.')->controller(MasterAkunPerkiraanController::class)->group(function () {
@@ -422,6 +426,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/tambah_baris_aktiva', 'tambah_baris_aktiva')->name('tambah_baris_aktiva');
         Route::get('/get_data_kelompok', 'get_data_kelompok')->name('get_data_kelompok');
         Route::post('/save_aktiva', 'save_aktiva')->name('save_aktiva');
+        Route::get('/aktiva/{id}/edit', 'edit')->name('aktiva.edit');
+        Route::put('/aktiva/{id}', 'update')->name('aktiva.update');
+        Route::delete('/aktiva/{id}', 'destroy')->name('aktiva.destroy');
         Route::get('/print_aktiva', 'print')->name('print_aktiva');
     });
 

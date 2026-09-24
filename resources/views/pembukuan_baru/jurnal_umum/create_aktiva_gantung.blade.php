@@ -194,10 +194,16 @@
                             value="{{ old('nomor_transaksi', $noTransaksi) }}" required>
                     </div>
                     <div class="col-lg-6">
-                        <label class="form-label" for="akun_aktiva_gantung_display">Akun Penampung Aktiva Gantung</label>
-                        <input type="text" id="akun_aktiva_gantung_display" class="form-control"
-                            value="{{ $akunAktivaGantung?->kode_perkiraan }} - {{ $akunAktivaGantung?->nama }}"
-                            readonly>
+                        <label class="form-label" for="id_akun_aktiva_gantung">Akun Penampung Aktiva Gantung (Debit)</label>
+                        <select id="id_akun_aktiva_gantung" name="id_akun_aktiva_gantung" class="form-select select-search"
+                            data-placeholder="Cari akun aktiva gantung" required>
+                            <option value="">-- Pilih Akun Penampung --</option>
+                            @foreach ($akunAktivaGantung as $akun)
+                                <option value="{{ $akun->id_akun_perkiraan }}" @selected(old('id_akun_aktiva_gantung', $akunAktivaGantungDefault->id_akun_perkiraan ?? null) == $akun->id_akun_perkiraan)>
+                                    {{ $akun->kode_perkiraan }} - {{ $akun->nama }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-lg-6">
                         <label class="form-label" for="id_akun_kas">Dibayar Dari</label>

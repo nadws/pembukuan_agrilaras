@@ -8,7 +8,11 @@
             </a>
             <h5>AGRI LARAS</h5>
         </div>
-        <div class="header-top-right">
+        <div class="header-top-right d-flex align-items-center gap-2">
+            <a href="{{ route('dokumentasi.index') }}" class="btn btn-outline-primary btn-sm me-2 d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="fas fa-book-open"></i>
+                <span class="fw-bold">Pusat Panduan</span>
+            </a>
 
             <div class="dropdown">
                 <a href="#" id="topbarUserDropdown"
@@ -40,6 +44,11 @@
                 @if (empty(auth()->user()->posisi->id_posisi))
                 @else
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="topbarUserDropdown">
+                        <li>
+                            <a class="dropdown-item fw-bold text-primary" href="{{ route('dokumentasi.index') }}">
+                                <i class="fas fa-book-open me-2"></i>Pusat Panduan & Dokumentasi
+                            </a>
+                        </li>
                         <li>
                             <a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a>
                         </li>

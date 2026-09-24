@@ -56,9 +56,16 @@
             .nm-aktiva-text { color: #0f172a !important; font-weight: 700; font-size: 13px; }
         </style>
 
-        @if ($errors->has('file_aktiva'))
-            <div class="alert alert-danger alert-dismissible fade show" style="white-space: pre-line">
-                {{ $errors->first('file_aktiva') }}
+        @if (session('sukses'))
+            <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                <i class="fas fa-check-circle me-1"></i> {{ session('sukses') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if ($errors->has('file_aktiva') || $errors->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-3" style="white-space: pre-line">
+                <i class="fas fa-exclamation-triangle me-1"></i> {{ $errors->first('file_aktiva') ?: $errors->first('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -87,6 +94,7 @@
                         <th class="text-end" style="min-width: 140px;">Akumulasi Penyusutan</th>
                         <th class="text-end" style="min-width: 130px;">Nilai Buku</th>
                         <th class="text-center" style="min-width: 110px;">Umur Aktiva</th>
+                        <th class="text-center" style="min-width: 100px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,10 +139,24 @@
                                     <span style="color: #94a3b8 !important;">-</span>
                                 @endif
                             </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ route('aktiva.edit', $a->id) }}" class="btn btn-warning btn-sm py-0 px-2" title="Edit Data">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('aktiva.destroy', $a->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus aktiva {{ $a->nm_aktiva }}?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm py-0 px-2" title="Hapus Data">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-5" style="color: #94a3b8 !important;">
+                            <td colspan="10" class="text-center py-5" style="color: #94a3b8 !important;">
                                 @if ($cari)
                                     Tidak ada aktiva yang cocok dengan pencarian "<strong>{{ $cari }}</strong>".
                                 @else

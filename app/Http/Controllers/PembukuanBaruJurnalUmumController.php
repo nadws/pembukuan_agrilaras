@@ -1069,6 +1069,31 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->with('sukses', 'Jurnal biaya berhasil dihapus.');
     }
 
+    public function destroyPenyesuaian(string $nomor_transaksi): RedirectResponse
+    {
+        DB::transaction(function () use ($nomor_transaksi) {
+            $batchIds = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $nomor_transaksi)
+                ->pluck('id_impor_jurnal_perkiraan')
+                ->filter()
+                ->unique();
+
+            DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $nomor_transaksi)
+                ->delete();
+
+            if ($batchIds->isNotEmpty()) {
+                DB::table('impor_jurnal_perkiraan')
+                    ->whereIn('id_impor_jurnal_perkiraan', $batchIds)
+                    ->delete();
+            }
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'penyesuaian'])
+            ->with('sukses', 'Jurnal penyesuaian berhasil dihapus.');
+    }
+
     public function createAktivaGantung(): View
     {
         return view('pembukuan_baru.jurnal_umum.create_aktiva_gantung', [
@@ -1078,7 +1103,8 @@ class PembukuanBaruJurnalUmumController extends Controller
                 ->where('status', 'gantung')
                 ->orderBy('nama_aset')
                 ->get(['id', 'kode', 'nama_aset']),
-            'akunAktivaGantung' => $this->akunAktivaGantungDefault(),
+            'akunAktivaGantung' => $this->akunAktivaGantungSemua(),
+            'akunAktivaGantungDefault' => $this->akunAktivaGantungDefault(),
             'akunKas' => $this->akunKasBankAktif(),
         ]);
     }
@@ -1092,6 +1118,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             'aktiva_gantung_id' => ['nullable', 'required_if:mode_aset,lama', 'exists:aktiva_gantung,id'],
             'nama_aset' => ['nullable', 'required_if:mode_aset,baru', 'string', 'max:255'],
             'keterangan_aset' => ['nullable', 'string'],
+            'id_akun_aktiva_gantung' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'id_akun_kas' => ['required', 'exists:akun_perkiraan,id_akun_perkiraan'],
             'detail' => ['required', 'array', 'min:1'],
             'detail.*.keterangan' => ['required', 'string', 'max:255'],
@@ -1108,7 +1135,11 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->filter(fn($item) => $item['jumlah'] > 0)
             ->values();
 
-        $akunAktiva = $this->akunAktivaGantungDefault();
+        $akunAktiva = DB::table('akun_perkiraan')
+            ->where('id_akun_perkiraan', $validated['id_akun_aktiva_gantung'])
+            ->where('aktif', 1)
+            ->first() ?? $this->akunAktivaGantungDefault();
+
         $akunKas = DB::table('akun_perkiraan')
             ->where('id_akun_perkiraan', $validated['id_akun_kas'])
             ->where('aktif', 1)
