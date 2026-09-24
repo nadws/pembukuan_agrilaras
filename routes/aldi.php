@@ -89,7 +89,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{no_nota}', 'edit')->name('edit');
             Route::post('/update', 'update')->name('update');
             Route::get('/detail/{no_nota}', 'detail')->name('detail');
-            Route::get('/{gudang_id}', 'index')->name('detail');
         });
 
     Route::controller(BahanBakuController::class)
@@ -111,8 +110,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/opname/add', 'opname_store')->name('opname.save');
             Route::get('/opname/add/{gudang_id}', 'opname_add')->name('opname.add_detail');
             Route::get('/opname/cetak/{no_nota}', 'opname_cetak')->name('opname.cetak');
-            Route::get('/opname/detail/{gudang_id}', 'opname_detail')->name('opname.detail');
-            Route::get('/opname/{gudang_id}', 'opname')->name('opname.detail');
             Route::get('/stok_masuk/{gudang_id}', 'stokMasuk')->name('stok_masuk_segment');
             // Route::get('/stok_masuk/edit/{id_produk}', 'edit_load')->name('edit_load');
             Route::get('/{gudang_id}', 'index')->name('detail');
@@ -141,8 +138,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/opname/delete/{gudang_id}', 'opname_delete')->name('opname.delete');
             Route::get('/opname/edit/{no_nota}', 'opname_edit')->name('opname.edit');
             Route::get('/opname/cetak/{no_nota}', 'opname_cetak')->name('opname.cetak');
-            Route::get('/opname/detail/{gudang_id}', 'opname_detail')->name('opname.detail');
-            Route::get('/opname/{gudang_id}', 'opname')->name('opname.detail');
             Route::get('/{gudang_id}', 'index')->name('detail');
             Route::get('/stok_masuk/{gudang_id}', 'stokMasuk')->name('stok_masuk_segment');
             Route::get('/stok_masuk/edit/{id_produk}', 'detail')->name('edit_load');
@@ -156,7 +151,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/saldo', 'saldo')->name('saldo');
             Route::post('/edit_akun', 'edit_akun')->name('edit_akun');
             Route::post('/cancel_penutup', 'cancel_penutup')->name('cancel_penutup');
-            Route::get('/akun', 'akun')->name('akun');
+            Route::get('/akun', 'akun')->name('penutup.akun');
             Route::get('/history', 'history')->name('history');
         });
 

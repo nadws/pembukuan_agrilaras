@@ -281,7 +281,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_jurnal', 'export')->name('export_jurnal');
         Route::post('/save_jurnal', 'save_jurnal')->name('save_jurnal');
         Route::get('/edit_jurnal', 'edit')->name('edit_jurnal');
-        Route::post('/edit_jurnal', 'edit_save')->name('edit_jurnal');
+        Route::post('/edit_jurnal', 'edit_save')->name('edit_jurnal.save');
         Route::get('/detail_jurnal', 'detail_jurnal')->name('detail_jurnal');
         Route::post('/import_jurnal', 'import_jurnal')->name('import_jurnal');
         Route::get('/saldo_akun', 'saldo_akun')->name('saldo_akun');
@@ -301,7 +301,7 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(AkunController::class)->group(function () {
         Route::get('/akun', 'index')->name('akun');
-        Route::post('/akun', 'create')->name('akun');
+        Route::post('/akun', 'create')->name('akun.create');
         Route::post('/akun-update', 'update')->name('akun.update');
         Route::get('/akun-delete', 'delete')->name('akun.delete');
         Route::get('/akun-sub', 'add_sub')->name('akun.add_sub');
@@ -461,7 +461,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/print_bk', 'print')->name('print_bk');
         Route::get('/delete_bk', 'delete_bk')->name('delete_bk');
         Route::get('/edit_pembelian_bk', 'edit_pembelian_bk')->name('edit_pembelian_bk');
-        Route::post('/edit_pembelian_bk', 'edit_save')->name('edit_pembelian_bk');
+        Route::post('/edit_pembelian_bk', 'edit_save')->name('edit_pembelian_bk.save');
         Route::post('/grading', 'grading')->name('grading');
         Route::post('/approve_invoice_bk', 'approve_invoice_bk')->name('approve_invoice_bk');
         Route::get('/get_grading', 'get_grading')->name('get_grading');
