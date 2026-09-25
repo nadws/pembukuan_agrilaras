@@ -41,8 +41,16 @@
                 </div>
                 <small id="hasilCariAkun" class="text-muted"></small>
             </div>
+            <div class="btn-group mb-3 laporan-view-tabs" role="tablist" aria-label="Tampilan laporan laba rugi">
+                <button type="button" class="btn btn-primary btn-sm active" data-laporan-view="standar" role="tab" aria-selected="true">
+                    <i class="fas fa-list me-1"></i> Standar
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-laporan-view="multi" role="tab" aria-selected="false">
+                    <i class="fas fa-table me-1"></i> Multi Periode
+                </button>
+            </div>
             <div class="table-responsive laporan-scroll">
-                <table class="table table-sm laporan-accurate align-middle">
+                <table class="table table-sm laporan-accurate laporan-view-standar align-middle">
                     <thead><tr><th style="min-width:360px">Deskripsi</th>@foreach ($periods as $period)<th class="text-end period-column" style="min-width:145px">{{ $months[$period->month] }} {{ $period->year }} (IDR)</th>@endforeach<th class="text-end period-total-column" style="min-width:155px">Total Aktual</th></tr></thead>
                     <tbody>
                         <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">PENDAPATAN</td></tr>
@@ -151,6 +159,8 @@
             .laporan-accurate .subsection-row td { font-weight:700; padding-left:24px; }
             .laporan-accurate .report-total td { border-top:1px solid #495057; border-bottom:1px solid #495057; font-weight:700; }
             .laporan-accurate .report-highlight td { background:#f6f8fb; border-top:2px solid #212529; border-bottom:2px solid #212529; font-weight:700; }
+            .laporan-view-standar .period-column { display:none; }
+            .laporan-view-tabs .btn { min-width:130px; }
             .mobile-period-note { display:none; }
             @media (max-width: 767.98px) {
                 .report-actions { width:100%; display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -174,6 +184,21 @@
         </style>
         @if ($result)
             <script>
+                document.querySelectorAll('[data-laporan-view]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        const view = this.dataset.laporanView;
+                        const table = document.querySelector('.laporan-accurate');
+                        if (!table) return;
+                        table.classList.toggle('laporan-view-standar', view === 'standar');
+                        document.querySelectorAll('[data-laporan-view]').forEach(function (tab) {
+                            const active = tab.dataset.laporanView === view;
+                            tab.classList.toggle('active', active);
+                            tab.classList.toggle('btn-primary', active);
+                            tab.classList.toggle('btn-outline-primary', !active);
+                            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+                        });
+                    });
+                });
                 document.getElementById('cariAkunLabaRugi')?.addEventListener('input', function () {
                     const keyword = this.value.trim().toLocaleLowerCase('id-ID');
                     const accountRows = document.querySelectorAll('.laporan-accurate tbody .account-row');

@@ -267,6 +267,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/laporan/laba-rugi/budget', 'simpanBudgetLabaRugi')->name('laba-rugi.budget.simpan');
         Route::get('/laporan/laba-rugi/export', 'exportLabaRugi')->name('laba-rugi.export');
         Route::get('/laporan/laba-rugi/akun/{akun_perkiraan}', 'detailAkun')->name('detail-akun');
+        Route::get('/laporan/laba-rugi/akun/{akun_perkiraan}/export', 'exportDetailAkun')->name('detail-akun.export');
         Route::get('/laporan/arus-kas', 'arusKas')->name('arus-kas');
         Route::get('/laporan/arus-kas/export', 'exportArusKas')->name('arus-kas.export');
         Route::get('/laporan/arus-kas/detail', 'detailArusKas')->name('arus-kas-detail');

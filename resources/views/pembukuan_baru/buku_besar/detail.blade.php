@@ -25,8 +25,7 @@
             .pagination { margin-bottom: 0; }
         </style>
         <form method="get" class="detail-filter mb-4">
-            <input type="hidden" name="tgl1" value="{{ $tgl1 }}">
-            <input type="hidden" name="tgl2" value="{{ $tgl2 }}">
+            <div class="row g-3 mb-3"><div class="col-md-3"><label class="form-label">Tanggal Dari</label><input type="date" name="tgl1" value="{{ $tgl1 }}" class="form-control"></div><div class="col-md-3"><label class="form-label">Tanggal Sampai</label><input type="date" name="tgl2" value="{{ $tgl2 }}" class="form-control"></div></div>
             <div class="row g-3 align-items-end">
                 <div class="col-md-7">
                     <label class="form-label">Cari nomor atau keterangan</label>

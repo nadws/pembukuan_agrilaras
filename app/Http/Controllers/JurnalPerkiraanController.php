@@ -6,6 +6,7 @@ use App\Exports\TemplateJurnalPerkiraanExport;
 use App\Exports\LaporanArusKasPerkiraanExport;
 use App\Exports\LaporanLabaRugiPerkiraanExport;
 use App\Exports\LaporanNeracaPerkiraanExport;
+use App\Exports\DetailLabaRugiPerkiraanExport;
 use App\Http\Requests\PratinjauJurnalPerkiraanRequest;
 use App\Models\AkunPerkiraan;
 use App\Models\ImporJurnalPerkiraan;
@@ -446,6 +447,18 @@ class JurnalPerkiraanController extends Controller
             'nilaiLaporan' => $nilaiLaporan,
             'jumlahAkun' => count($accountIds),
         ]);
+    }
+
+    public function exportDetailAkun(Request $request, AkunPerkiraan $akun_perkiraan): BinaryFileResponse
+    {
+        $request->validate(['tanggal_awal' => ['required', 'date'], 'tanggal_akhir' => ['required', 'date', 'after_or_equal:tanggal_awal']]);
+        $ids = $this->accountSubtreeIds($akun_perkiraan);
+        $detail = JurnalPerkiraan::with(['impor', 'akun'])->whereIn('id_akun_perkiraan', $ids)
+            ->whereBetween('tanggal', [$request->tanggal_awal, $request->tanggal_akhir])
+            ->whereHas('impor', fn ($q) => $q->where('status', 'aktif'))
+            ->orderBy('tanggal')->orderBy('nomor_transaksi')->orderBy('urutan_detail')->get();
+        $filename = 'detail-laba-rugi-'.$akun_perkiraan->kode_perkiraan.'-'.$request->tanggal_awal.'-'.$request->tanggal_akhir.'.xlsx';
+        return Excel::download(new DetailLabaRugiPerkiraanExport($detail), $filename);
     }
 
     public function exportLabaRugi(Request $request, LaporanLabaRugiPerkiraanService $service): BinaryFileResponse
