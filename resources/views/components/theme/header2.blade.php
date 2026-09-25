@@ -9,10 +9,11 @@
             <h5>AGRI LARAS</h5>
         </div>
         <div class="header-top-right d-flex align-items-center gap-2">
-            <a href="{{ route('dokumentasi.index') }}" class="btn btn-outline-primary btn-sm me-2 d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+            {{-- <a href="{{ route('dokumentasi.index') }}"
+                class="btn btn-outline-primary btn-sm me-2 d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
                 <i class="fas fa-book-open"></i>
                 <span class="fw-bold">Pusat Panduan</span>
-            </a>
+            </a> --}}
 
             <div class="dropdown">
                 <a href="#" id="topbarUserDropdown"

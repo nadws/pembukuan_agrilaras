@@ -3,7 +3,8 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1"><i class="fas fa-exchange-alt me-2 text-primary"></i>{{ $title }}</h5>
-                <small class="text-muted">Membalik / mengkapitalisasi saldo akumulasi Aktiva Gantung menjadi Aset Tetap</small>
+                <small class="text-muted">Membalik / mengkapitalisasi saldo akumulasi Aktiva Gantung menjadi Aset
+                    Tetap</small>
             </div>
             <a href="{{ route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'pembalik-aktiva-gantung']) }}"
                 class="btn btn-outline-primary btn-sm">
@@ -92,18 +93,18 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label-custom" for="aktiva_gantung_id">Pilih Aset Aktiva Gantung Asal</label>
-                                <select class="form-select select2-aset" id="aktiva_gantung_id" name="aktiva_gantung_id" required>
+                                <label class="form-label-custom" for="aktiva_gantung_id">Pilih Aset Aktiva Gantung
+                                    Asal</label>
+                                <select class="form-select select2-aset" id="aktiva_gantung_id" name="aktiva_gantung_id"
+                                    required>
                                     <option value="">-- Pilih Aset Gantung --</option>
                                     @foreach ($asetGantung as $ag)
-                                        <option value="{{ $ag->id }}"
-                                            data-nama="{{ $ag->nama_aset }}"
-                                            data-kode="{{ $ag->kode }}"
-                                            data-saldo="{{ $ag->total_terkumpul }}"
-                                            data-transaksi="{{ $ag->jumlah_transaksi }}"
-                                            data-status="{{ $ag->status }}"
+                                        <option value="{{ $ag->id }}" data-nama="{{ $ag->nama_aset }}"
+                                            data-kode="{{ $ag->kode }}" data-saldo="{{ $ag->total_terkumpul }}"
+                                            data-transaksi="{{ $ag->jumlah_transaksi }}" data-status="{{ $ag->status }}"
                                             @selected(old('aktiva_gantung_id') == $ag->id)>
-                                            {{ $ag->kode }} - {{ $ag->nama_aset }} (Terkumpul: Rp {{ number_format($ag->total_terkumpul, 0, ',', '.') }})
+                                            {{ $ag->kode }} - {{ $ag->nama_aset }} (Terkumpul: Rp
+                                            {{ number_format($ag->total_terkumpul, 0, ',', '.') }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -119,8 +120,10 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label-custom" for="id_akun_aktiva_gantung">Akun Aktiva Gantung yang Dikredit</label>
-                                <select class="form-select select2-akun" id="id_akun_aktiva_gantung" name="id_akun_aktiva_gantung" required>
+                                <label class="form-label-custom" for="id_akun_aktiva_gantung">Akun Aktiva Gantung yang
+                                    Dikredit</label>
+                                <select class="form-select select2-akun" id="id_akun_aktiva_gantung"
+                                    name="id_akun_aktiva_gantung" required>
                                     @foreach ($akunAktivaGantung as $akun)
                                         <option value="{{ $akun->id_akun_perkiraan }}"
                                             @selected(old('id_akun_aktiva_gantung', $akunAktivaGantungDefault->id_akun_perkiraan ?? null) == $akun->id_akun_perkiraan)>
@@ -128,14 +131,16 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted">Akun penampung biaya pembangunan yang akan dikurangi/dinolkan saldonya.</small>
+                                <small class="text-muted">Akun penampung biaya pembangunan yang akan dikurangi/dinolkan
+                                    saldonya.</small>
                             </div>
 
                             <div class="form-check form-switch mt-3">
                                 <input class="form-check-input" type="checkbox" role="switch" id="status_aset_gantung"
                                     name="status_aset_gantung" value="selesai" checked>
-                                <label class="form-check-label fw-bold text-dark" for="status_aset_gantung">
-                                    Tandai status master aset gantung menjadi <span class="badge bg-success">Selesai</span>
+                                <label class="form-check-label fw-bold" for="status_aset_gantung">
+                                    Tandai status master aset gantung menjadi <span
+                                        class="badge bg-success">Selesai</span>
                                 </label>
                             </div>
                         </div>
@@ -150,22 +155,24 @@
                         </div>
                         <div class="pembalik-card-body">
                             <div class="mb-3">
-                                <label class="form-label-custom" for="id_akun_aset">Akun Aset Tetap Tujuan (Debit)</label>
+                                <label class="form-label-custom" for="id_akun_aset">Akun Aset Tetap Tujuan
+                                    (Debit)</label>
                                 <select class="form-select select2-akun" id="id_akun_aset" name="id_akun_aset" required>
                                     <option value="">-- Pilih Akun Aset Tetap --</option>
                                     @foreach ($akunAset as $akun)
-                                        <option value="{{ $akun->id_akun_perkiraan }}"
-                                            data-nama="{{ $akun->nama }}"
+                                        <option value="{{ $akun->id_akun_perkiraan }}" data-nama="{{ $akun->nama }}"
                                             @selected(old('id_akun_aset') == $akun->id_akun_perkiraan)>
                                             {{ $akun->kode_perkiraan }} - {{ $akun->nama }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted">Akun aset tetap perusahaan (Bangunan, Peralatan, Kendaraan, Mesin, dll).</small>
+                                <small class="text-muted">Akun aset tetap perusahaan (Bangunan, Peralatan, Kendaraan,
+                                    Mesin, dll).</small>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label-custom" for="nominal">Nominal Pembalikan / Kapitalisasi (Rp)</label>
+                                <label class="form-label-custom" for="nominal">Nominal Pembalikan / Kapitalisasi
+                                    (Rp)</label>
                                 <input type="number" step="any" min="0.01" class="form-control form-control-lg fw-bold"
                                     id="nominal" name="nominal" value="{{ old('nominal', 0) }}" required>
                             </div>
@@ -179,29 +186,36 @@
                             {{-- Pilihan daftarkan ke master aktiva tetap untuk depresiasi --}}
                             <div class="p-3 border rounded bg-light mb-3">
                                 <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="simpan_ke_master_aktiva"
-                                        name="simpan_ke_master_aktiva" value="1" @checked(old('simpan_ke_master_aktiva') == '1')>
-                                    <label class="form-check-label fw-bold text-dark" for="simpan_ke_master_aktiva">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        id="simpan_ke_master_aktiva" name="simpan_ke_master_aktiva" value="1"
+                                        @checked(old('simpan_ke_master_aktiva') == '1')>
+                                    <label class="form-check-label fw-bold" for="simpan_ke_master_aktiva">
                                         Daftarkan juga ke Master Aset Tetap (Penyusutan / Depresiasi)
                                     </label>
                                 </div>
                                 <div id="kelompokAktivaWrap" style="display: none;">
-                                    <label class="form-label-custom" for="id_kelompok_aktiva">Kelompok Golongan Aktiva</label>
-                                    <select class="form-select select2-kelompok" id="id_kelompok_aktiva" name="id_kelompok_aktiva">
+                                    <label class="form-label-custom" for="id_kelompok_aktiva">Kelompok Golongan
+                                        Aktiva</label>
+                                    <select class="form-select select2-kelompok" id="id_kelompok_aktiva"
+                                        name="id_kelompok_aktiva">
                                         <option value="">-- Pilih Kelompok Aktiva --</option>
                                         @foreach ($kelompokAktiva as $kel)
-                                            <option value="{{ $kel->id_kelompok }}"
-                                                data-umur="{{ $kel->umur }}"
+                                            <option value="{{ $kel->id_kelompok }}" data-umur="{{ $kel->umur }}"
                                                 data-tarif="{{ $kel->tarif * 100 }}"
                                                 @selected(old('id_kelompok_aktiva') == $kel->id_kelompok)>
-                                                {{ $kel->nm_kelompok }} (Masa Manfaat: {{ $kel->umur }} Thn, Tarif: {{ $kel->tarif * 100 }}%)
+                                                {{ $kel->nm_kelompok }} (Masa Manfaat: {{ $kel->umur }} Thn, Tarif:
+                                                {{ $kel->tarif * 100 }}%)
                                             </option>
                                         @endforeach
                                     </select>
-                                    <div id="depresiasiPreviewBox" class="mt-2 p-2 border rounded bg-white text-success fw-bold small" style="display: none;">
-                                        <i class="fas fa-calculator me-1"></i> <span id="depresiasiPreviewText">Estimasi Penyusutan Bulanan: Rp 0 / bulan</span>
+                                    <div id="depresiasiPreviewBox"
+                                        class="mt-2 p-2 border rounded bg-white text-success fw-bold small"
+                                        style="display: none;">
+                                        <i class="fas fa-calculator me-1"></i> <span id="depresiasiPreviewText">Estimasi
+                                            Penyusutan Bulanan: Rp 0 / bulan</span>
                                     </div>
-                                    <small class="text-muted d-block mt-1">Akan otomatis dihitung beban penyusutan tahunan / bulanan.</small>
+                                    <small class="text-muted d-block mt-1">Akan otomatis dihitung beban penyusutan
+                                        tahunan / bulanan.</small>
                                 </div>
                             </div>
                         </div>
@@ -212,7 +226,8 @@
             {{-- Live Jurnal Preview --}}
             <div class="journal-preview-card mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong class="text-success"><i class="fas fa-check-circle me-1"></i> Preview Jurnal Umum Otomatis</strong>
+                    <strong class="text-success"><i class="fas fa-check-circle me-1"></i> Preview Jurnal Umum
+                        Otomatis</strong>
                     <span class="badge bg-success">Seimbang (Balance)</span>
                 </div>
                 <div class="table-responsive">
@@ -235,7 +250,7 @@
                                 <td class="text-end text-muted">-</td>
                             </tr>
                             <tr>
-                                <td><span class="badge bg-warning text-dark">KREDIT</span></td>
+                                <td><span class="badge bg-warning">KREDIT</span></td>
                                 <td id="previewAkunKredit" class="fw-bold">-</td>
                                 <td id="previewKetKredit">-</td>
                                 <td class="text-end text-muted">-</td>
@@ -260,7 +275,7 @@
 
     @section('scripts')
         <script>
-            (function() {
+            (function () {
                 const asetSelect = document.getElementById('aktiva_gantung_id');
                 const akunAsetSelect = document.getElementById('id_akun_aset');
                 const akunGantungSelect = document.getElementById('id_akun_aktiva_gantung');
@@ -295,13 +310,13 @@
                     jQuery('.select2-aset, .select2-akun, .select2-kelompok').select2({
                         width: '100%',
                         language: {
-                            searching: function() {
+                            searching: function () {
                                 return 'Mencari akun...';
                             }
                         }
                     });
 
-                    jQuery('.select2-aset, .select2-akun, .select2-kelompok').on('change', function() {
+                    jQuery('.select2-aset, .select2-akun, .select2-kelompok').on('change', function () {
                         updatePreview();
                     });
                 }
@@ -365,7 +380,7 @@
                     }
                 }
 
-                asetSelect.addEventListener('change', function() {
+                asetSelect.addEventListener('change', function () {
                     const opt = this.options[this.selectedIndex];
                     if (opt && opt.value) {
                         const saldo = Number(opt.dataset.saldo || 0);
@@ -384,7 +399,7 @@
                 nominalInput.addEventListener('input', updatePreview);
                 keteranganInput.addEventListener('input', updatePreview);
 
-                simpanAktivaCheck.addEventListener('change', function() {
+                simpanAktivaCheck.addEventListener('change', function () {
                     kelompokAktivaWrap.style.display = this.checked ? 'block' : 'none';
                     document.getElementById('id_kelompok_aktiva').required = this.checked;
                     updatePreview();
