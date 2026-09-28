@@ -102,6 +102,34 @@ class LaporanFakturPajakExport
         return strlen($digit) === 16 ? $digit : '';
     }
 
+    public static function isNikValid(string $value): bool
+    {
+        $val = preg_replace('/\D/', '', $value);
+        if (strlen($val) !== 16) {
+            return false;
+        }
+
+        $dd = (int) substr($val, 6, 2);
+        $mm = (int) substr($val, 8, 2);
+        $yy = (int) substr($val, 10, 2);
+
+        if ($dd >= 1 && $dd <= 31) {
+            $day = $dd;
+        } elseif ($dd >= 41 && $dd <= 71) {
+            $day = $dd - 40;
+        } else {
+            return false;
+        }
+
+        if ($mm < 1 || $mm > 12) {
+            return false;
+        }
+
+        $year = $yy <= 30 ? 2000 + $yy : 1900 + $yy;
+
+        return checkdate($mm, $day, $year);
+    }
+
     /**
      * Samakan tipe angka dengan template: bulat ditulis sebagai integer,
      * desimal sebagai float.
@@ -237,15 +265,15 @@ class LaporanFakturPajakExport
             $period = date('mY', strtotime($n->tgl));
             if ($n->npwp !== '') {
                 $idPembeli = $n->npwp;
-                $jenisId = 'TIN';
                 $nomorDok = '0000000000000000';
                 $tkuPembeli = $n->npwp.'000000';
             } else {
-                $idPembeli = '0000000000000000';
-                $jenisId = 'National ID';
+                $idPembeli = $n->nik !== '' ? $n->nik : '0000000000000000';
                 $nomorDok = $n->nik !== '' ? $n->nik : '0000000000000000';
                 $tkuPembeli = '0000000000000000000000';
             }
+
+            $jenisId = self::isNikValid($idPembeli) ? 'TIN' : 'National ID';
 
             $sheet->setCellValue('A'.$row, $baris);
             $sheet->setCellValue('B'.$row, (int) ExcelDate::convertIsoDate($n->tgl));
