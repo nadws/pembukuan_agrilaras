@@ -97,9 +97,46 @@ class LaporanFakturPajakExport
 
     private static function digit16($value): string
     {
-        $digit = preg_replace('/\D/', '', (string) ($value ?? ''));
+        $raw = (string) ($value ?? '');
+        $digit = preg_replace('/\D/', '', $raw);
+
+        // NPWP format lama memakai titik/strip dan digit aslinya 15 digit
+        // berawalan nol. Data yang masuk kadang korup: nol depan hilang +
+        // kelebihan nol di belakang (mis. 96.744.071.0-736.0000). Aturan:
+        // 15 digit -> tambah nol depan; 16 digit -> buang digit terakhir
+        // lalu tambah nol depan. Terbukti cocok dengan baris bersih di DB
+        // (02.043.211.8-731.0000 -> 0020432118731000 = id 849, dst).
+        if (str_contains($raw, '.') || str_contains($raw, '-')) {
+            if (strlen($digit) === 15) {
+                return '0'.$digit;
+            }
+            if (strlen($digit) === 16) {
+                return '0'.substr($digit, 0, 15);
+            }
+
+            return '';
+        }
 
         return strlen($digit) === 16 ? $digit : '';
+    }
+
+    /**
+     * Customer badan usaha ber-NPWP. Selain daftar ini kolom L = National ID.
+     */
+    private const CUSTOMER_NPWP = [
+        'BADAN PRIMAFOOD INTERNATIONAL',
+        'SHIN DJAYA BERSAMA',
+        'PT NEW BARITO HOTEL',
+        'PT SAHABAT ABADI HOTELINDO',
+        'PT REKSO NASIONAL FOOD',
+        'CV TAMA KIAT MANUNGGAL',
+    ];
+
+    public static function isCustomerNpwp(string $nama): bool
+    {
+        $kunci = strtoupper((string) preg_replace('/\s+/', ' ', str_replace('.', ' ', trim($nama))));
+
+        return in_array($kunci, self::CUSTOMER_NPWP, true);
     }
 
     public static function isNikValid(string $value): bool
@@ -252,6 +289,8 @@ class LaporanFakturPajakExport
         $sheet->mergeCells('A1:B1');
         $sheet->setCellValue('A1', 'NPWP Penjual');
         $sheet->setCellValueExplicit('C1', $this->npwpPenjual, DataType::TYPE_STRING);
+        $sheet->getStyle('C1')->getNumberFormat()->setFormatCode('@');
+        $sheet->getStyle('C1')->setQuotePrefix(true);
         $sheet->getStyle('A1')->getFont()->setBold(true);
 
         $header = ['Baris', 'Tanggal Faktur', 'Jenis Faktur', 'Kode Transaksi', 'Keterangan Tambahan', 'Dokumen Pendukung', 'Period Dok Pendukung', 'Referensi', 'Cap Fasilitas', 'ID TKU Penjual', 'NPWP/NIK Pembeli', 'Jenis ID Pembeli', 'Negara Pembeli', 'Nomor Dokumen Pembeli', 'Nama Pembeli', 'Alamat Pembeli', 'Email Pembeli', 'ID TKU Pembeli'];
@@ -273,7 +312,9 @@ class LaporanFakturPajakExport
                 $tkuPembeli = '0000000000000000000000';
             }
 
-            $jenisId = self::isNikValid($idPembeli) ? 'TIN' : 'National ID';
+            // Kolom L mengikuti daftar customer ber-NPWP:
+            // di daftar -> TIN, selain itu -> National ID.
+            $jenisId = self::isCustomerNpwp($n->nama) ? 'TIN' : 'National ID';
 
             $sheet->setCellValue('A'.$row, $baris);
             $sheet->setCellValue('B'.$row, (int) ExcelDate::convertIsoDate($n->tgl));
@@ -300,6 +341,10 @@ class LaporanFakturPajakExport
         $sheet->getStyle('B4:B'.$akhir)->getNumberFormat()->setFormatCode('m/d/yyyy');
         foreach (['D', 'G', 'J', 'K', 'N', 'R'] as $kol) {
             $sheet->getStyle($kol.'4:'.$kol.$akhir)->getNumberFormat()->setFormatCode('@');
+            // quotePrefix memaksa Excel menganggap sel sebagai teks sehingga
+            // ID 16 digit berawalan nol (mis. 0967440710736000) tidak diubah
+            // menjadi angka (nol depan hilang + presisi 15 digit merusak digit akhir).
+            $sheet->getStyle($kol.'4:'.$kol.$akhir)->setQuotePrefix(true);
         }
         $sheet->setAutoFilter('A3:R'.$akhir);
 

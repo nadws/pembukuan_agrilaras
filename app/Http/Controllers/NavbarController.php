@@ -278,8 +278,6 @@ class NavbarController extends Controller
                 'deskripsi' => 'Melihat saldo barang umum per gudang serta menuju pengisian stok awal dan stok opname.',
             ],
 
-
-
         ];
         $data = $this->saringAkses($data);
 
@@ -391,6 +389,12 @@ class NavbarController extends Controller
                 'deskripsi' => 'Melihat daftar faktur pajak penjualan telur per nota beserta DPP dan PPN.',
             ],
             [
+                'judul' => 'Tagihan Customer',
+                'route' => 'laporan.tagihan-customer',
+                'img' => 'invoice.png',
+                'deskripsi' => 'Export tagihan customer sesuai periode dan format yang dipilih.',
+            ],
+            [
                 'judul' => 'Laporan Stok Persediaan',
                 'route' => 'laporan.stok-persediaan',
                 'img' => 'warehouse.png',
@@ -415,8 +419,10 @@ class NavbarController extends Controller
 
         ];
         $title = 'Pembelian';
+
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function accurate()
     {
         $data = [
@@ -444,7 +450,6 @@ class NavbarController extends Controller
                 'img' => 'accounting.png',
                 'deskripsi' => 'Import dan data dari accurate',
             ],
-
 
         ];
         $title = 'Pembelian';
@@ -487,9 +492,9 @@ class NavbarController extends Controller
         ];
         $title = 'Pembukuan Baru';
         $data = $this->saringAkses($data);
-
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function pembayaran()
     {
         $data = [
@@ -504,6 +509,7 @@ class NavbarController extends Controller
         $title = 'Pembayaran';
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function penjualan_umum()
     {
         $data = [
@@ -530,6 +536,7 @@ class NavbarController extends Controller
         $title = 'Penjualan Umum';
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function penjualan()
     {
         $data = [
@@ -545,7 +552,6 @@ class NavbarController extends Controller
         return view('navbar.data_master', compact(['data', 'title']));
     }
 
-
     public function kandang()
     {
         $data = [
@@ -556,11 +562,11 @@ class NavbarController extends Controller
                 'deskripsi' => 'Mencatat berbagai transaksi keuangan dengan menetapkan langsung rekening di sisi debit dan kredit.',
             ],
 
-
         ];
         $title = 'Kandang AGL';
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function penjualan_agl()
     {
         $data = [
@@ -593,6 +599,7 @@ class NavbarController extends Controller
         $title = 'Penjualan';
         return view('navbar.data_master', compact(['data', 'title']));
     }
+
     public function asset()
     {
         $data = [

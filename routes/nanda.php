@@ -26,6 +26,7 @@ use App\Http\Controllers\LaporanFakturPajakController;
 use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\LaporanPendapatanController;
 use App\Http\Controllers\LaporanStokPersediaanController;
+use App\Http\Controllers\LaporanTagihanCustomerController;
 use App\Http\Controllers\MasterAkunPerkiraanController;
 use App\Http\Controllers\MedionController;
 use App\Http\Controllers\NavbarController;
@@ -734,6 +735,10 @@ Route::controller(LaporanPendapatanController::class)->group(function () {
 Route::controller(LaporanFakturPajakController::class)->group(function () {
     Route::get('/laporan/faktur-pajak', 'index')->name('laporan.faktur-pajak');
     Route::get('/laporan/faktur-pajak/export', 'export')->name('laporan.faktur-pajak.export');
+});
+Route::controller(LaporanTagihanCustomerController::class)->group(function () {
+    Route::get('/laporan/tagihan-customer', 'index')->name('laporan.tagihan-customer');
+    Route::get('/laporan/tagihan-customer/export', 'export')->name('laporan.tagihan-customer.export');
 });
 Route::controller(MedionController::class)->group(function () {
     Route::get('/record_pullet', 'index')->name('record_pullet');

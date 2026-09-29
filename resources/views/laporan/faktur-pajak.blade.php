@@ -52,7 +52,7 @@
                             <td style="white-space:nowrap">{{ tanggal($row->tgl) }}</td>
                             <td class="fw-semibold" style="white-space:nowrap">{{ $row->no_nota }}</td>
                             <td>{{ $row->customer }}</td>
-                            <td style="white-space:nowrap">{{ $row->npwp !== '' && $row->npwp !== 'Null' ? $row->npwp : ($row->ktp !== '' ? $row->ktp : '-') }}</td>
+                            <td style="white-space:nowrap">{{ $row->npwp !== '' && $row->npwp !== 'Null' ? $row->npwp : '-' }}</td>
                             <td class="amount">{{ number_format($row->dpp, 0, ',', '.') }}</td>
                             <td class="amount">{{ number_format($row->ppn, 0, ',', '.') }}</td>
                         </tr>
