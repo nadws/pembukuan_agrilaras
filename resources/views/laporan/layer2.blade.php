@@ -1417,39 +1417,61 @@
 
                                     </tr>
                                     <tr>
-                                        <td align="left">ttl Profit</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Periode kumulatif ringkasan: dari tanggal pertama kandang makan pakan sampai hari ini (rumus Laba Rugi Kandang)">
+                                            prde kml</td>
+                                        <td align="left">:<span class="txt-periode"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Total Pendapatan LRK2 = jual telur + jual ayam (jurnal 400001 & 400002), kumulatif">
+                                            ttl Profit</td>
                                         <td align="left">:<span class="txt-telur-kg"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Pakan</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Biaya pakan LRK2 (jurnal 5101-04 dibagi bobot pemakaian pakan), kumulatif">
+                                            B Pakan</td>
                                         <td align="left">:<span class="txt-b_pakan"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Vitamin</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Biaya vitamin LRK2 (jurnal 5101-03 dibagi bobot pemakaian), kumulatif">
+                                            B Vitamin</td>
                                         <td align="left">:<span class="txt-b_vitamin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Vaksin</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Total pemakaian vaksin kandang ini, kumulatif">B Vaksin</td>
                                         <td align="left">:<span class="txt-b_vaksin"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Pullet</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Modal pullet dari data kandang (tetap, di luar LRK2)">B Pullet
+                                        </td>
                                         <td align="left">:<span class="txt-b_pullet"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Rak</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Biaya rak LRK2 (jurnal 5101-01 dibagi bobot pcs telur), kumulatif">
+                                            B Rak</td>
                                         <td align="left">:<span class="txt-b_rak"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">B Operasional</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Operasional LRK2 dibagi proporsi populasi awal, kumulatif">B
+                                            Operasional</td>
                                         <td align="left">:<span class="txt-b_oper"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">Profit - B</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="ttl Profit dikurangi semua biaya di atas">Profit - B</td>
                                         <td align="left">:<span class="txt-laba"></span></td>
                                     </tr>
                                     <tr>
-                                        <td align="left">PNL / ttl kg</td>
+                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Profit-B dibagi total kg telur bersih kumulatif">PNL / ttl kg
+                                        </td>
                                         <td align="left">:<span class="txt-rata"></span></td>
                                     </tr>
                                 </table>
@@ -1789,6 +1811,15 @@
          * LOAD DATA RINGKASAN SETIAP KANDANG
          * =========================================================
          */
+        function formatPeriodeSingkat(tgl1, tgl2) {
+            function fmt(t) {
+                if (!t) return '-';
+                var p = t.split('-');
+                return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0].slice(2) : t;
+            }
+            return fmt(tgl1) + '–' + fmt(tgl2);
+        }
+
         function loadRingkasanKandang() {
             $('.baris-kandang2').each(function() {
                 var $row = $(this);
@@ -1810,6 +1841,9 @@
                         tgl: $row.attr('tgl')
                     },
                     success: function(response) {
+                        $row.find('.txt-periode')
+                            .text(formatPeriodeSingkat(response.tgl1, response.tgl2));
+
                         $row.find('.txt-rata-pakan')
                             .text(response.rata_pakan ?? 0);
 
