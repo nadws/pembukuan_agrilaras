@@ -710,6 +710,7 @@ Route::middleware('auth')->group(function () {
 Route::controller(Laporan_layerController::class)->group(function () {
     Route::get('/laporan_layer', 'index')->name('laporan_layer');
     Route::get('/laporan-layer/export', 'export')->name('laporan_layer.export');
+    Route::get('/laporan-layer/export-daily', 'exportDaily')->name('laporan_layer.export_daily');
     Route::get('/rumus_layer', 'rumus_layer')->name('rumus_layer');
     Route::get('/get_history_produk', 'get_history_produk')->name('get_history_produk');
     Route::get('/laporan-layer/hd-tiga-minggu', 'hdTigaMinggu')

@@ -143,7 +143,7 @@
         <div class="warehouse-page">
             <div class="warehouse-heading">
                 <div>
-                    <h4>Gudang Produk Perencanaan</h4><small class="text-muted">Saldo berjalan pakan dan obat berdasarkan
+                    <h4>Gudang Persediaan</h4><small class="text-muted">Saldo berjalan pakan, obat, dan ayam berdasarkan
                         seluruh mutasi gudang.</small>
                 </div>
                 @if(!empty($btnOpname))
@@ -172,6 +172,13 @@
                 <div class="warehouse-card"><small>Opname terakhir</small><strong
                         style="font-size:16px">{{ $opnameTerakhir ? tanggal($opnameTerakhir) : 'Belum ada' }}</strong>
                 </div>
+            </div>
+            <div class="warehouse-summary" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+                @forelse($stokAyam as $ayam)
+                    <div class="warehouse-card"><small>Stok Ayam — {{ $ayam->nama_gudang }}</small><strong>{{ number_format($ayam->stok, 0, ',', '.') }} ekor</strong></div>
+                @empty
+                    <div class="warehouse-card"><small>Stok Ayam</small><strong>0 ekor</strong></div>
+                @endforelse
             </div>
             <div class="warehouse-table-wrap">
                 <table class="table table-hover warehouse-table">

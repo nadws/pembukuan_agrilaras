@@ -42,15 +42,17 @@ class PenjualanAyamTransaksiController extends Controller
     {
         $data = $request->validate([
             'tgl' => ['required', 'date'], 'id_customer' => ['required', 'integer'],
-            'qty' => ['required', 'numeric', 'min:0'], 'h_satuan' => ['required', 'numeric', 'min:0'],
+            'qty' => ['required', 'integer', 'min:1'], 'total_harga' => ['required', 'numeric', 'min:0'], 'keterangan' => ['nullable', 'string', 'max:1000'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
         ]);
+        $data['h_satuan'] = $data['total_harga'] / $data['qty'];
         $urutan = ((int) DB::table('invoice_ayam')->where('lokasi', 'alpa')->max('urutan')) + 1;
         $nota = 'PA-' . $urutan;
         $urutanCustomer = ((int) DB::table('invoice_ayam')->where('lokasi', 'alpa')->where('id_customer', $data['id_customer'])->max('urutan_customer')) + 1;
         $data['status'] = $this->statusPembayaran((int) $data['id_akun_pembayaran']);
         DB::transaction(function () use ($data, $urutan, $nota, $urutanCustomer) {
             DB::table('invoice_ayam')->insert($this->invoiceRow($data, $urutan, $nota, $urutanCustomer));
+            $this->syncStok($nota, $data['tgl'], (int) $data['qty']);
             $this->syncJurnal($nota, $data['tgl'], $data['id_customer'], (int) $data['id_akun_pembayaran']);
         });
         return redirect()->route('transaksi.penjualan-ayam.index')->with('sukses', 'Penjualan ayam berhasil disimpan.');
@@ -71,15 +73,18 @@ class PenjualanAyamTransaksiController extends Controller
     {
         $data = $request->validate([
             'tgl' => ['required', 'date'], 'id_customer' => ['required', 'integer'],
-            'qty' => ['required', 'numeric', 'min:0'], 'h_satuan' => ['required', 'numeric', 'min:0'],
+            'qty' => ['required', 'integer', 'min:1'], 'total_harga' => ['required', 'numeric', 'min:0'], 'keterangan' => ['nullable', 'string', 'max:1000'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
         ]);
+        $data['h_satuan'] = $data['total_harga'] / $data['qty'];
         $old = DB::table('invoice_ayam')->where('no_nota', $noNota)->where('lokasi', 'alpa')->first();
         abort_unless($old, 404);
         $data['status'] = $this->statusPembayaran((int) $data['id_akun_pembayaran']);
         DB::transaction(function () use ($data, $noNota, $old) {
             DB::table('invoice_ayam')->where('no_nota', $noNota)->where('lokasi', 'alpa')->delete();
+            $this->hapusStok($noNota);
             DB::table('invoice_ayam')->insert($this->invoiceRow($data, $old->urutan, $noNota, $old->urutan_customer));
+            $this->syncStok($noNota, $data['tgl'], (int) $data['qty']);
             $this->syncJurnal($noNota, $data['tgl'], $data['id_customer'], (int) $data['id_akun_pembayaran']);
         });
         return redirect()->route('transaksi.penjualan-ayam.index')->with('sukses', 'Penjualan ayam berhasil diperbarui.');
@@ -89,14 +94,14 @@ class PenjualanAyamTransaksiController extends Controller
     {
         DB::transaction(function () use ($noNota) {
             $deleted = DB::table('invoice_ayam')->where('no_nota', $noNota)->where('lokasi', 'alpa')->delete();
-            abort_unless($deleted, 404); $this->hapusJurnal($noNota);
+            abort_unless($deleted, 404); $this->hapusStok($noNota); $this->hapusJurnal($noNota);
         });
         return redirect()->route('transaksi.penjualan-ayam.index')->with('sukses', 'Penjualan ayam berhasil dihapus.');
     }
 
     private function invoiceRow(array $data, int $urutan, string $nota, int $urutanCustomer): array
     {
-        return ['tgl' => $data['tgl'], 'id_customer' => $data['id_customer'], 'customer' => DB::table('customer')->where('id_customer', $data['id_customer'])->value('nm_customer') ?? '', 'no_nota' => $nota, 'qty' => $data['qty'], 'h_satuan' => $data['h_satuan'], 'admin' => auth()->user()->name, 'urutan' => $urutan, 'lokasi' => 'alpa', 'status' => $data['status'], 'cek' => 'T', 'urutan_customer' => $urutanCustomer, 'id_customer2' => 0, 'id_kandang' => 0];
+        return ['tgl' => $data['tgl'], 'id_customer' => $data['id_customer'], 'customer' => DB::table('customer')->where('id_customer', $data['id_customer'])->value('nm_customer') ?? '', 'no_nota' => $nota, 'qty' => $data['qty'], 'h_satuan' => $data['h_satuan'], 'keterangan' => $data['keterangan'] ?? null, 'admin' => auth()->user()->name, 'urutan' => $urutan, 'lokasi' => 'alpa', 'status' => $data['status'], 'cek' => 'T', 'urutan_customer' => $urutanCustomer, 'id_customer2' => 0, 'id_kandang' => 0];
     }
 
     private function notaData(string $noNota): array
@@ -119,6 +124,18 @@ class PenjualanAyamTransaksiController extends Controller
             ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunBayar->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $noNota, 'tipe_transaksi' => 'Penjualan Ayam', 'urutan_detail' => 1, 'deskripsi' => 'Penerimaan penjualan ayam dari ' . $customer, 'debit' => $total, 'kredit' => 0, 'created_at' => $now, 'updated_at' => $now],
             ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunJual->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $noNota, 'tipe_transaksi' => 'Penjualan Ayam', 'urutan_detail' => 2, 'deskripsi' => 'Pendapatan penjualan ayam kepada ' . $customer, 'debit' => 0, 'kredit' => $total, 'created_at' => $now, 'updated_at' => $now],
         ]);
+    }
+
+    private function syncStok(string $noNota, string $tanggal, int $qty): void
+    {
+        $saldo = (float) DB::table('stok_ayam')->where('id_gudang', 2)->where('jenis', 'ayam')->sum(DB::raw('debit - kredit'));
+        abort_if($qty > $saldo, 422, 'Stok ayam tidak mencukupi.');
+        DB::table('stok_ayam')->insert(['tgl' => $tanggal, 'debit' => 0, 'kredit' => $qty, 'id_gudang' => 2, 'admin' => auth()->user()->name, 'jenis' => 'ayam', 'no_nota' => $noNota, 'transfer' => 'Y']);
+    }
+
+    private function hapusStok(string $noNota): void
+    {
+        DB::table('stok_ayam')->where('no_nota', $noNota)->delete();
     }
 
     private function hapusJurnal(string $noNota): void

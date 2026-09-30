@@ -1140,7 +1140,8 @@
                     <input type="date" class="form-control" name="tgl" value="{{ $tgl }}">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
                     <button type="button" data-bs-toggle="modal" data-bs-target="#export-layer-modal"
-                        class="btn btn-success btn-sm ms-2 btn-export-layer">
+                        class="btn btn-success btn-sm ms-2 btn-export-layer"
+                        title="Export Daily Commercial Layer + laba rugi">
                         <span class="d-none d-xl-inline">Export Excel</span>
                         <span class="d-xl-none">Excel</span>
                     </button>
@@ -1170,27 +1171,38 @@
             aria-labelledby="export-layer-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form action="{{ route('laporan_layer.export') }}" method="GET">
+                    <form action="{{ route('laporan_layer.export_daily') }}" method="GET">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="export-layer-modal-label">Pilih Periode Export</h5>
+                            <h5 class="modal-title" id="export-layer-modal-label">Export Daily Layer</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Tutup"></button>
                         </div>
                         <div class="modal-body">
                             <p class="text-muted small mb-3">
-                                Pilih tanggal awal dan akhir data yang ingin dimasukkan ke Excel.
+                                Daily Commercial Layer Production + laba rugi per kandang.
+                                Tanggal awal terisi otomatis dari tanggal pertama kandang makan.
                             </p>
                             <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="export-id-kandang" class="form-label small fw-bold">Kandang</label>
+                                    <select id="export-id-kandang" name="id_kandang" class="form-control" required>
+                                        <option value="">- Pilih Kandang -</option>
+                                        @foreach ($kandangExport as $kd)
+                                            <option value="{{ $kd->id_kandang }}"
+                                                data-tgl-makan="{{ $makanPertama[$kd->id_kandang] ?? '' }}">
+                                                {{ $kd->nm_kandang }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="col-12 col-md-6">
                                     <label for="export-tgl-mulai" class="form-label small fw-bold">Tanggal awal</label>
                                     <input type="date" id="export-tgl-mulai" name="tgl_mulai"
-                                        class="form-control"
-                                        value="{{ date('Y-m-d', strtotime($tgl . ' -20 days')) }}" required>
+                                        class="form-control" required>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label for="export-tgl-selesai" class="form-label small fw-bold">Tanggal akhir</label>
                                     <input type="date" id="export-tgl-selesai" name="tgl_selesai"
-                                        class="form-control" value="{{ $tgl }}" required>
+                                        class="form-control" value="{{ date('Y-m-d') }}" required>
                                 </div>
                             </div>
                         </div>
@@ -1447,20 +1459,14 @@
                                     </tr>
                                     <tr>
                                         <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Modal pullet dari data kandang (tetap, di luar LRK2)">B Pullet
-                                        </td>
-                                        <td align="left">:<span class="txt-b_pullet"></span></td>
-                                    </tr>
-                                    <tr>
-                                        <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
                                             title="Biaya rak LRK2 (jurnal 5101-01 dibagi bobot pcs telur), kumulatif">
                                             B Rak</td>
                                         <td align="left">:<span class="txt-b_rak"></span></td>
                                     </tr>
                                     <tr>
                                         <td align="left" data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Operasional LRK2 dibagi proporsi populasi awal, kumulatif">B
-                                            Operasional</td>
+                                            title="Operasional LRK2 dibagi proporsi populasi awal, sudah termasuk HPP ayam/pullet bertahap (5101-02)">
+                                            B Operasional</td>
                                         <td align="left">:<span class="txt-b_oper"></span></td>
                                     </tr>
                                     <tr>
@@ -1619,6 +1625,7 @@
                     <h1 class="modal-title fs-5" id="exampleModalLabel">
                         Detail Kandang <span id="modal-nama-kandang"></span>
                     </h1>
+                    <a href="#" id="modal-export-kandang" class="btn btn-success btn-sm me-2">Export Excel</a>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1820,6 +1827,17 @@
             return fmt(tgl1) + '–' + fmt(tgl2);
         }
 
+        /*
+         * Geser tanggal Y-m-d sebanyak N hari (untuk periode export).
+         */
+        function geserTanggal(tgl, selisihHari) {
+            var d = new Date(tgl + 'T00:00:00');
+            d.setDate(d.getDate() + selisihHari);
+            var b = ('0' + (d.getMonth() + 1)).slice(-2);
+            var h = ('0' + d.getDate()).slice(-2);
+            return d.getFullYear() + '-' + b + '-' + h;
+        }
+
         function loadRingkasanKandang() {
             $('.baris-kandang2').each(function() {
                 var $row = $(this);
@@ -1867,9 +1885,6 @@
 
                         $row.find('.txt-b_vaksin')
                             .text(response.biaya_vaksin ?? 0);
-
-                        $row.find('.txt-b_pullet')
-                            .text(response.biaya_pullet ?? 0);
 
                         $row.find('.txt-b_rak')
                             .text(response.biaya_rak ?? 0);
@@ -1999,6 +2014,17 @@
             var $dataTelur = $('#data-telur-pane .js-hd-tiga-minggu');
 
             $('#modal-nama-kandang').text('- ' + $trigger.attr('data-nama-kandang'));
+
+            /*
+             * Export per kandang: 21 hari terakhir sampai tgl laporan.
+             */
+            var tglSelesaiExport = $trigger.attr('data-tgl');
+            $('#modal-export-kandang').attr('href',
+                "{{ route('laporan_layer.export') }}" +
+                '?id_kandang=' + encodeURIComponent($trigger.attr('id_kandang')) +
+                '&tgl_mulai=' + encodeURIComponent(geserTanggal(tglSelesaiExport, -20)) +
+                '&tgl_selesai=' + encodeURIComponent(tglSelesaiExport));
+
             $dataTelur
                 .attr('data-url', $trigger.attr('data-hd-url'))
                 .attr('data-id-kandang', $trigger.attr('id_kandang'))
@@ -2107,6 +2133,7 @@
          */
         var $exportMulai = $('#export-tgl-mulai');
         var $exportSelesai = $('#export-tgl-selesai');
+        var $exportKandang = $('#export-id-kandang');
 
         function sinkronkanPeriodeExport() {
             $exportSelesai.attr('min', $exportMulai.val());
@@ -2116,6 +2143,19 @@
                 $exportSelesai.val($exportMulai.val());
             }
         }
+
+        /*
+         * Tanggal awal otomatis = tanggal pertama kandang makan.
+         */
+        $exportKandang.on('change', function() {
+            var tglMakan = $(this).find('option:selected').attr('data-tgl-makan');
+
+            if (tglMakan) {
+                $exportMulai.val(tglMakan);
+            }
+
+            sinkronkanPeriodeExport();
+        });
 
         $exportMulai.add($exportSelesai).on('change', sinkronkanPeriodeExport);
         sinkronkanPeriodeExport();

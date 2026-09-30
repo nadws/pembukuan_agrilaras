@@ -41,6 +41,17 @@ class GudangPersediaanController extends Controller
         );
 
         $id_user = auth()->id();
+        $stokAyam = DB::table('stok_ayam')
+            ->where('jenis', 'ayam')
+            ->select('id_gudang')
+            ->selectRaw('SUM(debit - kredit) as stok')
+            ->groupBy('id_gudang')
+            ->orderBy('id_gudang')
+            ->get()
+            ->map(function ($row) {
+                $row->nama_gudang = (int) $row->id_gudang === 1 ? 'Kandang/Martadah' : 'Gudang Banjarmasin';
+                return $row;
+            });
 
         return view('gudang_persediaan.index', [
             'title' => 'Gudang',
@@ -52,6 +63,7 @@ class GudangPersediaanController extends Controller
             'produkKosong' => $stokSemua->where('stok', '<=', 0)->count(),
             'nilaiPersediaan' => $stokSemua->sum(fn ($row) => max(0, (float) $row->nilai_stok)),
             'opnameTerakhir' => DB::table('gudang_opname_perencanaan')->max('tanggal'),
+            'stokAyam' => $stokAyam,
         ]);
     }
 

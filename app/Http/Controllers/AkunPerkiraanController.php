@@ -429,8 +429,10 @@ class AkunPerkiraanController extends Controller
          * namun periodenya kumulatif: dari pertama kali kandang makan
          * (pemakaian pakan pertama) sampai hari ini. Param tgl dari
          * layer sengaja diabaikan agar angka bersifat lifetime.
-         * B Pullet tetap memakai kolom rupiah tabel kandang karena
-         * tidak ada di rumus LabaRugiKandang2.
+         * B Pullet (modal awal, kolom rupiah kandang) TIDAK ditambahkan
+         * lagi karena modal pullet sudah diakui bertahap lewat HPP ayam
+         * (akun 5101-02) di dalam biaya operasional. Menambahkannya
+         * berarti double-count.
          */
         $tgl2 = date('Y-m-d');
         $tgl1 = DB::table('stok_produk_perencanaan as s')
@@ -467,8 +469,6 @@ class AkunPerkiraanController extends Controller
             ? ($biayaOperasionalTotal / $stokAwalTotal) * (float) $kandang->stok_awal
             : 0;
 
-        $biaya_pullet = (float) ($kandang->rupiah ?? 0);
-
         $totalTelurRow = $hitung['totalTelur'][$idKandang] ?? null;
         $ttl_telur = $totalTelurRow
             ? (float) ($totalTelurRow->kuml_kg ?? 0) - (float) ($totalTelurRow->kuml_pcs ?? 0) / 180
@@ -483,12 +483,12 @@ class AkunPerkiraanController extends Controller
             ->first();
         $kg_pakan_kuml = ((float) ($kg_pakan->kg_pakan_kuml ?? 0)) / 1000;
 
-        $total_biaya = $biaya_pakan + $biaya_vitamin + $biaya_pullet + $rak + $biaya_oper + $biaya_vaksin;
+        $total_biaya = $biaya_pakan + $biaya_vitamin + $rak + $biaya_oper + $biaya_vaksin;
 
         $rata_pakan = $kg_pakan_kuml > 0 ? $biaya_pakan / $kg_pakan_kuml : 0;
         $fcrk = $ttl_telur > 0 ? $kg_pakan_kuml / $ttl_telur : 0;
         $fcrkplus = ($ttl_telur > 0 && $rata_pakan > 0)
-            ? ($kg_pakan_kuml + (($biaya_vitamin + $biaya_vaksin + $biaya_pullet + $biaya_oper + $rak) / $rata_pakan)) / $ttl_telur
+            ? ($kg_pakan_kuml + (($biaya_vitamin + $biaya_vaksin + $biaya_oper + $rak) / $rata_pakan)) / $ttl_telur
             : 0;
 
         // Return semua data dalam satu object JSON
@@ -502,7 +502,6 @@ class AkunPerkiraanController extends Controller
             'fcrkplus' => number_format($fcrkplus, 1),
             'biaya_vitamin' => number_format($biaya_vitamin, 0),
             'biaya_vaksin' => number_format($biaya_vaksin, 0),
-            'biaya_pullet' => number_format($biaya_pullet, 0),
             'biaya_rak' => number_format($rak, 0),
             'biaya_oper' => number_format($biaya_oper, 0),
 
