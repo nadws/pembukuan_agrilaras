@@ -181,13 +181,13 @@ class Penjualan_umum_cekController extends Controller
             $tanggalNota = date('Y-m-d');
         }
 
-        $akunPiutang = DB::table('akun_perkiraan')
-            ->where('kode_perkiraan', '110201')
+        $akunJual = DB::table('akun_perkiraan')
+            ->where('kode_perkiraan', '400003')
             ->where('aktif', 1)
             ->first();
 
-        if (! $akunPiutang) {
-            return back()->withErrors(['id_akun' => 'Akun Piutang Penjualan Umum tidak ditemukan.'])->withInput();
+        if (! $akunJual) {
+            return back()->withErrors(['id_akun' => 'Akun Penjualan Umum (400003) tidak ditemukan.'])->withInput();
         }
 
         $akunIds = collect($r->id_akun)->filter()->unique()->values();
@@ -197,7 +197,7 @@ class Penjualan_umum_cekController extends Controller
             ->get()
             ->keyBy('id_akun_perkiraan');
 
-        DB::transaction(function () use ($r, $produkNames, $akunPiutang, $akunMap, $urutan, $tglPerNota, $tanggalNota, $penjualan) {
+        DB::transaction(function () use ($r, $produkNames, $akunJual, $akunMap, $urutan, $tglPerNota, $tanggalNota, $penjualan) {
             $now = now();
 
             $detailRows = [];
@@ -211,7 +211,7 @@ class Penjualan_umum_cekController extends Controller
                 $deskripsi = $noNota . ':' . ($customer->id_customer ?? '') . ' ' . $produkNames;
 
                 $detailRows[] = [
-                    'id_akun_perkiraan' => $akunPiutang->id_akun_perkiraan,
+                    'id_akun_perkiraan' => $akunJual->id_akun_perkiraan,
                     'tanggal' => $tanggalNotaUtk,
                     'nomor_transaksi' => $noNota,
                     'tipe_transaksi' => 'Penjualan Umum',
