@@ -59,7 +59,7 @@ class LaporanAkhirBulanController extends Controller
         $withdrawalAccountCodes = ['110103', '110105', '110107', '110108', '110109', '110110', '110111'];
         // Preset sesuai laporan Accurate: kas/bank penjualan, akun pendapatan,
         // serta akun biaya/pendapatan yang muncul pada laporan uang penjualan.
-        $penjualanDefaultAccountCodes = ['110103', '110105', '110107', '110108', '110109', '400001', '400002', '400003', '720001', '710001', '110110', '110111', '600011-01', '710010'];
+        $penjualanDefaultAccountCodes = ['110103', '110105', '110107', '110108', '110109', '400001', '400002', '400003', '720001', '710001', '110110', '110111', '600011-01', '710010', '710002-01', '710002-03', '720002-01', '720002-03', '720003-01', '720003-03'];
 
         $availableAccounts = DB::table('akun_perkiraan as a')
             ->where('a.aktif', true)
@@ -128,7 +128,13 @@ class LaporanAkhirBulanController extends Controller
         // Urutan tampilan mengikuti laporan Accurate, bukan urutan kode akun.
         $penjualanOrder = [
             '110107', // BCA penjualan telur
+            '710002-01', // Pendapatan bunga bank BCA penjualan telur
+            '720002-01', // Biaya adm bank BCA penjualan telur
+            '720003-01', // Biaya pajak bunga bank BCA penjualan telur
             '110105', // Bank Mandiri penjualan umum
+            '710002-03', // Pendapatan bunga bank Mandiri penjualan umum
+            '720002-03', // Biaya adm bank Mandiri penjualan umum
+            '720003-03', // Biaya pajak bunga bank Mandiri penjualan umum
             '600011-01', // Biaya listrik
             '110108', // Kas penjualan telur - Banjarmasin
             '110109', // Kas penjualan telur - Martadah
@@ -183,6 +189,11 @@ class LaporanAkhirBulanController extends Controller
             'transactionTypeOptions' => $transactionTypeOptions,
             'availableAccounts' => $availableAccounts,
             'withdrawalAccounts' => $availableAccounts,
+
+            // Keterangan pengecualian (dari config, bisa diedit tanpa ubah database)
+            'penjualanExclusions' => config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []),
+            'bankCostExclusions' => config('laporan_akhir_bulan.bank_cost_deskripsi_kecuali', []),
+            'bankProjectExclusions' => config('laporan_akhir_bulan.bank_project_deskripsi_kecuali', []),
         ]);
     }
 
@@ -316,14 +327,14 @@ class LaporanAkhirBulanController extends Controller
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
             ->when($selectedPenjualanTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedPenjualanTypeCodes))
             ->where(function ($q) {
+                            $exclusions = collect(config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []))
+                                ->pluck('pola')->filter()->values()->all();
                             $q->whereNull('j.deskripsi')
-                            ->orWhere(function ($w) {
-                                $w->where('j.deskripsi', 'not like', '%tagihan%')
-                                    ->where('j.deskripsi', 'not like', '%bunga bank%')
-                            ->where('j.deskripsi', 'not like', '%biaya adm%')
-                            ->where('j.deskripsi', 'not like', '%biaya transportasi%')
-                            ->where('j.deskripsi', 'not like', 'Pembayaran Hutang%');
-                    });
+                            ->orWhere(function ($w) use ($exclusions) {
+                                foreach ($exclusions as $pattern) {
+                                    $w->where('j.deskripsi', 'not like', $pattern);
+                                }
+                            });
             })
             ->when(trim((string) ($data['cari'] ?? '')), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
@@ -451,14 +462,14 @@ class LaporanAkhirBulanController extends Controller
                     $join->whereIn('j.tipe_transaksi', $selectedTypeCodes);
                 }
                 if ($filterDesc) {
-                    $join->where(function ($q) {
+                    $exclusions = collect(config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []))
+                        ->pluck('pola')->filter()->values()->all();
+                    $join->where(function ($q) use ($exclusions) {
                         $q->whereNull('j.deskripsi')
-                            ->orWhere(function ($w) {
-                        $w->where('j.deskripsi', 'not like', '%tagihan%')
-                            ->where('j.deskripsi', 'not like', '%bunga bank%')
-                                    ->where('j.deskripsi', 'not like', '%biaya adm%')
-                                    ->where('j.deskripsi', 'not like', '%biaya transportasi%')
-                                    ->where('j.deskripsi', 'not like', 'Pembayaran Hutang%');
+                            ->orWhere(function ($w) use ($exclusions) {
+                                foreach ($exclusions as $pattern) {
+                                    $w->where('j.deskripsi', 'not like', $pattern);
+                                }
                             });
                     });
                 }
@@ -498,10 +509,12 @@ class LaporanAkhirBulanController extends Controller
             ->where('a.nama', 'not like', '%Utang usaha%')
             ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
             ->where(function ($q) {
-                $q->whereNull('j.deskripsi')->orWhere(function ($w) {
-                    $w->where('j.deskripsi', 'not like', '%transfer%')
-                        ->where('j.deskripsi', 'not like', '%penerimaan%')
-                        ->where('j.deskripsi', 'not like', '%saldo%');
+                $exclusions = collect(config('laporan_akhir_bulan.bank_cost_deskripsi_kecuali', []))
+                    ->pluck('pola')->filter()->values()->all();
+                $q->whereNull('j.deskripsi')->orWhere(function ($w) use ($exclusions) {
+                    foreach ($exclusions as $pattern) {
+                        $w->where('j.deskripsi', 'not like', $pattern);
+                    }
                 });
             })
             ->select('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')
@@ -518,7 +531,15 @@ class LaporanAkhirBulanController extends Controller
             ->join('impor_jurnal_perkiraan as i', function ($join) { $join->on('i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')->where('i.status', 'aktif'); })
             ->whereIn('a.kode_perkiraan', ['110101', '110114'])
             ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
-            ->where(function ($q) { $q->whereNull('j.deskripsi')->orWhere(function ($w) { $w->where('j.deskripsi', 'not like', '%pemindahan%')->where('j.deskripsi', 'not like', '%saldo%'); }); })
+            ->where(function ($q) {
+                $exclusions = collect(config('laporan_akhir_bulan.bank_project_deskripsi_kecuali', []))
+                    ->pluck('pola')->filter()->values()->all();
+                $q->whereNull('j.deskripsi')->orWhere(function ($w) use ($exclusions) {
+                    foreach ($exclusions as $pattern) {
+                        $w->where('j.deskripsi', 'not like', $pattern);
+                    }
+                });
+            })
             ->select('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')->selectRaw('COALESCE(SUM(j.debit),0) debit, COALESCE(SUM(j.kredit),0) kredit')
             ->groupBy('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama')->orderBy('a.kode_perkiraan')->get()
             ->map(function ($row) { $row->debit = (float) $row->debit; $row->kredit = (float) $row->kredit; $row->total = $row->debit - $row->kredit; return $row; })
@@ -565,7 +586,7 @@ class LaporanAkhirBulanController extends Controller
                 'TB',
                 'Setoran Kas Penjualan',
             ]],
-            'jurnal_umum' => ['label' => 'Jurnal Umum / Saldo Awal', 'codes' => ['JU', 'JV']],
+            'jurnal_umum' => ['label' => 'Jurnal Umum / Saldo Awal', 'codes' => ['JU', 'JV', 'Jurnal Umum Manual', 'Jurnal Biaya']],
             'lainnya' => ['label' => 'Transaksi Lainnya', 'codes' => ['Lainnya']],
         ];
     }

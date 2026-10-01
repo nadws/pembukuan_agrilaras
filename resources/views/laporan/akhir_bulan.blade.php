@@ -256,6 +256,19 @@
                                     <td class="amount">{{ $fmt($penjualanCredit) }}</td>
                                 </tr>
                             @endif
+                            @if(!empty($penjualanExclusions))
+                                <tr>
+                                    <td colspan="3" class="small text-muted">
+                                        Dikecualikan dari tabel ini:
+                                        <ul class="mb-0 ps-3">
+                                            @foreach($penjualanExclusions as $exc)
+                                                <li><code>{{ $exc['pola'] }}</code> — {{ $exc['keterangan'] }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <span class="d-block mt-1">(Diatur di <code>config/laporan_akhir_bulan.php</code>, tanpa ubah database)</span>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -265,7 +278,10 @@
                 <div class="card border-0 shadow-sm h-100 bank-cost-report">
                     <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div><h5 class="mb-0">Laporan Bank Cost</h5><small class="text-muted">Filter akun 110102, 110113, 210101 · tanpa transfer, penerimaan, saldo, dan utang usaha</small></div>
+                    <div><h5 class="mb-0">Laporan Bank Cost</h5><small class="text-muted">Filter akun 110102, 110113, 210101 · tanpa utang usaha ·
+                        @if(!empty($bankCostExclusions))
+                            @foreach($bankCostExclusions as $exc)<code>{{ $exc['pola'] }}</code>{{ !$loop->last ? ', ' : '' }}@endforeach
+                        @endif</small></div>
                     <strong class="text-primary">{{ $fmt($bankCostTotal) }}</strong>
                 </div>
                 <div class="withdrawal-report bank-cost-report table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>Nama Akun</th><th class="amount">Debit</th><th class="amount">Kredit</th><th class="amount">Total</th></tr></thead><tbody>
@@ -277,7 +293,10 @@
             </div>
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100 bank-project-report"><div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2"><div><h5 class="mb-0">Laporan Bank Proyek</h5><small class="text-muted">Akun 110101 dan 110114 · tanpa pembelian, pemindahan, dan saldo</small></div><strong class="text-primary">{{ $fmt($bankProjectTotal) }}</strong></div>
+                    <div class="d-flex justify-content-between align-items-center mb-2"><div><h5 class="mb-0">Laporan Bank Proyek</h5><small class="text-muted">Akun 110101 dan 110114 ·
+                        @if(!empty($bankProjectExclusions))
+                            tanpa @foreach($bankProjectExclusions as $exc)<code>{{ $exc['pola'] }}</code>{{ !$loop->last ? ', ' : '' }}@endforeach
+                        @endif</small></div><strong class="text-primary">{{ $fmt($bankProjectTotal) }}</strong></div>
                     <div class="withdrawal-report bank-project-report table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>Nama Akun</th><th class="amount">Debit</th><th class="amount">Kredit</th><th class="amount">Total</th></tr></thead><tbody>
                     @forelse($bankProjectRows as $row)<tr><td><strong>{{ $row->nama }}</strong><small class="d-block text-muted">{{ $row->kode_perkiraan }}</small></td><td class="amount">{{ $fmt($row->debit) }}</td><td class="amount">{{ $fmt($row->kredit) }}</td><td class="amount">{{ $fmt($row->total) }}</td></tr>@empty<tr><td colspan="4" class="text-center text-muted">Tidak ada transaksi bank proyek.</td></tr>@endforelse
                     @if($bankProjectRows->isNotEmpty())<tr class="total-row"><td>Total</td><td class="amount">{{ $fmt($bankProjectDebit) }}</td><td class="amount">{{ $fmt($bankProjectCredit) }}</td><td class="amount">{{ $fmt($bankProjectTotal) }}</td></tr>@endif
