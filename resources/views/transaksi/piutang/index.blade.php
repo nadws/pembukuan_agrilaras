@@ -122,7 +122,7 @@
         <x-theme.modal title="Riwayat Pelunasan" idModal="modalRiwayat" size="modal-xl" btnSave="N">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                 <small class="text-muted">Nota {{ $jenis }} yang sudah dilunasi/dicicil pada periode filter ({{ $awal }} s/d {{ $akhir }}) — klik edit untuk koreksi.</small>
-                <span class="badge bg-success">Rp {{ number_format($totalRiwayat,0,'.',',') }}</span>
+                <span class="d-flex align-items-center gap-2"><span class="badge bg-success">Rp {{ number_format($totalRiwayat,0,'.',',') }}</span><a href="{{ route('transaksi.piutang.riwayat.export', ['jenis' => $jenis, 'tanggal_awal' => $awal, 'tanggal_akhir' => $akhir, 'cari' => $cari]) }}" class="btn btn-outline-success btn-sm"><i class="fas fa-file-excel me-1"></i> Export Excel</a></span>
             </div>
             <div class="input-group mb-2"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="search" id="cariRiwayat" class="form-control" placeholder="Cari nota, customer, atau akun..."></div>
             <div class="receivable-table-wrap">

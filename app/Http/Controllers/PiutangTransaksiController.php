@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RiwayatPelunasanExport;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
@@ -20,10 +23,16 @@ class PiutangTransaksiController extends Controller
         $cari = trim((string) $request->input('cari', $savedFilter['cari'] ?? ''));
         session()->put($filterKey, ['tanggal_awal' => $awal, 'tanggal_akhir' => $akhir, 'cari' => $cari]);
 
+        // Filter tanggal berlaku untuk tgl faktur; pembayaran dibatasi s/d tanggal akhir.
+        $tsAwal = strtotime((string) $awal);
+        $tsAkhir = strtotime((string) $akhir);
+        $dateRange = ($tsAwal && $tsAkhir) ? [date('Y-m-d', min($tsAwal, $tsAkhir)), date('Y-m-d', max($tsAwal, $tsAkhir))] : null;
+
         if ($jenis === 'ayam') {
             $piutangQuery = DB::table('invoice_ayam as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
+                ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.qty', 'i.h_satuan', 'c.nm_customer', DB::raw('i.qty * i.h_satuan as total_rp'))
                 ->orderByDesc('i.tgl')->orderByDesc('i.urutan');
@@ -31,6 +40,7 @@ class PiutangTransaksiController extends Controller
             $piutangQuery = DB::table('penjualan_agl as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
+                ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select(DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'i.tgl', 'i.id_customer', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'), DB::raw('SUM(i.qty) as qty'))
                 ->groupBy('i.urutan', 'i.tgl', 'i.id_customer', 'c.nm_customer')
@@ -39,34 +49,49 @@ class PiutangTransaksiController extends Controller
             $piutangQuery = DB::table('invoice_telur as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
                 ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')
+                ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
                 ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer')
                 ->orderByDesc('i.tgl')->orderByDesc('i.no_nota');
         }
 
-        $piutangPaginator = $piutangQuery->paginate(50);
-        $piutang = $piutangPaginator->getCollection();
+        // Hitung sisa dari SEMUA nota yang cocok filter, baru dipaginasi untuk tampilan.
+        $allInvoices = $piutangQuery->get();
 
-        $paidByNota = DB::table('pelunasan_piutang_penjualan')
-            ->where('jenis', $jenis)
-            ->where('tanggal_bayar', '<=', $akhir)
-            ->whereIn('no_nota', $piutang->pluck('no_nota')->all())
-            ->groupBy('no_nota')
-            ->pluck(DB::raw('SUM(COALESCE(nilai_piutang_dilunasi, jumlah_bayar))'), 'no_nota');
-        $piutang = $piutang->map(function ($item) use ($paidByNota) {
+        $paidByNotaAll = collect();
+        if ($allInvoices->isNotEmpty() && $tsAkhir) {
+            $paidByNotaAll = DB::table('pelunasan_piutang_penjualan')
+                ->where('jenis', $jenis)
+                ->where('tanggal_bayar', '<=', date('Y-m-d', $tsAkhir))
+                ->whereIn('no_nota', $allInvoices->pluck('no_nota')->all())
+                ->groupBy('no_nota')
+                ->pluck(DB::raw('SUM(COALESCE(nilai_piutang_dilunasi, jumlah_bayar))'), 'no_nota');
+        }
+        $allSisa = $allInvoices->map(function ($item) use ($paidByNotaAll) {
             $item->nilai_piutang = (float) $item->total_rp;
-            $item->jumlah_dibayar = min($item->nilai_piutang, (float) ($paidByNota[$item->no_nota] ?? 0));
+            $item->jumlah_dibayar = min($item->nilai_piutang, (float) ($paidByNotaAll[$item->no_nota] ?? 0));
             $item->sisa_piutang = max(0, $item->nilai_piutang - $item->jumlah_dibayar);
             // Keep total_rp as the outstanding value for older view consumers.
             $item->total_rp = $item->sisa_piutang;
             return $item;
         })->filter(fn ($item) => $item->total_rp > 0.005)->values();
 
-        $totalNilaiPiutang = (float) $piutang->sum('nilai_piutang');
-        $totalDibayar = (float) $piutang->sum('jumlah_dibayar');
-        $totalPiutang = (float) $piutang->sum('total_rp');
-        $jumlahFaktur = $piutang->pluck('no_nota')->unique()->count();
+        $totalNilaiPiutang = (float) $allSisa->sum('nilai_piutang');
+        $totalDibayar = (float) $allSisa->sum('jumlah_dibayar');
+        $totalPiutang = (float) $allSisa->sum('total_rp');
+        $jumlahFaktur = $allSisa->pluck('no_nota')->unique()->count();
+
+        $perPage = 50;
+        $page = max(1, (int) $request->input('page', 1));
+        $piutangPaginator = new LengthAwarePaginator(
+            $allSisa->forPage($page, $perPage)->values(),
+            $allSisa->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+        $piutang = $piutangPaginator->getCollection();
         $tabFilters = collect(['telur', 'ayam', 'umum'])->mapWithKeys(function ($tab) {
             $saved = (array) session('transaksi_piutang_filter.' . $tab, []);
             return [$tab => [
@@ -119,6 +144,45 @@ class PiutangTransaksiController extends Controller
         $btnPelunasan = \SettingHal::btnHal(181, auth()->id());
 
         return view('transaksi.piutang.index', compact('jenis', 'awal', 'akhir', 'cari', 'piutang', 'piutangPaginator', 'totalNilaiPiutang', 'totalDibayar', 'totalPiutang', 'jumlahFaktur', 'tabFilters', 'riwayat', 'totalRiwayat', 'btnImport', 'btnRiwayat', 'btnPelunasan'));
+    }
+
+    public function exportRiwayat(Request $request)
+    {
+        $jenis = in_array($request->input('jenis'), ['telur', 'ayam', 'umum'], true) ? $request->input('jenis') : 'telur';
+        $filterKey = 'transaksi_piutang_filter.' . $jenis;
+        $savedFilter = (array) session($filterKey, []);
+        $awal = $request->input('tanggal_awal', $savedFilter['tanggal_awal'] ?? date('Y-m-01'));
+        $akhir = $request->input('tanggal_akhir', $savedFilter['tanggal_akhir'] ?? date('Y-m-d'));
+        $cari = trim((string) $request->input('cari', ''));
+
+        $rows = DB::table('pelunasan_piutang_penjualan as p')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
+            ->leftJoin('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'p.id_akun_pembayaran')
+            ->where('p.jenis', $jenis)
+            ->whereBetween('p.tanggal_bayar', [$awal, $akhir])
+            ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('p.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
+            ->select('p.id_impor_jurnal_perkiraan', 'p.tanggal_bayar', 'p.no_nota', 'c.nm_customer', 'a.kode_perkiraan', 'a.nama as nama_akun', 'p.jumlah_bayar', 'p.nilai_piutang_dilunasi', 'p.jenis_selisih', 'p.selisih_pembayaran')
+            ->orderBy('p.tanggal_bayar')->orderBy('p.id')
+            ->get();
+
+        $voucherByBatch = collect();
+        $batchIds = $rows->pluck('id_impor_jurnal_perkiraan')->filter()->unique()->values()->all();
+        if ($batchIds !== []) {
+            $voucherByBatch = DB::table('jurnal_perkiraan')
+                ->whereIn('id_impor_jurnal_perkiraan', $batchIds)
+                ->groupBy('id_impor_jurnal_perkiraan')
+                ->pluck(DB::raw('MIN(nomor_transaksi)'), 'id_impor_jurnal_perkiraan');
+        }
+        $rows = $rows->map(function ($row) use ($voucherByBatch) {
+            $row->voucher = $row->id_impor_jurnal_perkiraan
+                ? ($voucherByBatch[$row->id_impor_jurnal_perkiraan] ?? '-')
+                : '-';
+            return $row;
+        });
+
+        $filename = 'Riwayat Pelunasan ' . ucfirst($jenis) . ' ' . $awal . '_' . $akhir . '.xlsx';
+
+        return Excel::download(new RiwayatPelunasanExport($rows, $jenis, $awal, $akhir), $filename);
     }
 
     public function importAccurate(Request $request)
@@ -473,17 +537,7 @@ class PiutangTransaksiController extends Controller
                 return back()->withErrors(['selisih' => 'Akun Biaya Selisih Kurang Bayar belum tersedia atau tidak aktif.'])->withInput();
             }
         }
-        $akunPiutang = DB::table('jurnal_perkiraan as j')
-            ->whereIn('j.nomor_transaksi', $nota)
-            ->where('j.tipe_transaksi', $validated['jenis'] === 'ayam' ? 'Penjualan Ayam' : ($validated['jenis'] === 'umum' ? 'Penjualan Umum' : 'Penjualan Telur'))
-            ->where('j.debit', '>', 0)
-            ->orderBy('j.id_jurnal_perkiraan')
-            ->first(['j.id_akun_perkiraan']);
-        $akunPiutang ??= DB::table('akun_perkiraan')
-            ->where('aktif', 1)
-            ->where('tipe_akun', 'AREC')
-            ->orderBy('kode_perkiraan')
-            ->first(['id_akun_perkiraan']);
+        $akunPiutang = $this->resolveAkunPiutang($validated['jenis'], $nota);
 
         if (! $akunPiutang) {
             return back()->withErrors(['nota' => 'Akun piutang aktif belum tersedia.'])->withInput();
@@ -772,6 +826,38 @@ class PiutangTransaksiController extends Controller
         return redirect()->route('transaksi.piutang.index', ['jenis' => $jenis])->with('sukses', 'Pelunasan berhasil diperbarui, jurnal ikut disesuaikan.');
     }
 
+    private function resolveAkunPiutang(string $jenis, array $nota): ?object
+    {
+        // Faktur bisa bertipe Penjualan Telur/Ayam/Umum maupun FJ/SI dari Accurate.
+        $tipeFaktur = match ($jenis) {
+            'ayam' => ['Penjualan Ayam', 'Faktur Penjualan', 'FJ', 'SI'],
+            'umum' => ['Penjualan Umum', 'Faktur Penjualan', 'FJ', 'SI'],
+            default => ['Penjualan Telur', 'Faktur Penjualan', 'FJ', 'SI'],
+        };
+        $akun = DB::table('jurnal_perkiraan as j')
+            ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+            ->where('i.status', 'aktif')
+            ->whereIn('j.nomor_transaksi', $nota)
+            ->whereIn('j.tipe_transaksi', $tipeFaktur)
+            ->where('j.debit', '>', 0)
+            ->orderBy('j.id_jurnal_perkiraan')
+            ->first(['j.id_akun_perkiraan']);
+        // Fallback ke anak 110301, jangan pernah ke induk 1103.
+        $akun ??= DB::table('akun_perkiraan')
+            ->where('aktif', 1)
+            ->where('tipe_akun', 'AREC')
+            ->where('kode_perkiraan', '110301')
+            ->first(['id_akun_perkiraan']);
+        $akun ??= DB::table('akun_perkiraan')
+            ->where('aktif', 1)
+            ->where('tipe_akun', 'AREC')
+            ->where('kode_perkiraan', '!=', '1103')
+            ->orderBy('kode_perkiraan')
+            ->first(['id_akun_perkiraan']);
+
+        return $akun;
+    }
+
     private function invoiceTotal(string $jenis, string $noNota): ?float
     {
         if ($jenis === 'ayam') {
@@ -1003,7 +1089,7 @@ class PiutangTransaksiController extends Controller
             if (! $akunSelisihKurang) return back()->withErrors(['selisih' => 'Akun Biaya Selisih Kurang Bayar belum tersedia.'])->withInput();
         }
 
-        $akunPiutang = DB::table('akun_perkiraan')->where('aktif', 1)->where('tipe_akun', 'AREC')->orderBy('kode_perkiraan')->first(['id_akun_perkiraan']);
+        $akunPiutang = $this->resolveAkunPiutang($validated['jenis'], $nota);
         if (! $akunPiutang) return back()->withErrors(['nota' => 'Akun piutang aktif belum tersedia.'])->withInput();
 
         DB::transaction(function () use ($validated, $rows, $table, $akunPembayaran, $akunPiutang, $akunSelisihLebih, $akunSelisihKurang, $tipeJurnal, $nota, $cashPayments, $settledPayments, $differences, $outstandingByNota) {

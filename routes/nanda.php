@@ -248,6 +248,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/import-accurate', 'importAccurate')->name('import-accurate');
             Route::post('/import-accurate-ayam', 'importAccurateAyam')->name('import-accurate-ayam');
+            Route::get('/riwayat/export', 'exportRiwayat')->name('riwayat.export');
             Route::get('/pelunasan', 'pelunasan')->name('pelunasan');
             Route::post('/pelunasan', 'storePelunasan')->name('pelunasan.store');
             Route::get('/bulk', 'bulkPelunasan')->name('bulk');
