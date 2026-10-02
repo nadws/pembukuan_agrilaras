@@ -47,7 +47,12 @@
                     </a>
                 </li>
                 @php
-                    $hiddenNavbar = ['gudang alpa', 'persediaan & penyesuaian', 'import accurate'];
+                    $hiddenNavbar = [
+                        'gudang alpa',
+                        'persediaan & penyesuaian',
+                        'import accurate',
+                        'history perencanaan',
+                    ];
 
                     $navbar = DB::table('navbar')
                         ->whereNotIn(DB::raw('LOWER(nama)'), $hiddenNavbar)
@@ -68,7 +73,7 @@
                 @endphp
                 @foreach ($navbar as $d)
                     @php
-                        if ($ruteTerdaftar->contains($d->route) && ! $ruteBoleh->contains($d->route)) {
+                        if ($ruteTerdaftar->contains($d->route) && !$ruteBoleh->contains($d->route)) {
                             continue;
                         }
                         $string = str_replace(['[', ']', "'"], '', $d->isi);
@@ -76,8 +81,7 @@
                         $isActive = in_array($routeName, $array, true);
                     @endphp
                     <li class="menu-item">
-                        <a href="{{ route($d->route) }}"
-                            class="menu-link {{ $isActive ? 'active_navbar_new' : '' }}"
+                        <a href="{{ route($d->route) }}" class="menu-link {{ $isActive ? 'active_navbar_new' : '' }}"
                             @if ($isActive) aria-current="page" @endif>
                             <span>{{ ucwords($d->nama) }}</span>
                         </a>

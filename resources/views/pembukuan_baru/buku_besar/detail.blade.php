@@ -57,7 +57,7 @@
                         <td>Saldo sebelum {{ date('d-m-Y', strtotime($tgl1)) }}</td>
                         <td class="text-end">-</td>
                         <td class="text-end">-</td>
-                        <td class="text-end fw-bold">Rp {{ number_format($saldoAwal ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-end fw-bold">Rp {{ number_format($saldoAwal ?? 0, 2, ',', '.') }}</td>
                     </tr>
                     @forelse($detail as $d)
                         <tr>
@@ -65,9 +65,9 @@
                             <td class="fw-semibold">{{ $d->nomor_transaksi }}</td>
                             <td><span class="badge bg-light text-primary">{{ $d->tipe_transaksi }}</span></td>
                             <td>{{ $d->deskripsi }}</td>
-                            <td class="text-end">Rp {{ number_format($d->debit, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($d->kredit, 0, ',', '.') }}</td>
-                            <td class="text-end fw-bold">Rp {{ number_format($d->saldo, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($d->debit, 2, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($d->kredit, 2, ',', '.') }}</td>
+                            <td class="text-end fw-bold">Rp {{ number_format($d->saldo, 2, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -80,7 +80,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mt-3">
             <div>
                 <small class="text-muted d-block">Menampilkan {{ $detail->firstItem() ?? 0 }}–{{ $detail->lastItem() ?? 0 }} dari {{ $detail->total() }} transaksi</small>
-                <strong>Saldo akhir periode: Rp {{ number_format($saldoAkhir ?? 0, 0, ',', '.') }}</strong>
+                <strong>Saldo akhir periode: Rp {{ number_format($saldoAkhir ?? 0, 2, ',', '.') }}</strong>
             </div>
             {{ $detail->onEachSide(1)->links('pagination::bootstrap-5') }}
         </div>

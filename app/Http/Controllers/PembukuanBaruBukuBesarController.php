@@ -27,6 +27,10 @@ class PembukuanBaruBukuBesarController extends Controller
                 $q->on('j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
                     ->whereBetween('j.tanggal', [$tgl1, $tgl2]);
             })
+            ->leftJoin('impor_jurnal_perkiraan as i', function ($q) {
+                $q->on('i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
+                    ->where('i.status', 'aktif');
+            })
             ->when($cari !== '', function ($q) use ($cari) {
                 $q->where(function ($w) use ($cari) {
                     $w->where('a.kode_perkiraan', 'like', "%{$cari}%")
@@ -34,7 +38,7 @@ class PembukuanBaruBukuBesarController extends Controller
                 });
             })
             ->select('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama', 'a.tipe_akun')
-            ->selectRaw('COALESCE(SUM(j.debit), 0) as debit, COALESCE(SUM(j.kredit), 0) as kredit, COALESCE(SUM(j.debit - j.kredit), 0) as saldo')
+            ->selectRaw('COALESCE(SUM(CASE WHEN i.id_impor_jurnal_perkiraan IS NOT NULL THEN j.debit ELSE 0 END), 0) as debit, COALESCE(SUM(CASE WHEN i.id_impor_jurnal_perkiraan IS NOT NULL THEN j.kredit ELSE 0 END), 0) as kredit, COALESCE(SUM(CASE WHEN i.id_impor_jurnal_perkiraan IS NOT NULL THEN j.debit - j.kredit ELSE 0 END), 0) as saldo')
             ->groupBy('a.id_akun_perkiraan', 'a.kode_perkiraan', 'a.nama', 'a.tipe_akun')
             ->orderBy('a.kode_perkiraan');
     }
@@ -136,11 +140,23 @@ class PembukuanBaruBukuBesarController extends Controller
 
         $rows = $this->queryDetailAktif($id, $tgl1, $tgl2, (string) $r->cari)->get();
 
-        $saldo = $this->saldoAwalAktif($id, $tgl1);
+        $saldoAwal = $this->saldoAwalAktif($id, $tgl1);
+        $saldo = $saldoAwal;
         foreach ($rows as $d) {
             $saldo += (float) $d->debit - (float) $d->kredit;
             $d->saldo = $saldo;
         }
+
+        // Sisipkan baris Saldo Awal agar sinkron dengan tampilan detail di web.
+        $rows->prepend((object) [
+            'tanggal' => $tgl1,
+            'nomor_transaksi' => '-',
+            'tipe_transaksi' => 'Saldo Awal',
+            'deskripsi' => 'Saldo sebelum ' . date('d-m-Y', strtotime($tgl1)),
+            'debit' => 0,
+            'kredit' => 0,
+            'saldo' => $saldoAwal,
+        ]);
 
         $filename = 'buku-besar-' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $akun->kode_perkiraan . '_' . $akun->nama) . '-' . date('Ymd', strtotime($tgl1)) . '-' . date('Ymd', strtotime($tgl2)) . '.xlsx';
 

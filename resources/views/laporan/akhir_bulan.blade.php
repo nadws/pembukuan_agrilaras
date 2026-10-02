@@ -188,6 +188,19 @@
                                     <td class="amount">{{ $fmt($withdrawalTotal) }}</td>
                                 </tr>
                             @endif
+                            @if(!empty($penarikanExclusions))
+                                <tr>
+                                    <td colspan="4" class="small text-muted">
+                                        Dikecualikan dari tabel ini:
+                                        <ul class="mb-0 ps-3">
+                                            @foreach($penarikanExclusions as $exc)
+                                                <li><code>{{ $exc['pola'] }}</code> — {{ $exc['keterangan'] }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <span class="d-block mt-1">(Diatur lewat tombol gir di atas, tanpa ubah database)</span>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -383,6 +396,18 @@
                             <button class="btn btn-primary"><i class="fas fa-filter me-1"></i> Terapkan</button>
                         </div>
                     </form>
+                    <form method="post" action="{{ route('laporan.akhir-bulan.kecuali-save') }}">
+                        @csrf
+                        <div class="modal-body border-top">
+                            <h6 class="text-primary mb-2">Kata yang dikecualikan (Penarikan Uang)</h6>
+                            <textarea name="kecuali_penarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
+                            <textarea name="kecuali_penjualan" class="d-none">{{ $kecualiPenjualanText }}</textarea>
+                            <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>setoran</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-primary btn-sm"><i class="fas fa-save me-1"></i> Simpan Kata</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -458,6 +483,18 @@
                             ]) }}" class="btn btn-light">Tampilkan Semua Tipe</a>
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button class="btn btn-success"><i class="fas fa-filter me-1"></i> Terapkan</button>
+                        </div>
+                    </form>
+                    <form method="post" action="{{ route('laporan.akhir-bulan.kecuali-save') }}">
+                        @csrf
+                        <div class="modal-body border-top">
+                            <h6 class="text-success mb-2">Kata yang dikecualikan (Uang Penjualan)</h6>
+                            <textarea name="kecuali_penjualan" class="form-control" rows="3">{{ $kecualiPenjualanText }}</textarea>
+                            <textarea name="kecuali_penarikan" class="d-none">{{ $kecualiPenarikanText }}</textarea>
+                            <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>tagihan</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-success btn-sm"><i class="fas fa-save me-1"></i> Simpan Kata</button>
                         </div>
                     </form>
                 </div>

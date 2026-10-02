@@ -89,7 +89,7 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds, false);
+        $withdrawalRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedTypeCodes, $selectedAccountIds, 'penarikan');
         $withdrawalDebit = (float) $withdrawalRows->sum('debit');
         $withdrawalCredit = (float) $withdrawalRows->sum('kredit');
         $withdrawalTotal = $withdrawalDebit - $withdrawalCredit;
@@ -124,7 +124,7 @@ class LaporanAkhirBulanController extends Controller
         }
 
         $selectedPenjualanTypeCodes = collect($selectedPenjualanTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
-        $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds, true);
+        $penjualanRows = $this->queryLedgerTable($startDate, $currentCutoff, $selectedPenjualanTypeCodes, $selectedPenjualanAccountIds, 'penjualan');
         // Urutan tampilan mengikuti laporan Accurate, bukan urutan kode akun.
         $penjualanOrder = [
             '110107', // BCA penjualan telur
@@ -190,10 +190,13 @@ class LaporanAkhirBulanController extends Controller
             'availableAccounts' => $availableAccounts,
             'withdrawalAccounts' => $availableAccounts,
 
-            // Keterangan pengecualian (dari config, bisa diedit tanpa ubah database)
-            'penjualanExclusions' => config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []),
-            'bankCostExclusions' => config('laporan_akhir_bulan.bank_cost_deskripsi_kecuali', []),
-            'bankProjectExclusions' => config('laporan_akhir_bulan.bank_project_deskripsi_kecuali', []),
+            // Keterangan pengecualian (config + tambahan via setting, tanpa ubah database)
+            'penarikanExclusions' => $this->exclusionRows('penarikan'),
+            'penjualanExclusions' => $this->exclusionRows('penjualan'),
+            'bankCostExclusions' => $this->exclusionRows('bank_cost'),
+            'bankProjectExclusions' => $this->exclusionRows('bank_project'),
+            'kecualiPenarikanText' => implode("\n", $this->effectiveExclusions('penarikan')),
+            'kecualiPenjualanText' => implode("\n", $this->effectiveExclusions('penjualan')),
         ]);
     }
 
@@ -238,12 +241,24 @@ class LaporanAkhirBulanController extends Controller
 
         $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
 
+        $penarikanExclusions = $this->effectiveExclusions('penarikan');
+
         $query = DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
             ->where('i.status', 'aktif')
             ->where('j.id_akun_perkiraan', $account->id_akun_perkiraan)
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
             ->when($selectedTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedTypeCodes))
+            ->when($penarikanExclusions !== [], function ($query) use ($penarikanExclusions) {
+                $query->where(function ($q) use ($penarikanExclusions) {
+                    $q->whereNull('j.deskripsi')
+                        ->orWhere(function ($w) use ($penarikanExclusions) {
+                            foreach ($penarikanExclusions as $pattern) {
+                                $w->where('j.deskripsi', 'not like', $pattern);
+                            }
+                        });
+                });
+            })
             ->when(trim((string) ($data['cari'] ?? '')), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('j.nomor_transaksi', 'like', "%{$search}%")
@@ -327,8 +342,7 @@ class LaporanAkhirBulanController extends Controller
             ->whereBetween('j.tanggal', [$start->toDateString(), $end->toDateString()])
             ->when($selectedPenjualanTypeCodes !== [], fn($query) => $query->whereIn('j.tipe_transaksi', $selectedPenjualanTypeCodes))
             ->where(function ($q) {
-                            $exclusions = collect(config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []))
-                                ->pluck('pola')->filter()->values()->all();
+                            $exclusions = $this->effectiveExclusions('penjualan');
                             $q->whereNull('j.deskripsi')
                             ->orWhere(function ($w) use ($exclusions) {
                                 foreach ($exclusions as $pattern) {
@@ -369,6 +383,80 @@ class LaporanAkhirBulanController extends Controller
             'allPenjualanTypes' => $allPenjualanTypes,
             'selectedPenjualanAccountIds' => collect($data['akun_penjualan'] ?? $savedPenjualan['accounts'])->map(fn($id) => (int) $id)->values()->all(),
         ]);
+    }
+
+    public function saveExclusions(Request $request)
+    {
+        $data = $request->validate([
+            'kecuali_penarikan' => ['nullable', 'string', 'max:2000'],
+            'kecuali_penjualan' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $overrides = [];
+        foreach (['penarikan' => $data['kecuali_penarikan'] ?? null, 'penjualan' => $data['kecuali_penjualan'] ?? null] as $section => $raw) {
+            $rows = [];
+            foreach (preg_split('/\r\n|\r|\n/', (string) $raw) as $line) {
+                $line = trim((string) $line);
+                if ($line === '') {
+                    continue;
+                }
+                $pattern = str_contains($line, '%') ? $line : "%{$line}%";
+                if (mb_strlen($pattern) > 80) {
+                    $pattern = mb_substr($pattern, 0, 80);
+                }
+                $rows[] = ['pola' => $pattern, 'keterangan' => 'Tambahan via setting laporan'];
+                if (count($rows) >= 30) {
+                    break;
+                }
+            }
+            $overrides[$section] = $rows;
+        }
+
+        @file_put_contents(
+            $this->exclusionOverridePath(),
+            json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
+
+        return back()->with('sukses', 'Kata yang dikecualikan berhasil disimpan.');
+    }
+
+    private function exclusionOverridePath(): string
+    {
+        return storage_path('app/laporan_akhir_bulan_kecuali.json');
+    }
+
+    private function exclusionOverrideRows(string $section): ?array
+    {
+        $path = $this->exclusionOverridePath();
+        if (! is_file($path)) {
+            return null;
+        }
+        $decoded = json_decode((string) @file_get_contents($path), true);
+        if (! is_array($decoded) || ! isset($decoded[$section]) || ! is_array($decoded[$section])) {
+            return null;
+        }
+
+        return collect($decoded[$section])
+            ->filter(fn($row) => is_array($row) && isset($row['pola']) && trim((string) $row['pola']) !== '')
+            ->map(fn($row) => [
+                'pola' => trim((string) $row['pola']),
+                'keterangan' => trim((string) ($row['keterangan'] ?? 'Tambahan via setting laporan')),
+            ])
+            ->values()->all();
+    }
+
+    private function exclusionRows(string $section): array
+    {
+        return $this->exclusionOverrideRows($section)
+            ?? collect(config("laporan_akhir_bulan.{$section}_deskripsi_kecuali", []))
+                ->filter(fn($row) => is_array($row) && isset($row['pola']))
+                ->map(fn($row) => ['pola' => $row['pola'], 'keterangan' => $row['keterangan'] ?? ''])
+                ->values()->all();
+    }
+
+    private function effectiveExclusions(string $section): array
+    {
+        return collect($this->exclusionRows($section))->pluck('pola')->filter()->values()->all();
     }
 
     private function reportPeriod(array $data): array
@@ -445,14 +533,14 @@ class LaporanAkhirBulanController extends Controller
         }
     }
 
-    private function queryLedgerTable(Carbon $startDate, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds, bool $filterDesc = true)
+    private function queryLedgerTable(Carbon $startDate, Carbon $currentCutoff, array $selectedTypeCodes, array $selectedAccountIds, string $exclusionKey = 'penjualan')
     {
         // Exclude balance sheet / internal counterpart accounts that are not part of sales/deposit report:
         // Piutang (110301), Persediaan (1104xx), HPP (5101xx), Kas Kecil (110102), Biaya Adm Bank (720002xx)
         $excludedCodes = ['110301', '110401', '110402', '110405', '5101-01', '5101-02', '720002-01', '720002-03', '110102'];
 
         return DB::table('akun_perkiraan as a')
-            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes, $filterDesc) {
+            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes, $exclusionKey) {
                 $join->on('j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
                     ->whereBetween('j.tanggal', [
                         $startDate->toDateString(),
@@ -461,9 +549,8 @@ class LaporanAkhirBulanController extends Controller
                 if ($selectedTypeCodes !== []) {
                     $join->whereIn('j.tipe_transaksi', $selectedTypeCodes);
                 }
-                if ($filterDesc) {
-                    $exclusions = collect(config('laporan_akhir_bulan.penjualan_deskripsi_kecuali', []))
-                        ->pluck('pola')->filter()->values()->all();
+                $exclusions = $this->effectiveExclusions($exclusionKey);
+                if ($exclusions !== []) {
                     $join->where(function ($q) use ($exclusions) {
                         $q->whereNull('j.deskripsi')
                             ->orWhere(function ($w) use ($exclusions) {
@@ -509,8 +596,7 @@ class LaporanAkhirBulanController extends Controller
             ->where('a.nama', 'not like', '%Utang usaha%')
             ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
             ->where(function ($q) {
-                $exclusions = collect(config('laporan_akhir_bulan.bank_cost_deskripsi_kecuali', []))
-                    ->pluck('pola')->filter()->values()->all();
+                $exclusions = $this->effectiveExclusions('bank_cost');
                 $q->whereNull('j.deskripsi')->orWhere(function ($w) use ($exclusions) {
                     foreach ($exclusions as $pattern) {
                         $w->where('j.deskripsi', 'not like', $pattern);
@@ -532,8 +618,7 @@ class LaporanAkhirBulanController extends Controller
             ->whereIn('a.kode_perkiraan', ['110101', '110114'])
             ->whereBetween('j.tanggal', [$startDate->toDateString(), $currentCutoff->toDateString()])
             ->where(function ($q) {
-                $exclusions = collect(config('laporan_akhir_bulan.bank_project_deskripsi_kecuali', []))
-                    ->pluck('pola')->filter()->values()->all();
+                $exclusions = $this->effectiveExclusions('bank_project');
                 $q->whereNull('j.deskripsi')->orWhere(function ($w) use ($exclusions) {
                     foreach ($exclusions as $pattern) {
                         $w->where('j.deskripsi', 'not like', $pattern);

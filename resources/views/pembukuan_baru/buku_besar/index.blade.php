@@ -56,9 +56,9 @@
                                     {{ $a->nama }}
                                 </a>
                             </td>
-                            <td class="text-end">Rp {{ number_format($a->debit, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($a->kredit, 0, ',', '.') }}</td>
-                            <td class="text-end fw-bold">Rp {{ number_format($a->saldo, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($a->debit, 2, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($a->kredit, 2, ',', '.') }}</td>
+                            <td class="text-end fw-bold">Rp {{ number_format($a->saldo, 2, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
