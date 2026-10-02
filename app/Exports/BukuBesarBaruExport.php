@@ -56,9 +56,9 @@ class BukuBesarBaruExport extends DefaultValueBinder implements FromCollection, 
             (string) $row->kode_perkiraan,
             $row->nama,
             $row->tipe_akun,
-            (float) $row->debit,
-            (float) $row->kredit,
-            (float) $row->saldo,
+            round((float) $row->debit, 2),
+            round((float) $row->kredit, 2),
+            round((float) $row->saldo, 2),
         ];
     }
 
@@ -77,9 +77,9 @@ class BukuBesarBaruExport extends DefaultValueBinder implements FromCollection, 
     {
         return [
             'B' => NumberFormat::FORMAT_TEXT,
-            'E' => '#,##0',
-            'F' => '#,##0',
-            'G' => '#,##0',
+            'E' => '#,##0.00',
+            'F' => '#,##0.00',
+            'G' => '#,##0.00',
         ];
     }
 

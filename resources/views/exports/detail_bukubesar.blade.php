@@ -28,9 +28,9 @@
             <td>{{ $d->saldo == 'Y' ? 'Saldo Awal' : ucwords(strtolower($d->nm_akun)) }}</td>
             <td>{{ $d->nm_post }}</td>
             <td>{{ $d->ket }}</td>
-            <td style="text-align: right">{{$d->debit }}</td>
-            <td style="text-align: right">{{$d->kredit }}</td>
-            <td style="text-align: right">{{$saldo }}</td>
+            <td style="text-align: right">{{ number_format($d->debit, 2) }}</td>
+            <td style="text-align: right">{{ number_format($d->kredit, 2) }}</td>
+            <td style="text-align: right">{{ number_format($saldo, 2) }}</td>
         </tr>
         @endforeach
     </tbody>
