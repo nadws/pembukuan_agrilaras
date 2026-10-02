@@ -12,6 +12,10 @@
 */
 return [
 
+    'penarikan_deskripsi_kecuali' => [
+        ['pola' => '%setoran%', 'keterangan' => 'Setoran kas/bank penjualan bukan penarikan uang'],
+    ],
+
     'penjualan_deskripsi_kecuali' => [
         ['pola' => '%biaya transportasi%', 'keterangan' => 'Biaya transportasi tidak dihitung sebagai uang penjualan'],
         ['pola' => 'Pembayaran Hutang%', 'keterangan' => 'Pembayaran utang bukan uang penjualan'],
@@ -21,6 +25,7 @@ return [
         ['pola' => '%transfer%', 'keterangan' => 'Mutasi transfer antar kas/bank bukan biaya'],
         ['pola' => '%penerimaan%', 'keterangan' => 'Penerimaan kas/bank bukan biaya'],
         ['pola' => '%saldo%', 'keterangan' => 'Saldo awal bukan biaya berjalan'],
+        ['pola' => '%setoran%', 'keterangan' => 'Setoran tidak dihitung sebagai biaya'],
     ],
 
     'bank_project_deskripsi_kecuali' => [
