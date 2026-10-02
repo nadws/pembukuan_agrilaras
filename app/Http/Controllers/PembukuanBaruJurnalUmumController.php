@@ -828,6 +828,13 @@ class PembukuanBaruJurnalUmumController extends Controller
                 ->withInput();
         }
 
+        // Vaksin wajib lewat stok (Faktur Pembelian -> 110521), bukan beban langsung.
+        if ($akunBiaya->contains(fn ($akun) => $akun->kode_perkiraan === '5102-02')) {
+            return back()
+                ->withErrors(['akun' => 'Pembelian vaksin wajib lewat Faktur Pembelian (otomatis masuk akun 110521). Akun 5102-02 hanya untuk Pemakaian Vaksin.'])
+                ->withInput();
+        }
+
         $total = round($detail->sum('jumlah'), 2);
 
         DB::transaction(function () use ($validated, $detail, $akunBiaya, $akunKas, $total) {
@@ -958,6 +965,13 @@ class PembukuanBaruJurnalUmumController extends Controller
         if ($detail->isEmpty() || ! $akunKas || $akunBiaya->count() !== $detail->pluck('id_akun_biaya')->unique()->count()) {
             return back()
                 ->withErrors(['akun' => 'Akun pembayaran atau salah satu akun biaya belum tersedia/aktif.'])
+                ->withInput();
+        }
+
+        // Vaksin wajib lewat stok (Faktur Pembelian -> 110521), bukan beban langsung.
+        if ($akunBiaya->contains(fn ($akun) => $akun->kode_perkiraan === '5102-02')) {
+            return back()
+                ->withErrors(['akun' => 'Pembelian vaksin wajib lewat Faktur Pembelian (otomatis masuk akun 110521). Akun 5102-02 hanya untuk Pemakaian Vaksin.'])
                 ->withInput();
         }
 
