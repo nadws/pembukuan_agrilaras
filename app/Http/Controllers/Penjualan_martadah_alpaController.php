@@ -288,6 +288,14 @@ class Penjualan_martadah_alpaController extends Controller
             return back()->withErrors(['id_akun' => 'Akun 400001 - Penjualan Telur tidak ditemukan atau tidak aktif.'])->withInput();
         }
 
+        $jurnalLamaTotal = round((float) DB::table('jurnal_perkiraan')
+            ->where('nomor_transaksi', $validated['no_nota'])
+            ->where('tipe_transaksi', 'Penjualan Telur')
+            ->sum('kredit'), 2);
+        $sudahDilunasi = (float) DB::table('pelunasan_piutang_penjualan')
+            ->where('no_nota', $validated['no_nota'])
+            ->sum(DB::raw('COALESCE(nilai_piutang_dilunasi, jumlah_bayar)'));
+
         DB::transaction(function () use ($validated, $invoice, $detail, $akunMap, $akunPenjualan, $totalPenjualan) {
             $now = now();
             $batchIds = DB::table('jurnal_perkiraan')
@@ -367,10 +375,15 @@ class Penjualan_martadah_alpaController extends Controller
                 ]);
         });
 
+        $pesan = 'Setoran Martadah berhasil disimpan ke jurnal perkiraan.';
+        if ($sudahDilunasi > 0.005 && abs($totalPenjualan - $jurnalLamaTotal) > 0.01) {
+            $pesan .= ' Perhatian: total nota berubah setelah ada pelunasan Rp ' . number_format($sudahDilunasi, 0, ',', '.') . ', periksa kembali sisa piutang nota ini.';
+        }
+
         $tgl1 = date('Y-m-01', strtotime($validated['tgl']));
         $tgl2 = date('Y-m-t', strtotime($validated['tgl']));
         return redirect()->route('penjualan_martadah_cek', [
             'lokasi' => 'mtd', 'period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2,
-        ])->with('sukses', 'Setoran Martadah berhasil disimpan ke jurnal perkiraan.');
+        ])->with('sukses', $pesan);
     }
 }
