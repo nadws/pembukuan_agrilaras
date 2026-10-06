@@ -106,6 +106,13 @@ class ImporJurnalPerkiraanService
                 $rowErrors[] = 'Nama akun tidak cocok dengan master.';
             }
 
+            // Vaksin wajib lewat stok: pembelian via Faktur Pembelian (110521),
+            // akun 5102-02 hanya untuk Pemakaian Vaksin.
+            if ($account && $account->kode_perkiraan === '5102-02'
+                && bccomp((string) $debit, '0', 12) === 1 && $tipe !== 'Pemakaian Vaksin') {
+                $rowErrors[] = 'Akun 5102-02 hanya untuk Pemakaian Vaksin. Beli vaksin lewat Faktur Pembelian (akun 110521).';
+            }
+
             if ($rowErrors) {
                 $errors[] = ['baris' => $line, 'kode' => $kode, 'pesan' => implode(' ', $rowErrors)];
 

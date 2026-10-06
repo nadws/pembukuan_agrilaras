@@ -254,7 +254,9 @@ class LabaRugiKandangService
             $bobotTelur[$id] = max(0, $telur);
             $bobotAyam[$id] = (float) ($populasi[$id]->jual ?? 0) + (float) ($populasi[$id]->afkir ?? 0);
             $bobotPakan[$id] = (float) optional($pemakaianProduk->first(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) === 'pakan'))->total_rp;
-            $bobotVitamin[$id] = (float) $pemakaianProduk->filter(fn ($row) => (int) $row->id_kandang === $id && strtolower((string) $row->kategori) !== 'pakan')->sum('total_rp');
+            // Vitamin = obat_pakan/air/ayam saja (akun 5101-03). Vaksin punya
+            // akun sendiri dan nilainya sudah per kandang, jangan ikut bobot.
+            $bobotVitamin[$id] = (float) $pemakaianProduk->filter(fn ($row) => (int) $row->id_kandang === $id && in_array(strtolower((string) $row->kategori), ['obat_pakan', 'obat_air', 'obat_ayam'], true))->sum('total_rp');
             $bobotRak[$id] = (float) ($totalTelur[$id]->kuml_pcs ?? 0);
             $bobotUmum[$id] = (float) $item->stok_awal;
         }

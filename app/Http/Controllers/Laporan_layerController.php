@@ -451,157 +451,77 @@ class Laporan_layerController extends Controller
         $sheet1->getStyle('A12:Y' . $batas)->applyFromArray($style);
         // end daily -----------------------------------------------
 
-        // // obat pakan -----------------
-        $obat_pakan = DB::select("SELECT a.tgl,b.nm_produk, a.dosis,a.campuran, e.nm_satuan as dosis_satuan, f.nm_satuan as campuran_satuan,(a.dosis * c.ttl_pakan) as dosis_obat,d.debit, z.total_rp
-        FROM tb_obat_perencanaan as a
-        LEFT JOIN tb_produk_perencanaan as b  ON a.id_produk = b.id_produk
-        LEFT JOIN tb_satuan as e ON b.dosis_satuan = e.id_satuan
-        LEFT JOIN tb_satuan as f on b.campuran_satuan = f.id_satuan
-        LEFT JOIN (
-            SELECT a.id_kandang , a.tgl, SUM(a.gr) AS ttl_pakan
-                FROM tb_pakan_perencanaan AS a
-                GROUP BY a.tgl , a.id_kandang
-        )AS c ON c.id_kandang = a.id_kandang AND c.tgl = a.tgl
-        LEFT JOIN (
-            SELECT a.id_produk,SUM(b.debit) as debit FROM `tb_produk_perencanaan` as a
-            LEFT JOIN jurnal as b ON a.id_produk = SUBSTRING_INDEX(RIGHT(b.ket, LENGTH(b.ket) - INSTR(b.ket, '-')), '-', -1)
-            WHERE a.kategori = 'obat_pakan' AND b.debit != 0
-            GROUP BY a.id_produk
-        ) AS d ON d.id_produk = a.id_produk
-        left join stok_produk_perencanaan as z on z.id_pakan = a.id_produk and a.tgl = z.tgl and z.h_opname != 'Y' and z.id_kandang = ? and z.pcs_kredit != '0'
-        WHERE b.kategori = 'obat_pakan' AND a.id_kandang = ? AND a.tgl BETWEEN ? AND ? ORDER BY a.tgl ASC", [$id_kandang, $id_kandang, $tgl1, $tgl2]);
-
-        $spreadsheet->createSheet();
-        $spreadsheet->setActiveSheetIndex(1);
-        $sheet2 = $spreadsheet->getActiveSheet(1);
-        $sheet2->setTitle('OBAT PAKAN');
-        $sheet2->setCellValue('A1', 'Tanggal')
-            ->setCellValue('B1', 'Nama Obat')
-            ->setCellValue('C1', 'Dosis')
-            ->setCellValue('D1', 'Satuan')
-            ->setCellValue('E1', 'Campuran')
-            ->setCellValue('F1', 'Satuan')
-            ->setCellValue('G1', 'Ttl Dosis')
-            ->setCellValue('H1', 'Cost');
-
-        $kolom = 2;
-        foreach ($obat_pakan as $d) {
-            $sheet2->setCellValue("A$kolom", date('Y-m-d', strtotime($d->tgl)))
-                ->setCellValue("B$kolom", $d->nm_produk)
-                ->setCellValue("C$kolom", $d->dosis)
-                ->setCellValue("D$kolom", $d->dosis_satuan)
-                ->setCellValue("E$kolom", $d->campuran)
-                ->setCellValue("F$kolom", $d->campuran_satuan)
-                ->setCellValue("G$kolom", $d->dosis_obat)
-                ->setCellValue("H$kolom", $d->total_rp);
-            $kolom++;
-        }
-
-        $batas = $kolom - 1;
-        $sheet2->getStyle('A1:H' . $batas)->applyFromArray($style);
-        // end obat pakan ---------------------------------
-
-        // obat air -------------------------
-        $obat_air = $this->getProdukObatDaily($id_kandang, 'obat_air', $tgl1, $tgl2);
-
-        $spreadsheet->createSheet();
-        $spreadsheet->setActiveSheetIndex(2);
-        $sheet3 = $spreadsheet->getActiveSheet(2);
-        $sheet3->setTitle('OBAT AIR');
-        $sheet3->setCellValue('A1', 'Tanggal')
-            ->setCellValue('B1', 'Nama Obat')
-            ->setCellValue('C1', 'Dosis')
-            ->setCellValue('D1', 'Satuan')
-            ->setCellValue('E1', 'Campuran')
-            ->setCellValue('F1', 'Satuan')
-            ->setCellValue('G1', 'Waktu')
-            ->setCellValue('H1', 'Cara')
-            ->setCellValue('I1', 'Cost');
-
-        $kolom = 2;
-        foreach ($obat_air as $d) {
-            $sheet3->setCellValue('A' . $kolom, date('Y-m-d', strtotime($d->tgl)))
-                ->setCellValue('B' . $kolom, $d->nm_produk)
-                ->setCellValue("C$kolom", $d->dosis)
-                ->setCellValue("D$kolom", $d->dosis_satuan)
-                ->setCellValue("E$kolom", $d->campuran)
-                ->setCellValue("F$kolom", $d->campuran_satuan)
-                ->setCellValue('G' . $kolom, $d->waktu)
-                ->setCellValue('H' . $kolom, $d->cara)
-                ->setCellValue('I' . $kolom, round($d->total_rp, 0));
-            $kolom++;
-        }
-        $batas = $kolom - 1;
-        $sheet3->getStyle('A1:I' . $batas)->applyFromArray($style);
-        // end obat air --------------------------------------------
-
-
-        // obat ayam -----------------------
-        $spreadsheet->createSheet();
-        $spreadsheet->setActiveSheetIndex(3);
-        $sheet4 = $spreadsheet->getActiveSheet(3);
-        $sheet4->setTitle('OBAT AYAM');
-        $sheet4->setCellValue('A1', 'Tanggal')
-            ->setCellValue('B1', 'Nama Obat')
-            ->setCellValue('C1', 'Dosis')
-            ->setCellValue('D1', 'Satuan')
-            ->setCellValue('E1', 'Dosis Perekor')
-            ->setCellValue('F1', 'Cost');
-
-        $obat_ayam = $this->getProdukObatDaily($id_kandang, 'obat_ayam', $tgl1, $tgl2);
-        $pop = DB::selectOne("SELECT sum(a.mati + a.jual + a.afkir) as pop,b.stok_awal FROM populasi as a
-                            LEFT JOIN kandang as b ON a.id_kandang = b.id_kandang
-                            WHERE a.id_kandang = ?", [$id_kandang]);
-        $populasi = $pop->stok_awal - $pop->pop;
-        $kolom = 2;
-        foreach ($obat_ayam as $d) {
-            $sheet4->setCellValue('A' . $kolom, date('Y-m-d', strtotime($d->tgl)))
-                ->setCellValue('B' . $kolom, $d->nm_produk)
-                ->setCellValue('C' . $kolom, $d->dosis * $populasi)
-                ->setCellValue('D' . $kolom, $d->dosis_satuan)
-                ->setCellValue('E' . $kolom, $d->dosis)
-                ->setCellValue('F' . $kolom, round($d->debit, 0));
-            $kolom++;
-        }
-
-        $batas = $kolom - 1;
-        $sheet4->getStyle('A1:F' . $batas)->applyFromArray($style);
-        // end obat ayam -----------------------------------------
-
         // vaksin ------------------------
         $vaksin = DB::table('tb_vaksin_perencanaan')
             ->where('id_kandang', $id_kandang)
             ->whereBetween('tgl', [$tgl1, $tgl2])
             ->get();
         $spreadsheet->createSheet();
-        $spreadsheet->setActiveSheetIndex(4);
-        $sheet5 = $spreadsheet->getActiveSheet(4);
+        $spreadsheet->setActiveSheetIndex(1);
+        $sheet5 = $spreadsheet->getActiveSheet(1);
         $sheet5->setTitle('VAKSIN');
         $sheet5->setCellValue('A1', 'Tanggal')
             ->setCellValue('B1', 'Nama Vaksin')
-            ->setCellValue('C1', 'Dosis')
-            ->setCellValue('D1', 'Cost');
+            ->setCellValue('C1', 'Dosis');
 
         $kolom = 2;
         foreach ($vaksin as $d) {
             $sheet5->setCellValue("A$kolom", date('Y-m-d', strtotime($d->tgl)))
                 ->setCellValue("B$kolom", $d->nm_vaksin)
-                ->setCellValue("C$kolom", $d->qty)
-                ->setCellValue("D$kolom", $d->ttl_rp);
+                ->setCellValue("C$kolom", $d->qty);
             $kolom++;
         }
-        $batas = $kolom - 1;
-        $sheet5->getStyle('A1:D' . $batas)->applyFromArray($style);
+
+        // Realisasi pemakaian dari stok (sumber angka Vaksin di LABA RUGI).
+        $realisasi = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->where('s.id_kandang', $id_kandang)
+            ->whereBetween('s.tgl', [$tgl1, $tgl2])
+            ->whereRaw('LOWER(p.kategori) = ?', ['vaksin'])
+            ->where(function ($q) {
+                $q->where('s.pcs_kredit', '!=', 0)->orWhere('s.total_rp', '!=', 0);
+            })
+            ->orderBy('s.tgl')->orderBy('p.nm_produk')
+            ->select('s.tgl', 'p.nm_produk', 's.pcs_kredit', 's.total_rp', 's.biaya_dll')
+            ->get();
+        $sheet5->setCellValue("A$kolom", 'REALISASI (stok)');
+        $kolom++;
+        foreach ($realisasi as $d) {
+            $sheet5->setCellValue("A$kolom", date('Y-m-d', strtotime($d->tgl)))
+                ->setCellValue("B$kolom", $d->nm_produk)
+                ->setCellValue("C$kolom", round((float) $d->pcs_kredit, 2));
+            $kolom++;
+        }
+
+        $batas = $kolom;
+        $sheet5->getStyle('A1:C' . $batas)->applyFromArray($style);
+        $sheet5->getColumnDimension('B')->setWidth(30);
         // end vaksin ---------------------------------------------
 
-        // laba rugi (rumus LabaRugiKandang2, periode sama) ------
+        // pakan, vitamin, dan laba rugi ------------------------------------------
         $hitung = $labaRugiKandang->hitung($tgl1, $tgl2);
         $spreadsheet->createSheet();
-        $spreadsheet->setActiveSheetIndex(5);
-        $sheet6 = $spreadsheet->getActiveSheet(5);
+        $spreadsheet->setActiveSheetIndex(2);
+        $sheetPakan = $spreadsheet->getActiveSheet(2);
+        $this->tambahSheetPakanDaily($sheetPakan, $id_kandang, $tgl1, $tgl2, $style);
+        // end pakan --------------------------------------------
+
+        $spreadsheet->createSheet();
+        $spreadsheet->setActiveSheetIndex(3);
+        $sheetVitamin = $spreadsheet->getActiveSheet(3);
+        $this->tambahSheetVitaminDaily($sheetVitamin, $hitung, $id_kandang, $kandang->nm_kandang ?? ('#' . $id_kandang), $tgl1, $tgl2, $style);
+        // end vitamin ------------------------------------------
+
+        // laba rugi (rumus LabaRugiKandang2, periode sama) ------
+        $spreadsheet->createSheet();
+        $spreadsheet->setActiveSheetIndex(4);
+        $sheet6 = $spreadsheet->getActiveSheet(4);
         $this->tambahSheetLabaRugiDaily($sheet6, $hitung, $id_kandang, $tgl1, $tgl2, $style, $style2);
         // end laba rugi ------------------------------------------
 
+        $spreadsheet->setIndexByName('PAKAN', 1);
+        $spreadsheet->setIndexByName('VITAMIN', 2);
+        $spreadsheet->setIndexByName('VAKSIN', 3);
         $spreadsheet->setActiveSheetIndex(0);
         $writer = new Xlsx($spreadsheet);
         $namaFile = 'Daily Layer ' . ($kandang->nm_kandang ?? $id_kandang) . ' ' .
@@ -621,24 +541,125 @@ class Laporan_layerController extends Controller
     }
 
     /**
-     * Port verbatim dari DashboardKandangController@getProdukObat
-     * (projek kandang), ditambah filter periode + binding parameter.
+     * Sheet PAKAN per kandang, tanpa nilai biaya.
      */
-    private function getProdukObatDaily($id_kandang, $jenis, $tgl1, $tgl2)
-    {
-        return DB::select("SELECT a.waktu,a.cara_pemakaian as cara,a.tgl,b.nm_produk, a.dosis,a.campuran, e.nm_satuan as dosis_satuan, f.nm_satuan as campuran_satuan,(a.dosis) as dosis_obat,d.debit, z.total_rp
-        FROM tb_obat_perencanaan as a
-        LEFT JOIN tb_produk_perencanaan as b  ON a.id_produk = b.id_produk
-        LEFT JOIN tb_satuan as e ON b.dosis_satuan = e.id_satuan
-        LEFT JOIN tb_satuan as f on b.campuran_satuan = f.id_satuan
-        LEFT JOIN (
-            SELECT a.id_produk,SUM(b.debit) as debit FROM `tb_produk_perencanaan` as a
-            LEFT JOIN jurnal as b ON a.id_produk = SUBSTRING_INDEX(RIGHT(b.ket, LENGTH(b.ket) - INSTR(b.ket, '-')), '-', -1)
-            WHERE a.kategori = ? AND b.debit != 0
-            GROUP BY a.id_produk
-        ) AS d ON d.id_produk = a.id_produk
-        left join stok_produk_perencanaan as z on z.id_pakan = a.id_produk and a.tgl = z.tgl and z.h_opname != 'Y' and z.id_kandang = ? and z.pcs_kredit != '0'
-        WHERE b.kategori = ? AND a.id_kandang = ? AND a.tgl BETWEEN ? AND ? ORDER BY a.tgl ASC;", [$jenis, $id_kandang, $jenis, $id_kandang, $tgl1, $tgl2]);
+    private function tambahSheetPakanDaily(
+        Worksheet $sheet,
+        int $idKandang,
+        string $tgl1,
+        string $tgl2,
+        array $style
+    ): void {
+        $pakai = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->leftJoin('tb_pakan_perencanaan as r', function ($join) {
+                $join->on('r.id_kandang', '=', 's.id_kandang')
+                    ->on('r.tgl', '=', 's.tgl')
+                    ->on('r.id_produk_pakan', '=', 's.id_pakan');
+            })
+            ->where('s.id_kandang', $idKandang)
+            ->whereBetween('s.tgl', [$tgl1, $tgl2])
+            ->where('p.kategori', 'pakan')
+            ->where(function ($q) {
+                $q->where('s.pcs_kredit', '!=', 0)->orWhere('s.total_rp', '!=', 0);
+            })
+            ->orderBy('s.tgl')->orderBy('p.nm_produk')
+            ->select('s.tgl', 'p.nm_produk', 'r.persen', 's.pcs_kredit')
+            ->get();
+
+        $sheet->setTitle('PAKAN');
+        $sheet->setCellValue('A1', 'Tanggal')
+            ->setCellValue('B1', 'Nama Pakan')
+            ->setCellValue('C1', 'Persentase')
+            ->setCellValue('D1', 'Pemakaian (Kg)');
+
+        $kolom = 2;
+        foreach ($pakai as $d) {
+            $sheet->setCellValue("A$kolom", date('Y-m-d', strtotime($d->tgl)))
+                ->setCellValue("B$kolom", $d->nm_produk)
+                ->setCellValue("C$kolom", $d->persen === null ? '' : ((float) $d->persen) . ' %')
+                ->setCellValue("D$kolom", round((float) $d->pcs_kredit / 1000, 2));
+            $kolom++;
+        }
+
+        $sheet->getStyle('A1:D' . $kolom)->applyFromArray($style);
+        $sheet->getColumnDimension('A')->setWidth(13);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(13);
+        $sheet->getColumnDimension('D')->setWidth(18);
+        $sheet->freezePane('A2');
+    }
+
+    /**
+     * Sheet VITAMIN per kandang. Rekap harian gabungan obat_pakan +
+     * obat_air + obat_ayam dari stok_produk_perencanaan, dilengkapi dosis
+     * dari tb_obat_perencanaan.
+     */
+    private function tambahSheetVitaminDaily(
+        Worksheet $sheet,
+        array $hitung,
+        int $idKandang,
+        string $nmKandang,
+        string $tgl1,
+        string $tgl2,
+        array $style
+    ): void {
+        $pakai = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->leftJoin('tb_satuan as e', 'e.id_satuan', '=', 'p.dosis_satuan')
+            ->leftJoin('tb_satuan as f', 'f.id_satuan', '=', 'p.campuran_satuan')
+            ->where('s.id_kandang', $idKandang)
+            ->whereBetween('s.tgl', [$tgl1, $tgl2])
+            ->whereIn('p.kategori', ['obat_pakan', 'obat_air', 'obat_ayam'])
+            ->where(function ($q) {
+                $q->where('s.pcs_kredit', '!=', 0)->orWhere('s.total_rp', '!=', 0);
+            })
+            ->orderBy('s.tgl')->orderBy('p.nm_produk')
+            ->select(
+                's.tgl', 'p.id_produk', 'p.nm_produk', 'p.kategori',
+                'e.nm_satuan as dosis_satuan', 'f.nm_satuan as campuran_satuan',
+                's.pcs_kredit', 's.total_rp'
+            )
+            ->get();
+
+        $dosisMap = DB::table('tb_obat_perencanaan')
+            ->where('id_kandang', $idKandang)
+            ->whereBetween('tgl', [$tgl1, $tgl2])
+            ->get()
+            ->groupBy(fn ($r) => $r->tgl . '|' . $r->id_produk);
+
+        $sheet->setTitle('VITAMIN');
+        $sheet->setCellValue('A1', 'Tanggal')
+            ->setCellValue('B1', 'Nama Vitamin / Obat')
+            ->setCellValue('C1', 'Kategori')
+            ->setCellValue('D1', 'Dosis')
+            ->setCellValue('E1', 'Satuan')
+            ->setCellValue('F1', 'Campuran')
+            ->setCellValue('G1', 'Satuan')
+            ->setCellValue('H1', 'Pemakaian');
+
+        $kolom = 2;
+        foreach ($pakai as $d) {
+            $key = $d->tgl . '|' . $d->id_produk;
+            $obat = $dosisMap->has($key) ? $dosisMap[$key]->first() : null;
+            $sheet->setCellValue("A$kolom", date('Y-m-d', strtotime($d->tgl)))
+                ->setCellValue("B$kolom", $d->nm_produk)
+                ->setCellValue("C$kolom", $d->kategori)
+                ->setCellValue("D$kolom", $obat->dosis ?? '')
+                ->setCellValue("E$kolom", $d->dosis_satuan)
+                ->setCellValue("F$kolom", $obat->campuran ?? '')
+                ->setCellValue("G$kolom", $d->campuran_satuan)
+                ->setCellValue("H$kolom", round((float) $d->pcs_kredit, 2));
+            $kolom++;
+        }
+
+        $batas = $kolom;
+        $sheet->getStyle('A1:H' . $batas)->applyFromArray($style);
+        $sheet->getColumnDimension('A')->setWidth(13);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(13);
+        $sheet->getColumnDimension('H')->setWidth(13);
+        $sheet->freezePane('A2');
     }
 
     /**
@@ -670,6 +691,14 @@ class Laporan_layerController extends Controller
         $vitamin = (float) ($biayaVitaminRow->ttl_rp ?? $nilaiKandang['vitamin'][$idKandang] ?? 0);
         $vaksinRow = $hitung['vaksin'][$idKandang] ?? null;
         $vaksin = $vaksinRow ? (float) $vaksinRow->ttl_rp : (float) ($nilaiKandang['vaksin'][$idKandang] ?? 0);
+        // Info pembanding: jadwal dari tb_vaksin_perencanaan (tidak masuk Total Biaya agar tidak dobel hitung).
+        $idsJadwal = collect($hitung['kandang'] ?? [])->pluck('id_kandang')->map(fn ($id) => (int) $id)->all();
+        $vaksinJadwal = (float) DB::table('tb_vaksin_perencanaan')
+            ->where('id_kandang', $idKandang)->whereBetween('tgl', [$tgl1, $tgl2])->sum('ttl_rp');
+        $vaksinJadwalGlobal = $idsJadwal === []
+            ? 0.0
+            : (float) DB::table('tb_vaksin_perencanaan')
+                ->whereIn('id_kandang', $idsJadwal)->whereBetween('tgl', [$tgl1, $tgl2])->sum('ttl_rp');
         $rak = (float) ($nilaiKandang['rak'][$idKandang] ?? 0);
 
         $stokAwalTotal = (float) ($hitung['stokAwalTotal'] ?? 0);
@@ -713,6 +742,7 @@ class Laporan_layerController extends Controller
             ['Pakan', $pakan, (float) ($totalPerKategori['pakan'] ?? 0)],
             ['Vitamin', $vitamin, (float) ($totalPerKategori['vitamin'] ?? 0)],
             ['Vaksin', $vaksin, (float) ($totalPerKategori['vaksin'] ?? 0)],
+            ['Vaksin (jadwal)', $vaksinJadwal, $vaksinJadwalGlobal],
             ['Rak Telur', $rak, (float) ($totalPerKategori['rak'] ?? 0)],
             ['Biaya Operasional', $operasional, $biayaOperasionalTotal],
             ['Total Biaya', $totalBiaya, $totalBiayaGlobal],
