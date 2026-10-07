@@ -195,8 +195,8 @@ class LaporanAkhirBulanController extends Controller
             'penjualanExclusions' => $this->exclusionRows('penjualan'),
             'bankCostExclusions' => $this->exclusionRows('bank_cost'),
             'bankProjectExclusions' => $this->exclusionRows('bank_project'),
-            'kecualiPenarikanText' => implode("\n", $this->effectiveExclusions('penarikan')),
-            'kecualiPenjualanText' => implode("\n", $this->effectiveExclusions('penjualan')),
+            'kecualiPenarikanText' => implode("\n", array_map(fn($pola) => trim(str_replace('%', '', $pola)), $this->effectiveExclusions('penarikan'))),
+            'kecualiPenjualanText' => implode("\n", array_map(fn($pola) => trim(str_replace('%', '', $pola)), $this->effectiveExclusions('penjualan'))),
         ]);
     }
 
@@ -396,11 +396,12 @@ class LaporanAkhirBulanController extends Controller
         foreach (['penarikan' => $data['kecuali_penarikan'] ?? null, 'penjualan' => $data['kecuali_penjualan'] ?? null] as $section => $raw) {
             $rows = [];
             foreach (preg_split('/\r\n|\r|\n/', (string) $raw) as $line) {
-                $line = trim((string) $line);
+                // Bersihkan % bila diketik: semua kata diperlakukan sebagai "mengandung kata".
+                $line = trim(str_replace('%', '', (string) $line));
                 if ($line === '') {
                     continue;
                 }
-                $pattern = str_contains($line, '%') ? $line : "%{$line}%";
+                $pattern = "%{$line}%";
                 if (mb_strlen($pattern) > 80) {
                     $pattern = mb_substr($pattern, 0, 80);
                 }

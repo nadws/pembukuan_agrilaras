@@ -384,7 +384,7 @@
                             <div class="border-top mt-3 pt-3">
                                 <h6 class="text-primary mb-2">Kata yang dikecualikan (Penarikan Uang)</h6>
                                 <textarea id="kecualiPenarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
-                                <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>setoran</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                                <small class="text-muted d-block mt-2">Tulis kata biasa per baris, mis. <code>kas besar</code> — tanpa tanda persen. Berlaku untuk tabel + halaman detail.</small>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -466,7 +466,7 @@
                             <div class="border-top mt-3 pt-3">
                                 <h6 class="text-success mb-2">Kata yang dikecualikan (Uang Penjualan)</h6>
                                 <textarea id="kecualiPenjualan" class="form-control" rows="3">{{ $kecualiPenjualanText }}</textarea>
-                                <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>tagihan</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                                <small class="text-muted d-block mt-2">Tulis kata biasa per baris, mis. <code>tagihan</code> — tanpa tanda persen. Berlaku untuk tabel + halaman detail.</small>
                             </div>
                         </div>
                         <div class="modal-footer">
