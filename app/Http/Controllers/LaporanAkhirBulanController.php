@@ -417,6 +417,10 @@ class LaporanAkhirBulanController extends Controller
             json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['ok' => true]);
+        }
+
         return back()->with('sukses', 'Kata yang dikecualikan berhasil disimpan.');
     }
 

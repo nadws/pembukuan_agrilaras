@@ -327,7 +327,7 @@
         <div class="modal fade" id="filterTipeTransaksi" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form method="get">
+                    <form method="get" id="formPenarikan">
                         <input type="hidden" name="tgl1" value="{{ $startDate->toDateString() }}">
                         <input type="hidden" name="tgl2" value="{{ $currentCutoff->toDateString() }}">
 
@@ -381,6 +381,11 @@
                                 </div>
                             </div>
                             <small class="text-muted d-block mt-3">Centang akun-akun kas/bank yang ingin ditampilkan pada tabel Penarikan Uang.</small>
+                            <div class="border-top mt-3 pt-3">
+                                <h6 class="text-primary mb-2">Kata yang dikecualikan (Penarikan Uang)</h6>
+                                <textarea id="kecualiPenarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
+                                <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>setoran</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
@@ -396,18 +401,6 @@
                             <button class="btn btn-primary"><i class="fas fa-filter me-1"></i> Terapkan</button>
                         </div>
                     </form>
-                    <form method="post" action="{{ route('laporan.akhir-bulan.kecuali-save') }}">
-                        @csrf
-                        <div class="modal-body border-top">
-                            <h6 class="text-primary mb-2">Kata yang dikecualikan (Penarikan Uang)</h6>
-                            <textarea name="kecuali_penarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
-                            <textarea name="kecuali_penjualan" class="d-none">{{ $kecualiPenjualanText }}</textarea>
-                            <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>setoran</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-primary btn-sm"><i class="fas fa-save me-1"></i> Simpan Kata</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -416,7 +409,7 @@
         <div class="modal fade" id="filterTipePenjualan" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form method="get">
+                    <form method="get" id="formPenjualan">
                         <input type="hidden" name="tgl1" value="{{ $startDate->toDateString() }}">
                         <input type="hidden" name="tgl2" value="{{ $currentCutoff->toDateString() }}">
 
@@ -470,6 +463,11 @@
                                 </div>
                             </div>
                             <small class="text-muted d-block mt-3">Centang akun-akun kas/bank yang ingin ditampilkan pada tabel Uang Penjualan.</small>
+                            <div class="border-top mt-3 pt-3">
+                                <h6 class="text-success mb-2">Kata yang dikecualikan (Uang Penjualan)</h6>
+                                <textarea id="kecualiPenjualan" class="form-control" rows="3">{{ $kecualiPenjualanText }}</textarea>
+                                <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>tagihan</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
@@ -483,18 +481,6 @@
                             ]) }}" class="btn btn-light">Tampilkan Semua Tipe</a>
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button class="btn btn-success"><i class="fas fa-filter me-1"></i> Terapkan</button>
-                        </div>
-                    </form>
-                    <form method="post" action="{{ route('laporan.akhir-bulan.kecuali-save') }}">
-                        @csrf
-                        <div class="modal-body border-top">
-                            <h6 class="text-success mb-2">Kata yang dikecualikan (Uang Penjualan)</h6>
-                            <textarea name="kecuali_penjualan" class="form-control" rows="3">{{ $kecualiPenjualanText }}</textarea>
-                            <textarea name="kecuali_penarikan" class="d-none">{{ $kecualiPenarikanText }}</textarea>
-                            <small class="text-muted d-block mt-2">Satu kata per baris, mis. <code>tagihan</code>. Tanda <code>%</code> boleh dipakai untuk pola khusus. Berlaku untuk tabel + halaman detail.</small>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-success btn-sm"><i class="fas fa-save me-1"></i> Simpan Kata</button>
                         </div>
                     </form>
                 </div>
@@ -539,6 +525,35 @@
 
                 $('.modal').on('hidden.bs.modal', function() {
                     $(this).find('.search-account').val('').trigger('input');
+                });
+
+                // Satu tombol Terapkan: simpan kata yang dikecualikan dulu, baru terapkan filter.
+                $('#formPenarikan, #formPenjualan').on('submit', function(e) {
+                    var form = this;
+                    if (form.dataset.saving === '1') return;
+                    e.preventDefault();
+                    form.dataset.saving = '1';
+                    var token = document.querySelector('meta[name="csrf-token"]');
+                    fetch("{{ route('laporan.akhir-bulan.kecuali-save') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token ? token.content : '',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            kecuali_penarikan: $('#kecualiPenarikan').val() || '',
+                            kecuali_penjualan: $('#kecualiPenjualan').val() || ''
+                        })
+                    }).then(function(res) {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        form.submit();
+                    }).catch(function() {
+                        alert('Kata yang dikecualikan gagal disimpan. Filter tetap diterapkan tanpa menyimpan kata.');
+                        form.submit();
+                    }).finally(function() {
+                        form.dataset.saving = '';
+                    });
                 });
             });
         </script>
