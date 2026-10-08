@@ -735,6 +735,7 @@ Route::controller(LaporanPerencanaanController::class)->middleware('auth')->pref
     Route::get('/konteks', 'context')->name('.context');
 });
 Route::controller(LaporanPerencanaanController::class)->middleware('auth')->prefix('history-perencanaan')->name('history_perencanaan_pakan.')->group(function () {
+    Route::get('/export', 'export')->name('export');
     Route::get('/tambah', 'create')->name('create');
     Route::post('/simpan', 'store')->name('store');
     Route::get('/detail', 'detail')->name('detail');

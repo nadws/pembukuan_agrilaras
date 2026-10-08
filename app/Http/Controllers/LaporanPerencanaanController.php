@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\LaporanPerencanaanExport;
 use App\Services\LaporanPerencanaanService;
+use App\Services\PerencanaanExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanPerencanaanController extends Controller
 {
@@ -37,8 +40,7 @@ class LaporanPerencanaanController extends Controller
     public function history(Request $request)
     {
         $this->authorizeAction('read');
-        $filters = $request->validate(['tgl1' => 'nullable|date_format:Y-m-d', 'tgl2' => 'nullable|date_format:Y-m-d|after_or_equal:tgl1',
-            'id_kandang' => 'nullable|integer|exists:kandang,id_kandang', 'kategori' => 'nullable|in:pakan,vitamin', 'per_page' => 'nullable|integer|in:25,50,100']);
+        $filters = $this->filters($request);
         $tgl1 = $filters['tgl1'] ?? date('Y-m-01');
         $tgl2 = $filters['tgl2'] ?? date('Y-m-d');
         $idKandang = $filters['id_kandang'] ?? null;
@@ -54,6 +56,23 @@ class LaporanPerencanaanController extends Controller
         return view('stok_pakan.history_pakan', ['title' => 'History Perencanaan', 'stok' => $stok, 'tgl1' => $tgl1, 'tgl2' => $tgl2,
             'idKandang' => $idKandang, 'kategori' => $kategori, 'kandang' => DB::table('kandang')->orderBy('nm_kandang')->get(),
             'canUpdate' => $this->allowed('update'), 'canCreate' => $this->allowed('create')]);
+    }
+
+    private function filters(Request $request): array
+    {
+        $request->merge(['tgl1' => $request->input('tgl1') ?: date('Y-m-01'), 'tgl2' => $request->input('tgl2') ?: date('Y-m-d')]);
+
+        return $request->validate(['tgl1' => 'required|date_format:Y-m-d', 'tgl2' => 'required|date_format:Y-m-d|after_or_equal:tgl1',
+            'id_kandang' => 'nullable|integer|exists:kandang,id_kandang', 'kategori' => 'nullable|in:pakan,vitamin', 'per_page' => 'nullable|integer|in:25,50,100']);
+    }
+
+    public function export(Request $request, PerencanaanExportService $export)
+    {
+        $this->authorizeAction('read');
+        $filters = $this->filters($request);
+        $data = $export->build($filters['tgl1'], $filters['tgl2'], empty($filters['id_kandang']) ? null : (int) $filters['id_kandang']);
+
+        return Excel::download(new LaporanPerencanaanExport($data), 'perencanaan-'.$filters['tgl1'].'-'.$filters['tgl2'].'.xlsx');
     }
 
     public function create(Request $request)

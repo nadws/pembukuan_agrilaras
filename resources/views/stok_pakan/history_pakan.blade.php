@@ -18,18 +18,10 @@
                 <div class="col-md-3"><label for="tgl2">Tanggal akhir</label><input required id="tgl2" type="date" name="tgl2" value="{{ $tgl2 }}" class="form-control"></div>
                 <div class="col-md-3"><label for="filter-kandang">Kandang</label><select id="filter-kandang" name="id_kandang" class="form-select select2"><option value="">Semua kandang</option>@foreach($kandang as $k)<option value="{{ $k->id_kandang }}" @selected((int)$idKandang === (int)$k->id_kandang)>{{ $k->nm_kandang }}</option>@endforeach</select></div>
                 <div class="col-md-1"><label for="per-page">Baris</label><select id="per-page" name="per_page" class="form-select">@foreach([25,50,100] as $size)<option value="{{ $size }}" @selected($stok->perPage() === $size)>{{ $size }}</option>@endforeach</select></div>
-                <div class="col-md-2"><button class="btn btn-primary w-100">Tarik Data</button></div>
+                <div class="col-12 d-flex flex-wrap gap-2"><button type="submit" class="btn btn-primary">Tampilkan</button><button type="submit" formaction="{{ route('history_perencanaan_pakan.export') }}" class="btn btn-success">Export Lengkap</button></div>
             </div>
         </form>
-        @if($canUpdate)
-            <form method="get" action="{{ route('history_perencanaan_pakan.edit') }}" class="planning-filter mb-3">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-3"><label for="correction-date">Tanggal koreksi</label><input required id="correction-date" type="date" name="tgl" value="{{ $tgl2 }}" class="form-control"></div>
-                    <div class="col-md-5"><label for="correction-kandang">Kandang yang dikoreksi</label><select required id="correction-kandang" name="id_kandang" class="form-select select2"><option value="">- Pilih Kandang -</option>@foreach($kandang as $k)<option value="{{ $k->id_kandang }}" @selected((int)$idKandang === (int)$k->id_kandang)>{{ $k->nm_kandang }}</option>@endforeach</select></div>
-                    <div class="col-md-4"><button class="btn btn-warning">Buka Koreksi</button></div>
-                </div>
-            </form>
-        @endif
+        <p class="small text-muted">Export memuat seluruh pakan, obat, vaksin, stok dan jurnal PPH sesuai tanggal/kandang, termasuk baris di halaman lain. Koreksi melalui tombol tiap baris.</p>
         <div class="planning-table">
             <table class="table table-hover table-striped"><thead><tr><th>No</th><th>Tanggal</th><th>Kandang</th><th>{{ $kategori === 'pakan' ? 'Nama Pakan' : 'Vitamin / Obat / Vaksin' }}</th><th class="text-end">Pemakaian</th><th>Satuan</th><th class="text-end">HPP / Satuan</th><th class="text-end">Total Rp</th><th>Admin</th><th>Aksi</th></tr></thead>
                 <tbody>@forelse($stok as $s)

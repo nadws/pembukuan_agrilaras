@@ -215,7 +215,7 @@ class LaporanPerencanaanTest extends TestCase
         DB::table('stok_produk_perencanaan')->where($this->scope())->update(['check' => 'Y']);
         $this->get(route('history_perencanaan_pakan', ['tgl1' => $this->date, 'tgl2' => $this->date, 'id_kandang' => $this->kandang]))
             ->assertOk()->assertSee('Kandang Uji Salinan')->assertSee('Tambah Tertinggal')->assertSee('Koreksi')
-            ->assertSee('Tarik Data')->assertDontSee('cek_bayar')->assertDontSee('Bukukan');
+            ->assertSee('Tampilkan')->assertSee('Export Lengkap')->assertDontSee('correction-date')->assertDontSee('Buka Koreksi')->assertDontSee('cek_bayar')->assertDontSee('Bukukan');
         $response = $this->get(route('history_perencanaan_pakan.edit', $this->scope()))->assertOk();
         foreach (['Kg pakan/box', 'Populasi', 'Gr Pakan / Ekor', 'Kg/karung sisa', 'Campuran', 'Waktu', 'Cara Pemakaian', 'Keterangan', 'Tambah Obat Air', 'Tambah Pakan'] as $label) {
             $response->assertSee($label);
@@ -266,6 +266,10 @@ class LaporanPerencanaanTest extends TestCase
         $this->assertNotNull($row, 'Pengujian harus memakai data salinan kandang.');
         $this->get(route('history_perencanaan_pakan.edit', ['tgl' => $row->tgl, 'id_kandang' => $row->id_kandang]))
             ->assertOk()->assertSee('Obat/ekor ayam')->assertSee('Tambah Pakan');
+        $data = app(\App\Services\PerencanaanExportService::class)->build($row->tgl, $row->tgl, (int) $row->id_kandang);
+        $this->assertNotEmpty($data[1]['rows']);
+        $this->assertCount(9, $data[1]['rows'][0]);
+        $this->assertNotEmpty(\Maatwebsite\Excel\Facades\Excel::raw(new \App\Exports\LaporanPerencanaanExport($data), \Maatwebsite\Excel\Excel::XLSX));
     }
 
     public function test_copied_kandang_record_can_be_corrected_atomically(): void
@@ -312,6 +316,7 @@ class LaporanPerencanaanTest extends TestCase
         DB::table('permission_role')->where('posisi_id', 1)->whereIn('id_permission_button', $buttons)->delete();
         $this->get(route('history_perencanaan_pakan'))->assertForbidden();
         $this->get(route('history_perencanaan_pakan.context', $this->scope()))->assertForbidden();
+        $this->get(route('history_perencanaan_pakan.export'))->assertForbidden();
     }
 
     public function test_shared_journal_batch_preserves_other_transaction_and_updates_totals(): void
@@ -342,5 +347,89 @@ class LaporanPerencanaanTest extends TestCase
         $before = $this->state();
         $this->rejected(fn () => $this->save(['kg_pakan_box' => 10000000], true), 'Stok karung tidak cukup');
         $this->assertSame($before, $this->state());
+    }
+
+    public function test_complete_workbook_uses_filters_without_pagination_or_category_limits(): void
+    {
+        $this->save();
+        DB::table('tb_obat_perencanaan')->where($this->scope())->where('kategori', 'obat_air')->update(['ket' => '=1+1']);
+        DB::table('tb_vaksin_perencanaan')->insert($this->scope() + ['nm_vaksin' => 'Vaksin Lengkap', 'qty' => 5, 'ttl_rp' => 15, 'biaya_dll' => 1, 'admin' => 'uji']);
+        for ($i = 0; $i < 26; $i++) {
+            DB::table('stok_produk_perencanaan')->insert($this->stockRow(990105, 'VAKSIN-'.$i, ['pcs_kredit' => 1, 'total_rp' => 3]));
+        }
+        DB::table('stok_produk_perencanaan')->insert($this->stockRow(990105, 'DI-LUAR-FILTER', ['tgl' => '2099-01-02', 'pcs_kredit' => 1]));
+        DB::table('stok_ayam')->insert(['tgl' => $this->date, 'no_nota' => '', 'debit' => 1, 'kredit' => 0, 'id_gudang' => 1,
+            'admin' => 'uji', 'transfer' => 'T', 'cek' => 'T', 'jenis' => 'pupuk']);
+        $before = $this->state();
+        $data = app(\App\Services\PerencanaanExportService::class)->build($this->date, $this->date, $this->kandang);
+        $bytes = \Maatwebsite\Excel\Facades\Excel::raw(new \App\Exports\LaporanPerencanaanExport($data), \Maatwebsite\Excel\Excel::XLSX);
+        $path = tempnam(sys_get_temp_dir(), 'perencanaan-test-');
+        try {
+            file_put_contents($path, $bytes);
+            $book = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+            $this->assertSame(['Ringkasan', 'Pakan', 'Obat Vitamin', 'Vaksin', 'Cocokkan Pemakaian', 'Mutasi Stok', 'Saldo Produk', 'Jurnal PPH'], $book->getSheetNames());
+            $this->assertSame(41, $book->getSheetByName('Mutasi Stok')->getHighestRow());
+            $summary = $book->getSheetByName('Ringkasan')->toArray(null, false, false);
+            $this->assertCount(7, $summary);
+            $this->assertEquals(10, $summary[5][4]);
+            $this->assertEquals(20096, $summary[5][5]);
+            $this->assertEquals(20018, $summary[5][6]);
+            $this->assertEquals(0, $summary[5][8]);
+            $this->assertEquals(100, $summary[5][2]);
+            $this->assertEquals(100, $summary[5][3]);
+            $this->assertSame('dd mmm yyyy', $book->getSheetByName('Ringkasan')->getStyle('A6')->getNumberFormat()->getFormatCode());
+            $this->assertSame('TOTAL', $summary[6][0]);
+            $this->assertEquals(20096, $summary[6][5]);
+            $medicine = $book->getSheetByName('Obat Vitamin');
+            $text = json_encode($medicine->toArray());
+            foreach (['Uji obat_air', '08:30', 'Minum', '=1+1', 'Campuran input', 'Dosis input'] as $value) {
+            $this->assertStringContainsString($value, $text);
+            }
+            foreach ($medicine->getRowIterator() as $row) {
+                foreach ($row->getCellIterator() as $cell) {
+                    if ($cell->getValue() === '=1+1') {
+                    $this->assertSame('s', $cell->getDataType());
+                    }
+                }
+            }
+            foreach ($book->getAllSheets() as $sheet) {
+                $this->assertStringNotContainsString('id_kandang', json_encode($sheet->toArray()));
+                $this->assertSame('C6', $sheet->getFreezePane());
+            }
+            $checks = $book->getSheetByName('Cocokkan Pemakaian')->toArray(null, false, false);
+            $this->assertSame(['Cocok', 'Cocok', 'Cocok', 'Cocok'], array_column(array_slice($checks, 5), 7));
+            $this->assertStringContainsString('Vaksin Lengkap', json_encode($book->getSheetByName('Vaksin')->toArray()));
+            $this->assertStringNotContainsString('DI-LUAR-FILTER', json_encode($book->getSheetByName('Mutasi Stok')->toArray()));
+            $book->disconnectWorksheets();
+        } finally {
+        unlink($path);
+        }
+        $this->get(route('history_perencanaan_pakan.export', ['tgl1' => $this->date, 'tgl2' => $this->date, 'id_kandang' => $this->kandang, 'kategori' => 'vitamin', 'per_page' => 25]))
+            ->assertOk()->assertDownload('perencanaan-'.$this->date.'-'.$this->date.'.xlsx');
+        $this->assertSame($before, $this->state());
+        $empty = app(\App\Services\PerencanaanExportService::class)->build('2099-02-01', '2099-02-01', $this->kandang);
+        $this->assertEmpty($empty[0]['rows']);
+        $this->assertNotEmpty($empty[1]['columns']);
+        $this->getJson(route('history_perencanaan_pakan.export', ['tgl1' => '2099-02-02', 'tgl2' => '2099-02-01']))->assertUnprocessable();
+    }
+
+    public function test_stock_ledger_includes_other_houses_and_opening_balance_and_flags_mismatch(): void
+    {
+        $this->save();
+        DB::table('stok_produk_perencanaan')->insert($this->stockRow(990101, 'BELI-PERIODE', ['id_kandang' => 0, 'pcs' => 500, 'total_rp' => 1000]));
+        DB::table('stok_produk_perencanaan')->insert($this->stockRow(990101, 'KANDANG-LAIN', ['id_kandang' => 0, 'pcs_kredit' => 100, 'total_rp' => 200]));
+        DB::table('stok_produk_perencanaan')->where($this->scope())->where('id_pakan', 990102)->increment('pcs_kredit', 1);
+        $data = collect(app(\App\Services\PerencanaanExportService::class)->build($this->date, $this->date, $this->kandang))->keyBy('title');
+        $feedLedger = array_values(array_filter($data['Mutasi Stok']['rows'], fn ($r) => $r[1] === 'Uji pakan'));
+        $this->assertEquals(100000, $feedLedger[0][6]);
+        $this->assertEquals(90000, $feedLedger[1][6]);
+        $this->assertEquals(90500, $feedLedger[2][6]);
+        $this->assertEquals(90400, $feedLedger[3][6]);
+        $balance = collect($data['Saldo Produk']['rows'])->first(fn ($r) => $r[0] === 'Uji pakan');
+        $this->assertEquals([100000, 500, 10100, 90400, 10000], array_slice($balance, 2));
+        $check = collect($data['Cocokkan Pemakaian']['rows'])->first(fn ($r) => $r[2] === 'Uji obat_pakan');
+        $this->assertEquals(1, $check[6]);
+        $this->assertSame('Periksa: input dan stok berbeda', $check[7]);
+        $this->assertCount(1, $data['Ringkasan']['rows']);
     }
 }
