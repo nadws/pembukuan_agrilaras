@@ -47,12 +47,7 @@
                     </a>
                 </li>
                 @php
-                    $hiddenNavbar = [
-                        'gudang alpa',
-                        'persediaan & penyesuaian',
-                        'import accurate',
-                        'history perencanaan',
-                    ];
+                    $hiddenNavbar = ['gudang alpa', 'persediaan & penyesuaian', 'import accurate'];
 
                     $navbar = DB::table('navbar')
                         ->whereNotIn(DB::raw('LOWER(nama)'), $hiddenNavbar)

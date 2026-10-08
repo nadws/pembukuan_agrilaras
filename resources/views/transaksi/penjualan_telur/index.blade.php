@@ -112,11 +112,15 @@
                                     <a href="{{ route('transaksi.penjualan-telur.edit', $item->no_nota) }}" class="btn btn-outline-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
                                     @endif
                                     @if(!empty($btnHapus))
-                                    <form method="POST" action="{{ route('transaksi.penjualan-telur.destroy', $item->no_nota) }}" onsubmit="return confirm('Hapus penjualan {{ $item->no_nota }}?')">
+                                    @if(!empty($notaAdaPelunasan[$item->no_nota]))
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Sudah ada pelunasan — hapus/batalkan pelunasan dulu di menu Piutang" disabled><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <form method="POST" action="{{ route('transaksi.penjualan-telur.destroy', $item->no_nota) }}" onsubmit="return confirm('Hapus penjualan {{ $item->no_nota }}? Stok dan jurnalnya ikut terhapus.')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                     </form>
+                                    @endif
                                     @endif
                                 </div>
                             </td>

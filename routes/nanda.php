@@ -25,6 +25,7 @@ use App\Http\Controllers\LaporanAkhirBulanController;
 use App\Http\Controllers\LaporanFakturPajakController;
 use App\Http\Controllers\LaporanLabarugiKandangController;
 use App\Http\Controllers\LaporanPendapatanController;
+use App\Http\Controllers\LaporanPerencanaanController;
 use App\Http\Controllers\LaporanStokPersediaanController;
 use App\Http\Controllers\LaporanTagihanCustomerController;
 use App\Http\Controllers\MasterAkunPerkiraanController;
@@ -723,6 +724,23 @@ Route::controller(DokumentasiLaporanLayerController::class)->group(function () {
 Route::controller(LaporanStokPersediaanController::class)->group(function () {
     Route::get('/laporan/stok-persediaan', 'index')->name('laporan.stok-persediaan');
     Route::get('/laporan/stok-persediaan/{produk}', 'detail')->name('laporan.stok-persediaan.detail');
+});
+Route::controller(LaporanPerencanaanController::class)->middleware('auth')->prefix('laporan/perencanaan')->name('laporan.perencanaan')->group(function () {
+    Route::get('/', 'index');
+    Route::get('/tambah', 'create')->name('.create');
+    Route::post('/', 'store')->name('.store');
+    Route::get('/detail', 'detail')->name('.detail');
+    Route::get('/koreksi', 'edit')->name('.edit');
+    Route::put('/koreksi', 'update')->name('.update');
+    Route::get('/konteks', 'context')->name('.context');
+});
+Route::controller(LaporanPerencanaanController::class)->middleware('auth')->prefix('history-perencanaan')->name('history_perencanaan_pakan.')->group(function () {
+    Route::get('/tambah', 'create')->name('create');
+    Route::post('/simpan', 'store')->name('store');
+    Route::get('/detail', 'detail')->name('detail');
+    Route::get('/koreksi', 'edit')->name('edit');
+    Route::put('/koreksi', 'update')->name('update');
+    Route::get('/konteks', 'context')->name('context');
 });
 Route::controller(LaporanAkhirBulanController::class)->group(function () {
     Route::get('/laporan/akhir-bulan', 'index')->name('laporan.akhir-bulan');
