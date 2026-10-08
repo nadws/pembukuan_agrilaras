@@ -1,5 +1,11 @@
 <?php
 
+Route::middleware('auth')->prefix('review-komposisi')->name('review-komposisi.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\ReviewKomposisiController::class, 'index'])->name('index');
+    Route::post('/pengaturan', [\App\Http\Controllers\ReviewKomposisiController::class, 'settings'])->name('settings');
+    Route::get('/akun/{akun}', [\App\Http\Controllers\ReviewKomposisiController::class, 'transactions'])->whereNumber('akun')->name('transactions');
+});
+
 use App\Http\Controllers\AktivaController;
 use App\Http\Controllers\AktivaGantungController;
 use App\Http\Controllers\AkunController;
@@ -10,6 +16,7 @@ use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\ControlflowController;
 use App\Http\Controllers\CrudPermissionController;
 use App\Http\Controllers\DashboardJurnalPerkiraanController;
+use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\DokumentasiLaporanLayerController;
 use App\Http\Controllers\ExportRecordingController;
 use App\Http\Controllers\FakturPembelianController;
@@ -59,7 +66,6 @@ use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\Stock_telurController;
 use App\Http\Controllers\Stok_ayam;
 use App\Http\Controllers\Stok_pakanController;
-use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\Stok_telur_alpaController;
 use App\Http\Controllers\StokMasukController;
 use Illuminate\Support\Facades\Route;
