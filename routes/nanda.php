@@ -675,6 +675,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/terima_invoice_mtd', 'terima_invoice_mtd')->name('terima_invoice_mtd');
         Route::get('/tbh_pembayaran_martadah', 'tbh_pembayaran_martadah')->name('tbh_pembayaran_martadah');
         Route::post('/save_terima_invoice', 'save_terima_invoice')->name('save_terima_invoice');
+        Route::get('/edit_harga_martadah', 'edit_harga')->name('edit_harga_martadah');
+        Route::post('/update_harga_martadah', 'update_harga')->name('update_harga_martadah');
     });
     Route::controller(Stok_ayam::class)->group(function () {
         Route::get('/stok_ayam', 'index')->name('stok_ayam');

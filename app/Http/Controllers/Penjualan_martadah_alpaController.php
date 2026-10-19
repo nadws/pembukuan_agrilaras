@@ -386,4 +386,135 @@ class Penjualan_martadah_alpaController extends Controller
             'lokasi' => 'mtd', 'period' => 'costume', 'tgl1' => $tgl1, 'tgl2' => $tgl2,
         ])->with('sukses', $pesan);
     }
+
+    public function edit_harga(Request $r)
+    {
+        $noNota = (string) $r->no_nota;
+        $items = DB::table('invoice_telur as a')
+            ->leftJoin('telur_produk as b', 'b.id_produk_telur', '=', 'a.id_produk')
+            ->leftJoin('customer as c', 'c.id_customer', '=', 'a.id_customer')
+            ->where('a.no_nota', $noNota)
+            ->where('a.lokasi', 'mtd')
+            ->orderBy('a.id_invoice_telur')
+            ->select([
+                'a.id_invoice_telur',
+                'a.no_nota',
+                'a.tgl',
+                'a.tipe',
+                'a.pcs',
+                'a.kg',
+                'a.kg_jual',
+                'a.rp_satuan',
+                'a.total_rp',
+                'a.status',
+                'b.nm_telur',
+                DB::raw("COALESCE(c.nm_customer, NULLIF(a.customer, ''), CONCAT('Customer #', a.id_customer)) as customer_name"),
+            ])
+            ->get();
+
+        if ($items->isEmpty()) {
+            return '<div class="alert alert-danger m-3">Nota tidak ditemukan.</div>';
+        }
+
+        $sudahBayar = DB::table('pelunasan_piutang_penjualan')
+            ->where('no_nota', $noNota)
+            ->exists();
+
+        $isPaid = $sudahBayar || $items->first()->status === 'paid';
+
+        return view('penjualan_martadh.modal_edit_harga', [
+            'no_nota' => $noNota,
+            'items' => $items,
+            'isPaid' => $isPaid,
+            'first' => $items->first(),
+        ]);
+    }
+
+    public function update_harga(Request $r)
+    {
+        $validated = $r->validate([
+            'no_nota' => ['required', 'string'],
+            'id_invoice_telur' => ['required', 'array', 'min:1'],
+            'id_invoice_telur.*' => ['required', 'integer'],
+            'rp_satuan' => ['required', 'array'],
+            'rp_satuan.*' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $noNota = $validated['no_nota'];
+
+        $sudahBayar = DB::table('pelunasan_piutang_penjualan')
+            ->where('no_nota', $noNota)
+            ->exists();
+
+        $invoiceStatus = DB::table('invoice_telur')
+            ->where('no_nota', $noNota)
+            ->where('lokasi', 'mtd')
+            ->value('status');
+
+        if ($sudahBayar || $invoiceStatus === 'paid') {
+            return back()->with('error', "Nota {$noNota} sudah memiliki riwayat pelunasan. Batalkan pelunasan terlebih dahulu di menu Transaksi -> Piutang sebelum mengubah harga.");
+        }
+
+        DB::transaction(function () use ($validated, $noNota) {
+            $totalBaru = 0;
+
+            foreach ($validated['id_invoice_telur'] as $idx => $idInvoice) {
+                $hargaBaru = (float) $validated['rp_satuan'][$idx];
+                $item = DB::table('invoice_telur')->where('id_invoice_telur', $idInvoice)->first();
+                if (! $item) continue;
+
+                $qtyJual = strtolower($item->tipe) === 'pcs' ? (float) $item->pcs : (float) $item->kg_jual;
+                $subtotalBaru = round($qtyJual * $hargaBaru, 2);
+                $totalBaru += $subtotalBaru;
+
+                DB::table('invoice_telur')->where('id_invoice_telur', $idInvoice)->update([
+                    'rp_satuan' => $hargaBaru,
+                    'total_rp' => $subtotalBaru,
+                ]);
+
+                if (strtolower($item->tipe) === 'pcs') {
+                    DB::table('invoice_mtd')->where('no_nota', $noNota)->where('id_produk', $item->id_produk)->update([
+                        'rp_pcs' => $hargaBaru,
+                    ]);
+                } else {
+                    DB::table('invoice_mtd')->where('no_nota', $noNota)->where('id_produk', $item->id_produk)->update([
+                        'rp_kg' => $hargaBaru,
+                    ]);
+                }
+            }
+
+            $jurnalRows = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $noNota)
+                ->where('tipe_transaksi', 'Penjualan Telur')
+                ->get();
+
+            if ($jurnalRows->isNotEmpty()) {
+                foreach ($jurnalRows as $j) {
+                    if ((float) $j->debit > 0) {
+                        DB::table('jurnal_perkiraan')->where('id_jurnal_perkiraan', $j->id_jurnal_perkiraan)->update([
+                            'debit' => $totalBaru,
+                            'updated_at' => now(),
+                        ]);
+                    }
+                    if ((float) $j->kredit > 0) {
+                        DB::table('jurnal_perkiraan')->where('id_jurnal_perkiraan', $j->id_jurnal_perkiraan)->update([
+                            'kredit' => $totalBaru,
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
+                $batchIds = $jurnalRows->pluck('id_impor_jurnal_perkiraan')->filter()->unique();
+                if ($batchIds->isNotEmpty()) {
+                    DB::table('impor_jurnal_perkiraan')->whereIn('id_impor_jurnal_perkiraan', $batchIds)->update([
+                        'total_debit' => $totalBaru,
+                        'total_kredit' => $totalBaru,
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        });
+
+        return back()->with('sukses', "Harga nota {$noNota} berhasil diperbarui.");
+    }
 }
