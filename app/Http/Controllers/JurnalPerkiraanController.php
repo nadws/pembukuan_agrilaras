@@ -160,6 +160,46 @@ class JurnalPerkiraanController extends Controller
         ]);
     }
 
+    public function detailPenyusutanAktiva(Request $request, AkunPerkiraan $akun_perkiraan): View
+    {
+        $awal = Carbon::parse($request->validate([
+            'tanggal_awal' => ['required', 'date'],
+            'tanggal_akhir' => ['required', 'date', 'after_or_equal:tanggal_awal'],
+        ])['tanggal_awal'])->startOfMonth();
+        $akhir = Carbon::parse($request->input('tanggal_akhir'))->endOfMonth();
+
+        $akunBiaya = DB::table('akun_perkiraan')
+            ->where('aktif', 1)->where('tipe_akun', 'EXPS')
+            ->where('nama', 'like', '%Biaya Penyusutan%')
+            ->get(['id_akun_perkiraan', 'nama']);
+        abort_unless($akunBiaya->pluck('id_akun_perkiraan')->contains($akun_perkiraan->getKey()), 404);
+
+        $aktiva = DB::table('aktiva_pembukuan_baru as a')
+            ->leftJoin('akun_perkiraan as aset', 'aset.id_akun_perkiraan', '=', 'a.id_akun_aset')
+            ->leftJoin('penyusutan_aktiva_pembukuan_baru as p', function ($join) use ($awal, $akhir) {
+                $join->on('p.id_aktiva', '=', 'a.id')
+                    ->whereBetween('p.periode', [$awal->format('Y-m'), $akhir->format('Y-m')]);
+            })
+            ->select('a.id', 'a.nm_aktiva', 'a.tgl', 'a.h_perolehan', 'a.biaya_depresiasi',
+                'a.akumulasi_penyusutan', 'aset.nama as nama_akun_aset')
+            ->selectRaw("COALESCE(SUM(p.nominal), 0) as nominal_periode,
+                GROUP_CONCAT(DISTINCT DATE_FORMAT(p.tanggal, '%d-%m-%Y') ORDER BY p.tanggal SEPARATOR ', ') as tanggal_input")
+            ->groupBy('a.id', 'a.nm_aktiva', 'a.tgl', 'a.h_perolehan', 'a.biaya_depresiasi', 'a.akumulasi_penyusutan', 'aset.nama')
+            ->orderBy('a.tgl')->orderBy('a.id')->get()
+            ->filter(function ($a) use ($akun_perkiraan) {
+                $kataAset = strtok((string) $a->nama_akun_aset, ' ');
+                return $kataAset && str_contains(strtolower((string) $akun_perkiraan->nama), strtolower($kataAset));
+            })->filter(fn ($a) => (float) $a->nominal_periode > 0)->values();
+
+        return view('jurnal_perkiraan.penyusutan_aktiva', [
+            'title' => 'Detail Aktiva '.$akun_perkiraan->nama,
+            'akun' => $akun_perkiraan,
+            'aktiva' => $aktiva,
+            'tanggalAwal' => $awal,
+            'tanggalAkhir' => $akhir,
+        ]);
+    }
+
     public function budgetLabaRugi(Request $request): View
     {
         $tahun = (int) $request->input('tahun', now()->year);

@@ -78,7 +78,7 @@
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI SEBELUM PENYUSUTAN', 'values' => $result['beforeDepreciation'], 'budget'=>$result['beforeDepreciationBudget'], 'isIncome'=>true, 'highlight' => true])
 
                         <tr class="section-row"><td colspan="{{ $periods->count() + 2 }}">BIAYA PENYUSUTAN</td></tr>
-                        @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['depreciationRows']])
+                        @include('jurnal_perkiraan.partials.laba_rugi_rows', ['rows' => $result['depreciationRows'], 'depreciation' => true])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'Jumlah Biaya Penyusutan', 'values' => $result['depreciationTotal'], 'budget'=>$result['depreciationBudget'], 'isIncome'=>false])
                         @include('jurnal_perkiraan.partials.laba_rugi_total', ['label' => 'LABA/RUGI BERSIH (Sebelum Pajak)', 'values' => $result['beforeTax'], 'budget'=>$result['beforeTaxBudget'], 'isIncome'=>true, 'highlight' => true])
 
