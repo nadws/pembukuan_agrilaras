@@ -62,6 +62,87 @@ class PembukuanBaruJurnalUmumController extends Controller
         ])->with('sukses', "{$batch->jumlah_detail} baris dari {$batch->jumlah_transaksi} jurnal berhasil diimport.");
     }
 
+    public function editPelunasanHutang(string $nomor_transaksi): View
+    {
+        $payment = $this->pelunasanHutangPayment($nomor_transaksi);
+        abort_unless($payment, 404);
+
+        return view('pembukuan_baru.jurnal_umum.edit_pelunasan_hutang', [
+            'title' => 'Edit Pelunasan Hutang',
+            'nomor_transaksi' => $nomor_transaksi,
+            'tanggal' => $payment->tanggal_bayar,
+            'jumlah_bayar' => $payment->jumlah_bayar,
+            'id_akun_kas' => $payment->id_akun_kas,
+            'akunKas' => $this->akunKasBankAktif(),
+        ]);
+    }
+
+    public function updatePelunasanHutang(Request $request, string $nomor_transaksi): RedirectResponse
+    {
+        $validated = $request->validate([
+            'id_akun_kas' => ['required', 'integer'],
+        ]);
+
+        DB::transaction(function () use ($validated, $nomor_transaksi) {
+            $journal = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $nomor_transaksi)
+                ->where('tipe_transaksi', 'Pelunasan Hutang Faktur Pembelian')
+                ->where('kredit', '>', 0)
+                ->orderBy('urutan_detail')
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($journal, 404);
+
+            $akunKas = DB::table('akun_perkiraan')
+                ->where('id_akun_perkiraan', $validated['id_akun_kas'])
+                ->where('aktif', 1)
+                ->where(function ($query) {
+                    $query->where('kode_perkiraan', 'like', '1101%')
+                        ->orWhere('nama', 'like', '%kas%')
+                        ->orWhere('nama', 'like', '%bank%')
+                        ->orWhere('nama', 'like', '%bca%');
+                })
+                ->first(['id_akun_perkiraan', 'nama']);
+
+            if (! $akunKas) {
+                abort(422, 'Akun pembayaran harus berupa kas atau bank aktif.');
+            }
+
+            $payment = DB::table('pelunasan_faktur_pembelian')
+                ->where('id_impor_jurnal_perkiraan', $journal->id_impor_jurnal_perkiraan)
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($payment, 404);
+
+            DB::table('pelunasan_faktur_pembelian')
+                ->where('id', $payment->id)
+                ->update([
+                    'id_akun_kas' => $akunKas->id_akun_perkiraan,
+                    'updated_at' => now(),
+                ]);
+
+            $deskripsi = preg_replace(
+                '/\\s+dari\\s+.+(?=\\s+\\([^)]*\\)\\s*$)/u',
+                ' dari ' . $akunKas->nama,
+                (string) $journal->deskripsi
+            );
+
+            DB::table('jurnal_perkiraan')
+                ->where('id_jurnal_perkiraan', $journal->id_jurnal_perkiraan)
+                ->update([
+                    'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
+                    'deskripsi' => $deskripsi ?: $journal->deskripsi,
+                    'updated_at' => now(),
+                ]);
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'pelunasan-hutang'])
+            ->with('sukses', 'Akun pembayaran pelunasan hutang berhasil diperbarui.');
+    }
+
     public function index(Request $request): View
     {
         $tanggalAwal = $request->input('tanggal_awal', now()->startOfMonth()->toDateString());
@@ -1875,11 +1956,30 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->where(function ($query) {
                 $query->where('kode_perkiraan', 'like', '1101%')
                     ->orWhere('nama', 'like', '%kas%')
-                    ->orWhere('nama', 'like', '%bank%');
+                    ->orWhere('nama', 'like', '%bank%')
+                    ->orWhere('nama', 'like', '%bca%');
             })
             ->whereNotNull('id_akun_induk')
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+    }
+
+    private function pelunasanHutangPayment(string $nomor_transaksi): ?object
+    {
+        $journal = DB::table('jurnal_perkiraan')
+            ->where('nomor_transaksi', $nomor_transaksi)
+            ->where('tipe_transaksi', 'Pelunasan Hutang Faktur Pembelian')
+            ->where('kredit', '>', 0)
+            ->orderBy('urutan_detail')
+            ->first(['id_impor_jurnal_perkiraan']);
+
+        if (! $journal) {
+            return null;
+        }
+
+        return DB::table('pelunasan_faktur_pembelian')
+            ->where('id_impor_jurnal_perkiraan', $journal->id_impor_jurnal_perkiraan)
+            ->first(['tanggal_bayar', 'jumlah_bayar', 'id_akun_kas']);
     }
 
     private function akunAktivaGantungDefault(): ?object

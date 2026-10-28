@@ -158,6 +158,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'bukuHutangIndex')->name('index');
             Route::get('/{faktur_pembelian}/pelunasan', 'pelunasan')->name('pelunasan');
             Route::post('/{faktur_pembelian}/pelunasan', 'storePelunasan')->name('pelunasan.store');
+            Route::delete('/{faktur_pembelian}/pelunasan', 'destroyPelunasan')->name('pelunasan.destroy');
         });
 
     Route::controller(PembukuanBaruJurnalUmumController::class)
@@ -170,6 +171,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/import', 'import')->name('import');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
+            Route::get('/pelunasan-hutang/{nomor_transaksi}/edit', 'editPelunasanHutang')->name('pelunasan-hutang.edit');
+            Route::put('/pelunasan-hutang/{nomor_transaksi}', 'updatePelunasanHutang')->name('pelunasan-hutang.update');
             Route::get('/manual/{id}/edit', 'editManual')->name('manual.edit');
             Route::put('/manual/{id}', 'updateManual')->name('manual.update');
             Route::delete('/manual/{id}', 'destroyManual')->name('manual.destroy');

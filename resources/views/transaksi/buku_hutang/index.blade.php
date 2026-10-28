@@ -237,7 +237,7 @@
                             <th class="text-end">Sudah Dibayar</th>
                             <th class="text-end">Sisa Hutang</th>
                             <th>Status</th>
-                            <th width="110" class="text-center">Aksi</th>
+                            <th width="160" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -268,6 +268,18 @@
                                             Bayar
                                         </a>
                                         @endif
+                                    @elseif ($status === 'lunas' && (!empty($btnBayar) || (string) auth()->user()->posisi_id === '1'))
+                                        <form method="POST"
+                                            action="{{ route('transaksi.buku-hutang.pelunasan.destroy', $item->id) }}"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Batalkan pelunasan komponen ini? Jurnal pembayaran akan dihapus dan tagihan kembali ke hutang berjalan.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="komponen_hutang" value="{{ $item->komponen_hutang }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-undo me-1"></i> Batalkan
+                                            </button>
+                                        </form>
                                     @else
                                         <span class="text-muted small">Selesai</span>
                                     @endif

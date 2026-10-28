@@ -385,10 +385,18 @@
                                 <td class="text-end">Rp {{ number_format($item->total_debit, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($item->total_kredit, 0, ',', '.') }}</td>
                                 <td class="text-center">
-                                    <button type="button" class="btn btn-outline-primary btn-sm btn-toggle-detail"
-                                        data-detail-target="{{ $detailId }}">
-                                        Detail
-                                    </button>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-toggle-detail"
+                                            data-detail-target="{{ $detailId }}" title="Detail">
+                                            Detail
+                                        </button>
+                                        @if(!empty($btnEditJurnal) || (string) auth()->user()->posisi_id === '1')
+                                            <a href="{{ route('pembukuan-baru.jurnal-umum.pelunasan-hutang.edit', $item->nomor_transaksi) }}"
+                                                class="btn btn-outline-warning" title="Edit akun pembayaran">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             <tr class="journal-detail-row" id="{{ $detailId }}">

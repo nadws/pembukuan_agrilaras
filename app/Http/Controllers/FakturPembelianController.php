@@ -393,6 +393,67 @@ class FakturPembelianController extends Controller
             ->with('sukses', 'Pelunasan hutang berhasil disimpan.');
     }
 
+    public function destroyPelunasan(Request $request, FakturModel $faktur_pembelian): RedirectResponse
+    {
+        $validated = $request->validate([
+            'komponen_hutang' => ['required', 'in:barang,ongkir,admin,pph23'],
+        ]);
+
+        $deleted = DB::transaction(function () use ($validated, $faktur_pembelian) {
+            $paymentsQuery = DB::table('pelunasan_faktur_pembelian')
+                ->where('faktur_pembelian_id', $faktur_pembelian->id)
+                ->where(function ($query) use ($validated) {
+                    if ($validated['komponen_hutang'] === 'barang') {
+                        $query->where('komponen_hutang', 'barang')
+                            ->orWhereNull('komponen_hutang');
+                    } else {
+                        $query->where('komponen_hutang', $validated['komponen_hutang']);
+                    }
+                });
+            $payments = $paymentsQuery->lockForUpdate()->get(['id', 'id_impor_jurnal_perkiraan']);
+
+            if ($payments->isEmpty()) {
+                return false;
+            }
+
+            $batchIds = $payments->pluck('id_impor_jurnal_perkiraan')->filter()->unique()->values();
+            $paymentsQuery->delete();
+
+            if ($batchIds->isNotEmpty()) {
+                DB::table('jurnal_perkiraan')
+                    ->whereIn('id_impor_jurnal_perkiraan', $batchIds)
+                    ->delete();
+                DB::table('impor_jurnal_perkiraan')
+                    ->whereIn('id_impor_jurnal_perkiraan', $batchIds)
+                    ->whereNotExists(function ($query) use ($batchIds) {
+                        $query->selectRaw(1)
+                            ->from('pelunasan_faktur_pembelian as p')
+                            ->whereColumn('p.id_impor_jurnal_perkiraan', 'impor_jurnal_perkiraan.id_impor_jurnal_perkiraan')
+                            ->whereIn('p.id_impor_jurnal_perkiraan', $batchIds);
+                    })
+                    ->delete();
+            }
+
+            $faktur = FakturModel::whereKey($faktur_pembelian->id)->lockForUpdate()->firstOrFail();
+            $tagihan = $this->tagihanKomponen(collect([$faktur]));
+            $totalSisa = (float) $tagihan->sum('sisa_hutang');
+            $totalBayar = (float) $tagihan->sum('total_bayar');
+            $faktur->update([
+                'status_bayar' => $totalSisa <= 0 ? 'lunas' : ($totalBayar > 0 ? 'sebagian' : 'belum_lunas'),
+            ]);
+
+            return true;
+        });
+
+        if (! $deleted) {
+            return back()->with('error', 'Belum ada pelunasan untuk komponen ini.');
+        }
+
+        return redirect()
+            ->route('transaksi.buku-hutang.index', ['status' => 'berjalan'])
+            ->with('sukses', 'Pelunasan dibatalkan. Tagihan kembali ke hutang berjalan.');
+    }
+
      public function store(Request $request): RedirectResponse
      {
          $validated = $request->validate([
