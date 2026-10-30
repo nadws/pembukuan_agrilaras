@@ -179,6 +179,10 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/biaya/create', 'createBiaya')->name('biaya.create');
             Route::post('/biaya', 'storeBiaya')->name('biaya.store');
+            Route::get('/biaya/import', 'importBiaya')->name('biaya.import');
+            Route::get('/biaya/import/template', 'templateImportBiaya')->name('biaya.import.template');
+            Route::post('/biaya/import/preview', 'previewImportBiaya')->name('biaya.import.preview');
+            Route::post('/biaya/import', 'storeImportBiaya')->name('biaya.import.store');
             Route::get('/biaya/{nomor_transaksi}/edit', 'editBiaya')->name('biaya.edit');
             Route::put('/biaya/{nomor_transaksi}', 'updateBiaya')->name('biaya.update');
             Route::delete('/biaya/{nomor_transaksi}', 'destroyBiaya')->name('biaya.destroy');
