@@ -3,7 +3,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
                 <h5 class="mb-1">{{ $title }}</h5>
-                <small class="text-muted">Akun Biaya Pakan dan Biaya Rak Telur dilewati. Periksa akun sebelum menyimpan.</small>
+                <small class="text-muted">Akun Biaya Pakan dan Biaya Rak Telur dilewati. Bank satu baris satu jurnal; Cash tanggal sama boleh digabung.</small>
             </div>
             <a href="{{ route('pembukuan-baru.jurnal-umum.biaya.create') }}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Tambah Jurnal Biaya

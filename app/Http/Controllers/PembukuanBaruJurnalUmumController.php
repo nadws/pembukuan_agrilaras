@@ -1100,12 +1100,16 @@ class PembukuanBaruJurnalUmumController extends Controller
             }
         }
 
-        $groups = $rows->groupBy(fn ($row) => $row['tanggal'] . '|' . $row['payment_code']);
+        $groups = $rows->groupBy(function ($row, $index) {
+            // Bank must reconcile one journal to one bank mutation. Cash may be grouped by day.
+            return $row['tanggal'] . '|' . $row['payment_code']
+                . ($row['payment_code'] === '110113' ? '|bank-' . $index : '');
+        });
         $saved = 0;
 
         DB::transaction(function () use ($groups, $validated, $akunKas, &$saved) {
             foreach ($groups as $groupKey => $group) {
-                [$tanggal, $paymentCode] = explode('|', $groupKey, 2);
+                [$tanggal, $paymentCode] = explode('|', $groupKey, 3);
                 $detail = $group->map(fn ($row) => [
                     'id_akun_biaya' => (int) $row['id_akun_biaya'],
                     'keterangan' => trim($row['keterangan']),
