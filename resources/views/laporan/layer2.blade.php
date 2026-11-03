@@ -1338,7 +1338,9 @@
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
                         <tr class="baris-laporan-kandang" data-nama-kandang="{{ strtolower($k->nm_kandang) }}"
-                            data-aktif="{{ $k->tgl_makan_terakhir && $k->tgl_makan_terakhir >= date('Y-m-d', strtotime($tgl . ' -6 days')) ? '1' : '0' }}">
+                            data-aktif="{{ $k->tgl_makan_terakhir && $k->tgl_makan_terakhir >= date('Y-m-d', strtotime($tgl . ' -6 days')) ? '1' : '0' }}"
+                            data-pakan-kuml="{{ $k->kg_pakan_kuml / 1000 }}"
+                            data-telur-kuml="{{ $k->kuml_kg - $k->kuml_pcs / 180 }}">
                             <td align="center" class="kandang baris-kandang2 freeze-cell1_td td_layer"
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
@@ -1592,8 +1594,8 @@
                         {{-- <th class="dhead table_layer"></th> --}}
                         {{-- <th class="dhead table_layer">{{ number_format($pakan, 2) }} </th> --}}
 
-                        <th class="dhead table_layer">{{ number_format($pakan_kuml, 2) }} <br>
-                            {{ number_format($telur_kuml, 2) }} </th>
+                        <th class="dhead table_layer"><span id="total-pakan-kuml">{{ number_format($pakan_kuml, 2) }}</span> <br>
+                            <span id="total-telur-kuml">{{ number_format($telur_kuml, 2) }}</span> </th>
                         <th class="dhead table_layer"></th>
                         {{-- <th class="dhead table_layer">{{ number_format($pakan, 1) }}</th> --}}
 
@@ -2159,14 +2161,28 @@
         function tampilkanKandang() {
             var aktifSaja = $('#toggle-kandang-aktif').prop('checked');
             var kataKunci = ($('#cari-kandang-layer').val() || '').toLowerCase().trim();
+            var totalPakan = 0;
+            var totalTelur = 0;
 
             $('.baris-laporan-kandang').each(function() {
                 var $baris = $(this);
                 var cocokAktif = !aktifSaja || $baris.attr('data-aktif') === '1';
                 var cocokNama = !kataKunci || ($baris.attr('data-nama-kandang') || '').includes(kataKunci);
+                var tampil = cocokAktif && cocokNama;
 
-                $baris.toggle(cocokAktif && cocokNama);
+                $baris.toggle(tampil);
+                // Total footer hanya dari baris yang tampil.
+                if (tampil) {
+                    totalPakan += parseFloat($baris.attr('data-pakan-kuml')) || 0;
+                    totalTelur += parseFloat($baris.attr('data-telur-kuml')) || 0;
+                }
             });
+
+            var format2 = function(angka) {
+                return angka.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            };
+            $('#total-pakan-kuml').text(format2(totalPakan));
+            $('#total-telur-kuml').text(format2(totalTelur));
         }
 
         $('#toggle-kandang-aktif').on('change', tampilkanKandang);
