@@ -126,12 +126,15 @@
                     <div>
                         <div class="d-flex align-items-center gap-2">
                             <h5 class="mb-0">Laporan Penarikan Uang</h5>
-                            <button type="button" class="btn btn-outline-primary gear-button" data-bs-toggle="modal" data-bs-target="#filterTipeTransaksi" title="Setting Akun & Tipe Transaksi Penarikan Uang">
+                            <button type="button" class="btn btn-outline-primary gear-button" data-bs-toggle="modal" data-bs-target="#filterTipeTransaksi" title="{{ $kodeAkun['aktif'] ? 'Nonaktif: sedang pakai mode Kode Akun' : 'Setting Akun & Tipe Transaksi Penarikan Uang' }}" @disabled($kodeAkun['aktif'])>
                                 <i class="fas fa-cog"></i>
+                            </button>
+                            <button type="button" class="btn {{ $kodeAkun['aktif'] ? 'btn-primary' : 'btn-outline-primary' }} gear-button gap-1 px-2" style="width: auto;" data-bs-toggle="modal" data-bs-target="#settingKodeAkun" title="Setting Kode Akun Penarikan Uang">
+                                <i class="fas fa-cog"></i> Kode Akun
                             </button>
                         </div>
                         <small class="text-muted">
-                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $selectedTransactionTypes ? collect($selectedTransactionTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
+                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $kodeAkun['aktif'] ? 'Mode Kode Akun' : ($selectedTransactionTypes ? collect($selectedTransactionTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi') }}
                         </small>
                     </div>
                     <div class="text-end">
@@ -188,14 +191,19 @@
                                     <td class="amount">{{ $fmt($withdrawalTotal) }}</td>
                                 </tr>
                             @endif
-                            @if(!empty($penarikanExclusions) || $transferPenarikan['aktif'])
+                            @if($kodeAkun['aktif'])
+                                <tr>
+                                    <td colspan="4" class="small text-muted">
+                                        Mode Kode Akun: jurnal yang isinya hanya akun kas/bank terpilih dan akun bukan pendapatan
+                                        ({{ $availableAccounts->whereIn('id_akun_perkiraan', $kodeAkun['akun'])->map(fn($a) => $a->kode_perkiraan . ' ' . $a->nama)->implode(', ') ?: '-' }})
+                                        tidak dihitung. Kata pengecualian & tipe transaksi tidak dipakai.
+                                    </td>
+                                </tr>
+                            @elseif(!empty($penarikanExclusions))
                                 <tr>
                                     <td colspan="4" class="small text-muted">
                                         Dikecualikan dari tabel ini:
                                         <ul class="mb-0 ps-3">
-                                            @if($transferPenarikan['aktif'])
-                                                <li>Transfer antar akun kas/bank terpilih + akun transfer (otomatis)</li>
-                                            @endif
                                             @foreach($penarikanExclusions as $exc)
                                                 <li><code>{{ $exc['pola'] }}</code> — {{ $exc['keterangan'] }}</li>
                                             @endforeach
@@ -215,12 +223,15 @@
                     <div>
                         <div class="d-flex align-items-center gap-2">
                             <h5 class="mb-0">Laporan Uang Penjualan</h5>
-                            <button type="button" class="btn btn-outline-success gear-button" data-bs-toggle="modal" data-bs-target="#filterTipePenjualan" title="Setting Akun & Tipe Transaksi Uang Penjualan">
+                            <button type="button" class="btn btn-outline-success gear-button" data-bs-toggle="modal" data-bs-target="#filterTipePenjualan" title="{{ $kodeAkunPenjualan['aktif'] ? 'Nonaktif: sedang pakai mode Kode Akun' : 'Setting Akun & Tipe Transaksi Uang Penjualan' }}" @disabled($kodeAkunPenjualan['aktif'])>
                                 <i class="fas fa-cog"></i>
+                            </button>
+                            <button type="button" class="btn {{ $kodeAkunPenjualan['aktif'] ? 'btn-success' : 'btn-outline-success' }} gear-button gap-1 px-2" style="width: auto;" data-bs-toggle="modal" data-bs-target="#settingKodeAkunPenjualan" title="Setting Kode Akun Uang Penjualan">
+                                <i class="fas fa-cog"></i> Kode Akun
                             </button>
                         </div>
                         <small class="text-muted">
-                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $selectedPenjualanTypes ? collect($selectedPenjualanTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi' }}
+                            Periode {{ $startDate->translatedFormat('d F Y') }} – {{ $currentCutoff->translatedFormat('d F Y') }} · {{ $kodeAkunPenjualan['aktif'] ? 'Mode Kode Akun' : ($selectedPenjualanTypes ? collect($selectedPenjualanTypes)->map(fn($type) => $transactionTypeOptions[$type]['label'])->implode(', ') : 'Semua tipe transaksi') }}
                         </small>
                     </div>
                 </div>
@@ -272,7 +283,13 @@
                                     <td class="amount">{{ $fmt($penjualanCredit) }}</td>
                                 </tr>
                             @endif
-                            @if(!empty($penjualanExclusions))
+                            @if($kodeAkunPenjualan['aktif'])
+                                <tr>
+                                    <td colspan="3" class="small text-muted">
+                                        Mode Kode Akun: transfer antar akun kas/bank &amp; akun bukan pendapatan (diatur di gear Kode Akun Penarikan) tidak dihitung. Kata pengecualian &amp; tipe transaksi tidak dipakai.
+                                    </td>
+                                </tr>
+                            @elseif(!empty($penjualanExclusions))
                                 <tr>
                                     <td colspan="3" class="small text-muted">
                                         Dikecualikan dari tabel ini:
@@ -389,25 +406,6 @@
                                 <textarea id="kecualiPenarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
                                 <small class="text-muted d-block mt-2">Tulis kata biasa per baris, mis. <code>kas besar</code> — tanpa tanda persen. Berlaku untuk tabel + halaman detail.</small>
                             </div>
-                            <div class="border-top mt-3 pt-3">
-                                <label class="transaction-check d-flex align-items-center gap-3">
-                                    <input class="form-check-input mt-0" type="checkbox" id="abaikanTransferPenarikan" @checked($transferPenarikan['aktif'])>
-                                    <span class="text-primary fw-semibold">Abaikan transfer antar akun (otomatis, tanpa kata)</span>
-                                </label>
-                                <small class="text-muted d-block mb-2">Jurnal yang isinya hanya akun kas/bank yang dicentang di atas + akun transfer di bawah ini (mis. setor kas ke BCA, tarik BCA ke Kas Besar) tidak dihitung, apa pun deskripsinya.</small>
-                                <div class="mb-2">
-                                    <input type="text" class="form-control form-control-sm search-account" data-target="#accountListTransfer" placeholder="Cari akun transfer, mis. Kas Besar...">
-                                </div>
-                                <div class="account-list" id="accountListTransfer">
-                                    @foreach($availableAccounts as $account)
-                                        <label class="transaction-check d-flex align-items-center gap-3 account-item">
-                                            <input class="form-check-input mt-0 akun-transfer-penarikan" type="checkbox" value="{{ $account->id_akun_perkiraan }}" @checked(in_array((int) $account->id_akun_perkiraan, $transferPenarikan['akun'], true))>
-                                            <span class="account-label">{{ $account->kode_perkiraan }} - {{ $account->nama }}</span>
-                                        </label>
-                                    @endforeach
-                                    <div class="no-accounts text-center text-muted py-3 d-none"><small>Akun tidak ditemukan</small></div>
-                                </div>
-                            </div>
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
@@ -421,6 +419,104 @@
                             ]) }}" class="btn btn-light">Tampilkan Semua Tipe</a>
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button class="btn btn-primary"><i class="fas fa-filter me-1"></i> Terapkan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal Setting: Kode Akun Penarikan Uang --}}
+        <div class="modal fade" id="settingKodeAkun" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{{ route('laporan.akhir-bulan.kode-akun-save') }}">
+                        @csrf
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">Setting Kode Akun Penarikan Uang</h5>
+                                <small class="text-muted">Hanya pakai kode akun, tanpa kata pengecualian</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="aktif" value="0">
+                            <label class="transaction-check d-flex align-items-center gap-3">
+                                <input class="form-check-input mt-0" type="checkbox" name="aktif" value="1" @checked($kodeAkun['aktif'])>
+                                <span class="fw-semibold">Pakai mode Kode Akun</span>
+                            </label>
+                            <small class="text-muted d-block">Saat aktif, gear lama (tipe transaksi & kata) dinonaktifkan.</small>
+
+                            @foreach([
+                                ['name' => 'kasbank', 'id' => 'accountListKasBank', 'title' => '1. Akun kas / bank yang dihitung', 'checked' => $kodeAkun['kasbank'], 'hint' => 'Uang yang masuk ke akun ini dihitung sebagai penarikan.'],
+                                ['name' => 'bukan_pendapatan', 'id' => 'accountListBukanPendapatan', 'title' => '2. Akun bukan pendapatan', 'checked' => $kodeAkun['akun'], 'hint' => 'Mis. Kas Besar, hutang/pinjaman. Jurnal yang isinya hanya akun 1 & 2 (setor kas ke bank, tarik ke Kas Besar, pinjaman) tidak dihitung.'],
+                            ] as $list)
+                                <div class="border-top mt-3 pt-3">
+                                    <h6 class="text-primary mb-1">{{ $list['title'] }}</h6>
+                                    <small class="text-muted d-block mb-2">{{ $list['hint'] }}</small>
+                                    <div class="mb-2">
+                                        <input type="text" class="form-control form-control-sm search-account" data-target="#{{ $list['id'] }}" placeholder="Cari kode atau nama akun...">
+                                    </div>
+                                    <div class="account-list" id="{{ $list['id'] }}">
+                                        @foreach($availableAccounts as $account)
+                                            <label class="transaction-check d-flex align-items-center gap-3 account-item">
+                                                <input class="form-check-input mt-0" type="checkbox" name="{{ $list['name'] }}[]" value="{{ $account->id_akun_perkiraan }}" @checked(in_array((int) $account->id_akun_perkiraan, $list['checked'], true))>
+                                                <span class="account-label">{{ $account->kode_perkiraan }} - {{ $account->nama }}</span>
+                                            </label>
+                                        @endforeach
+                                        <div class="no-accounts text-center text-muted py-3 d-none"><small>Akun tidak ditemukan</small></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal Setting: Kode Akun Uang Penjualan --}}
+        <div class="modal fade" id="settingKodeAkunPenjualan" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{{ route('laporan.akhir-bulan.kode-akun-save') }}">
+                        @csrf
+                        <input type="hidden" name="bagian" value="penjualan">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">Setting Kode Akun Uang Penjualan</h5>
+                                <small class="text-muted">Hanya pakai kode akun, tanpa kata pengecualian</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="aktif" value="0">
+                            <label class="transaction-check d-flex align-items-center gap-3">
+                                <input class="form-check-input mt-0" type="checkbox" name="aktif" value="1" @checked($kodeAkunPenjualan['aktif'])>
+                                <span class="fw-semibold">Pakai mode Kode Akun</span>
+                            </label>
+                            <small class="text-muted d-block">Saat aktif, gear lama (tipe transaksi & kata) dinonaktifkan. Transfer antar kas/bank, tarik ke Kas Besar &amp; pinjaman mengikuti daftar akun di gear Kode Akun Penarikan.</small>
+                            <div class="border-top mt-3 pt-3">
+                                <h6 class="text-success mb-2">Akun yang ditampilkan</h6>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control form-control-sm search-account" data-target="#accountListKodeAkunPenjualan" placeholder="Cari kode atau nama akun...">
+                                </div>
+                                <div class="account-list" id="accountListKodeAkunPenjualan">
+                                    @foreach($availableAccounts as $account)
+                                        <label class="transaction-check d-flex align-items-center gap-3 account-item">
+                                            <input class="form-check-input mt-0" type="checkbox" name="akun[]" value="{{ $account->id_akun_perkiraan }}" @checked(in_array((int) $account->id_akun_perkiraan, $kodeAkunPenjualan['akun'], true))>
+                                            <span class="account-label">{{ $account->kode_perkiraan }} - {{ $account->nama }}</span>
+                                        </label>
+                                    @endforeach
+                                    <div class="no-accounts text-center text-muted py-3 d-none"><small>Akun tidak ditemukan</small></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-success"><i class="fas fa-save me-1"></i> Simpan</button>
                         </div>
                     </form>
                 </div>
@@ -565,9 +661,7 @@
                         },
                         body: JSON.stringify({
                             kecuali_penarikan: $('#kecualiPenarikan').val() || '',
-                            kecuali_penjualan: $('#kecualiPenjualan').val() || '',
-                            abaikan_transfer_penarikan: $('#abaikanTransferPenarikan').is(':checked'),
-                            akun_transfer_penarikan: $('.akun-transfer-penarikan:checked').map(function() { return this.value; }).get()
+                            kecuali_penjualan: $('#kecualiPenjualan').val() || ''
                         })
                     }).then(function(res) {
                         if (!res.ok) throw new Error('HTTP ' + res.status);

@@ -764,6 +764,7 @@ Route::controller(LaporanAkhirBulanController::class)->group(function () {
     Route::get('/laporan/akhir-bulan/penarikan/{akun}', 'detailPenarikan')->name('laporan.akhir-bulan.penarikan-detail');
     Route::get('/laporan/akhir-bulan/penjualan/{akun}', 'detailPenjualan')->name('laporan.akhir-bulan.penjualan-detail');
     Route::post('/laporan/akhir-bulan/kecuali', 'saveExclusions')->name('laporan.akhir-bulan.kecuali-save');
+    Route::post('/laporan/akhir-bulan/kode-akun', 'saveKodeAkun')->name('laporan.akhir-bulan.kode-akun-save');
 });
 Route::controller(LaporanPendapatanController::class)->group(function () {
     Route::get('/laporan/pendapatan', 'index')->name('laporan.pendapatan');
