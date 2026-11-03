@@ -51,8 +51,9 @@ class PiutangTransaksiController extends Controller
                 ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')
                 ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
-                ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
-                ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'i.tipe', 'c.nm_customer')
+                // Satu baris per nota: nota campuran pcs+kg tidak boleh terpecah, karena pelunasan dihitung per nota.
+                ->select('i.no_nota', 'i.tgl', 'i.id_customer', DB::raw('GROUP_CONCAT(DISTINCT i.tipe) as tipe'), 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'))
+                ->groupBy('i.no_nota', 'i.tgl', 'i.id_customer', 'c.nm_customer')
                 ->orderByDesc('i.tgl')->orderByDesc('i.no_nota');
         }
 
