@@ -195,6 +195,7 @@ class LaporanAkhirBulanController extends Controller
             'penjualanExclusions' => $this->exclusionRows('penjualan'),
             'bankCostExclusions' => $this->exclusionRows('bank_cost'),
             'bankProjectExclusions' => $this->exclusionRows('bank_project'),
+            'transferPenarikan' => $this->transferSetting(),
             'kecualiPenarikanText' => implode("\n", array_map(fn($pola) => trim(str_replace('%', '', $pola)), $this->effectiveExclusions('penarikan'))),
             'kecualiPenjualanText' => implode("\n", array_map(fn($pola) => trim(str_replace('%', '', $pola)), $this->effectiveExclusions('penjualan'))),
         ]);
@@ -242,6 +243,7 @@ class LaporanAkhirBulanController extends Controller
         $selectedTypeCodes = collect($selectedTransactionTypes)->flatMap(fn($type) => $transactionTypeOptions[$type]['codes'])->unique()->values()->all();
 
         $penarikanExclusions = $this->effectiveExclusions('penarikan');
+        $transferKeys = $this->internalTransferKeys($start, $end, $data['akun_filter'] ?? $savedPenarikan['accounts']);
 
         $query = DB::table('jurnal_perkiraan as j')
             ->join('impor_jurnal_perkiraan as i', 'i.id_impor_jurnal_perkiraan', '=', 'j.id_impor_jurnal_perkiraan')
@@ -259,6 +261,7 @@ class LaporanAkhirBulanController extends Controller
                         });
                 });
             })
+            ->when($transferKeys !== [], fn($query) => $query->whereNotIn(DB::raw("CONCAT(j.id_impor_jurnal_perkiraan, '|', j.nomor_transaksi)"), $transferKeys))
             ->when(trim((string) ($data['cari'] ?? '')), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('j.nomor_transaksi', 'like', "%{$search}%")
@@ -390,9 +393,16 @@ class LaporanAkhirBulanController extends Controller
         $data = $request->validate([
             'kecuali_penarikan' => ['nullable', 'string', 'max:2000'],
             'kecuali_penjualan' => ['nullable', 'string', 'max:2000'],
+            'abaikan_transfer_penarikan' => ['nullable', 'boolean'],
+            'akun_transfer_penarikan' => ['nullable', 'array'],
+            'akun_transfer_penarikan.*' => ['integer'],
         ]);
 
-        $overrides = [];
+        $overrides = [
+            'penarikan_transfer' => array_key_exists('abaikan_transfer_penarikan', $data)
+                ? ['aktif' => (bool) $data['abaikan_transfer_penarikan'], 'akun' => array_map('intval', $data['akun_transfer_penarikan'] ?? [])]
+                : $this->transferSetting(),
+        ];
         foreach (['penarikan' => $data['kecuali_penarikan'] ?? null, 'penjualan' => $data['kecuali_penjualan'] ?? null] as $section => $raw) {
             $rows = [];
             foreach (preg_split('/\r\n|\r|\n/', (string) $raw) as $line) {
@@ -462,6 +472,38 @@ class LaporanAkhirBulanController extends Controller
     private function effectiveExclusions(string $section): array
     {
         return collect($this->exclusionRows($section))->pluck('pola')->filter()->values()->all();
+    }
+
+    private function transferSetting(): array
+    {
+        $path = $this->exclusionOverridePath();
+        $saved = is_file($path) ? (json_decode((string) @file_get_contents($path), true)['penarikan_transfer'] ?? null) : null;
+        $akun = is_array($saved['akun'] ?? null)
+            ? $saved['akun']
+            : DB::table('akun_perkiraan')->where('kode_perkiraan', '110112')->pluck('id_akun_perkiraan')->all(); // default: Kas Besar
+
+        return [
+            'aktif' => (bool) ($saved['aktif'] ?? true),
+            'akun' => array_values(array_map('intval', $akun)),
+        ];
+    }
+
+    // Jurnal yang semua barisnya hanya di akun kas/bank terpilih + akun transfer = pindah uang internal, bukan penarikan.
+    private function internalTransferKeys(Carbon $start, Carbon $end, array $accountIds): array
+    {
+        $setting = $this->transferSetting();
+        if (! $setting['aktif'] || $accountIds === []) {
+            return [];
+        }
+        $ids = implode(',', array_unique(array_merge(array_map('intval', $accountIds), $setting['akun'])));
+
+        return DB::table('jurnal_perkiraan')
+            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->groupBy('id_impor_jurnal_perkiraan', 'nomor_transaksi')
+            ->havingRaw("SUM(id_akun_perkiraan NOT IN ({$ids})) = 0 AND COUNT(DISTINCT id_akun_perkiraan) > 1")
+            ->selectRaw("CONCAT(id_impor_jurnal_perkiraan, '|', nomor_transaksi) as kunci")
+            ->pluck('kunci')
+            ->all();
     }
 
     private function reportPeriod(array $data): array
@@ -543,9 +585,10 @@ class LaporanAkhirBulanController extends Controller
         // Exclude balance sheet / internal counterpart accounts that are not part of sales/deposit report:
         // Piutang (110301), Persediaan (1104xx), HPP (5101xx), Kas Kecil (110102), Biaya Adm Bank (720002xx)
         $excludedCodes = ['110301', '110401', '110402', '110405', '5101-01', '5101-02', '720002-01', '720002-03', '110102'];
+        $transferKeys = $exclusionKey === 'penarikan' ? $this->internalTransferKeys($startDate, $currentCutoff, $selectedAccountIds) : [];
 
         return DB::table('akun_perkiraan as a')
-            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes, $exclusionKey) {
+            ->leftJoin('jurnal_perkiraan as j', function ($join) use ($startDate, $currentCutoff, $selectedTypeCodes, $exclusionKey, $transferKeys) {
                 $join->on('j.id_akun_perkiraan', '=', 'a.id_akun_perkiraan')
                     ->whereBetween('j.tanggal', [
                         $startDate->toDateString(),
@@ -564,6 +607,9 @@ class LaporanAkhirBulanController extends Controller
                                 }
                             });
                     });
+                }
+                if ($transferKeys !== []) {
+                    $join->whereNotIn(DB::raw("CONCAT(j.id_impor_jurnal_perkiraan, '|', j.nomor_transaksi)"), $transferKeys);
                 }
             })
             ->leftJoin('impor_jurnal_perkiraan as i', function ($join) {

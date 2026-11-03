@@ -188,11 +188,14 @@
                                     <td class="amount">{{ $fmt($withdrawalTotal) }}</td>
                                 </tr>
                             @endif
-                            @if(!empty($penarikanExclusions))
+                            @if(!empty($penarikanExclusions) || $transferPenarikan['aktif'])
                                 <tr>
                                     <td colspan="4" class="small text-muted">
                                         Dikecualikan dari tabel ini:
                                         <ul class="mb-0 ps-3">
+                                            @if($transferPenarikan['aktif'])
+                                                <li>Transfer antar akun kas/bank terpilih + akun transfer (otomatis)</li>
+                                            @endif
                                             @foreach($penarikanExclusions as $exc)
                                                 <li><code>{{ $exc['pola'] }}</code> — {{ $exc['keterangan'] }}</li>
                                             @endforeach
@@ -386,6 +389,25 @@
                                 <textarea id="kecualiPenarikan" class="form-control" rows="3">{{ $kecualiPenarikanText }}</textarea>
                                 <small class="text-muted d-block mt-2">Tulis kata biasa per baris, mis. <code>kas besar</code> — tanpa tanda persen. Berlaku untuk tabel + halaman detail.</small>
                             </div>
+                            <div class="border-top mt-3 pt-3">
+                                <label class="transaction-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input mt-0" type="checkbox" id="abaikanTransferPenarikan" @checked($transferPenarikan['aktif'])>
+                                    <span class="text-primary fw-semibold">Abaikan transfer antar akun (otomatis, tanpa kata)</span>
+                                </label>
+                                <small class="text-muted d-block mb-2">Jurnal yang isinya hanya akun kas/bank yang dicentang di atas + akun transfer di bawah ini (mis. setor kas ke BCA, tarik BCA ke Kas Besar) tidak dihitung, apa pun deskripsinya.</small>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control form-control-sm search-account" data-target="#accountListTransfer" placeholder="Cari akun transfer, mis. Kas Besar...">
+                                </div>
+                                <div class="account-list" id="accountListTransfer">
+                                    @foreach($availableAccounts as $account)
+                                        <label class="transaction-check d-flex align-items-center gap-3 account-item">
+                                            <input class="form-check-input mt-0 akun-transfer-penarikan" type="checkbox" value="{{ $account->id_akun_perkiraan }}" @checked(in_array((int) $account->id_akun_perkiraan, $transferPenarikan['akun'], true))>
+                                            <span class="account-label">{{ $account->kode_perkiraan }} - {{ $account->nama }}</span>
+                                        </label>
+                                    @endforeach
+                                    <div class="no-accounts text-center text-muted py-3 d-none"><small>Akun tidak ditemukan</small></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <a href="{{ route('laporan.akhir-bulan', [
@@ -543,7 +565,9 @@
                         },
                         body: JSON.stringify({
                             kecuali_penarikan: $('#kecualiPenarikan').val() || '',
-                            kecuali_penjualan: $('#kecualiPenjualan').val() || ''
+                            kecuali_penjualan: $('#kecualiPenjualan').val() || '',
+                            abaikan_transfer_penarikan: $('#abaikanTransferPenarikan').is(':checked'),
+                            akun_transfer_penarikan: $('.akun-transfer-penarikan:checked').map(function() { return this.value; }).get()
                         })
                     }).then(function(res) {
                         if (!res.ok) throw new Error('HTTP ' + res.status);
