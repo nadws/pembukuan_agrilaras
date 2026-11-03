@@ -19,7 +19,16 @@ class LaporanLayerModel extends Model
         ?array $idKandangPeriode = null
     ) {
         if ($idKandangPeriode === null) {
-            $filterKandang = "a.selesai = 'T'";
+            $filterKandang = "EXISTS (
+                    SELECT 1
+                    FROM stok_produk_perencanaan AS aktif
+                    LEFT JOIN tb_produk_perencanaan AS produk_aktif
+                        ON produk_aktif.id_produk = aktif.id_pakan
+                    WHERE aktif.id_kandang = a.id_kandang
+                        AND aktif.tgl BETWEEN a.chick_in AND '$tgl'
+                        AND aktif.pcs_kredit != 0
+                        AND produk_aktif.kategori = 'pakan'
+                )";
         } else {
             $idKandangPeriode = array_values(array_unique(array_map(
                 'intval',
@@ -31,7 +40,15 @@ class LaporanLayerModel extends Model
                 : 'a.id_kandang IN (' . implode(',', $idKandangPeriode) . ')';
         }
 
-        return DB::select("SELECT  a.nm_kandang ,a.chick_in,a.chick_out,CEIL(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg ,aa.ttl_gjl,CEIL(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, c.mati, (c.jual + c.afkir) as jual, d.kg_pakan, w.mati_week , w.jual_week,a.stok_awal,b.pop_kurang,h.pcs,h.kg,e.berat_telur as t_peforma,i.kg_past,i.pcs_past,a.id_kandang,e.telur as p_hd,k.pcs_telur_week,p.jlh_hari,r.pcs_telur_week_past,q.jlh_hari_past,o.pop_kurang_past,p.kg_p_week,k.kg_telur_week,m.rp_vitamin,t.ttl_rp_vaksin,z.rp_vitamin_week,ac.kg_telur_past_week,ac.pcs_telur_past_week,ae.kum_ttl_rp_past_vaksin,ad.rp_vitamin_past_week,l.kg_pakan_kuml,j.kuml_kg,j.kuml_pcs,al.rata,n.kuml_rp_vitamin,s.kum_ttl_rp_vaksin,a.rupiah,af.ttl_rupiah_hrga,af.pcs_hrga,ag.kuml_kg_kemarin,ag.kuml_pcs_kemarin,am.rata as rata_kemarin,ai.kg_pakan_kuml_kemarin,aj.kuml_rp_vitamin_kemarin,ak.kum_ttl_rp_vaksin_kemarin,u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya,ab.kg_p_past_week
+        return DB::select("SELECT  a.nm_kandang ,a.chick_in,a.chick_out,CEIL(DATEDIFF('$tgl', a.chick_in) / 7) AS mgg,
+        (SELECT MAX(aktif.tgl)
+            FROM stok_produk_perencanaan AS aktif
+            LEFT JOIN tb_produk_perencanaan AS produk_aktif ON produk_aktif.id_produk = aktif.id_pakan
+            WHERE aktif.id_kandang = a.id_kandang
+                AND aktif.tgl BETWEEN a.chick_in AND '$tgl'
+                AND aktif.pcs_kredit != 0
+                AND produk_aktif.kategori = 'pakan') AS tgl_makan_terakhir,
+        aa.ttl_gjl,CEIL(DATEDIFF(a.chick_out, a.chick_in) / 7) AS mgg_afkir, c.mati, (c.jual + c.afkir) as jual, d.kg_pakan, w.mati_week , w.jual_week,a.stok_awal,b.pop_kurang,h.pcs,h.kg,e.berat_telur as t_peforma,i.kg_past,i.pcs_past,a.id_kandang,e.telur as p_hd,k.pcs_telur_week,p.jlh_hari,r.pcs_telur_week_past,q.jlh_hari_past,o.pop_kurang_past,p.kg_p_week,k.kg_telur_week,m.rp_vitamin,t.ttl_rp_vaksin,z.rp_vitamin_week,ac.kg_telur_past_week,ac.pcs_telur_past_week,ae.kum_ttl_rp_past_vaksin,ad.rp_vitamin_past_week,l.kg_pakan_kuml,j.kuml_kg,j.kuml_pcs,al.rata,n.kuml_rp_vitamin,s.kum_ttl_rp_vaksin,a.rupiah,af.ttl_rupiah_hrga,af.pcs_hrga,ag.kuml_kg_kemarin,ag.kuml_pcs_kemarin,am.rata as rata_kemarin,ai.kg_pakan_kuml_kemarin,aj.kuml_rp_vitamin_kemarin,ak.kum_ttl_rp_vaksin_kemarin,u.pcs as pcs_satu_minggu, u.kg as kg_satu_minggu, v.pcs as pcs_minggu_sebelumnya , v.kg as kg_minggu_sebelumnya,ab.kg_p_past_week
         FROM kandang as a 
         -- Populasi --
         left join(SELECT b.id_kandang, sum(b.mati+b.jual+b.afkir) as pop_kurang 

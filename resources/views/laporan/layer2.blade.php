@@ -1167,6 +1167,20 @@
             </div>
         </form>
 
+        <div class="row g-2 align-items-center mb-2" id="filter-tampilan-kandang">
+            <div class="col-12 col-md-auto">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                        id="toggle-kandang-aktif" checked>
+                    <label class="form-check-label" for="toggle-kandang-aktif">Aktif saja (pakan 7 hari terakhir)</label>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <input type="search" class="form-control form-control-sm" id="cari-kandang-layer"
+                    placeholder="Cari kandang, misal A2" autocomplete="off">
+            </div>
+        </div>
+
         <div class="modal fade" id="export-layer-modal" tabindex="-1"
             aria-labelledby="export-layer-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -1323,7 +1337,8 @@
                             $rp_vitamin += empty($k->rp_vitamin) ? '0' : $k->rp_vitamin / 7000;
                             $rp_vaksin += empty($k->ttl_rp_vaksin) ? '0' : $k->ttl_rp_vaksin / 7000;
                         @endphp
-                        <tr>
+                        <tr class="baris-laporan-kandang" data-nama-kandang="{{ strtolower($k->nm_kandang) }}"
+                            data-aktif="{{ $k->tgl_makan_terakhir && $k->tgl_makan_terakhir >= date('Y-m-d', strtotime($tgl . ' -6 days')) ? '1' : '0' }}">
                             <td align="center" class="kandang baris-kandang2 freeze-cell1_td td_layer"
                                 data-id="{{ $k->id_kandang }}" tgl="{{ $tgl }}">
                                 <table width="100%">
@@ -1376,6 +1391,12 @@
                                             {{ $k->mgg }} / <span data-bs-toggle="tooltip"
                                                 data-bs-placement="top"
                                                 title="gjl : total hari ayam makan / 7">{{ number_format($k->ttl_gjl / 7) }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>makan terakhir</td>
+                                        <td>:
+                                            {{ $k->tgl_makan_terakhir ? date('d/m/y', strtotime($k->tgl_makan_terakhir)) : '-' }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -2134,6 +2155,23 @@
         var $exportMulai = $('#export-tgl-mulai');
         var $exportSelesai = $('#export-tgl-selesai');
         var $exportKandang = $('#export-id-kandang');
+
+        function tampilkanKandang() {
+            var aktifSaja = $('#toggle-kandang-aktif').prop('checked');
+            var kataKunci = ($('#cari-kandang-layer').val() || '').toLowerCase().trim();
+
+            $('.baris-laporan-kandang').each(function() {
+                var $baris = $(this);
+                var cocokAktif = !aktifSaja || $baris.attr('data-aktif') === '1';
+                var cocokNama = !kataKunci || ($baris.attr('data-nama-kandang') || '').includes(kataKunci);
+
+                $baris.toggle(cocokAktif && cocokNama);
+            });
+        }
+
+        $('#toggle-kandang-aktif').on('change', tampilkanKandang);
+        $('#cari-kandang-layer').on('input', tampilkanKandang);
+        tampilkanKandang();
 
         function sinkronkanPeriodeExport() {
             $exportSelesai.attr('min', $exportMulai.val());
