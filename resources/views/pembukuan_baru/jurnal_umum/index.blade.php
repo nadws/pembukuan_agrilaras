@@ -16,6 +16,9 @@
                     <a href="{{ route('pembukuan-baru.jurnal-umum.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Jurnal
                     </a>
+                    <a href="{{ route('pembukuan-baru.jurnal-umum.budget.import') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-file-import me-1"></i> Import Minta Budget
+                    </a>
                 @elseif ($kelompok === 'biaya' && !empty($btnBuatBiaya))
                     <a href="{{ route('pembukuan-baru.jurnal-umum.biaya.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Buat Biaya

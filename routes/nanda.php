@@ -173,6 +173,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'store')->name('store');
             Route::get('/pelunasan-hutang/{nomor_transaksi}/edit', 'editPelunasanHutang')->name('pelunasan-hutang.edit');
             Route::put('/pelunasan-hutang/{nomor_transaksi}', 'updatePelunasanHutang')->name('pelunasan-hutang.update');
+            Route::get('/budget/import', 'importBudget')->name('budget.import');
+            Route::get('/budget/import/template', 'templateImportBudget')->name('budget.import.template');
+            Route::post('/budget/import/preview', 'previewImportBudget')->name('budget.import.preview');
+            Route::get('/budget/import/preview', 'redirectImportBudget')->name('budget.import.preview.redirect');
+            Route::post('/budget/import', 'storeImportBudget')->name('budget.import.store');
             Route::get('/manual/{id}/edit', 'editManual')->name('manual.edit');
             Route::put('/manual/{id}', 'updateManual')->name('manual.update');
             Route::delete('/manual/{id}', 'destroyManual')->name('manual.destroy');
