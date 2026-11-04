@@ -1463,7 +1463,7 @@ class PembukuanBaruJurnalUmumController extends Controller
 
     private function bacaExcelBudget($file): array
     {
-        $sheet = IOFactory::load($file->getPathname())->getActiveSheet();
+        $sheet = $this->sheetImport($file, 'Template Import Budget');
         $rows = $this->barisSheetExcel($sheet);
         $headers = array_map(fn ($value) => $this->normalisasiExcel($value), array_shift($rows) ?? []);
         $columns = [];
@@ -1629,7 +1629,7 @@ class PembukuanBaruJurnalUmumController extends Controller
 
     private function bacaExcelBiaya($file): array
     {
-        $sheet = IOFactory::load($file->getPathname())->getActiveSheet();
+        $sheet = $this->sheetImport($file, 'Template Import Biaya');
         $rows = $this->barisSheetExcel($sheet);
         $headers = array_map(fn ($value) => $this->normalisasiExcel($value), array_shift($rows) ?? []);
         $columns = [];
@@ -1714,6 +1714,14 @@ class PembukuanBaruJurnalUmumController extends Controller
     private function normalisasiExcel($value): string
     {
         return strtolower(trim(preg_replace('/\s+/', ' ', (string) $value)));
+    }
+
+    /** File template: baca sheet template walau yang aktif saat disimpan sheet "Contoh Pengisian". File lain (daily report): sheet aktif. */
+    private function sheetImport($file, string $namaSheetTemplate)
+    {
+        $spreadsheet = IOFactory::load($file->getPathname());
+
+        return $spreadsheet->getSheetByName($namaSheetTemplate) ?? $spreadsheet->getActiveSheet();
     }
 
     /** Nilai mentah per baris; rumus pakai hasil tersimpan di file agar rumus rusak/eksternal tidak bikin error. */
