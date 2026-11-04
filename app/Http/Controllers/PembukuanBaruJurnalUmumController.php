@@ -1029,6 +1029,13 @@ class PembukuanBaruJurnalUmumController extends Controller
         ]);
     }
 
+    public function redirectImportBiaya(): RedirectResponse
+    {
+        session()->reflash();
+
+        return redirect()->route('pembukuan-baru.jurnal-umum.biaya.import');
+    }
+
     public function templateImportBiaya(): BinaryFileResponse
     {
         $spreadsheet = new Spreadsheet();

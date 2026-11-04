@@ -182,6 +182,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/biaya/import', 'importBiaya')->name('biaya.import');
             Route::get('/biaya/import/template', 'templateImportBiaya')->name('biaya.import.template');
             Route::post('/biaya/import/preview', 'previewImportBiaya')->name('biaya.import.preview');
+            // back() setelah gagal simpan mendarat di URL preview (GET); arahkan ke halaman import dengan pesan error.
+            Route::get('/biaya/import/preview', 'redirectImportBiaya')->name('biaya.import.preview.redirect');
             Route::post('/biaya/import', 'storeImportBiaya')->name('biaya.import.store');
             Route::get('/biaya/{nomor_transaksi}/edit', 'editBiaya')->name('biaya.edit');
             Route::put('/biaya/{nomor_transaksi}', 'updateBiaya')->name('biaya.update');
