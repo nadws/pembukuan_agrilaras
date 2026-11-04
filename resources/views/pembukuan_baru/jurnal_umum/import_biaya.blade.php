@@ -134,6 +134,21 @@
 
     @section('scripts')
         <script>
+            // Cegah import/simpan dobel: klik/Enter berikutnya diabaikan setelah form terkirim.
+            document.querySelectorAll('form[method="POST"]').forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.dataset.submitted) {
+                        event.preventDefault();
+                        return;
+                    }
+                    form.dataset.submitted = '1';
+                    form.querySelectorAll('button[type="submit"]').forEach(function(button) {
+                        button.disabled = true;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Memproses...';
+                    });
+                });
+            });
+
             (function() {
                 if (!window.jQuery || !jQuery.fn.select2) {
                     return;

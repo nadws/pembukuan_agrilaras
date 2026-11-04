@@ -9,6 +9,7 @@ use App\Services\ImporJurnalPerkiraanService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -925,6 +926,33 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $total = round($detail->sum('jumlah'), 2);
 
+        // Lock agar klik Simpan/Enter berkali-kali tidak lolos cek dobel secara bersamaan.
+        $error = Cache::lock('jurnal-biaya-simpan', 30)->block(10, function () use ($validated, $detail, $akunBiaya, $akunKas, $total) {
+            if (DB::table('jurnal_perkiraan')->where('nomor_transaksi', $validated['nomor_transaksi'])->exists()) {
+                return 'Nomor ' . $validated['nomor_transaksi'] . ' sudah tersimpan. Cek daftar jurnal biaya agar tidak dobel, atau muat ulang halaman untuk nomor baru.';
+            }
+            foreach ($detail as $item) {
+                if ($this->biayaSudahAda($validated['tanggal'], $item['keterangan'], $item['jumlah'])) {
+                    return $this->pesanBiayaDobel($validated['tanggal'], $item['keterangan'], $item['jumlah']);
+                }
+            }
+
+            $this->simpanBiayaManual($validated, $detail, $akunBiaya, $akunKas, $total);
+
+            return null;
+        });
+
+        if ($error) {
+            return back()->withErrors(['detail' => $error])->withInput();
+        }
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya'])
+            ->with('sukses', 'Jurnal biaya berhasil disimpan.');
+    }
+
+    private function simpanBiayaManual(array $validated, $detail, $akunBiaya, $akunKas, float $total): void
+    {
         DB::transaction(function () use ($validated, $detail, $akunBiaya, $akunKas, $total) {
             $sekarang = now();
             $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
@@ -972,10 +1000,25 @@ class PembukuanBaruJurnalUmumController extends Controller
 
             DB::table('jurnal_perkiraan')->insert($rows);
         });
+    }
 
-        return redirect()
-            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya'])
-            ->with('sukses', 'Jurnal biaya berhasil disimpan.');
+    /** Biaya dianggap dobel bila tanggal, keterangan (abaikan huruf besar/spasi) dan nominal sama. */
+    private function biayaSudahAda(string $tanggal, string $keterangan, float $jumlah): bool
+    {
+        $target = $this->normalisasiExcel($keterangan);
+
+        return DB::table('jurnal_perkiraan')
+            ->where('tipe_transaksi', 'Jurnal Biaya')
+            ->whereDate('tanggal', $tanggal)
+            ->where('debit', round($jumlah, 2))
+            ->pluck('deskripsi')
+            ->contains(fn ($deskripsi) => $this->normalisasiExcel($deskripsi) === $target);
+    }
+
+    private function pesanBiayaDobel(string $tanggal, string $keterangan, float $jumlah): string
+    {
+        return 'Biaya "' . $keterangan . '" tanggal ' . Carbon::parse($tanggal)->format('d/m/Y')
+            . ' Rp ' . number_format($jumlah, 0, ',', '.') . ' sudah ada di jurnal biaya. Tidak disimpan agar tidak dobel.';
     }
 
     public function importBiaya(): View
@@ -1107,30 +1150,41 @@ class PembukuanBaruJurnalUmumController extends Controller
         });
         $saved = 0;
 
-        DB::transaction(function () use ($groups, $validated, $akunKas, &$saved) {
-            foreach ($groups as $groupKey => $group) {
-                [$tanggal, $paymentCode] = explode('|', $groupKey, 3);
-                $detail = $group->map(fn ($row) => [
-                    'id_akun_biaya' => (int) $row['id_akun_biaya'],
-                    'keterangan' => trim($row['keterangan']),
-                    'jumlah' => round((float) $row['jumlah'], 2),
-                ])->values();
-                $hash = hash('sha256', $validated['file_hash'] . '|' . $groupKey);
-
-                if (DB::table('impor_jurnal_perkiraan')->where('hash_file', $hash)->exists()) {
-                    throw ValidationException::withMessages(['file_hash' => 'File atau kelompok transaksi ini sudah pernah diimport.']);
+        // Cek dobel ke jurnal yang sudah ada dilakukan sebelum insert, jadi baris kembar di file yang sama tetap boleh.
+        Cache::lock('jurnal-biaya-simpan', 60)->block(10, function () use ($rows, $groups, $validated, $akunKas, &$saved) {
+            foreach ($rows as $index => $row) {
+                if ($this->biayaSudahAda($row['tanggal'], $row['keterangan'], (float) $row['jumlah'])) {
+                    throw ValidationException::withMessages([
+                        'import_rows' => 'Baris import ke-' . ($index + 1) . ': ' . $this->pesanBiayaDobel($row['tanggal'], $row['keterangan'], (float) $row['jumlah']),
+                    ]);
                 }
-
-                $this->simpanImportBatchBiaya(
-                    $tanggal,
-                    $this->generateNomorBiaya(),
-                    (int) $akunKas[$paymentCode]->id_akun_perkiraan,
-                    $detail,
-                    'Import jurnal biaya - ' . $validated['file_name'] . ' - ' . $tanggal,
-                    $hash
-                );
-                $saved += $detail->count();
             }
+
+            DB::transaction(function () use ($groups, $validated, $akunKas, &$saved) {
+                foreach ($groups as $groupKey => $group) {
+                    [$tanggal, $paymentCode] = explode('|', $groupKey, 3);
+                    $detail = $group->map(fn ($row) => [
+                        'id_akun_biaya' => (int) $row['id_akun_biaya'],
+                        'keterangan' => trim($row['keterangan']),
+                        'jumlah' => round((float) $row['jumlah'], 2),
+                    ])->values();
+                    $hash = hash('sha256', $validated['file_hash'] . '|' . $groupKey);
+
+                    if (DB::table('impor_jurnal_perkiraan')->where('hash_file', $hash)->exists()) {
+                        throw ValidationException::withMessages(['file_hash' => 'File atau kelompok transaksi ini sudah pernah diimport.']);
+                    }
+
+                    $this->simpanImportBatchBiaya(
+                        $tanggal,
+                        $this->generateNomorBiaya(),
+                        (int) $akunKas[$paymentCode]->id_akun_perkiraan,
+                        $detail,
+                        'Import jurnal biaya - ' . $validated['file_name'] . ' - ' . $tanggal,
+                        $hash
+                    );
+                    $saved += $detail->count();
+                }
+            });
         });
 
         return redirect()
@@ -1261,6 +1315,9 @@ class PembukuanBaruJurnalUmumController extends Controller
                 $canImport = false;
             } elseif ($akunExcel === '') {
                 $status = 'Lewati: Akun Excel kosong';
+                $canImport = false;
+            } elseif ($this->biayaSudahAda($tanggal, $keterangan, $jumlah)) {
+                $status = 'Lewati: sudah ada di jurnal biaya';
                 $canImport = false;
             } elseif (! $akunMatch) {
                 $status = 'Pilih akun biaya';

@@ -247,6 +247,19 @@
 
     @section('scripts')
         <script>
+            // Cegah simpan dobel: klik/Enter berikutnya diabaikan setelah form terkirim.
+            document.querySelector('.cost-form').addEventListener('submit', function(event) {
+                if (this.dataset.submitted) {
+                    event.preventDefault();
+                    return;
+                }
+                this.dataset.submitted = '1';
+                this.querySelectorAll('button[type="submit"]').forEach(function(button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
+                });
+            });
+
             (function() {
                 const body = document.getElementById('biaya-body');
                 const template = document.getElementById('template-biaya-row');
