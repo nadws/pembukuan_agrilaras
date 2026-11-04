@@ -1359,33 +1359,36 @@ class PembukuanBaruJurnalUmumController extends Controller
         Cache::lock('jurnal-budget-simpan', 60)->block(10, function () use ($rows, $validated, $akun, &$saved) {
             // Cek dobel semua baris dulu, jadi baris kembar di file yang sama tetap boleh.
             foreach ($rows as $index => $row) {
-                if ($this->budgetSudahAda($row['tanggal'], $row['kode_tujuan'], (float) $row['jumlah'])) {
+                if ($nomorAda = $this->budgetSudahAda($row['tanggal'], $row['kode_tujuan'], (float) $row['jumlah'])) {
                     throw ValidationException::withMessages([
                         'import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ': budget ' . $akun[$row['kode_tujuan']]->nama
                             . ' tanggal ' . Carbon::parse($row['tanggal'])->format('d/m/Y')
-                            . ' Rp ' . number_format((float) $row['jumlah'], 0, ',', '.') . ' sudah ada di jurnal umum manual.',
+                            . ' Rp ' . number_format((float) $row['jumlah'], 0, ',', '.') . ' sudah ada di ' . $nomorAda . '.',
                     ]);
                 }
             }
 
-            DB::transaction(function () use ($rows, $validated, $akun, &$saved) {
-                foreach ($rows as $index => $row) {
-                    $line = $row['line'] ?? $index + 1;
-                    $hash = hash('sha256', $validated['file_hash'] . '|budget|' . $line . '|' . $row['tanggal'] . '|' . $row['jumlah']);
+            // Sama seperti import biaya: Bank satu baris satu jurnal (cocok mutasi), Cash tanggal sama digabung.
+            $groups = $rows->groupBy(fn ($row, $index) => $row['tanggal'] . '|' . $row['kode_tujuan']
+                . ($row['kode_tujuan'] === self::BUDGET_TUJUAN['bank'] ? '|bank-' . ($row['line'] ?? $index) : ''));
+
+            DB::transaction(function () use ($groups, $validated, $akun, &$saved) {
+                foreach ($groups as $groupKey => $group) {
+                    [$tanggal, $kodeTujuan] = explode('|', $groupKey, 3);
+                    $hash = hash('sha256', $validated['file_hash'] . '|budget|' . $groupKey);
                     if (DB::table('impor_jurnal_perkiraan')->where('hash_file', $hash)->exists()) {
-                        throw ValidationException::withMessages(['file_hash' => 'Baris excel ' . $line . ' dari file ini sudah pernah diimport.']);
+                        throw ValidationException::withMessages(['file_hash' => 'Budget ' . $akun[$kodeTujuan]->nama . ' tanggal ' . $tanggal . ' dari file ini sudah pernah diimport.']);
                     }
 
                     $this->simpanBudget(
-                        $row['tanggal'],
-                        trim($row['keterangan']),
-                        round((float) $row['jumlah'], 2),
-                        $akun[$row['kode_tujuan']],
+                        $tanggal,
+                        $group->map(fn ($row) => ['keterangan' => trim($row['keterangan']), 'jumlah' => round((float) $row['jumlah'], 2)])->values(),
+                        $akun[$kodeTujuan],
                         $akun[self::BUDGET_KAS_BESAR],
-                        'Jurnal umum manual budget - ' . $validated['file_name'] . ' - baris ' . $line,
+                        'Jurnal umum manual budget - ' . $validated['file_name'] . ' - ' . $tanggal,
                         $hash
                     );
-                    $saved++;
+                    $saved += $group->count();
                 }
             });
         });
@@ -1395,44 +1398,46 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->with('sukses', $saved . ' baris budget berhasil diimport.');
     }
 
-    /** Satu baris budget = satu jurnal umum manual (debit tujuan, kredit Kas Besar), bisa diedit seperti jurnal manual. */
-    private function simpanBudget(string $tanggal, string $keterangan, float $jumlah, object $akunTujuan, object $akunKasBesar, string $namaFile, string $hash): void
+    /** Satu kelompok budget = satu jurnal umum manual: debit akun tujuan per baris, kredit Kas Besar total. Bisa diedit seperti jurnal manual. */
+    private function simpanBudget(string $tanggal, $detail, object $akunTujuan, object $akunKasBesar, string $namaFile, string $hash): void
     {
         $sekarang = now();
         $nomor = $this->generateNomorTransaksi();
+        $total = round($detail->sum('jumlah'), 2);
         $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
             'nama_file' => $namaFile,
             'hash_file' => $hash,
             'periode_awal' => $tanggal,
             'periode_akhir' => $tanggal,
             'jumlah_transaksi' => 1,
-            'jumlah_detail' => 2,
-            'total_debit' => $jumlah,
-            'total_kredit' => $jumlah,
+            'jumlah_detail' => $detail->count() + 1,
+            'total_debit' => $total,
+            'total_kredit' => $total,
             'status' => 'aktif',
             'diimpor_oleh' => auth()->id(),
             'created_at' => $sekarang,
             'updated_at' => $sekarang,
         ]);
 
-        $baris = fn (object $akun, int $urutan, float $debit, float $kredit) => [
+        $baris = fn (object $akun, int $urutan, string $deskripsi, float $debit, float $kredit) => [
             'id_impor_jurnal_perkiraan' => $batchId,
             'id_akun_perkiraan' => $akun->id_akun_perkiraan,
             'tanggal' => $tanggal,
             'nomor_transaksi' => $nomor,
             'tipe_transaksi' => 'Jurnal Umum Manual',
             'urutan_detail' => $urutan,
-            'deskripsi' => $keterangan,
+            'deskripsi' => $deskripsi,
             'debit' => $debit,
             'kredit' => $kredit,
             'created_at' => $sekarang,
             'updated_at' => $sekarang,
         ];
 
-        DB::table('jurnal_perkiraan')->insert([
-            $baris($akunTujuan, 1, $jumlah, 0),
-            $baris($akunKasBesar, 2, 0, $jumlah),
-        ]);
+        DB::table('jurnal_perkiraan')->insert(
+            $detail->map(fn ($item, $index) => $baris($akunTujuan, $index + 1, $item['keterangan'], $item['jumlah'], 0))
+                ->push($baris($akunKasBesar, $detail->count() + 1, 'Tambah saldo ' . $akunTujuan->nama . ' dari ' . $akunKasBesar->nama, 0, $total))
+                ->all()
+        );
     }
 
     private function akunBudget()
@@ -1444,8 +1449,8 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->keyBy('kode_perkiraan');
     }
 
-    /** Budget dianggap dobel bila tanggal, akun tujuan dan nominal sama (keterangan jurnal lama bisa beda). */
-    private function budgetSudahAda(string $tanggal, string $kodeTujuan, float $jumlah): bool
+    /** Nomor JU yang sudah berisi budget ini (tanggal, akun tujuan, nominal sama; keterangan diabaikan), atau null. */
+    private function budgetSudahAda(string $tanggal, string $kodeTujuan, float $jumlah): ?string
     {
         return DB::table('jurnal_perkiraan as j')
             ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
@@ -1453,7 +1458,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->where('a.kode_perkiraan', $kodeTujuan)
             ->whereDate('j.tanggal', $tanggal)
             ->where('j.debit', round($jumlah, 2))
-            ->exists();
+            ->value('j.nomor_transaksi');
     }
 
     private function bacaExcelBudget($file): array
@@ -1497,8 +1502,8 @@ class PembukuanBaruJurnalUmumController extends Controller
                 $status = 'Lewati: Via bukan Bank/Cash';
             } elseif ($keterangan === '') {
                 $status = 'Lewati: Keterangan kosong';
-            } elseif ($this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah)) {
-                $status = 'Lewati: sudah ada di jurnal umum manual';
+            } elseif ($nomorAda = $this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah)) {
+                $status = 'Lewati: sudah ada di ' . $nomorAda;
             }
 
             $output[] = $this->barisPreviewBudget($line, $status, $tanggal, $via, $kodeTujuan, $keterangan, $jumlah, $status === 'Siap', $akun);
@@ -1515,17 +1520,17 @@ class PembukuanBaruJurnalUmumController extends Controller
             $tanggal = $row['tanggal'] ?? null;
             $kodeTujuan = $row['kode_tujuan'] ?? null;
             $jumlah = (float) ($row['jumlah'] ?? 0);
-            $sudahAda = $tanggal && $kodeTujuan && $jumlah > 0 && $this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah);
+            $nomorAda = $tanggal && $kodeTujuan && $jumlah > 0 ? $this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah) : null;
 
             return $this->barisPreviewBudget(
                 $row['line'] ?? '-',
-                $sudahAda ? 'Lewati: sudah ada di jurnal umum manual' : 'Siap',
+                $nomorAda ? 'Lewati: sudah ada di ' . $nomorAda : 'Siap',
                 $tanggal,
                 $row['via'] ?? '',
                 $kodeTujuan,
                 (string) ($row['keterangan'] ?? ''),
                 $jumlah,
-                ! $sudahAda && ! empty($row['selected']),
+                ! $nomorAda && ! empty($row['selected']),
                 $akun
             );
         })->all();
