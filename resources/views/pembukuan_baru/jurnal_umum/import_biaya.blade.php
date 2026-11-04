@@ -149,6 +149,25 @@
                 });
             });
 
+            // Pilih akun program -> baris langsung tercentang.
+            function centangBarisAkun(select) {
+                const checkbox = select.closest('tr')?.querySelector('input[type="checkbox"]');
+                if (checkbox && select.value) {
+                    checkbox.checked = true;
+                }
+            }
+            if (window.jQuery) {
+                jQuery(document).on('change', '.select-search', function() {
+                    centangBarisAkun(this);
+                });
+            } else {
+                document.addEventListener('change', function(event) {
+                    if (event.target.matches('.select-search')) {
+                        centangBarisAkun(event.target);
+                    }
+                });
+            }
+
             (function() {
                 if (!window.jQuery || !jQuery.fn.select2) {
                     return;
