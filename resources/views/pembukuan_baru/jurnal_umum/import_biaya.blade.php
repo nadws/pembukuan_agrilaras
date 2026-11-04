@@ -51,6 +51,10 @@
                 <strong>{{ $fileName }}</strong><br>
                 {{ $ready }} baris bisa dipilih. {{ $skipped }} baris dilewati otomatis atau perlu diperiksa.
                 Baris berstatus <strong>Pilih akun biaya</strong> belum dicentang.
+                @if (!empty($dipulihkan))
+                    <br><strong>Preview dipulihkan dari isian sebelumnya.</strong>
+                    Perbaiki baris yang error lalu simpan lagi. Baris yang dilewati dari file tidak ditampilkan.
+                @endif
             </div>
 
             <form method="POST" action="{{ route('pembukuan-baru.jurnal-umum.biaya.import.store') }}">
@@ -88,6 +92,13 @@
                                                 value="{{ $row['keterangan'] }}">
                                             <input type="hidden" name="import_rows[{{ $index }}][jumlah]"
                                                 value="{{ $row['jumlah'] }}">
+                                            {{-- Untuk memulihkan preview bila simpan gagal. --}}
+                                            <input type="hidden" name="import_rows[{{ $index }}][line]"
+                                                value="{{ $row['line'] }}">
+                                            <input type="hidden" name="import_rows[{{ $index }}][via]"
+                                                value="{{ $row['via'] }}">
+                                            <input type="hidden" name="import_rows[{{ $index }}][akun_excel]"
+                                                value="{{ $row['akun_excel'] }}">
                                         @endif
                                     </td>
                                     <td>{{ $row['line'] }}</td>

@@ -1023,10 +1023,47 @@ class PembukuanBaruJurnalUmumController extends Controller
 
     public function importBiaya(): View
     {
-        return view('pembukuan_baru.jurnal_umum.import_biaya', [
+        $data = [
             'title' => 'Import Jurnal Biaya',
             'akunBiaya' => $this->akunBiayaAktif(),
-        ]);
+        ];
+
+        // Simpan import gagal: tampilkan lagi preview dari isian sebelumnya agar tidak perlu upload & pilih ulang.
+        if (is_array(old('import_rows')) && old('file_hash')) {
+            $data += [
+                'rows' => $this->pulihkanPreviewBiaya(old('import_rows')),
+                'fileHash' => old('file_hash'),
+                'fileName' => old('file_name'),
+                'dipulihkan' => true,
+            ];
+        }
+
+        return view('pembukuan_baru.jurnal_umum.import_biaya', $data);
+    }
+
+    private function pulihkanPreviewBiaya(array $oldRows): array
+    {
+        return collect($oldRows)->map(function ($row) {
+            $tanggal = $row['tanggal'] ?? null;
+            $keterangan = (string) ($row['keterangan'] ?? '');
+            $jumlah = (float) ($row['jumlah'] ?? 0);
+            // Cek ulang: baris yang ternyata sudah masuk tidak boleh dipilih lagi.
+            $sudahAda = $tanggal && $jumlah > 0 && $this->biayaSudahAda($tanggal, $keterangan, $jumlah);
+
+            return [
+                'line' => $row['line'] ?? '-',
+                'can_import' => ! $sudahAda,
+                'selected' => ! $sudahAda && ! empty($row['selected']),
+                'status' => $sudahAda ? 'Lewati: sudah ada di jurnal biaya' : (empty($row['id_akun_biaya']) ? 'Pilih akun biaya' : 'Siap'),
+                'tanggal' => $tanggal,
+                'via' => $row['via'] ?? '',
+                'payment_code' => $row['payment_code'] ?? null,
+                'akun_excel' => $row['akun_excel'] ?? '',
+                'id_akun_biaya' => $row['id_akun_biaya'] ?? null,
+                'keterangan' => $keterangan,
+                'jumlah' => $jumlah,
+            ];
+        })->all();
     }
 
     public function redirectImportBiaya(): RedirectResponse
@@ -1111,6 +1148,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             'file_name' => ['required', 'string', 'max:255'],
             'import_rows' => ['required', 'array'],
             'import_rows.*.selected' => ['nullable', 'boolean'],
+            'import_rows.*.line' => ['nullable', 'integer'],
             'import_rows.*.tanggal' => ['required', 'date'],
             'import_rows.*.payment_code' => ['required', 'in:110113,110102'],
             'import_rows.*.id_akun_biaya' => ['nullable', 'integer'],
@@ -1140,7 +1178,7 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         foreach ($rows as $index => $row) {
             if (! $row['id_akun_biaya'] || ! $akunBiaya->has((int) $row['id_akun_biaya'])) {
-                return back()->withErrors(['import_rows' => 'Baris import ke-' . ($index + 1) . ' belum memiliki akun biaya aktif.'])->withInput();
+                return back()->withErrors(['import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ' belum memiliki akun biaya aktif.'])->withInput();
             }
             if (! $akunKas->has($row['payment_code'])) {
                 return back()->withErrors(['import_rows' => 'Akun pembayaran ' . $row['payment_code'] . ' belum aktif.'])->withInput();
@@ -1162,7 +1200,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             foreach ($rows as $index => $row) {
                 if ($this->biayaSudahAda($row['tanggal'], $row['keterangan'], (float) $row['jumlah'])) {
                     throw ValidationException::withMessages([
-                        'import_rows' => 'Baris import ke-' . ($index + 1) . ': ' . $this->pesanBiayaDobel($row['tanggal'], $row['keterangan'], (float) $row['jumlah']),
+                        'import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ': ' . $this->pesanBiayaDobel($row['tanggal'], $row['keterangan'], (float) $row['jumlah']),
                     ]);
                 }
             }
