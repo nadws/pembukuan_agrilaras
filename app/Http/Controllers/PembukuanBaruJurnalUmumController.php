@@ -932,7 +932,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                 return 'Nomor ' . $validated['nomor_transaksi'] . ' sudah tersimpan. Cek daftar jurnal biaya agar tidak dobel, atau muat ulang halaman untuk nomor baru.';
             }
             foreach ($detail as $item) {
-                if ($this->biayaSudahAda($validated['tanggal'], $item['keterangan'], $item['jumlah'])) {
+                if ($this->biayaSudahAda($akunKas->kode_perkiraan, $validated['tanggal'], $item['keterangan'], $item['jumlah'])) {
                     return $this->pesanBiayaDobel($validated['tanggal'], $item['keterangan'], $item['jumlah']);
                 }
             }
@@ -1002,16 +1002,24 @@ class PembukuanBaruJurnalUmumController extends Controller
         });
     }
 
-    /** Biaya dianggap dobel bila tanggal, keterangan (abaikan huruf besar/spasi) dan nominal sama. */
-    private function biayaSudahAda(string $tanggal, string $keterangan, float $jumlah): bool
+    /** Biaya dianggap dobel bila dibayar dari akun kas/bank yang sama dengan tanggal, keterangan (abaikan huruf besar/spasi) dan nominal sama. */
+    private function biayaSudahAda(string $kodeKas, string $tanggal, string $keterangan, float $jumlah): bool
     {
         $target = $this->normalisasiExcel($keterangan);
 
-        return DB::table('jurnal_perkiraan')
-            ->where('tipe_transaksi', 'Jurnal Biaya')
-            ->whereDate('tanggal', $tanggal)
-            ->where('debit', round($jumlah, 2))
-            ->pluck('deskripsi')
+        return DB::table('jurnal_perkiraan as j')
+            // Baris kredit jurnal yang sama = akun pembayarannya (mis. admin bank BCA Proyek bukan dobel admin BCA Cost).
+            ->join('jurnal_perkiraan as bayar', function ($join) {
+                $join->on('bayar.nomor_transaksi', '=', 'j.nomor_transaksi')
+                    ->on('bayar.tipe_transaksi', '=', 'j.tipe_transaksi')
+                    ->where('bayar.kredit', '>', 0);
+            })
+            ->join('akun_perkiraan as kas', 'kas.id_akun_perkiraan', '=', 'bayar.id_akun_perkiraan')
+            ->where('kas.kode_perkiraan', $kodeKas)
+            ->where('j.tipe_transaksi', 'Jurnal Biaya')
+            ->whereDate('j.tanggal', $tanggal)
+            ->where('j.debit', round($jumlah, 2))
+            ->pluck('j.deskripsi')
             ->contains(fn ($deskripsi) => $this->normalisasiExcel($deskripsi) === $target);
     }
 
@@ -1048,7 +1056,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             $keterangan = (string) ($row['keterangan'] ?? '');
             $jumlah = (float) ($row['jumlah'] ?? 0);
             // Cek ulang: baris yang ternyata sudah masuk tidak boleh dipilih lagi.
-            $sudahAda = $tanggal && $jumlah > 0 && $this->biayaSudahAda($tanggal, $keterangan, $jumlah);
+            $sudahAda = $tanggal && $jumlah > 0 && ! empty($row['payment_code']) && $this->biayaSudahAda($row['payment_code'], $tanggal, $keterangan, $jumlah);
 
             return [
                 'line' => $row['line'] ?? '-',
@@ -1198,7 +1206,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         // Cek dobel ke jurnal yang sudah ada dilakukan sebelum insert, jadi baris kembar di file yang sama tetap boleh.
         Cache::lock('jurnal-biaya-simpan', 60)->block(10, function () use ($rows, $groups, $validated, $akunKas, &$saved) {
             foreach ($rows as $index => $row) {
-                if ($this->biayaSudahAda($row['tanggal'], $row['keterangan'], (float) $row['jumlah'])) {
+                if ($this->biayaSudahAda($row['payment_code'], $row['tanggal'], $row['keterangan'], (float) $row['jumlah'])) {
                     throw ValidationException::withMessages([
                         'import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ': ' . $this->pesanBiayaDobel($row['tanggal'], $row['keterangan'], (float) $row['jumlah']),
                     ]);
@@ -1686,7 +1694,7 @@ class PembukuanBaruJurnalUmumController extends Controller
             } elseif ($akunExcel === '') {
                 $status = 'Lewati: Akun Excel kosong';
                 $canImport = false;
-            } elseif ($this->biayaSudahAda($tanggal, $keterangan, $jumlah)) {
+            } elseif ($this->biayaSudahAda($paymentCode, $tanggal, $keterangan, $jumlah)) {
                 $status = 'Lewati: sudah ada di jurnal biaya';
                 $canImport = false;
             } elseif (! $akunMatch) {
