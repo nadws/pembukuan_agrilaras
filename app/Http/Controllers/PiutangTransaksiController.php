@@ -28,10 +28,19 @@ class PiutangTransaksiController extends Controller
         $tsAkhir = strtotime((string) $akhir);
         $dateRange = ($tsAwal && $tsAkhir) ? [date('Y-m-d', min($tsAwal, $tsAkhir)), date('Y-m-d', max($tsAwal, $tsAkhir))] : null;
 
+        // Status nota adalah kondisi hari ini. Nota yang lunas SETELAH tanggal akhir
+        // masih piutang per tanggal akhir, jadi tetap diikutkan (sama dengan buku besar 110301).
+        $masihPiutang = fn (string $notaSql) => fn ($q) => $q->where('i.status', 'unpaid')
+            ->when($tsAkhir, fn ($q) => $q->orWhereExists(fn ($p) => $p->selectRaw('1')
+                ->from('pelunasan_piutang_penjualan as p')
+                ->where('p.jenis', $jenis)
+                ->whereRaw("p.no_nota = {$notaSql}")
+                ->where('p.tanggal_bayar', '>', date('Y-m-d', $tsAkhir))));
+
         if ($jenis === 'ayam') {
             $piutangQuery = DB::table('invoice_ayam as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
+                ->where('i.lokasi', 'alpa')->where($masihPiutang('i.no_nota'))
                 ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select('i.no_nota', 'i.tgl', 'i.id_customer', 'i.qty', 'i.h_satuan', 'c.nm_customer', DB::raw('i.qty * i.h_satuan as total_rp'))
@@ -39,7 +48,7 @@ class PiutangTransaksiController extends Controller
         } elseif ($jenis === 'umum') {
             $piutangQuery = DB::table('penjualan_agl as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->where('i.lokasi', 'alpa')->where('i.status', 'unpaid')
+                ->where('i.lokasi', 'alpa')->where($masihPiutang("CONCAT('PU-', i.urutan)"))
                 ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 ->select(DB::raw("CONCAT('PU-', i.urutan) as no_nota"), 'i.tgl', 'i.id_customer', 'c.nm_customer', DB::raw('SUM(i.total_rp) as total_rp'), DB::raw('SUM(i.qty) as qty'))
@@ -48,7 +57,7 @@ class PiutangTransaksiController extends Controller
         } else {
             $piutangQuery = DB::table('invoice_telur as i')
                 ->leftJoin('customer as c', 'c.id_customer', '=', 'i.id_customer')
-                ->whereIn('i.lokasi', ['alpa', 'mtd'])->where('i.status', 'unpaid')
+                ->whereIn('i.lokasi', ['alpa', 'mtd'])->where($masihPiutang('i.no_nota'))
                 ->when($dateRange, fn ($q) => $q->whereBetween('i.tgl', $dateRange))
                 ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('i.no_nota', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
                 // Satu baris per nota: nota campuran pcs+kg tidak boleh terpecah, karena pelunasan dihitung per nota.
