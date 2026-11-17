@@ -102,22 +102,23 @@
                                 @php($telurDetail = $detailProduk->get($i->no_nota . '|' . $p->id_produk_telur))
                                 <td><span class="mtd-qty"><strong>{{ number_format($telurDetail->pcs ?? 0, 0, ',', '.') }}</strong> Pcs<br><strong>{{ number_format($telurDetail->kg ?? 0, 1, ',', '.') }}</strong> Kg</span></td>
                             @endforeach
-                            <td class="text-center">
-                                @if ($i->cek == 'Y')
-                                    <div class="d-inline-flex align-items-center gap-1">
+                            <td class="text-center text-nowrap">
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-warning btn-edit-harga" data-no-nota="{{ $i->no_nota }}" title="Edit Harga / Diskon"><i class="fas fa-tag"></i> Edit Harga</button>
+                                    @if ($i->cek == 'Y')
                                         <span class="badge bg-success"><i class="fas fa-check me-1"></i> Dicek</span>
                                         @if(!empty($btnEditSetor))
                                         <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
                                             class="btn btn-sm btn-outline-primary" title="Edit setoran"><i class="fas fa-edit"></i> Edit</a>
                                         @endif
-                                    </div>
-                                @else
-                                    @if(!empty($btnSetor))
-                                    <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
-                                        class="btn btn-sm btn-primary"><i class="fas fa-plus"></i>
-                                        Setor</a>
+                                    @else
+                                        @if(!empty($btnSetor))
+                                        <a href="{{ route('terima_invoice_mtd', ['no_nota' => $i->no_nota]) }}"
+                                            class="btn btn-sm btn-primary"><i class="fas fa-plus"></i>
+                                            Setor</a>
+                                        @endif
                                     @endif
-                                @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -144,8 +145,18 @@
                     <div id="detail_invoice"></div>
                 </div>
             </div>
-
         </x-theme.modal>
+
+        <div class="modal fade" id="modal-edit-harga" tabindex="-1" aria-labelledby="modalEditHargaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" id="load-edit-harga">
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                        <div>Memuat data nota...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <form action="{{ route('delete_invoice_telur') }}" method="get">
             <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -250,7 +261,23 @@
                     });
                     var queryString = 'no_nota[]=' + dipilih.join('&no_nota[]=');
                     window.location.href = "/terima_invoice_mtd?" + queryString;
+                });
 
+                $(document).on('click', '.btn-edit-harga', function() {
+                    var noNota = $(this).attr('data-no-nota');
+                    $('#load-edit-harga').html('<div class="p-4 text-center text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><div>Memuat data nota...</div></div>');
+                    $('#modal-edit-harga').modal('show');
+                    $.ajax({
+                        url: "{{ route('edit_harga_martadah') }}",
+                        type: "GET",
+                        data: { no_nota: noNota },
+                        success: function(html) {
+                            $('#load-edit-harga').html(html);
+                        },
+                        error: function() {
+                            $('#load-edit-harga').html('<div class="alert alert-danger m-3">Gagal memuat data nota. Silakan coba lagi.</div>');
+                        }
+                    });
                 });
             });
         </script>

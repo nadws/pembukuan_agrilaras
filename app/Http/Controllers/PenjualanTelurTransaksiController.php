@@ -88,6 +88,17 @@ class PenjualanTelurTransaksiController extends Controller
         $btnEdit = \SettingHal::btnHal(184, auth()->id());
         $btnHapus = \SettingHal::btnHal(185, auth()->id());
 
+        $notaAdaPelunasan = [];
+        if ($penjualan->isNotEmpty()) {
+            $notaAdaPelunasan = DB::table('pelunasan_piutang_penjualan')
+                ->where('jenis', 'telur')
+                ->whereIn('no_nota', $penjualan->pluck('no_nota')->all())
+                ->pluck('no_nota')
+                ->map(fn ($nota) => (string) $nota)
+                ->flip()
+                ->toArray();
+        }
+
         return view('transaksi.penjualan_telur.index', compact(
             'penjualan',
             'tanggalAwal',
@@ -99,7 +110,8 @@ class PenjualanTelurTransaksiController extends Controller
             'btnBuat',
             'btnDetail',
             'btnEdit',
-            'btnHapus'
+            'btnHapus',
+            'notaAdaPelunasan'
         ));
     }
 
@@ -282,6 +294,16 @@ class PenjualanTelurTransaksiController extends Controller
 
     public function destroy(string $noNota)
     {
+        $adaPelunasan = DB::table('pelunasan_piutang_penjualan')
+            ->where('jenis', 'telur')
+            ->where('no_nota', $noNota)
+            ->exists();
+
+        if ($adaPelunasan) {
+            return redirect()->route('transaksi.penjualan-telur.index')
+                ->with('error', 'Penjualan ' . $noNota . ' tidak dapat dihapus karena sudah ada pelunasan. Hapus/batalkan pelunasannya dulu di menu Piutang.');
+        }
+
         DB::transaction(function () use ($noNota) {
             $deleted = DB::table('invoice_telur')
                 ->where('no_nota', $noNota)

@@ -6,11 +6,19 @@ use App\Exports\AktivaGantungJurnalExport;
 use App\Exports\JurnalUmumExport;
 use App\Exports\TemplateJurnalUmumImportExport;
 use App\Services\ImporJurnalPerkiraanService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PembukuanBaruJurnalUmumController extends Controller
@@ -60,6 +68,87 @@ class PembukuanBaruJurnalUmumController extends Controller
             'tanggal_awal' => $batch->periode_awal,
             'tanggal_akhir' => $batch->periode_akhir,
         ])->with('sukses', "{$batch->jumlah_detail} baris dari {$batch->jumlah_transaksi} jurnal berhasil diimport.");
+    }
+
+    public function editPelunasanHutang(string $nomor_transaksi): View
+    {
+        $payment = $this->pelunasanHutangPayment($nomor_transaksi);
+        abort_unless($payment, 404);
+
+        return view('pembukuan_baru.jurnal_umum.edit_pelunasan_hutang', [
+            'title' => 'Edit Pelunasan Hutang',
+            'nomor_transaksi' => $nomor_transaksi,
+            'tanggal' => $payment->tanggal_bayar,
+            'jumlah_bayar' => $payment->jumlah_bayar,
+            'id_akun_kas' => $payment->id_akun_kas,
+            'akunKas' => $this->akunKasBankAktif(),
+        ]);
+    }
+
+    public function updatePelunasanHutang(Request $request, string $nomor_transaksi): RedirectResponse
+    {
+        $validated = $request->validate([
+            'id_akun_kas' => ['required', 'integer'],
+        ]);
+
+        DB::transaction(function () use ($validated, $nomor_transaksi) {
+            $journal = DB::table('jurnal_perkiraan')
+                ->where('nomor_transaksi', $nomor_transaksi)
+                ->where('tipe_transaksi', 'Pelunasan Hutang Faktur Pembelian')
+                ->where('kredit', '>', 0)
+                ->orderBy('urutan_detail')
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($journal, 404);
+
+            $akunKas = DB::table('akun_perkiraan')
+                ->where('id_akun_perkiraan', $validated['id_akun_kas'])
+                ->where('aktif', 1)
+                ->where(function ($query) {
+                    $query->where('kode_perkiraan', 'like', '1101%')
+                        ->orWhere('nama', 'like', '%kas%')
+                        ->orWhere('nama', 'like', '%bank%')
+                        ->orWhere('nama', 'like', '%bca%');
+                })
+                ->first(['id_akun_perkiraan', 'nama']);
+
+            if (! $akunKas) {
+                abort(422, 'Akun pembayaran harus berupa kas atau bank aktif.');
+            }
+
+            $payment = DB::table('pelunasan_faktur_pembelian')
+                ->where('id_impor_jurnal_perkiraan', $journal->id_impor_jurnal_perkiraan)
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($payment, 404);
+
+            DB::table('pelunasan_faktur_pembelian')
+                ->where('id', $payment->id)
+                ->update([
+                    'id_akun_kas' => $akunKas->id_akun_perkiraan,
+                    'updated_at' => now(),
+                ]);
+
+            $deskripsi = preg_replace(
+                '/\\s+dari\\s+.+(?=\\s+\\([^)]*\\)\\s*$)/u',
+                ' dari ' . $akunKas->nama,
+                (string) $journal->deskripsi
+            );
+
+            DB::table('jurnal_perkiraan')
+                ->where('id_jurnal_perkiraan', $journal->id_jurnal_perkiraan)
+                ->update([
+                    'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
+                    'deskripsi' => $deskripsi ?: $journal->deskripsi,
+                    'updated_at' => now(),
+                ]);
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'pelunasan-hutang'])
+            ->with('sukses', 'Akun pembayaran pelunasan hutang berhasil diperbarui.');
     }
 
     public function index(Request $request): View
@@ -818,6 +907,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -837,6 +927,33 @@ class PembukuanBaruJurnalUmumController extends Controller
 
         $total = round($detail->sum('jumlah'), 2);
 
+        // Lock agar klik Simpan/Enter berkali-kali tidak lolos cek dobel secara bersamaan.
+        $error = Cache::lock('jurnal-biaya-simpan', 30)->block(10, function () use ($validated, $detail, $akunBiaya, $akunKas, $total) {
+            if (DB::table('jurnal_perkiraan')->where('nomor_transaksi', $validated['nomor_transaksi'])->exists()) {
+                return 'Nomor ' . $validated['nomor_transaksi'] . ' sudah tersimpan. Cek daftar jurnal biaya agar tidak dobel, atau muat ulang halaman untuk nomor baru.';
+            }
+            foreach ($detail as $item) {
+                if ($this->biayaSudahAda($akunKas->kode_perkiraan, $validated['tanggal'], $item['keterangan'], $item['jumlah'])) {
+                    return $this->pesanBiayaDobel($validated['tanggal'], $item['keterangan'], $item['jumlah']);
+                }
+            }
+
+            $this->simpanBiayaManual($validated, $detail, $akunBiaya, $akunKas, $total);
+
+            return null;
+        });
+
+        if ($error) {
+            return back()->withErrors(['detail' => $error])->withInput();
+        }
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya'])
+            ->with('sukses', 'Jurnal biaya berhasil disimpan.');
+    }
+
+    private function simpanBiayaManual(array $validated, $detail, $akunBiaya, $akunKas, float $total): void
+    {
         DB::transaction(function () use ($validated, $detail, $akunBiaya, $akunKas, $total) {
             $sekarang = now();
             $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
@@ -884,10 +1001,825 @@ class PembukuanBaruJurnalUmumController extends Controller
 
             DB::table('jurnal_perkiraan')->insert($rows);
         });
+    }
+
+    /** Biaya dianggap dobel bila dibayar dari akun kas/bank yang sama dengan tanggal, keterangan (abaikan huruf besar/spasi) dan nominal sama. */
+    private function biayaSudahAda(string $kodeKas, string $tanggal, string $keterangan, float $jumlah): bool
+    {
+        $target = $this->normalisasiExcel($keterangan);
+
+        return DB::table('jurnal_perkiraan as j')
+            // Baris kredit jurnal yang sama = akun pembayarannya (mis. admin bank BCA Proyek bukan dobel admin BCA Cost).
+            ->join('jurnal_perkiraan as bayar', function ($join) {
+                $join->on('bayar.nomor_transaksi', '=', 'j.nomor_transaksi')
+                    ->on('bayar.tipe_transaksi', '=', 'j.tipe_transaksi')
+                    ->where('bayar.kredit', '>', 0);
+            })
+            ->join('akun_perkiraan as kas', 'kas.id_akun_perkiraan', '=', 'bayar.id_akun_perkiraan')
+            ->where('kas.kode_perkiraan', $kodeKas)
+            ->where('j.tipe_transaksi', 'Jurnal Biaya')
+            ->whereDate('j.tanggal', $tanggal)
+            ->where('j.debit', round($jumlah, 2))
+            ->pluck('j.deskripsi')
+            ->contains(fn ($deskripsi) => $this->normalisasiExcel($deskripsi) === $target);
+    }
+
+    private function pesanBiayaDobel(string $tanggal, string $keterangan, float $jumlah): string
+    {
+        return 'Biaya "' . $keterangan . '" tanggal ' . Carbon::parse($tanggal)->format('d/m/Y')
+            . ' Rp ' . number_format($jumlah, 0, ',', '.') . ' sudah ada di jurnal biaya. Tidak disimpan agar tidak dobel.';
+    }
+
+    public function importBiaya(): View
+    {
+        $data = [
+            'title' => 'Import Jurnal Biaya',
+            'akunBiaya' => $this->akunBiayaAktif(),
+        ];
+
+        // Simpan import gagal: tampilkan lagi preview dari isian sebelumnya agar tidak perlu upload & pilih ulang.
+        if (is_array(old('import_rows')) && old('file_hash')) {
+            $data += [
+                'rows' => $this->pulihkanPreviewBiaya(old('import_rows')),
+                'fileHash' => old('file_hash'),
+                'fileName' => old('file_name'),
+                'dipulihkan' => true,
+            ];
+        }
+
+        return view('pembukuan_baru.jurnal_umum.import_biaya', $data);
+    }
+
+    private function pulihkanPreviewBiaya(array $oldRows): array
+    {
+        return collect($oldRows)->map(function ($row) {
+            $tanggal = $row['tanggal'] ?? null;
+            $keterangan = (string) ($row['keterangan'] ?? '');
+            $jumlah = (float) ($row['jumlah'] ?? 0);
+            // Cek ulang: baris yang ternyata sudah masuk tidak boleh dipilih lagi.
+            $sudahAda = $tanggal && $jumlah > 0 && ! empty($row['payment_code']) && $this->biayaSudahAda($row['payment_code'], $tanggal, $keterangan, $jumlah);
+
+            return [
+                'line' => $row['line'] ?? '-',
+                'can_import' => ! $sudahAda,
+                'selected' => ! $sudahAda && ! empty($row['selected']),
+                'status' => $sudahAda ? 'Lewati: sudah ada di jurnal biaya' : (empty($row['id_akun_biaya']) ? 'Pilih akun biaya' : 'Siap'),
+                'tanggal' => $tanggal,
+                'via' => $row['via'] ?? '',
+                'payment_code' => $row['payment_code'] ?? null,
+                'akun_excel' => $row['akun_excel'] ?? '',
+                'id_akun_biaya' => $row['id_akun_biaya'] ?? null,
+                'keterangan' => $keterangan,
+                'jumlah' => $jumlah,
+            ];
+        })->all();
+    }
+
+    public function redirectImportBiaya(): RedirectResponse
+    {
+        session()->reflash();
+
+        return redirect()->route('pembukuan-baru.jurnal-umum.biaya.import');
+    }
+
+    public function templateImportBiaya(): BinaryFileResponse
+    {
+        $spreadsheet = new Spreadsheet();
+        $template = $spreadsheet->getActiveSheet();
+        $template->setTitle('Template Import Biaya');
+        $template->fromArray([['Via', 'Tanggal', 'Akun', 'Keterangan', 'Debit', 'Kredit']], null, 'A1');
+        $template->getStyle('A1:F1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2F4F9F']],
+        ]);
+        $template->freezePane('A2');
+        $template->setAutoFilter('A1:F21');
+        foreach (['A' => 14, 'B' => 14, 'C' => 34, 'D' => 60, 'E' => 16, 'F' => 16] as $column => $width) {
+            $template->getColumnDimension($column)->setWidth($width);
+        }
+        $template->getStyle('B2:B21')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $template->getStyle('E2:F21')->getNumberFormat()->setFormatCode('#,##0');
+
+        $example = $spreadsheet->createSheet();
+        $example->setTitle('Contoh Pengisian');
+        $example->fromArray([
+            ['Via', 'Tanggal', 'Akun', 'Keterangan', 'Debit', 'Kredit'],
+            ['Cash', '2026-10-30', 'Biaya Kendaraan (BBM, Parkir, SIM)', 'Isi pertalite mobil operasional', 0, 300000],
+            ['Bank', '2026-10-30', 'Biaya Gaji, Upah & Honorer', 'Uang makan sopir', 0, 40000],
+        ], null, 'A1');
+        $example->fromArray([
+            ['Petunjuk', 'Isi Via dengan Bank atau Cash.'],
+            ['', 'Debit isi 0. Nominal biaya isi di Kredit.'],
+            ['', 'Akun boleh memakai nama dari Excel. Jika tidak sama, pilih akun program pada halaman review.'],
+        ], null, 'A6');
+        $example->mergeCells('B6:F6');
+        $example->mergeCells('B7:F7');
+        $example->mergeCells('B8:F8');
+        $example->getStyle('A6:F8')->getAlignment()->setWrapText(true);
+        $example->getStyle('A6:A8')->getFont()->setBold(true);
+        $example->getStyle('A1:F1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2F4F9F']],
+        ]);
+        foreach (['A' => 14, 'B' => 14, 'C' => 34, 'D' => 60, 'E' => 16, 'F' => 16] as $column => $width) {
+            $example->getColumnDimension($column)->setWidth($width);
+        }
+        $example->getStyle('B2:B3')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $example->getStyle('E2:F3')->getNumberFormat()->setFormatCode('#,##0');
+
+        $path = tempnam(sys_get_temp_dir(), 'template-biaya-');
+        (new Xlsx($spreadsheet))->save($path);
+
+        return response()->download($path, 'template-import-jurnal-biaya.xlsx')->deleteFileAfterSend(true);
+    }
+
+    public function previewImportBiaya(Request $request): View
+    {
+        $validated = $request->validate([
+            'file_biaya' => ['required', 'file', 'mimes:xlsx,xls', 'max:20480'],
+        ]);
+
+        $file = $validated['file_biaya'];
+
+        return view('pembukuan_baru.jurnal_umum.import_biaya', [
+            'title' => 'Import Jurnal Biaya',
+            'akunBiaya' => $this->akunBiayaAktif(),
+            'rows' => $this->bacaExcelBiaya($file),
+            'fileHash' => hash_file('sha256', $file->getPathname()),
+            'fileName' => $file->getClientOriginalName(),
+        ]);
+    }
+
+    public function storeImportBiaya(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'file_hash' => ['required', 'string', 'size:64'],
+            'file_name' => ['required', 'string', 'max:255'],
+            'import_rows' => ['required', 'array'],
+            'import_rows.*.selected' => ['nullable', 'boolean'],
+            'import_rows.*.line' => ['nullable', 'integer'],
+            'import_rows.*.tanggal' => ['required', 'date'],
+            'import_rows.*.payment_code' => ['required', 'in:110113,110102'],
+            'import_rows.*.id_akun_biaya' => ['nullable', 'integer'],
+            'import_rows.*.keterangan' => ['required', 'string', 'max:255'],
+            'import_rows.*.jumlah' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $rows = collect($validated['import_rows'])
+            ->filter(fn ($row) => ! empty($row['selected']))
+            ->values();
+
+        if ($rows->isEmpty()) {
+            return back()->withErrors(['import_rows' => 'Pilih minimal satu baris yang siap diimport.'])->withInput();
+        }
+
+        $akunBiaya = DB::table('akun_perkiraan')
+            ->whereIn('id_akun_perkiraan', $rows->pluck('id_akun_biaya')->filter()->unique()->all())
+            ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
+            ->where('aktif', 1)
+            ->get()
+            ->keyBy('id_akun_perkiraan');
+        $akunKas = DB::table('akun_perkiraan')
+            ->whereIn('kode_perkiraan', ['110113', '110102'])
+            ->where('aktif', 1)
+            ->get()
+            ->keyBy('kode_perkiraan');
+
+        foreach ($rows as $index => $row) {
+            if (! $row['id_akun_biaya'] || ! $akunBiaya->has((int) $row['id_akun_biaya'])) {
+                return back()->withErrors(['import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ' belum memiliki akun biaya aktif.'])->withInput();
+            }
+            if (! $akunKas->has($row['payment_code'])) {
+                return back()->withErrors(['import_rows' => 'Akun pembayaran ' . $row['payment_code'] . ' belum aktif.'])->withInput();
+            }
+            if ($akunBiaya[(int) $row['id_akun_biaya']]->kode_perkiraan === '5102-02') {
+                return back()->withErrors(['import_rows' => 'Pembelian vaksin harus lewat Faktur Pembelian, bukan Jurnal Biaya.'])->withInput();
+            }
+        }
+
+        $groups = $rows->groupBy(function ($row, $index) {
+            // Bank must reconcile one journal to one bank mutation. Cash may be grouped by day.
+            return $row['tanggal'] . '|' . $row['payment_code']
+                . ($row['payment_code'] === '110113' ? '|bank-' . $index : '');
+        });
+        $saved = 0;
+
+        // Cek dobel ke jurnal yang sudah ada dilakukan sebelum insert, jadi baris kembar di file yang sama tetap boleh.
+        Cache::lock('jurnal-biaya-simpan', 60)->block(10, function () use ($rows, $groups, $validated, $akunKas, &$saved) {
+            foreach ($rows as $index => $row) {
+                if ($this->biayaSudahAda($row['payment_code'], $row['tanggal'], $row['keterangan'], (float) $row['jumlah'])) {
+                    throw ValidationException::withMessages([
+                        'import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ': ' . $this->pesanBiayaDobel($row['tanggal'], $row['keterangan'], (float) $row['jumlah']),
+                    ]);
+                }
+            }
+
+            DB::transaction(function () use ($groups, $validated, $akunKas, &$saved) {
+                foreach ($groups as $groupKey => $group) {
+                    [$tanggal, $paymentCode] = explode('|', $groupKey, 3);
+                    $detail = $group->map(fn ($row) => [
+                        'id_akun_biaya' => (int) $row['id_akun_biaya'],
+                        'keterangan' => trim($row['keterangan']),
+                        'jumlah' => round((float) $row['jumlah'], 2),
+                    ])->values();
+                    $hash = hash('sha256', $validated['file_hash'] . '|' . $groupKey);
+
+                    if (DB::table('impor_jurnal_perkiraan')->where('hash_file', $hash)->exists()) {
+                        throw ValidationException::withMessages(['file_hash' => 'File atau kelompok transaksi ini sudah pernah diimport.']);
+                    }
+
+                    $this->simpanImportBatchBiaya(
+                        $tanggal,
+                        $this->generateNomorBiaya(),
+                        (int) $akunKas[$paymentCode]->id_akun_perkiraan,
+                        $detail,
+                        'Import jurnal biaya - ' . $validated['file_name'] . ' - ' . $tanggal,
+                        $hash
+                    );
+                    $saved += $detail->count();
+                }
+            });
+        });
 
         return redirect()
             ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya'])
-            ->with('sukses', 'Jurnal biaya berhasil disimpan.');
+            ->with('sukses', $saved . ' baris biaya berhasil diimport.');
+    }
+
+    /** Minta budget: Cash -> Kas Kecil Cost, Bank -> BCA Cost-1, selalu dari Kas Besar. */
+    private const BUDGET_KAS_BESAR = '110112';
+
+    private const BUDGET_TUJUAN = ['cash' => '110102', 'bank' => '110113'];
+
+    public function importBudget(): View
+    {
+        $data = ['title' => 'Import Minta Budget'];
+
+        // Simpan import gagal: tampilkan lagi preview dari isian sebelumnya.
+        if (is_array(old('import_rows')) && old('file_hash')) {
+            $data += [
+                'rows' => $this->pulihkanPreviewBudget(old('import_rows')),
+                'fileHash' => old('file_hash'),
+                'fileName' => old('file_name'),
+                'dipulihkan' => true,
+            ];
+        }
+
+        return view('pembukuan_baru.jurnal_umum.import_budget', $data);
+    }
+
+    public function redirectImportBudget(): RedirectResponse
+    {
+        session()->reflash();
+
+        return redirect()->route('pembukuan-baru.jurnal-umum.budget.import');
+    }
+
+    public function templateImportBudget(): BinaryFileResponse
+    {
+        $spreadsheet = new Spreadsheet();
+        $header = ['Via', 'Tanggal', 'Keterangan', 'Debit'];
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2F4F9F']],
+        ];
+
+        $template = $spreadsheet->getActiveSheet();
+        $template->setTitle('Template Import Budget');
+        $template->fromArray([$header], null, 'A1');
+        $template->getStyle('A1:D1')->applyFromArray($headerStyle);
+        $template->freezePane('A2');
+        $template->getStyle('B2:B21')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $template->getStyle('D2:D21')->getNumberFormat()->setFormatCode('#,##0');
+
+        $example = $spreadsheet->createSheet();
+        $example->setTitle('Contoh Pengisian');
+        $example->fromArray([
+            $header,
+            ['Cash', '2026-10-02', 'Minta budget cash', 4240000],
+            ['Bank', '2026-10-05', 'Minta budget bank', 416412685],
+        ], null, 'A1');
+        $example->fromArray([
+            ['Petunjuk', 'Cash = Kas Besar ke Kas Kecil Cost. Bank = Kas Besar ke BCA 0513277722 (Cost-1).'],
+            ['', 'Nominal budget isi di Debit. File DAILY REPORT bisa langsung dipakai: baris yang Kredit-nya terisi (biaya) otomatis tidak ikut.'],
+        ], null, 'A5');
+        $example->getStyle('A1:D1')->applyFromArray($headerStyle);
+        $example->getStyle('A5:A6')->getFont()->setBold(true);
+        $example->getStyle('B2:B3')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $example->getStyle('D2:D3')->getNumberFormat()->setFormatCode('#,##0');
+
+        foreach ([$template, $example] as $sheet) {
+            foreach (['A' => 14, 'B' => 14, 'C' => 60, 'D' => 18] as $column => $width) {
+                $sheet->getColumnDimension($column)->setWidth($width);
+            }
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'template-budget-');
+        (new Xlsx($spreadsheet))->save($path);
+
+        return response()->download($path, 'template-import-minta-budget.xlsx')->deleteFileAfterSend(true);
+    }
+
+    public function previewImportBudget(Request $request): View
+    {
+        $validated = $request->validate([
+            'file_budget' => ['required', 'file', 'mimes:xlsx,xls', 'max:20480'],
+        ]);
+
+        $file = $validated['file_budget'];
+
+        return view('pembukuan_baru.jurnal_umum.import_budget', [
+            'title' => 'Import Minta Budget',
+            'rows' => $this->bacaExcelBudget($file),
+            'fileHash' => hash_file('sha256', $file->getPathname()),
+            'fileName' => $file->getClientOriginalName(),
+        ]);
+    }
+
+    public function storeImportBudget(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'file_hash' => ['required', 'string', 'size:64'],
+            'file_name' => ['required', 'string', 'max:255'],
+            'import_rows' => ['required', 'array'],
+            'import_rows.*.selected' => ['nullable', 'boolean'],
+            'import_rows.*.line' => ['nullable', 'integer'],
+            'import_rows.*.tanggal' => ['required', 'date'],
+            'import_rows.*.kode_tujuan' => ['required', 'in:' . implode(',', self::BUDGET_TUJUAN)],
+            'import_rows.*.keterangan' => ['required', 'string', 'max:255'],
+            'import_rows.*.jumlah' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $rows = collect($validated['import_rows'])
+            ->filter(fn ($row) => ! empty($row['selected']))
+            ->values();
+
+        if ($rows->isEmpty()) {
+            return back()->withErrors(['import_rows' => 'Pilih minimal satu baris yang siap diimport.'])->withInput();
+        }
+
+        $akun = $this->akunBudget();
+        if ($akun->count() !== count(self::BUDGET_TUJUAN) + 1) {
+            return back()->withErrors(['import_rows' => 'Akun Kas Besar, Kas Kecil Cost atau BCA Cost-1 belum aktif.'])->withInput();
+        }
+
+        $saved = 0;
+
+        Cache::lock('jurnal-budget-simpan', 60)->block(10, function () use ($rows, $validated, $akun, &$saved) {
+            // Cek dobel semua baris dulu, jadi baris kembar di file yang sama tetap boleh.
+            foreach ($rows as $index => $row) {
+                if ($nomorAda = $this->budgetSudahAda($row['tanggal'], $row['kode_tujuan'], (float) $row['jumlah'])) {
+                    throw ValidationException::withMessages([
+                        'import_rows' => 'Baris excel ' . ($row['line'] ?? $index + 1) . ': budget ' . $akun[$row['kode_tujuan']]->nama
+                            . ' tanggal ' . Carbon::parse($row['tanggal'])->format('d/m/Y')
+                            . ' Rp ' . number_format((float) $row['jumlah'], 0, ',', '.') . ' sudah ada di ' . $nomorAda . '.',
+                    ]);
+                }
+            }
+
+            // Sama seperti import biaya: Bank satu baris satu jurnal (cocok mutasi), Cash tanggal sama digabung.
+            $groups = $rows->groupBy(fn ($row, $index) => $row['tanggal'] . '|' . $row['kode_tujuan']
+                . ($row['kode_tujuan'] === self::BUDGET_TUJUAN['bank'] ? '|bank-' . ($row['line'] ?? $index) : ''));
+
+            DB::transaction(function () use ($groups, $validated, $akun, &$saved) {
+                foreach ($groups as $groupKey => $group) {
+                    [$tanggal, $kodeTujuan] = explode('|', $groupKey, 3);
+                    $hash = hash('sha256', $validated['file_hash'] . '|budget|' . $groupKey);
+                    if (DB::table('impor_jurnal_perkiraan')->where('hash_file', $hash)->exists()) {
+                        throw ValidationException::withMessages(['file_hash' => 'Budget ' . $akun[$kodeTujuan]->nama . ' tanggal ' . $tanggal . ' dari file ini sudah pernah diimport.']);
+                    }
+
+                    $this->simpanBudget(
+                        $tanggal,
+                        $group->map(fn ($row) => ['keterangan' => trim($row['keterangan']), 'jumlah' => round((float) $row['jumlah'], 2)])->values(),
+                        $akun[$kodeTujuan],
+                        $akun[self::BUDGET_KAS_BESAR],
+                        'Jurnal umum manual budget - ' . $validated['file_name'] . ' - ' . $tanggal,
+                        $hash
+                    );
+                    $saved += $group->count();
+                }
+            });
+        });
+
+        return redirect()
+            ->route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'manual'])
+            ->with('sukses', $saved . ' baris budget berhasil diimport.');
+    }
+
+    /** Satu kelompok budget = satu jurnal umum manual: debit akun tujuan per baris, kredit Kas Besar total. Bisa diedit seperti jurnal manual. */
+    private function simpanBudget(string $tanggal, $detail, object $akunTujuan, object $akunKasBesar, string $namaFile, string $hash): void
+    {
+        $sekarang = now();
+        $nomor = $this->generateNomorTransaksi();
+        $total = round($detail->sum('jumlah'), 2);
+        $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
+            'nama_file' => $namaFile,
+            'hash_file' => $hash,
+            'periode_awal' => $tanggal,
+            'periode_akhir' => $tanggal,
+            'jumlah_transaksi' => 1,
+            'jumlah_detail' => $detail->count() + 1,
+            'total_debit' => $total,
+            'total_kredit' => $total,
+            'status' => 'aktif',
+            'diimpor_oleh' => auth()->id(),
+            'created_at' => $sekarang,
+            'updated_at' => $sekarang,
+        ]);
+
+        $baris = fn (object $akun, int $urutan, string $deskripsi, float $debit, float $kredit) => [
+            'id_impor_jurnal_perkiraan' => $batchId,
+            'id_akun_perkiraan' => $akun->id_akun_perkiraan,
+            'tanggal' => $tanggal,
+            'nomor_transaksi' => $nomor,
+            'tipe_transaksi' => 'Jurnal Umum Manual',
+            'urutan_detail' => $urutan,
+            'deskripsi' => $deskripsi,
+            'debit' => $debit,
+            'kredit' => $kredit,
+            'created_at' => $sekarang,
+            'updated_at' => $sekarang,
+        ];
+
+        DB::table('jurnal_perkiraan')->insert(
+            $detail->map(fn ($item, $index) => $baris($akunTujuan, $index + 1, $item['keterangan'], $item['jumlah'], 0))
+                ->push($baris($akunKasBesar, $detail->count() + 1, 'Tambah saldo ' . $akunTujuan->nama . ' dari ' . $akunKasBesar->nama, 0, $total))
+                ->all()
+        );
+    }
+
+    private function akunBudget()
+    {
+        return DB::table('akun_perkiraan')
+            ->whereIn('kode_perkiraan', [self::BUDGET_KAS_BESAR, ...array_values(self::BUDGET_TUJUAN)])
+            ->where('aktif', 1)
+            ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama'])
+            ->keyBy('kode_perkiraan');
+    }
+
+    /** Nomor JU yang sudah berisi budget ini (tanggal, akun tujuan, nominal sama; keterangan diabaikan), atau null. */
+    private function budgetSudahAda(string $tanggal, string $kodeTujuan, float $jumlah): ?string
+    {
+        return DB::table('jurnal_perkiraan as j')
+            ->join('akun_perkiraan as a', 'a.id_akun_perkiraan', '=', 'j.id_akun_perkiraan')
+            ->where('j.tipe_transaksi', 'Jurnal Umum Manual')
+            ->where('a.kode_perkiraan', $kodeTujuan)
+            ->whereDate('j.tanggal', $tanggal)
+            ->where('j.debit', round($jumlah, 2))
+            ->value('j.nomor_transaksi');
+    }
+
+    private function bacaExcelBudget($file): array
+    {
+        $sheet = $this->sheetImport($file, 'Template Import Budget');
+        $rows = $this->barisSheetExcel($sheet);
+        $headers = array_map(fn ($value) => $this->normalisasiExcel($value), array_shift($rows) ?? []);
+        $columns = [];
+        foreach (['via', 'tanggal', 'keterangan', 'debit'] as $name) {
+            $index = array_search($name, $headers, true);
+            if ($index === false) {
+                throw ValidationException::withMessages(['file_budget' => 'Kolom wajib tidak ditemukan: ' . ucfirst($name) . '.']);
+            }
+            $columns[$name] = $index;
+        }
+        $kolomKredit = array_search('kredit', $headers, true);
+        $akun = $this->akunBudget();
+        $output = [];
+
+        foreach ($rows as $index => $row) {
+            $line = $index + 2;
+            $jumlah = $this->nominalExcel($row[$columns['debit']] ?? null);
+            if ($jumlah <= 0) {
+                continue; // baris biaya / kosong
+            }
+
+            $via = trim((string) ($row[$columns['via']] ?? ''));
+            $tanggal = $this->tanggalExcel($row[$columns['tanggal']] ?? null);
+            $keterangan = trim((string) ($row[$columns['keterangan']] ?? ''));
+            $kredit = $kolomKredit === false ? 0 : $this->nominalExcel($row[$kolomKredit] ?? null);
+            $kodeTujuan = $this->kodeTujuanBudget($via);
+
+            $status = 'Siap';
+            if ($this->barisExcelKuning($sheet, $line)) {
+                $status = 'Lewati: sudah kuning';
+            } elseif (! $tanggal) {
+                $status = 'Lewati: tanggal kosong';
+            } elseif ($kredit > 0) {
+                $status = 'Lewati: Kredit juga terisi';
+            } elseif (! $kodeTujuan || ! $akun->has($kodeTujuan)) {
+                $status = 'Lewati: Via bukan Bank/Cash';
+            } elseif ($keterangan === '') {
+                $status = 'Lewati: Keterangan kosong';
+            } elseif ($nomorAda = $this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah)) {
+                $status = 'Lewati: sudah ada di ' . $nomorAda;
+            }
+
+            $output[] = $this->barisPreviewBudget($line, $status, $tanggal, $via, $kodeTujuan, $keterangan, $jumlah, $status === 'Siap', $akun);
+        }
+
+        return $output;
+    }
+
+    private function pulihkanPreviewBudget(array $oldRows): array
+    {
+        $akun = $this->akunBudget();
+
+        return collect($oldRows)->map(function ($row) use ($akun) {
+            $tanggal = $row['tanggal'] ?? null;
+            $kodeTujuan = $row['kode_tujuan'] ?? null;
+            $jumlah = (float) ($row['jumlah'] ?? 0);
+            $nomorAda = $tanggal && $kodeTujuan && $jumlah > 0 ? $this->budgetSudahAda($tanggal, $kodeTujuan, $jumlah) : null;
+
+            return $this->barisPreviewBudget(
+                $row['line'] ?? '-',
+                $nomorAda ? 'Lewati: sudah ada di ' . $nomorAda : 'Siap',
+                $tanggal,
+                $row['via'] ?? '',
+                $kodeTujuan,
+                (string) ($row['keterangan'] ?? ''),
+                $jumlah,
+                ! $nomorAda && ! empty($row['selected']),
+                $akun
+            );
+        })->all();
+    }
+
+    private function barisPreviewBudget($line, string $status, ?string $tanggal, string $via, ?string $kodeTujuan, string $keterangan, float $jumlah, bool $selected, $akun): array
+    {
+        return [
+            'line' => $line,
+            'can_import' => $status === 'Siap',
+            'selected' => $selected,
+            'status' => $status,
+            'tanggal' => $tanggal,
+            'via' => $via,
+            'kode_tujuan' => $kodeTujuan,
+            'nama_tujuan' => $akun[$kodeTujuan]->nama ?? '-',
+            'keterangan' => $keterangan,
+            'jumlah' => $jumlah,
+        ];
+    }
+
+    private function kodeTujuanBudget(string $via): ?string
+    {
+        $via = strtolower($via);
+        if (str_contains($via, 'bank')) {
+            return self::BUDGET_TUJUAN['bank'];
+        }
+
+        return str_contains($via, 'cash') || str_contains($via, 'kas') ? self::BUDGET_TUJUAN['cash'] : null;
+    }
+
+    private function simpanImportBatchBiaya(string $tanggal, string $nomorTransaksi, int $idAkunKas, $detail, string $namaFile, string $hash): void
+    {
+        $akunKas = DB::table('akun_perkiraan')
+            ->where('id_akun_perkiraan', $idAkunKas)
+            ->where('aktif', 1)
+            ->first();
+        $akunBiaya = DB::table('akun_perkiraan')
+            ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
+            ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
+            ->where('aktif', 1)
+            ->get()
+            ->keyBy('id_akun_perkiraan');
+
+        if (! $akunKas || $akunBiaya->count() !== $detail->pluck('id_akun_biaya')->unique()->count()) {
+            throw ValidationException::withMessages(['akun' => 'Akun pembayaran atau salah satu akun biaya belum tersedia/aktif.']);
+        }
+
+        $sekarang = now();
+        $total = round($detail->sum('jumlah'), 2);
+        $batchId = DB::table('impor_jurnal_perkiraan')->insertGetId([
+            'nama_file' => mb_substr($namaFile, 0, 255),
+            'hash_file' => $hash,
+            'periode_awal' => $tanggal,
+            'periode_akhir' => $tanggal,
+            'jumlah_transaksi' => 1,
+            'jumlah_detail' => $detail->count() + 1,
+            'total_debit' => $total,
+            'total_kredit' => $total,
+            'status' => 'aktif',
+            'diimpor_oleh' => auth()->id(),
+            'created_at' => $sekarang,
+            'updated_at' => $sekarang,
+        ]);
+
+        $journalRows = $detail->map(function ($item, $index) use ($batchId, $tanggal, $nomorTransaksi, $akunBiaya, $sekarang) {
+            return [
+                'id_impor_jurnal_perkiraan' => $batchId,
+                'id_akun_perkiraan' => $akunBiaya[$item['id_akun_biaya']]->id_akun_perkiraan,
+                'tanggal' => $tanggal,
+                'nomor_transaksi' => $nomorTransaksi,
+                'tipe_transaksi' => 'Jurnal Biaya',
+                'urutan_detail' => $index + 1,
+                'deskripsi' => $item['keterangan'],
+                'debit' => $item['jumlah'],
+                'kredit' => 0,
+                'created_at' => $sekarang,
+                'updated_at' => $sekarang,
+            ];
+        })->push([
+            'id_impor_jurnal_perkiraan' => $batchId,
+            'id_akun_perkiraan' => $akunKas->id_akun_perkiraan,
+            'tanggal' => $tanggal,
+            'nomor_transaksi' => $nomorTransaksi,
+            'tipe_transaksi' => 'Jurnal Biaya',
+            'urutan_detail' => $detail->count() + 1,
+            'deskripsi' => 'Pembayaran biaya dari ' . $akunKas->nama,
+            'debit' => 0,
+            'kredit' => $total,
+            'created_at' => $sekarang,
+            'updated_at' => $sekarang,
+        ])->all();
+
+        DB::table('jurnal_perkiraan')->insert($journalRows);
+    }
+
+    private function bacaExcelBiaya($file): array
+    {
+        $sheet = $this->sheetImport($file, 'Template Import Biaya');
+        $rows = $this->barisSheetExcel($sheet);
+        $headers = array_map(fn ($value) => $this->normalisasiExcel($value), array_shift($rows) ?? []);
+        $columns = [];
+        foreach (['via', 'tanggal', 'akun', 'keterangan', 'debit', 'kredit'] as $name) {
+            $index = array_search($name, $headers, true);
+            if ($index === false) {
+                throw ValidationException::withMessages(['file_biaya' => 'Kolom wajib tidak ditemukan: ' . ucfirst($name) . '.']);
+            }
+            $columns[$name] = $index;
+        }
+
+        $akunBiaya = $this->akunBiayaAktif();
+        $akunByName = $akunBiaya->keyBy(fn ($akun) => $this->normalisasiExcel($akun->nama));
+        $akunKas = $this->akunKasBankAktif()->keyBy('kode_perkiraan');
+        $output = [];
+
+        foreach ($rows as $index => $row) {
+            $line = $index + 2;
+            if (collect($row)->every(fn ($value) => $value === null || trim((string) $value) === '')) {
+                continue;
+            }
+            $via = trim((string) ($row[$columns['via']] ?? ''));
+            $tanggal = $this->tanggalExcel($row[$columns['tanggal']] ?? null);
+            $akunExcel = trim((string) ($row[$columns['akun']] ?? ''));
+            $keterangan = trim((string) ($row[$columns['keterangan']] ?? ''));
+            $debit = $this->nominalExcel($row[$columns['debit']] ?? null);
+            $jumlah = $this->nominalExcel($row[$columns['kredit']] ?? null);
+            if ($jumlah <= 0) {
+                continue;
+            }
+            if ($this->barisExcelKuning($sheet, $line)) {
+                $output[] = ['line' => $line, 'can_import' => false, 'status' => 'Lewati: sudah kuning', 'jumlah' => $jumlah];
+                continue;
+            }
+
+            $paymentCode = str_contains(strtolower($via), 'bank') ? '110113' : (str_contains(strtolower($via), 'cash') || str_contains(strtolower($via), 'kas') ? '110102' : null);
+            $skipPurchase = preg_match('/\bbiaya\s+(pakan|rak telur)\b/i', $akunExcel);
+            $akunMatch = $akunByName->get($this->normalisasiExcel($akunExcel));
+            $status = 'Siap';
+            $canImport = true;
+
+            if (! $tanggal || $jumlah <= 0) {
+                $status = 'Lewati: tanggal atau Kredit kosong';
+                $canImport = false;
+            } elseif ($debit > 0) {
+                $status = 'Lewati: Debit juga terisi';
+                $canImport = false;
+            } elseif (! $paymentCode || ! $akunKas->has($paymentCode)) {
+                $status = 'Lewati: pembayaran Bank/Cash tidak cocok';
+                $canImport = false;
+            } elseif ($skipPurchase) {
+                $status = 'Lewati: pakan/rak telur masuk Faktur Pembelian';
+                $canImport = false;
+            } elseif ($akunExcel === '') {
+                $status = 'Lewati: Akun Excel kosong';
+                $canImport = false;
+            } elseif ($this->biayaSudahAda($paymentCode, $tanggal, $keterangan, $jumlah)) {
+                $status = 'Lewati: sudah ada di jurnal biaya';
+                $canImport = false;
+            } elseif (! $akunMatch) {
+                $status = 'Pilih akun biaya';
+            }
+
+            $output[] = [
+                'line' => $line,
+                'can_import' => $canImport,
+                'selected' => $canImport && (bool) $akunMatch,
+                'status' => $status,
+                'tanggal' => $tanggal,
+                'via' => $via,
+                'payment_code' => $paymentCode,
+                'akun_excel' => $akunExcel,
+                'id_akun_biaya' => $akunMatch?->id_akun_perkiraan,
+                'keterangan' => $keterangan,
+                'jumlah' => $jumlah,
+            ];
+        }
+
+        return $output;
+    }
+
+    private function normalisasiExcel($value): string
+    {
+        return strtolower(trim(preg_replace('/\s+/', ' ', (string) $value)));
+    }
+
+    /** File template: baca sheet template walau yang aktif saat disimpan sheet "Contoh Pengisian". File lain (daily report): sheet aktif. */
+    private function sheetImport($file, string $namaSheetTemplate)
+    {
+        $spreadsheet = IOFactory::load($file->getPathname());
+
+        return $spreadsheet->getSheetByName($namaSheetTemplate) ?? $spreadsheet->getActiveSheet();
+    }
+
+    /** Nilai mentah per baris; rumus pakai hasil tersimpan di file agar rumus rusak/eksternal tidak bikin error. */
+    private function barisSheetExcel($sheet): array
+    {
+        $kolomAkhir = $sheet->getHighestDataColumn();
+        $rows = [];
+        foreach ($sheet->getRowIterator() as $row) {
+            $values = [];
+            foreach ($row->getCellIterator('A', $kolomAkhir) as $cell) {
+                $values[] = $cell->isFormula() ? $cell->getOldCalculatedValue() : $cell->getValue();
+            }
+            $rows[] = $values;
+        }
+
+        return $rows;
+    }
+
+    private function tanggalExcel($value): ?string
+    {
+        if ($value === null || trim((string) $value) === '') {
+            return null; // Carbon::parse('') = hari ini
+        }
+
+        try {
+            if ($value instanceof \DateTimeInterface) {
+                return $value->format('Y-m-d');
+            }
+            if (is_numeric($value)) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
+
+            return Carbon::parse((string) $value)->format('Y-m-d');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function nominalExcel($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (float) $value;
+        }
+
+        $value = preg_replace('/[^0-9,.-]/', '', (string) $value);
+        if (! str_contains($value, '.') && ! str_contains($value, ',') && is_numeric($value)) {
+            return (float) $value;
+        }
+        $lastComma = strrpos($value, ',');
+        $lastDot = strrpos($value, '.');
+        if ($lastComma !== false && $lastDot !== false) {
+            if ($lastComma > $lastDot) {
+                $value = str_replace('.', '', $value);
+                $value = str_replace(',', '.', $value);
+            } else {
+                $value = str_replace(',', '', $value);
+            }
+        } elseif ($lastDot !== false) {
+            $value = strlen($value) - $lastDot - 1 === 3 ? str_replace('.', '', $value) : $value;
+        } elseif ($lastComma !== false) {
+            $value = strlen($value) - $lastComma - 1 === 3 ? str_replace(',', '', $value) : str_replace(',', '.', $value);
+        } else {
+            $value = trim($value);
+        }
+
+        return (float) $value;
+    }
+
+    private function barisExcelKuning($sheet, int $row): bool
+    {
+        if ($row > $sheet->getHighestRow()) {
+            return false;
+        }
+
+        foreach ($sheet->getRowIterator($row, $row) as $sheetRow) {
+            foreach ($sheetRow->getCellIterator() as $cell) {
+                $color = strtoupper((string) $cell->getStyle()->getFill()->getStartColor()->getRGB());
+                if (in_array($color, ['FFFF00', 'FFFFFF00'], true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function editBiaya(string $nomor_transaksi): View
@@ -958,6 +1890,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -1864,8 +2797,16 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->where('aktif', 1)
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
             ->whereNotNull('id_akun_induk')
+            ->whereNotExists($this->subAkun())
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama', 'tipe_akun']);
+    }
+
+    // Akun induk (punya sub-akun) hanya header; jurnal wajib ke sub-akun.
+    private function subAkun(): \Closure
+    {
+        return fn ($query) => $query->from('akun_perkiraan as sub')
+            ->whereColumn('sub.id_akun_induk', 'akun_perkiraan.id_akun_perkiraan');
     }
 
     private function akunKasBankAktif()
@@ -1875,11 +2816,31 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->where(function ($query) {
                 $query->where('kode_perkiraan', 'like', '1101%')
                     ->orWhere('nama', 'like', '%kas%')
-                    ->orWhere('nama', 'like', '%bank%');
+                    ->orWhere('nama', 'like', '%bank%')
+                    ->orWhere('nama', 'like', '%bca%');
             })
             ->whereNotNull('id_akun_induk')
+            ->whereNotExists($this->subAkun())
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+    }
+
+    private function pelunasanHutangPayment(string $nomor_transaksi): ?object
+    {
+        $journal = DB::table('jurnal_perkiraan')
+            ->where('nomor_transaksi', $nomor_transaksi)
+            ->where('tipe_transaksi', 'Pelunasan Hutang Faktur Pembelian')
+            ->where('kredit', '>', 0)
+            ->orderBy('urutan_detail')
+            ->first(['id_impor_jurnal_perkiraan']);
+
+        if (! $journal) {
+            return null;
+        }
+
+        return DB::table('pelunasan_faktur_pembelian')
+            ->where('id_impor_jurnal_perkiraan', $journal->id_impor_jurnal_perkiraan)
+            ->first(['tanggal_bayar', 'jumlah_bayar', 'id_akun_kas']);
     }
 
     private function akunAktivaGantungDefault(): ?object

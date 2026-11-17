@@ -294,7 +294,7 @@ class NavbarController extends Controller
                 'route' => 'history_perencanaan_pakan',
                 'params' => ['kategori' => 'pakan'],
                 'img' => 'gudang.png',
-                'deskripsi' => 'Melihat riwayat perencanaan pemakaian dan pembukuan biaya pakan.',
+                'deskripsi' => 'Melihat data pakan dari kandang dan koreksi per tanggal/kandang.',
             ],
             [
                 'judul' => 'History Vitamin & Vaksin',

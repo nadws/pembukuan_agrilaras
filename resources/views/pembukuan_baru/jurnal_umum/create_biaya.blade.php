@@ -5,10 +5,15 @@
                 <h5 class="mb-1">{{ $title }}</h5>
                 <small class="text-muted">Untuk bayar listrik, PDAM, internet, kebersihan, dan biaya lain</small>
             </div>
-            <a href="{{ route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya']) }}"
-                class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i> Jurnal Biaya
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('pembukuan-baru.jurnal-umum.biaya.import') }}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-file-upload me-1"></i> Import Excel
+                </a>
+                <a href="{{ route('pembukuan-baru.jurnal-umum.index', ['kelompok' => 'biaya']) }}"
+                    class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Jurnal Biaya
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -242,6 +247,19 @@
 
     @section('scripts')
         <script>
+            // Cegah simpan dobel: klik/Enter berikutnya diabaikan setelah form terkirim.
+            document.querySelector('.cost-form').addEventListener('submit', function(event) {
+                if (this.dataset.submitted) {
+                    event.preventDefault();
+                    return;
+                }
+                this.dataset.submitted = '1';
+                this.querySelectorAll('button[type="submit"]').forEach(function(button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
+                });
+            });
+
             (function() {
                 const body = document.getElementById('biaya-body');
                 const template = document.getElementById('template-biaya-row');

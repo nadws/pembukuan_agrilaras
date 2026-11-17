@@ -187,58 +187,19 @@ class LaporanFakturPajakExport
     }
 
     /**
-     * Baris detail untuk banyak nota sekaligus (3 query, bukan N+1).
+     * Baris detail untuk banyak nota sekaligus (1 query, bukan N+1).
+     * Semua lokasi (termasuk mtd) dibaca dari invoice_telur, sumber yang sama
+     * dengan jurnal Penjualan Telur (400001); invoice_mtd bisa beda harga/qty
+     * dan nomor notanya dipakai ulang lintas tanggal.
      *
      * @param  object[]  $nota
      * @return array<string, array<int, array{jml:float, harga:float, dpp:float, satuan:string}>>
      */
     public static function detailSemua(array $nota): array
     {
-        $hasil = [];
-        $mtd = [];
-        $biasa = [];
-        foreach ($nota as $n) {
-            $hasil[$n->no_nota] = [];
-            if ($n->lokasi === 'mtd') {
-                $mtd[] = $n->no_nota;
-            } else {
-                $biasa[] = $n->no_nota;
-            }
-        }
+        $hasil = array_fill_keys(array_map(fn ($n) => $n->no_nota, $nota), []);
 
-        foreach (self::barisBiasa($biasa) as $noNota => $baris) {
-            $hasil[$noNota] = $baris;
-        }
-
-        if ($mtd !== []) {
-            $tanya = implode(',', array_fill(0, count($mtd), '?'));
-            $lines = DB::select(
-                "SELECT a.no_nota, 'pcs' as jenis, a.pcs_pcs as jml, a.rp_pcs as harga, (a.pcs_pcs * a.rp_pcs) as ttl
-                FROM invoice_mtd as a where a.no_nota IN ($tanya)
-                UNION ALL
-                SELECT a.no_nota, 'ikat' as jenis, (a.kg_ikat - a.ikat) as jml, a.rp_ikat as harga, ((a.kg_ikat - a.ikat) * a.rp_ikat) as ttl
-                FROM invoice_mtd as a where a.no_nota IN ($tanya)
-                UNION ALL
-                SELECT a.no_nota, 'kg' as jenis, a.kg_kg as jml, a.rp_kg as harga, (a.kg_kg * a.rp_kg) as ttl
-                FROM invoice_mtd as a where a.no_nota IN ($tanya)", [...$mtd, ...$mtd, ...$mtd]);
-            foreach ($lines as $l) {
-                $jml = (float) $l->jml;
-                $harga = (float) $l->harga;
-                if ($jml == 0 && $harga == 0) {
-                    continue;
-                }
-                $hasil[$l->no_nota][] = ['jml' => $jml, 'harga' => $harga, 'dpp' => (float) $l->ttl, 'satuan' => self::satuanMtd($l->jenis)];
-            }
-
-            // Nota mtd yang tidak punya baris invoice_mtd (terhapus/beda nomor)
-            // memakai baris invoice_telur agar faktur tetap punya detail.
-            $kosong = array_values(array_filter($mtd, fn ($noNota) => ($hasil[$noNota] ?? []) === []));
-            foreach (self::barisBiasa($kosong) as $noNota => $baris) {
-                $hasil[$noNota] = $baris;
-            }
-        }
-
-        return $hasil;
+        return array_replace($hasil, self::barisBiasa(array_keys($hasil)));
     }
 
     /**
@@ -267,18 +228,6 @@ class LaporanFakturPajakExport
         }
 
         return $hasil;
-    }
-
-    /**
-     * Kode satuan ukur Coretax untuk baris invoice_mtd.
-     */
-    private static function satuanMtd(?string $jenis): string
-    {
-        return match ($jenis) {
-            'kg' => 'UM.0003',
-            'ikat' => 'UM.0018',
-            default => 'UM.0021',
-        };
     }
 
     private function isiFaktur(Spreadsheet $spreadsheet, array $nota): void
