@@ -907,6 +907,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -1175,6 +1176,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $rows->pluck('id_akun_biaya')->filter()->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -1579,6 +1581,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -1887,6 +1890,7 @@ class PembukuanBaruJurnalUmumController extends Controller
         $akunBiaya = DB::table('akun_perkiraan')
             ->whereIn('id_akun_perkiraan', $detail->pluck('id_akun_biaya')->unique()->all())
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
+            ->whereNotExists($this->subAkun())
             ->where('aktif', 1)
             ->get()
             ->keyBy('id_akun_perkiraan');
@@ -2793,8 +2797,16 @@ class PembukuanBaruJurnalUmumController extends Controller
             ->where('aktif', 1)
             ->whereIn('tipe_akun', ['EXPS', 'OEXP', 'COGS'])
             ->whereNotNull('id_akun_induk')
+            ->whereNotExists($this->subAkun())
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama', 'tipe_akun']);
+    }
+
+    // Akun induk (punya sub-akun) hanya header; jurnal wajib ke sub-akun.
+    private function subAkun(): \Closure
+    {
+        return fn ($query) => $query->from('akun_perkiraan as sub')
+            ->whereColumn('sub.id_akun_induk', 'akun_perkiraan.id_akun_perkiraan');
     }
 
     private function akunKasBankAktif()
@@ -2808,6 +2820,7 @@ class PembukuanBaruJurnalUmumController extends Controller
                     ->orWhere('nama', 'like', '%bca%');
             })
             ->whereNotNull('id_akun_induk')
+            ->whereNotExists($this->subAkun())
             ->orderBy('kode_perkiraan')
             ->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
     }
