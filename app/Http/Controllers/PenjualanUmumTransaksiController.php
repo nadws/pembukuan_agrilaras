@@ -53,7 +53,6 @@ class PenjualanUmumTransaksiController extends Controller
             'rp_satuan' => ['required', 'array'],
             'rp_satuan.*' => ['required', 'numeric', 'min:0'],
         ]);
-        $this->validateProdukGudang($data['id_produk']);
         $this->saveNota($data, ((int) DB::table('penjualan_agl')->where('lokasi', 'alpa')->max('urutan')) + 1);
         return redirect()->route('transaksi.penjualan-umum.index')->with('sukses', 'Penjualan umum berhasil disimpan.');
     }
@@ -86,7 +85,6 @@ class PenjualanUmumTransaksiController extends Controller
             'rp_satuan' => ['required', 'array'],
             'rp_satuan.*' => ['required', 'numeric', 'min:0'],
         ]);
-        $this->validateProdukGudang($data['id_produk']);
         abort_unless(DB::table('penjualan_agl')->where('urutan', $urutan)->where('lokasi', 'alpa')->exists(), 404);
         $this->hapusJurnal('PU-' . $urutan);
         DB::table('penjualan_agl')->where('urutan', $urutan)->where('lokasi', 'alpa')->delete();
@@ -152,11 +150,6 @@ class PenjualanUmumTransaksiController extends Controller
     private function produk()
     {
         return DB::table('tb_produk as p')->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')->orderBy('p.nm_produk')->get(['p.id_produk', 'p.nm_produk', 's.nm_satuan']);
-    }
-    private function validateProdukGudang(array $produkIds): void
-    {
-        $allowed = DB::table('tb_produk')->where('kategori_id', 3)->where('gudang_id', 2)->whereIn('id_produk', $produkIds)->count();
-        abort_unless($allowed === count(array_unique($produkIds)), 422, 'Produk harus berasal dari kategori 3 dan gudang 2.');
     }
     private function akunPembayaran()
     {
