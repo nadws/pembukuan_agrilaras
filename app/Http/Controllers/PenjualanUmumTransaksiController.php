@@ -17,7 +17,7 @@ class PenjualanUmumTransaksiController extends Controller
         $penjualan = DB::table('penjualan_agl as p')
             ->leftJoin('customer as c', 'c.id_customer', '=', 'p.id_customer')
             ->where('p.lokasi', 'alpa')->whereBetween('p.tgl', [$awal, $akhir])
-            ->when($cari !== '', fn ($q) => $q->where(fn ($s) => $s->where('p.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
+            ->when($cari !== '', fn($q) => $q->where(fn($s) => $s->where('p.urutan', 'like', "%{$cari}%")->orWhere('c.nm_customer', 'like', "%{$cari}%")))
             ->select('p.urutan', 'p.tgl', 'p.id_customer', 'p.status', 'c.nm_customer', DB::raw('SUM(p.total_rp) as total_rp'), DB::raw('COUNT(p.id_penjualan) as jumlah_item'))
             ->groupBy('p.urutan', 'p.tgl', 'p.id_customer', 'p.status', 'c.nm_customer')
             ->orderByDesc('p.urutan')->get();
@@ -43,11 +43,15 @@ class PenjualanUmumTransaksiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'tgl' => ['required', 'date'], 'id_customer' => ['required', 'integer'],
+            'tgl' => ['required', 'date'],
+            'id_customer' => ['required', 'integer'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
-            'id_produk' => ['required', 'array', 'min:1'], 'id_produk.*' => ['required', 'integer', 'exists:tb_produk,id_produk'],
-            'qty' => ['required', 'array'], 'qty.*' => ['required', 'numeric', 'min:0'],
-            'rp_satuan' => ['required', 'array'], 'rp_satuan.*' => ['required', 'numeric', 'min:0'],
+            'id_produk' => ['required', 'array', 'min:1'],
+            'id_produk.*' => ['required', 'integer', 'exists:tb_produk,id_produk'],
+            'qty' => ['required', 'array'],
+            'qty.*' => ['required', 'numeric', 'min:0'],
+            'rp_satuan' => ['required', 'array'],
+            'rp_satuan.*' => ['required', 'numeric', 'min:0'],
         ]);
         $this->validateProdukGudang($data['id_produk']);
         $this->saveNota($data, ((int) DB::table('penjualan_agl')->where('lokasi', 'alpa')->max('urutan')) + 1);
@@ -72,11 +76,15 @@ class PenjualanUmumTransaksiController extends Controller
     public function update(Request $request, int $urutan)
     {
         $data = $request->validate([
-            'tgl' => ['required', 'date'], 'id_customer' => ['required', 'integer'],
+            'tgl' => ['required', 'date'],
+            'id_customer' => ['required', 'integer'],
             'id_akun_pembayaran' => ['required', 'integer', 'exists:akun_perkiraan,id_akun_perkiraan'],
-            'id_produk' => ['required', 'array', 'min:1'], 'id_produk.*' => ['required', 'integer', 'exists:tb_produk,id_produk'],
-            'qty' => ['required', 'array'], 'qty.*' => ['required', 'numeric', 'min:0'],
-            'rp_satuan' => ['required', 'array'], 'rp_satuan.*' => ['required', 'numeric', 'min:0'],
+            'id_produk' => ['required', 'array', 'min:1'],
+            'id_produk.*' => ['required', 'integer', 'exists:tb_produk,id_produk'],
+            'qty' => ['required', 'array'],
+            'qty.*' => ['required', 'numeric', 'min:0'],
+            'rp_satuan' => ['required', 'array'],
+            'rp_satuan.*' => ['required', 'numeric', 'min:0'],
         ]);
         $this->validateProdukGudang($data['id_produk']);
         abort_unless(DB::table('penjualan_agl')->where('urutan', $urutan)->where('lokasi', 'alpa')->exists(), 404);
@@ -102,7 +110,8 @@ class PenjualanUmumTransaksiController extends Controller
         $now = now();
         $rows = [];
         foreach ($data['id_produk'] as $i => $idProduk) {
-            $qty = (float) $data['qty'][$i]; $harga = (float) $data['rp_satuan'][$i];
+            $qty = (float) $data['qty'][$i];
+            $harga = (float) $data['rp_satuan'][$i];
             $rows[] = ['urutan' => $urutan, 'nota_manual' => $nota, 'tgl' => $data['tgl'], 'kode' => 'PU', 'id_customer' => $data['id_customer'], 'id_produk' => $idProduk, 'qty' => $qty, 'rp_satuan' => $harga, 'total_rp' => $qty * $harga, 'lokasi' => 'alpa', 'status' => $status, 'admin' => auth()->user()->name, 'cek' => 'T', 'void' => 'T'];
         }
         DB::transaction(function () use ($rows, $data, $urutan, $nota) {
@@ -118,7 +127,8 @@ class PenjualanUmumTransaksiController extends Controller
         $akunJual = DB::table('akun_perkiraan')->where('kode_perkiraan', '400003')->where('aktif', 1)->first();
         abort_unless($akunBayar && $akunJual, 422, 'Akun pembayaran atau Penjualan Umum belum tersedia.');
         $customer = DB::table('customer')->where('id_customer', $idCustomer)->value('nm_customer') ?? 'Customer';
-        $now = now(); $batch = DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file' => 'Penjualan umum ' . $nota, 'hash_file' => hash('sha256', 'penjualan-umum|' . $nota), 'periode_awal' => $tanggal, 'periode_akhir' => $tanggal, 'jumlah_transaksi' => 1, 'jumlah_detail' => 2, 'total_debit' => $total, 'total_kredit' => $total, 'status' => 'aktif', 'diimpor_oleh' => auth()->id(), 'created_at' => $now, 'updated_at' => $now]);
+        $now = now();
+        $batch = DB::table('impor_jurnal_perkiraan')->insertGetId(['nama_file' => 'Penjualan umum ' . $nota, 'hash_file' => hash('sha256', 'penjualan-umum|' . $nota), 'periode_awal' => $tanggal, 'periode_akhir' => $tanggal, 'jumlah_transaksi' => 1, 'jumlah_detail' => 2, 'total_debit' => $total, 'total_kredit' => $total, 'status' => 'aktif', 'diimpor_oleh' => auth()->id(), 'created_at' => $now, 'updated_at' => $now]);
         DB::table('jurnal_perkiraan')->insert([
             ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunBayar->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $nota, 'tipe_transaksi' => $this->tipeJurnal, 'urutan_detail' => 1, 'deskripsi' => 'Penerimaan penjualan umum dari ' . $customer, 'debit' => $total, 'kredit' => 0, 'created_at' => $now, 'updated_at' => $now],
             ['id_impor_jurnal_perkiraan' => $batch, 'id_akun_perkiraan' => $akunJual->id_akun_perkiraan, 'tanggal' => $tanggal, 'nomor_transaksi' => $nota, 'tipe_transaksi' => $this->tipeJurnal, 'urutan_detail' => 2, 'deskripsi' => 'Pendapatan penjualan umum kepada ' . $customer, 'debit' => 0, 'kredit' => $total, 'created_at' => $now, 'updated_at' => $now],
@@ -139,11 +149,17 @@ class PenjualanUmumTransaksiController extends Controller
         return ['nota' => $items->first(), 'items' => $items, 'total' => $items->sum('total_rp')];
     }
 
-    private function produk() { return DB::table('tb_produk as p')->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')->where('p.kategori_id', 3)->where('p.gudang_id', 2)->orderBy('p.nm_produk')->get(['p.id_produk', 'p.nm_produk', 's.nm_satuan']); }
+    private function produk()
+    {
+        return DB::table('tb_produk as p')->leftJoin('tb_satuan as s', 's.id_satuan', '=', 'p.satuan_id')->orderBy('p.nm_produk')->get(['p.id_produk', 'p.nm_produk', 's.nm_satuan']);
+    }
     private function validateProdukGudang(array $produkIds): void
     {
         $allowed = DB::table('tb_produk')->where('kategori_id', 3)->where('gudang_id', 2)->whereIn('id_produk', $produkIds)->count();
         abort_unless($allowed === count(array_unique($produkIds)), 422, 'Produk harus berasal dari kategori 3 dan gudang 2.');
     }
-    private function akunPembayaran() { return DB::table('akun_perkiraan')->where('aktif', 1)->whereIn('tipe_akun', ['BANK', 'AREC'])->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']); }
+    private function akunPembayaran()
+    {
+        return DB::table('akun_perkiraan')->where('aktif', 1)->whereIn('tipe_akun', ['BANK', 'AREC'])->orderBy('kode_perkiraan')->get(['id_akun_perkiraan', 'kode_perkiraan', 'nama']);
+    }
 }
