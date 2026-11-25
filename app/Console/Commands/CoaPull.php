@@ -18,7 +18,13 @@ class CoaPull extends Command
 
     protected $description = 'Tarik COA dari aplikasi pusat dan terapkan ke akun perkiraan.';
 
-    private const CURSOR_FILE = 'coa-sync-cursor.txt';
+    /**
+     * One cursor per database, so a test database and the real one never share their sync position.
+     */
+    private function cursorFile(): string
+    {
+        return 'coa-sync-cursor-'.config('database.connections.'.config('database.default').'.database').'.txt';
+    }
 
     public function handle(CoaSync $sync): int
     {
@@ -31,14 +37,14 @@ class CoaPull extends Command
             return self::FAILURE;
         }
 
-        if (! Storage::exists(self::CURSOR_FILE)) {
+        if (! Storage::exists($this->cursorFile())) {
             $cursor = $this->snapshot($url, $token, $sync);
 
             if ($cursor === null) {
                 return self::FAILURE;
             }
         } else {
-            $cursor = (int) Storage::get(self::CURSOR_FILE);
+            $cursor = (int) Storage::get($this->cursorFile());
         }
 
         $applied = 0;
@@ -48,7 +54,7 @@ class CoaPull extends Command
                 ->get($url.'/coa/changes', ['after' => $cursor, 'limit' => 200]);
 
             if (! $response->successful()) {
-                $this->error('Gagal menarik perubahan: HTTP '.$response->status());
+                $this->error('Gagal menarik perubahan dari '.$url.'/coa/changes: HTTP '.$response->status().' - '.$this->detail($response));
 
                 return self::FAILURE;
             }
@@ -66,7 +72,7 @@ class CoaPull extends Command
             }
 
             $cursor = (int) $response->json('meta.next_after', $cursor);
-            Storage::put(self::CURSOR_FILE, (string) $cursor);
+            Storage::put($this->cursorFile(), (string) $cursor);
 
             $hasMore = (bool) $response->json('meta.has_more', false);
         } while ($hasMore);
@@ -90,7 +96,7 @@ class CoaPull extends Command
                 ->get($url.'/coa', ['page' => $page, 'per_page' => 200]);
 
             if (! $response->successful()) {
-                $this->error('Gagal mengambil daftar COA: HTTP '.$response->status());
+                $this->error('Gagal mengambil daftar COA dari '.$url.'/coa: HTTP '.$response->status().' - '.$this->detail($response));
 
                 return null;
             }
@@ -112,9 +118,14 @@ class CoaPull extends Command
             $hasMore = (bool) $response->json('meta.has_more', false);
         } while ($hasMore);
 
-        Storage::put(self::CURSOR_FILE, (string) $cursor);
+        Storage::put($this->cursorFile(), (string) $cursor);
         $this->info("Daftar awal COA: {$count} akun diterapkan.");
 
         return $cursor;
+    }
+
+    private function detail(\Illuminate\Http\Client\Response $response): string
+    {
+        return (string) ($response->json('message') ?? mb_substr(strip_tags($response->body()), 0, 150));
     }
 }

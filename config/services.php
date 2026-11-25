@@ -25,11 +25,15 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    // COA from the main application (Agri Laras): the webhook secret it signs with, and the API it is pulled from.
+    // COA dari aplikasi pusat (JOMA): alamat API dan token untuk menarik COA.
     'coa' => [
-        'webhook_secret' => env('COA_WEBHOOK_SECRET'),
         'api_url' => env('COA_API_URL'),
         'api_token' => env('COA_API_TOKEN'),
+    ],
+
+    // Stok keluar untuk aplikasi pusat (JOMA) yang membaca lewat API. Satu token untuk JOMA.
+    'stok_api' => [
+        'token' => env('STOK_API_TOKEN'),
     ],
 
     'ses' => [

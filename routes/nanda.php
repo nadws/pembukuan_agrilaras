@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
             Route::get('/{faktur_pembelian}/detail', 'detail')->name('detail');
+            Route::get('/{faktur_pembelian}/export', 'exportExcel')->name('export');
             Route::get('/{faktur_pembelian}/edit', 'edit')->name('edit');
             Route::delete('/{faktur_pembelian}', 'destroy')->name('destroy');
             Route::put('/{faktur_pembelian}', 'update')->name('update');
@@ -215,6 +216,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('/pembelian-umum/{nomor_transaksi}', 'destroyPembelianUmum')->name('pembelian-umum.destroy');
             Route::delete('/penyesuaian/{nomor_transaksi}', 'destroyPenyesuaian')->name('penyesuaian.destroy');
         });
+
+    Route::middleware('auth')->prefix('master/coa-sync')->name('master.coa-sync.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CoaSyncController::class, 'index'])->name('index');
+        Route::post('/tarik', [\App\Http\Controllers\CoaSyncController::class, 'tarik'])->name('tarik');
+    });
 
     Route::prefix('master/akun-perkiraan')->name('master.akun-perkiraan.')->controller(MasterAkunPerkiraanController::class)->group(function () {
         Route::get('/', 'index')->name('index');

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProdukPerencanaanExport;
 use App\Models\ProdukPerencanaan;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProdukPerencanaanController extends Controller
 {
@@ -43,6 +45,7 @@ class ProdukPerencanaanController extends Controller
             ->pluck('jumlah', 'kategori');
 
         $id_user = auth()->id();
+
         return view('data_master.produk_perencanaan.index', [
             'title' => 'Master Produk Perencanaan',
             'tambah' => \SettingHal::btnHal(121, $id_user),
@@ -122,6 +125,20 @@ class ProdukPerencanaanController extends Controller
             'campuran_satuan' => ['nullable', 'integer', 'exists:tb_satuan,id_satuan'],
             'kegunaan' => ['nullable', 'string'],
         ]);
+    }
+
+    /**
+     * Excel of the product list, with the same search and category filter as the page.
+     */
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new ProdukPerencanaanExport(
+                trim((string) $request->input('cari', '')),
+                trim((string) $request->input('kategori', '')),
+            ),
+            'produk-perencanaan.xlsx',
+        );
     }
 
     private function categories(): array

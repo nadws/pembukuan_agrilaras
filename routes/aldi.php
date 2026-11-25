@@ -4,28 +4,26 @@ use App\Http\Controllers\AksesController;
 use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\BarangDaganganController;
 use App\Http\Controllers\BudgetController;
-use App\Http\Controllers\CashflowController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardKandangController;
-use App\Http\Controllers\GudangPersediaanController;
 use App\Http\Controllers\DataKandangController;
+use App\Http\Controllers\GudangPersediaanController;
 use App\Http\Controllers\JualController;
 use App\Http\Controllers\JurnalPenyesuaianController;
 use App\Http\Controllers\OpnameController;
+use App\Http\Controllers\PembelianPulletController;
 use App\Http\Controllers\PenjualanUmumController;
 use App\Http\Controllers\PenutupController;
 use App\Http\Controllers\PenyetoranController;
 use App\Http\Controllers\PeralatanController;
 use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PoController;
-use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\ProdukPerencanaanController;
 use App\Http\Controllers\ProdukTelurMasterController;
+use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\RakController;
-use App\Http\Controllers\SetorKasController;
 use App\Http\Controllers\StokTelurMtdController;
 use App\Http\Controllers\SuplierController;
-use App\Http\Controllers\PembelianPulletController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -187,6 +185,7 @@ Route::middleware('auth')->group(function () {
         ->name('produk-perencanaan.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/export', 'export')->name('export');
             Route::post('/', 'store')->name('store');
             Route::put('/{idProduk}', 'update')->name('update');
             Route::delete('/{idProduk}', 'destroy')->name('destroy');
@@ -442,7 +441,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/save_tambah_pakan', 'save_tambah_pakan')->name('save_tambah_pakan');
             Route::get('/tbh_pakan', 'tbh_pakan')->name('tbh_pakan');
             Route::get('/get_stok_pakan', 'get_stok_pakan')->name('get_stok_pakan');
-
 
             // penjualan martadah
             Route::get('/penjualan_telur', 'penjualan_telur')->name('penjualan_telur');

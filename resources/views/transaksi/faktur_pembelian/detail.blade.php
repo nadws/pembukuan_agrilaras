@@ -13,6 +13,9 @@
                     class="btn btn-warning btn-sm {{ $sudahAdaPenerimaan ? 'disabled' : '' }}">
                     <i class="fas fa-edit me-1"></i> Edit
                 </a>
+                <a href="{{ route('transaksi.faktur-pembelian.export', $faktur) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </a>
             </div>
         </div>
     </x-slot>

@@ -5,6 +5,9 @@
                 <h5 class="mb-0">Master Produk Perencanaan</h5>
                 <small class="text-muted">Produk pakan, obat air, obat pakan, dan obat ayam.</small>
             </div>
+            <a href="{{ route('produk-perencanaan.export', array_filter(['cari' => $cari, 'kategori' => $kategoriTerpilih])) }}" class="btn btn-sm btn-success">
+                <i class="fas fa-file-excel me-1"></i> Export Excel
+            </a>
             @if(!empty($tambah))
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#tambahProdukPerencanaan">
                 <i class="fas fa-plus me-1"></i> Tambah Produk
