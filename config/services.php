@@ -25,6 +25,13 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+    // COA from the main application (Agri Laras): the webhook secret it signs with, and the API it is pulled from.
+    'coa' => [
+        'webhook_secret' => env('COA_WEBHOOK_SECRET'),
+        'api_url' => env('COA_API_URL'),
+        'api_token' => env('COA_API_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
