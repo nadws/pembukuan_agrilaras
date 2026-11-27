@@ -1247,20 +1247,20 @@
                         </div>
                         <div class="modal-body">
                             <p class="text-muted small mb-3">
-                                Satu sheet, blok per kandang ditumpuk ke bawah. Hanya kandang yang
-                                mendapat pemberian pakan pada rentang tanggal yang masuk.
+                                Minggu ke samping per kandang, dikelompokkan per bulan. Hanya kandang
+                                yang mendapat pemberian pakan pada rentang bulan yang dipilih.
                             </p>
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
-                                    <label for="rekap-tgl-mulai" class="form-label small fw-bold">Tanggal awal</label>
-                                    <input type="date" id="rekap-tgl-mulai" name="tgl_mulai"
-                                        class="form-control" value="{{ date('Y-m-d', strtotime($tgl . ' -20 days')) }}"
+                                    <label for="rekap-bulan-awal" class="form-label small fw-bold">Bulan awal</label>
+                                    <input type="month" id="rekap-bulan-awal" name="bulan_awal"
+                                        class="form-control" value="{{ date('Y-m', strtotime($tgl . ' -2 months')) }}"
                                         required>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label for="rekap-tgl-selesai" class="form-label small fw-bold">Tanggal akhir</label>
-                                    <input type="date" id="rekap-tgl-selesai" name="tgl_selesai"
-                                        class="form-control" value="{{ $tgl }}" required>
+                                    <label for="rekap-bulan-akhir" class="form-label small fw-bold">Bulan akhir</label>
+                                    <input type="month" id="rekap-bulan-akhir" name="bulan_akhir"
+                                        class="form-control" value="{{ date('Y-m', strtotime($tgl)) }}" required>
                                 </div>
                             </div>
                         </div>
