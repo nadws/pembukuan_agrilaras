@@ -541,6 +541,330 @@ class Laporan_layerController extends Controller
     }
 
     /**
+     * Baris metrik yang ditampilkan pada rekap (sesuai warna kuning di template manual).
+     * Baris "(kg)" pemakaian pakan juga ditampilkan, dicek terpisah di tulisBlokRekapKandang.
+     */
+    private const LABEL_REKAP_KUNING = ['D', 'C', 'Gr (butir)', 'HD', 'HDL', 'FCR D', 'FCR W'];
+
+    /**
+     * Rekap Laporan Layer: satu sheet, blok per kandang ditumpuk ke bawah.
+     * Kandang masuk periode bila ada pemberian pakan (kategori pakan,
+     * pcs_kredit != 0) pada rentang tanggal yang dipilih.
+     */
+    public function exportRekap(Request $request)
+    {
+        $request->validate([
+            'tgl_mulai' => ['required', 'date'],
+            'tgl_selesai' => ['required', 'date', 'after_or_equal:tgl_mulai'],
+        ]);
+
+        $tglMulai = $request->tgl_mulai;
+        $tglSelesai = $request->tgl_selesai;
+
+        $idKandangPeriode = DB::table('stok_produk_perencanaan as s')
+            ->join('tb_produk_perencanaan as p', 'p.id_produk', '=', 's.id_pakan')
+            ->whereBetween('s.tgl', [$tglMulai, $tglSelesai])
+            ->where('p.kategori', 'pakan')
+            ->where('s.pcs_kredit', '!=', 0)
+            ->whereNotNull('s.id_kandang')
+            ->where('s.id_kandang', '!=', 0)
+            ->distinct()
+            ->pluck('s.id_kandang')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $kandang = empty($idKandangPeriode)
+            ? collect()
+            : DB::table('kandang')
+                ->whereIn('id_kandang', $idKandangPeriode)
+                ->orderBy('nm_kandang')
+                ->get(['id_kandang', 'nm_kandang', 'chick_in', 'stok_awal', 'id_strain']);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Layer');
+        $sheet->setShowGridlines(false);
+
+        $maxKolom = 4;
+        $row = 3;
+        foreach ($kandang as $item) {
+            $row = $this->tulisBlokRekapKandang($sheet, $item, $row, $tglMulai, $tglSelesai, $maxKolom);
+        }
+
+        if ($kandang->isEmpty()) {
+            $sheet->setCellValue('A3', 'Tidak ada pemberian pakan pada periode ini.');
+        }
+
+        $lastCol = Coordinate::stringFromColumnIndex($maxKolom);
+        $sheet->mergeCells('A1:' . $lastCol . '1');
+        $sheet->setCellValue(
+            'A1',
+            'REKAP LAYER PERIODE ' . date('d/m/Y', strtotime($tglMulai)) . ' - ' . date('d/m/Y', strtotime($tglSelesai))
+        );
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+        $sheet->getColumnDimension('A')->setWidth(16);
+        $sheet->getColumnDimension('B')->setWidth(24);
+        $sheet->getColumnDimension('C')->setWidth(3);
+        $sheet->freezePane('D2');
+        $sheet->getPageSetup()->setOrientation('landscape');
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $writer = new Xlsx($spreadsheet);
+        $namaFile = 'Rekap Layer ' . date('d-m-Y', strtotime($tglMulai)) . ' s.d. ' .
+            date('d-m-Y', strtotime($tglSelesai)) . '.xlsx';
+
+        return response()->streamDownload(
+            function () use ($writer, $spreadsheet) {
+                $writer->save('php://output');
+                $spreadsheet->disconnectWorksheets();
+            },
+            $namaFile,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]
+        );
+    }
+
+    /**
+     * Satu blok kandang pada rekap. Kolom: A = nama kandang (merge vertikal),
+     * B = Ket, C = ":", D.. = hari per minggu. Mengembalikan baris berikutnya.
+     */
+    private function tulisBlokRekapKandang(
+        Worksheet $sheet,
+        object $kandang,
+        int $row,
+        string $tglMulai,
+        string $tglSelesai,
+        int &$maxKolom
+    ): int {
+        if (empty($kandang->chick_in)) {
+            return $this->tulisPesanBlokRekap($sheet, $kandang, $row, 'Chick in belum diisi.', $maxKolom);
+        }
+
+        if (Carbon::parse($tglSelesai)->lt(Carbon::parse($kandang->chick_in))) {
+            return $this->tulisPesanBlokRekap(
+                $sheet,
+                $kandang,
+                $row,
+                'Data belum tersedia pada tanggal laporan.',
+                $maxKolom
+            );
+        }
+
+        $jenisAyam = DB::table('kandang as a')
+            ->leftJoin('strain as b', 'b.id_strain', '=', 'a.id_strain')
+            ->where('a.id_kandang', $kandang->id_kandang)
+            ->value('b.nm_strain') ?: '-';
+
+        $tanggalAwal = Carbon::parse($tglMulai)->startOfDay();
+        $tanggalLaporan = Carbon::parse($tglSelesai)->startOfDay();
+        $awalDataKandang = $tanggalAwal->copy()->max(
+            Carbon::parse($kandang->chick_in)->startOfDay()
+        );
+        $tanggalReferensi = collect();
+        $cursorTanggal = $tanggalLaporan->copy();
+
+        while ($cursorTanggal->gte($awalDataKandang)) {
+            $tanggalReferensi->prepend($cursorTanggal->format('Y-m-d'));
+            $cursorTanggal->subWeeks(3);
+        }
+
+        $dataMingguan = [];
+        $produkPakan = collect();
+        $pemakaianPakan = [];
+        $hargaPakan = [];
+
+        foreach ($tanggalReferensi as $tanggalReferensiExport) {
+            $view = $this->hdTigaMinggu(Request::create('/', 'GET', [
+                'id_kandang' => $kandang->id_kandang,
+                'tgl' => $tanggalReferensiExport,
+                'tgl_batas_data' => $tglSelesai,
+            ]));
+            $data = $view->getData();
+
+            $dataMingguan = array_merge($dataMingguan, $data['dataMingguan']);
+            $produkPakan = $produkPakan
+                ->concat($data['produkPakan'])
+                ->unique('id_pakan')
+                ->sortBy('nm_produk')
+                ->values();
+            $pemakaianPakan = array_replace($pemakaianPakan, $data['pemakaianPakan']);
+            $hargaPakan = array_replace($hargaPakan, $data['hargaPakan']);
+        }
+
+        $dataMingguan = collect($dataMingguan)
+            ->unique('mgg')
+            ->sortBy('mgg')
+            ->map(function ($minggu) use ($tanggalAwal, $tanggalLaporan) {
+                $minggu['tanggal_harian'] = collect($minggu['tanggal_harian'])
+                    ->filter(fn ($tanggal) => Carbon::parse($tanggal)->betweenIncluded($tanggalAwal, $tanggalLaporan))
+                    ->values()
+                    ->all();
+
+                return $minggu;
+            })
+            ->filter(fn ($minggu) => !empty($minggu['tanggal_harian']))
+            ->values()
+            ->all();
+
+        $tanggal = [];
+        $urutanHariMinggu = [];
+        foreach ($dataMingguan as $minggu) {
+            $awalMinggu = Carbon::parse($kandang->chick_in)
+                ->startOfDay()
+                ->addDays((($minggu['mgg'] - 1) * 7) + 1);
+
+            foreach ($minggu['tanggal_harian'] as $tglHari) {
+                $tanggal[] = $tglHari;
+                $urutanHariMinggu[] = max(
+                    1,
+                    min(7, $awalMinggu->diffInDays(Carbon::parse($tglHari), false) + 1)
+                );
+            }
+        }
+
+        if (empty($tanggal)) {
+            return $this->tulisPesanBlokRekap(
+                $sheet,
+                $kandang,
+                $row,
+                'Data belum tersedia pada periode ini.',
+                $maxKolom
+            );
+        }
+
+        $lastIdx = 3 + count($tanggal);
+        $lastCol = Coordinate::stringFromColumnIndex($lastIdx);
+        $maxKolom = max($maxKolom, $lastIdx);
+        $r1 = $row + 1;
+        $r2 = $row + 2;
+
+        // Judul blok
+        $sheet->mergeCells("A$row:$lastCol$row");
+        $sheet->setCellValue(
+            "A$row",
+            'KANDANG ' . $kandang->nm_kandang .
+                '  |  Chick in: ' . date('d/m/Y', strtotime($kandang->chick_in)) .
+                '  |  Strain: ' . $jenisAyam
+        );
+        $sheet->getStyle("A$row")->getFont()->setBold(true);
+
+        // Header: Kandang | Ket | : | minggu (merge) | tanggal
+        $sheet->mergeCells("A$r1:A$r2")->setCellValue("A$r1", 'Kandang');
+        $sheet->mergeCells("B$r1:B$r2")->setCellValue("B$r1", 'Ket');
+        $sheet->mergeCells("C$r1:C$r2")->setCellValue("C$r1", ':');
+
+        $kolom = 4;
+        foreach ($dataMingguan as $minggu) {
+            $awal = Coordinate::stringFromColumnIndex($kolom);
+            $akhir = Coordinate::stringFromColumnIndex($kolom + count($minggu['tanggal_harian']) - 1);
+            $sheet->mergeCells("$awal$r1:$akhir$r1");
+            $sheet->setCellValue("$awal$r1", 'Minggu ke-' . $minggu['mgg']);
+            $kolom += count($minggu['tanggal_harian']);
+        }
+
+        foreach ($tanggal as $index => $tglHari) {
+            $sheet->setCellValue(
+                Coordinate::stringFromColumnIndex($index + 4) . $r2,
+                $urutanHariMinggu[$index] . '/7' . PHP_EOL . date('d/m', strtotime($tglHari))
+            );
+        }
+        $sheet->getStyle("A$r1:$lastCol$r2")->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F2F2F2']],
+            'font' => ['bold' => true, 'size' => 10],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle("D$r2:$lastCol$r2")->getAlignment()->setWrapText(true);
+
+        // Baris metrik (hanya yang kuning + pemakaian pakan)
+        $metrics = $this->metrikDataTelurExport(
+            $kandang,
+            $dataMingguan,
+            $produkPakan,
+            $pemakaianPakan,
+            $hargaPakan,
+            $tanggalLaporan
+        );
+
+        $baris = $r2 + 1;
+        $barisMulai = $baris;
+        foreach ($metrics as $metric) {
+            if (!empty($metric['section'])) {
+                $sheet->setCellValue("B$baris", $metric['section']);
+                $sheet->getStyle("B$baris")->getFont()->setBold(true);
+                $baris++;
+                continue;
+            }
+
+            $label = $metric['label'];
+            $tampil = in_array($label, self::LABEL_REKAP_KUNING, true)
+                || str_ends_with($label, ' (kg)');
+            if (!$tampil) {
+                continue;
+            }
+
+            $sheet->setCellValue("B$baris", $label)->setCellValue("C$baris", ':');
+            $sheet->fromArray($metric['values'], null, "D$baris");
+            $sheet->getStyle("D$baris:$lastCol$baris")->getNumberFormat()
+                ->setFormatCode($metric['format'] ?? '#,##0.00');
+
+            if (isset($metric['danger'])) {
+                foreach ($metric['values'] as $index => $value) {
+                    if ((float) $value >= $metric['danger']) {
+                        $cell = Coordinate::stringFromColumnIndex($index + 4) . $baris;
+                        $sheet->getStyle($cell)->getFont()->setBold(true)->getColor()->setRGB('C6283D');
+                    }
+                }
+            }
+            $baris++;
+        }
+        $barisAkhir = $baris - 1;
+
+        // Nama kandang di kolom A, merge vertikal seluruh baris metrik
+        $sheet->mergeCells("A$barisMulai:A$barisAkhir");
+        $sheet->setCellValue("A$barisMulai", $kandang->nm_kandang);
+        $sheet->getStyle("A$barisMulai:A$barisAkhir")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        $sheet->getStyle("A$r1:$lastCol$barisAkhir")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('BFBFBF');
+        $sheet->getStyle("D$barisMulai:$lastCol$barisAkhir")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        for ($c = 4; $c <= $lastIdx; $c++) {
+            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($c))->setWidth(11);
+        }
+        $sheet->getRowDimension($r2)->setRowHeight(36);
+
+        return $barisAkhir + 2;
+    }
+
+    /**
+     * Blok kandang berisi satu baris pesan (tanpa data), untuk kandang yang belum/tidak punya data di periode.
+     */
+    private function tulisPesanBlokRekap(
+        Worksheet $sheet,
+        object $kandang,
+        int $row,
+        string $pesan,
+        int &$maxKolom
+    ): int {
+        $sheet->mergeCells("A$row:D$row");
+        $sheet->setCellValue("A$row", 'KANDANG ' . $kandang->nm_kandang . '  |  ' . $pesan);
+        $sheet->getStyle("A$row")->getFont()->setBold(true);
+        $maxKolom = max($maxKolom, 4);
+
+        return $row + 2;
+    }
+
+    /**
      * Sheet PAKAN per kandang, tanpa nilai biaya.
      */
     private function tambahSheetPakanDaily(

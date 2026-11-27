@@ -1131,11 +1131,11 @@
 
         <form action="" class="filter-laporan">
             <div class="row ">
-                <div class="col-6 col-lg-9 elemen-hilang">
+                <div class="col-6 col-lg-7 elemen-hilang">
                     <h6 class="mb-2">Laporan Layer {{ tanggal($tgl) }}</h6>
                 </div>
 
-                <div class="col-12 col-lg-3 float-end d-flex align-items-center">
+                <div class="col-12 col-lg-5 float-end d-flex flex-wrap align-items-center justify-content-end gap-2">
 
                     <input type="date" class="form-control" name="tgl" value="{{ $tgl }}">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">Filter</button>
@@ -1144,6 +1144,12 @@
                         title="Export Daily Commercial Layer + laba rugi">
                         <span class="d-none d-xl-inline">Export Excel</span>
                         <span class="d-xl-none">Excel</span>
+                    </button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#rekap-layer-modal"
+                        class="btn btn-outline-success btn-sm ms-2"
+                        title="Rekap layer per periode (satu sheet, kandang ditumpuk)">
+                        <span class="d-none d-xl-inline">Rekap Excel</span>
+                        <span class="d-xl-none">Rekap</span>
                     </button>
                 </div>
                 <div class="col-lg-4 mb-2">
@@ -1217,6 +1223,44 @@
                                     <label for="export-tgl-selesai" class="form-label small fw-bold">Tanggal akhir</label>
                                     <input type="date" id="export-tgl-selesai" name="tgl_selesai"
                                         class="form-control" value="{{ date('Y-m-d') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Download Excel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="rekap-layer-modal" tabindex="-1"
+            aria-labelledby="rekap-layer-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="{{ route('laporan_layer.export_rekap') }}" method="GET">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rekap-layer-modal-label">Rekap Excel Layer</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Tutup"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small mb-3">
+                                Satu sheet, blok per kandang ditumpuk ke bawah. Hanya kandang yang
+                                mendapat pemberian pakan pada rentang tanggal yang masuk.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="rekap-tgl-mulai" class="form-label small fw-bold">Tanggal awal</label>
+                                    <input type="date" id="rekap-tgl-mulai" name="tgl_mulai"
+                                        class="form-control" value="{{ date('Y-m-d', strtotime($tgl . ' -20 days')) }}"
+                                        required>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="rekap-tgl-selesai" class="form-label small fw-bold">Tanggal akhir</label>
+                                    <input type="date" id="rekap-tgl-selesai" name="tgl_selesai"
+                                        class="form-control" value="{{ $tgl }}" required>
                                 </div>
                             </div>
                         </div>
